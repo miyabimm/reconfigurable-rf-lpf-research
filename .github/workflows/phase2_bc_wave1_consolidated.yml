@@ -1,6 +1,12 @@
 name: Phase 2 B/C consolidated archival parity and EXP-046 lossless source check
 
 on:
+  # Validate the deployed canonical gate on the exact main SHA when this file changes.
+  # Keep routine main pushes outside this extra audit; PR paths remain unchanged.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase2_bc_wave1_consolidated.yml'
   pull_request:
     paths:
       - '.github/workflows/phase2_bc_wave1_consolidated.yml'
