@@ -109,7 +109,7 @@ def assess():
         assert blob(orig.read_bytes()) == x["source"]["complete_parameter_vector"]["blob_sha"]
         assert blob(orig.read_bytes()) == registered[path]["checkpoint_git_blob_sha1"]
         assert x["verification"]["independent_coupled_L_MNA_probe_points"] == 84
-        assert x["verification"]["mesh_points_per_interval"] == 1001
+        assert x["verification"]["points_per_interval"] == 1001
 
     verified_src = {Path(x["reference"]).name for x in exp47["validated_candidates"]}
     assert all((RUNS / "EXP-047" / p).is_file() for p in verified_src)
