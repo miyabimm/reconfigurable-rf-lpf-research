@@ -25,6 +25,24 @@
 
 **特に重要:** Run 38999677194は名称上「独立MNA」を実行したjobがSUCCESSであることを示すが、今回そのJSON内容や回路解析を独立に再評価していない。EXP-047の原manifestは局所in-chat計算であり、Actionsでの探索再実行がないと元文書に明記されている。RF-F003とRF-T005、元実行と後日の検証を混ぜない。
 
+## 元出典・構文検査の実行済み内訳
+
+[CI run 39088382917](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39088382917)で**225ファイル／2,046,501bytes**を確認し、旧46件のGit blob SHA照合もPASS。
+
+| 検査 | 観測件数 | 正しく解釈する範囲 |
+|---|---:|---|
+| 元manifest中の**パス全文**と一致 | 25 | 実際の読み込み成功を証明しない |
+| 元manifestで同名ファイルに言及（弱い手掛かり） | 25 | 同名異実体の場合もある |
+| 同じ実験のREADMEでbasename言及 | 92 | 説明文であり実行依存とは限らない |
+| 元39 workflowのYAMLにパス全文 | 20 | workflowの静的参照。動的生成パスは対象外 |
+| ソース中に固定S2P文字列 | 60 | 利用する処理が実行されたとは限らない |
+| GitHub fetch tool名などの文字列 | 59 | 元のCode Mode/tools環境が必要になり得る |
+| 動的なパス構築らしい文字列 | 72 | 依存の可否は実行トレースで追加確認する |
+
+元manifestにより、**正式RF-F003のEXP-047 96件、試験RF-T005のEXP-042～046計128件**と区別できた。残り1件はEXP-047旧manifestアダプターの独立した`data/validation/`資料で、グループmanifestによる自動条件帰属を行わず`unknown`とした。
+
+**構文だけの安全な確認：** Python原本27件はAST解析PASS。JavaScript原本59件のうち25件はNode.jsモジュール構文PASS、残り**34件は非同期関数ラッパーでコンパイルPASS**。どちらも評価関数本体を呼ばず、元S2Pを読まず、RF計算・独立MNA・トポロジー探索を**実行していない**。構文PASSは過去の探索を再現した証明ではなく、原本破棄を許可する根拠でもない。
+
 ## 削除可否に関する判定基準
 
 1. **225件のGit blob全保持**：台帳が指すパスごとに元blob SHAとbytesを照合し、旧46件も照合。元データ、正式RF制約、固定S2P、元manifest、元checkpoint、旧sourceは変更しない。
@@ -35,7 +53,7 @@
 ## 検証ステータス
 
 - GitHub Actions job/Artifact**メタデータ取得は実施済み**。元6runを個別指定して照会し上記10件を[固定JSON](../data/repository_reviews/w4_exp042_actions_artifact_metadata_20261018.json)に保存。
-- 225件の元SHA・manifest/workflow依存・ソース構文の**読み取り専用CIを追加**。出力個票とsummaryは[専用CI](../.github/workflows/phase2_w4_replay_dependencies.yml)の成果物に生成し、実行完了後にここへ件数・CI URLを追記する。
+- 225件の元SHA・manifest/workflow依存・ソース構文の**読み取り専用CIを実行済み**：[W4 39088382917](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39088382917) はSUCCESS。[固定225件CSV](../data/repository_reviews/w4_replay_dependency_225_20261018.csv)、[実行済み要約JSON](../data/repository_reviews/w4_replay_dependency_summary_20261018.json)として現在のGitで保存。後続CIでも元CSVとのbyte-for-byte一致を検証する。
 - 過去Actions Artifactの**zip実体の取得・保存と独立MNA再実行は未実施**。物理Q(f)・SRF・EM・実測・公差の達成も証明しない。
 
 **W4の実験/旧workflow削除は依然として未承認。Phase 2継続。**
