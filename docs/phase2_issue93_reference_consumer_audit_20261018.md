@@ -2,6 +2,8 @@
 
 > 状態：**監査用コード・CIを追加した段階**。この文書自体は実行結果を主張しない。正本はPR #91の`phase2_bc_wave1_consolidated.yml`。本作業による元研究データ・既存workflowの削除／停止・Phase 3研究は **0件**。
 
+> **2026-10-18 後日の運用追記:** 本文はIssue #93監査の当時の手順・実行記録です。重複workflowの退役完了に伴い、全追跡ファイルを毎回走査する一時スクリプトと手動workflow内の該当ステップを退役しました。元ソースは[固定Git版](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/4048a9ed22236f6e0dec4048ffb7fd2ddfe5bde8/scripts/audit_phase2_issue93_consumers.py)から復元できます。手動W2/W3/W4・EXP-046の重要な証拠検証ステップは維持し、本文の旧実行コマンドは現行treeで使用できません。
+
 ## 対象と目的
 
 [Issue #93](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/issues/93)、[PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94)、[PR #95](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/95)、[PR #96](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/96)を引き継ぐ。対象はPR #92由来の`.github/workflows/phase2_first_wave_retention_parity.yml`のみの**退役事前審査**。所有者の正本選択は退役承認を含まない。
@@ -10,7 +12,7 @@
 
 ## 追加する実行可能な監査
 
-- [監査コード](../scripts/audit_phase2_issue93_consumers.py)は`git ls-files -z`で取得した**追跡ファイル全件**のうちUTF-8テキストを検索する。NULを含むバイナリ・非UTF-8・実体のないパスを**スキップ件数とパスを明示**し、自己言及を避けるため監査スクリプト自体は検索対象から外す。
+- [監査コード](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/4048a9ed22236f6e0dec4048ffb7fd2ddfe5bde8/scripts/audit_phase2_issue93_consumers.py)は`git ls-files -z`で取得した**追跡ファイル全件**のうちUTF-8テキストを検索する。NULを含むバイナリ・非UTF-8・実体のないパスを**スキップ件数とパスを明示**し、自己言及を避けるため監査スクリプト自体は検索対象から外す。
 - 対象リテラル：PR #92 workflowパス・識別子、3個別artifact名、PR #91統合artifact名、PR #91単一job名、PR #92の5 job名。
 - 各一致の元path・行番号・検索語・文脈と対象ファイルSHA-256を機械可読JSONに記録。`workflow`/`documentation`/`code_or_config`/`other_tracked`を区別し、同名の文字列を動的依存の証明とは扱わない。
 - 正本workflowの単一job末尾で`python3 scripts/audit_phase2_issue93_consumers.py --output-dir artifacts/phase2_reports/bc/issue93_reference_scan`を実行。JSONは既存の期限付きartifact `phase2-bc-first-wave-parity-evidence`に収録し、既存の監査手順・原本は変更しない。

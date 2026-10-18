@@ -10,8 +10,8 @@
 | RF数値・正式／試験条件 | [RF制約レジストリ](../../data/constraints/registry.json) |
 | EXP番号のmain事前予約 | [実験番号予約方針](../experiment_number_reservation_policy_20261015.md)、[台帳](../../data/experiment_number_registry.csv) |
 | 実行状態と独立検証の分離 | [実験マニフェストの説明](../experiment_manifests.md)、[実験索引](../../data/experiment_index.csv) |
-| **EXP-048以降の実験データ保存（新規v1）** | [Phase 2保存ポリシー／preflight・finalize・監査](phase2_experiment_storage_policy.md)。本PRマージ後の新規実験に適用し、旧結果は不変更 |
-| 2026-10-15当時の保存方針案（歴史資料） | [旧提案・部分導入の経緯](../experiment_result_storage_policy_proposal_20261015.md)。EXP-048以降の規則は上記v1を参照 |
+| **EXP-050以降の実験データ保存（Git-only v1）** | [Phase 2保存ポリシー／preflight・finalize・監査](phase2_experiment_storage_policy.md)。既存EXP-001～049の保存証拠は不変更 |
+| 旧保存方針案（歴史資料） | [2026-10-15旧提案](../experiment_result_storage_policy_proposal_20261015.md)。新規EXPには上記v1を参照 |
 | 旧保全判断と未リンク証拠 | [46件の旧レビュー](../phase2_evidence_triage_20261015.md)、[Step 4新分類](../phase2_repository_step4_review_20261017.md) |
 
 ## 過去の監査・訂正・ブランチ経緯
@@ -20,7 +20,7 @@ W3でD-001～D-004を[歴史統合資料](../archive/w3_consolidated_documents_2
 
 - [研究結果管理の初版（2026-10-14）](../archive/w3_consolidated_documents_20261017.md#d-002)：RF-F002や当時の候補数など**旧時点の記述**がある。現在のRF-F003や24候補のビューと混同しない。
 - [記録の訂正経緯](../result_record_corrections_20261014.md)。
-- [古いリポジトリ容量監査](../archive/w3_consolidated_documents_20261017.md#d-004)と[2026-10-15 GitHub-only保全レビュー](../phase2_repository_optimization_review_20261015.md)。
+- [古いリポジトリ容量監査](../archive/w3_consolidated_documents_20261017.md#d-004)と[2026-10-15 GitHub-only保全レビュー](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_optimization_review_20261015.md)。
 - [2026-10-15証拠トリアージ](../phase2_evidence_triage_20261015.md)。
 - [当時のリポジトリ引継ぎ計画](../archive/w3_consolidated_documents_20261017.md#d-001)。
 - [2026-10-14ブランチ削除の実行記録](../maintenance/branch_cleanup_20261014.md)：**過去の実行済み事項**。2026-10-17に新たに削除した意味ではない。

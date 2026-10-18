@@ -75,6 +75,9 @@ def validate_registry(*, root=ROOT):
                     raise ValueError("Trial may not override constraint identity, legacy policy or phase")
                 base_payload = _read(repository_file(root, registry["formal"][base]["file"]))
                 resolved = _merge(base_payload, overrides)
+                if "study_additional_stopband" in payload:
+                    _validate_trial_additional_stopband(
+                        payload["study_additional_stopband"], base_payload)
                 layout = payload.get("study_variable_c_layout")
                 spec = resolved["components"]["IC_VARIABLE_C"]
                 if not isinstance(layout, dict):
@@ -103,6 +106,40 @@ def validate_registry(*, root=ROOT):
     if registry.get("active_formal_id") not in registry["formal"]:
         raise ValueError("Active constraint must be a registered approved formal version")
     return registry
+
+
+def _validate_trial_additional_stopband(spec, base):
+    """Fail closed on trial-only wideband attenuation gates and available S2P span.
+
+    No field is added to (or mutates) the immutable formal RF-F003 snapshot.
+    """
+    keys = {"low_hz", "high_hz", "sample_step_hz", "include_endpoints",
+            "min_attenuation_db", "settings", "metric", "reference_planes",
+            "applicable_objective"}
+    if not isinstance(spec, dict) or set(spec) != keys:
+        raise ValueError("Invalid trial additional stopband schema")
+    lo, hi, step = (spec[key] for key in ("low_hz", "high_hz", "sample_step_hz"))
+    if (any(type(n) is not int for n in (lo, hi, step))
+            or lo < 0 or hi <= lo or step <= 0 or (hi - lo) % step != 0):
+        raise ValueError("Invalid additional stopband finite frequency grid")
+    if (type(spec["min_attenuation_db"]) not in (int, float)
+            or not math.isfinite(spec["min_attenuation_db"])
+            or spec["min_attenuation_db"] <= 0):
+        raise ValueError("Invalid additional stopband attenuation threshold")
+    if (spec["settings"] != ["B71", "B12", "B28", "B13+B14", "B26", "B8"]
+            or spec["include_endpoints"] is not True
+            or spec["metric"] != "-10log10(Pload/Pavs)"
+            or spec["reference_planes"] != "external_input_to_external_output"
+            or spec["applicable_objective"] != "full_lpf"):
+        raise ValueError("Invalid trial additional stopband interpretation")
+    parasitics = base.get("external_port_parasitics")
+    if not isinstance(parasitics, dict):
+        raise ValueError("Trial additional stopband requires fixed external S2P")
+    fmt = parasitics["format"]
+    if (lo < fmt["f_start_hz"] or hi > fmt["f_stop_hz"]
+            or step < fmt["f_step_hz"]
+            or spec["reference_planes"] != parasitics["system_evaluation"]["metrics_reference_planes"]):
+        raise ValueError("Trial additional stopband exceeds fixed external model range")
 
 
 def _same_kind(existing, replacement):
@@ -168,6 +205,8 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     result["active_constraint_status"] = "trial"
     result["trial_base_constraint_id"] = base_id
     result["trial_variable_c_layout"] = copy.deepcopy(trial["study_variable_c_layout"])
+    if "study_additional_stopband" in trial:
+        result["trial_additional_stopband"] = copy.deepcopy(trial["study_additional_stopband"])
     return result
 
 

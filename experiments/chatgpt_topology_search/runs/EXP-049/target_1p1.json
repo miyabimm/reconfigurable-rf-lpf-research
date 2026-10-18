@@ -1,0 +1,1959 @@
+{
+  "experiment_id": "EXP-049",
+  "phase": "Phase 2",
+  "status": "completed_bounded_highq_topology_continuation",
+  "trial": "RF-T006",
+  "source_highq_sha256": "c496abcfb60c4004cd1bd0b44191b0c3b9e687e109ffee1379b993803e984bde",
+  "target_IL_db": 1.1,
+  "effective_constraints_sha256": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+  "execution_sha": "2e2dd3bed7227fbca6aae1792b4d9302fa0df1d7",
+  "attempted": 46,
+  "evaluations": 328872,
+  "elapsed_seconds": 156.00179963699998,
+  "screen_points_per_RF_region": 8,
+  "screen_wide_step_MHz": 100,
+  "full_points_per_RF_region": 1001,
+  "full_wide_step_MHz": 1,
+  "selected_per_area": [
+    {
+      "area_cost": 19.0,
+      "chip_L": 5,
+      "chip_GJM": 6,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_6GJM_ladder_notches_Cv14",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        8.542136725247667,
+        9.65266151733954,
+        2.914016848852276,
+        1.287529371945225,
+        0.4,
+        0.7463610275505096,
+        0.1763929082526144,
+        1.311568877156903,
+        0.9870281899169734,
+        0.0184860538244708,
+        2.9027663395322807,
+        0.02,
+        0.02,
+        -0.1,
+        0.09999999999999991,
+        0.1,
+        0.1,
+        2.4212184802425556,
+        1.5545025149251306,
+        1.5872978761723944,
+        1.2944817211455384,
+        1.4403270876000318,
+        0.8430433070763679,
+        1.322307575579644,
+        1.0213358841883822,
+        0.13874740903587668,
+        0.2677708528686545,
+        2.671671226757203e-16,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.158263794743001,
+        "H2": 30.008454601423185,
+        "H3": 30.098688214697606,
+        "W": 20.691535865217887,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 1,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.158263794743001,
+        "H2": 30.008454601423185,
+        "H3": 30.098688214697606,
+        "W": 20.691535865217887,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    },
+    {
+      "area_cost": 19.666666666666664,
+      "chip_L": 5,
+      "chip_GJM": 7,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_7GJM_ladder_mixed_Cv13",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        9.473949604537392,
+        13.57011208231089,
+        1.8822335397604593,
+        0.4000000000000003,
+        0.4,
+        0.6659783052017342,
+        0.3671823735643396,
+        1.954386128516822,
+        0.005,
+        0.005940196412073767,
+        2.4645111187853024,
+        0.0711156251443466,
+        0.02,
+        0.02,
+        -0.1,
+        0.09999999999999963,
+        0.1,
+        0.1,
+        2.4422247954526517,
+        1.5434802956070515,
+        1.7169962297101886,
+        1.0571768406044455,
+        1.3807170928058647,
+        0.7995347265292726,
+        1.3065978421311661,
+        0.9954180632062525,
+        0.5218174059419146,
+        0.17049421493000858,
+        0.0,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.1877628621104088,
+        "H2": 30.039999989705315,
+        "H3": 30.040000497871656,
+        "W": 20.07999982407334,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 27,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.1877628621104088,
+        "H2": 30.039999989705315,
+        "H3": 30.040000497871656,
+        "W": 20.07999982407334,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    },
+    {
+      "area_cost": 20.333333333333332,
+      "chip_L": 5,
+      "chip_GJM": 8,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_8GJM_ladder_mixed_Cv14",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        9.801096648826052,
+        13.934901055148085,
+        1.8249741404380502,
+        0.4,
+        0.4,
+        0.631507290437428,
+        0.055468998212076265,
+        1.4621343000524634,
+        0.005000000000005211,
+        0.013222058810646573,
+        2.735339617760052,
+        0.005000000000000491,
+        0.005000000000022976,
+        0.020000000000000875,
+        0.02000000000000109,
+        -0.09999999999999822,
+        0.1,
+        0.1,
+        0.09999999999998384,
+        2.3959604235211454,
+        1.5112841163430129,
+        1.592676255128752,
+        1.2872649768391073,
+        1.3542539524779305,
+        0.7409187332496213,
+        1.1340950695744827,
+        0.3862216470419406,
+        0.4248985961304175,
+        0.30024053500007314,
+        1.5227582975921538e-15,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.1914159423313655,
+        "H2": 30.039709982075877,
+        "H3": 31.35795570525534,
+        "W": 20.05970759998297,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 37,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.1914159423313655,
+        "H2": 30.039709982075877,
+        "H3": 31.35795570525534,
+        "W": 19.212088203536126,
+        "wide_worst_freq_MHz": 3444.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": false,
+      "target_met": false
+    },
+    {
+      "area_cost": 21.333333333333332,
+      "chip_L": 6,
+      "chip_GJM": 5,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "6L_5GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          5,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        6
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        6.6886836677243275,
+        8.702781892950819,
+        1.3610022586463588,
+        1.4074228677362817,
+        0.4000000000000072,
+        0.4000000000000087,
+        1.7311445993109715,
+        0.8297105865225147,
+        2.8039294259664787,
+        2.8288631017524564,
+        0.005,
+        0.020000000000000552,
+        0.020000000000001007,
+        -0.030990123349109285,
+        0.09999998509883881,
+        0.09073059982246487,
+        0.1,
+        -0.1,
+        2.9999999999999987,
+        1.4867945797732087,
+        2.271106356122818,
+        0.5686775322758653,
+        3.0,
+        0.8477964903231278,
+        3.0,
+        0.8767279812560705,
+        2.999999999999997,
+        0.42217366837919496,
+        2.9999999999999507,
+        5.076922449035503e-16
+      ],
+      "grid_metrics": {
+        "IL": 1.5250289682104365,
+        "H2": 30.039980333888785,
+        "H3": 30.040062285448737,
+        "W": 20.08000492147474,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 41,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.5250289682104365,
+        "H2": 30.039980333888785,
+        "H3": 30.040062285448737,
+        "W": 20.08000492147474,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    },
+    {
+      "area_cost": 22.0,
+      "chip_L": 6,
+      "chip_GJM": 6,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "6L_6GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          5,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        6
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        9.894442435388656,
+        11.904292375717375,
+        0.4,
+        0.4,
+        0.4,
+        0.5509120448938344,
+        0.7636181989238615,
+        0.7293447580183009,
+        0.8102522827194892,
+        2.8097636454016004,
+        0.0050000000002254595,
+        3.3036120452543853,
+        0.02,
+        0.02000000000001537,
+        -0.05442904781676711,
+        0.01179403527165111,
+        -0.09999999999786943,
+        -0.1,
+        -0.09999999999937159,
+        3.0,
+        1.1617535286663654,
+        2.2226450286276025,
+        0.2733995684314015,
+        2.784885326219367,
+        0.28279136437097446,
+        2.663614221576437,
+        0.31175254296113125,
+        2.8367315858134297,
+        0.3729026219014226,
+        2.7105384845778318,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.663150514078163,
+        "H2": 30.040432681783813,
+        "H3": 30.0398004657966,
+        "W": 20.080418427556257,
+        "wide_worst_freq_MHz": 3500.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 43,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.663150514078163,
+        "H2": 30.040432681783813,
+        "H3": 30.0398004657966,
+        "W": 19.982433371908304,
+        "wide_worst_freq_MHz": 3440.0,
+        "wide_worst_setting": "B12"
+      },
+      "mandatory_pass_full_grid": false,
+      "target_met": false
+    },
+    {
+      "area_cost": 22.666666666666664,
+      "chip_L": 6,
+      "chip_GJM": 7,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "6L_7GJM_ladder_mixed",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          -1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          5,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        6
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        15.193018238278736,
+        16.614410652878643,
+        8.535806405529138,
+        20.250980876485055,
+        20.6069727567712,
+        24.97498222480257,
+        0.005000000000000725,
+        1.0578368542241616,
+        0.5374318021052563,
+        1.388444045916349,
+        0.005000000000000045,
+        2.136325495472985,
+        1.0303295150133795,
+        0.0937288668047621,
+        0.19999999999999996,
+        -0.08572058821546742,
+        0.09920074306079488,
+        -0.0999999850988381,
+        -0.016636616140561125,
+        0.09999999999999967,
+        0.8931747448263068,
+        1.4257975999589916,
+        1.0402856797995672,
+        0.6776967303762308,
+        0.7096353516133768,
+        0.36784550779056524,
+        0.8680127652023694,
+        0.432098902083145,
+        5.0763476857527115e-15,
+        0.4444830918877423,
+        4.1374071296258193e-16,
+        6.177079300938298e-16
+      ],
+      "grid_metrics": {
+        "IL": 2.071805453985642,
+        "H2": 30.03494184093171,
+        "H3": 66.40947329250976,
+        "W": 58.14542000337062,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B12"
+      },
+      "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+      "round_id": 46,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 2.071805453985642,
+        "H2": 30.03494184093171,
+        "H3": 66.40947329250976,
+        "W": 57.663337816339194,
+        "wide_worst_freq_MHz": 3566.0,
+        "wide_worst_setting": "B12"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    }
+  ],
+  "best_full_grid": {
+    "area_cost": 19.0,
+    "chip_L": 5,
+    "chip_GJM": 6,
+    "pcb_C": 2,
+    "variable_C": 2,
+    "topology": "5L_6GJM_ladder_notches_Cv14",
+    "l_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "GJM_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        1,
+        -1
+      ]
+    ],
+    "PCB_edges": [
+      [
+        2,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "Cv_edges": [
+      [
+        1,
+        -1
+      ],
+      [
+        4,
+        -1
+      ]
+    ],
+    "port_nodes": [
+      0,
+      5
+    ],
+    "l_q": [
+      33.0,
+      33.0,
+      33.0,
+      33.0,
+      33.0
+    ],
+    "chip_L_series": [
+      "LQW04_Q33",
+      "LQW04_Q33",
+      "LQW04_Q33",
+      "LQW04_Q33",
+      "LQW04_Q33"
+    ],
+    "fixed_GJM_q": 80,
+    "pcb_C_q": 40,
+    "cv_q": 35,
+    "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+    "vector": [
+      8.542136725247667,
+      9.65266151733954,
+      2.914016848852276,
+      1.287529371945225,
+      0.4,
+      0.7463610275505096,
+      0.1763929082526144,
+      1.311568877156903,
+      0.9870281899169734,
+      0.0184860538244708,
+      2.9027663395322807,
+      0.02,
+      0.02,
+      -0.1,
+      0.09999999999999991,
+      0.1,
+      0.1,
+      2.4212184802425556,
+      1.5545025149251306,
+      1.5872978761723944,
+      1.2944817211455384,
+      1.4403270876000318,
+      0.8430433070763679,
+      1.322307575579644,
+      1.0213358841883822,
+      0.13874740903587668,
+      0.2677708528686545,
+      2.671671226757203e-16,
+      0.0
+    ],
+    "grid_metrics": {
+      "IL": 1.158263794743001,
+      "H2": 30.008454601423185,
+      "H3": 30.098688214697606,
+      "W": 20.691535865217887,
+      "wide_worst_freq_MHz": 3000.0,
+      "wide_worst_setting": "B8"
+    },
+    "selected_from": "EXP049_highq:5L_6GJM_ladder_notches",
+    "round_id": 1,
+    "mandatory_pass_on_screen_grid": true,
+    "lq_assumptions": [
+      33.0,
+      33.0,
+      33.0,
+      33.0,
+      33.0
+    ],
+    "full_grid_metrics": {
+      "IL": 1.158263794743001,
+      "H2": 30.008454601423185,
+      "H3": 30.098688214697606,
+      "W": 20.691535865217887,
+      "wide_worst_freq_MHz": 3000.0,
+      "wide_worst_setting": "B8"
+    },
+    "mandatory_pass_full_grid": true,
+    "target_met": false
+  },
+  "target_met": false,
+  "independent_validation": {
+    "points": 114,
+    "method": "independent 11x11 explicit branch-current MNA",
+    "max_abs_db_disagreement": 3.836930773104541e-13,
+    "max_power_balance_W": 9.540979117872439e-18,
+    "passed": true
+  },
+  "round_summary": [
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv14",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_0",
+      "evaluations": 4018,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.158263794743001,
+        "H2": 30.008454601423185,
+        "H3": 30.098688214697606,
+        "W": 20.691535865217887,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv24",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_1",
+      "evaluations": 8216,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6487740644374442,
+        "H2": 30.03993323806435,
+        "H3": 30.037367484801134,
+        "W": 22.009563951243017,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv13",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_2",
+      "evaluations": 6834,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.894123457953252,
+        "H2": 30.14479946032157,
+        "H3": 51.513582033931584,
+        "W": 23.857319430965987,
+        "wide_worst_freq_MHz": 3800.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv23",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_3",
+      "evaluations": 8053,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.386374562618861,
+        "H2": 30.022609048012217,
+        "H3": 30.061429313261876,
+        "W": 56.4101044014999,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv12",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_4",
+      "evaluations": 8223,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.80974350310424,
+        "H2": 30.037792218219415,
+        "H3": 30.892596662709355,
+        "W": 20.18386955173463,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv34",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_5",
+      "evaluations": 8233,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6686784380897812,
+        "H2": 30.03994404536165,
+        "H3": 30.040017315554906,
+        "W": 31.721053317831526,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv14",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_6",
+      "evaluations": 8218,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4287501895600883,
+        "H2": 30.017659608911593,
+        "H3": 48.10410447072642,
+        "W": 54.328114189152565,
+        "wide_worst_freq_MHz": 3200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_notches_Cv13",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_7",
+      "evaluations": 8233,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7236919671381306,
+        "H2": 30.03268720075142,
+        "H3": 30.029504232355727,
+        "W": 37.15143746667363,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_shunt_Cv14",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_8",
+      "evaluations": 8201,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.130344042769808,
+        "H2": 30.029868450890618,
+        "H3": 82.52467660160187,
+        "W": 91.0934461643404,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_shunt_Cv24",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_9",
+      "evaluations": 8251,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.1269848277439465,
+        "H2": 30.03540267412486,
+        "H3": 59.69438399809519,
+        "W": 75.27038044090537,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_shunt_Cv13",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_10",
+      "evaluations": 8225,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.8929227494478964,
+        "H2": 30.037085929122405,
+        "H3": 93.07535650558519,
+        "W": 82.07839218185268,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_shunt_Cv23",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_11",
+      "evaluations": 6046,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.538768298227891,
+        "H2": 30.04013339833568,
+        "H3": 60.50548030298393,
+        "W": 57.38729773691078,
+        "wide_worst_freq_MHz": 3100.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_mixed_Cv14",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_12",
+      "evaluations": 8235,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.1901643239178958,
+        "H2": 30.028197959377053,
+        "H3": 31.68859097572441,
+        "W": 20.059037183731153,
+        "wide_worst_freq_MHz": 3200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_mixed_Cv24",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_13",
+      "evaluations": 8271,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.5706262098191313,
+        "H2": 30.035111486567093,
+        "H3": 30.75112781762072,
+        "W": 47.81286828060986,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_mixed_Cv13",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_14",
+      "evaluations": 7985,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.192628149331665,
+        "H2": 30.039933254512423,
+        "H3": 31.15189336973529,
+        "W": 20.079877077701056,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_6GJM_ladder_mixed_Cv23",
+      "area": 19.0,
+      "source_area": 19.0,
+      "stage": "search_15",
+      "evaluations": 8262,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.9227588825481914,
+        "H2": 30.00435303122149,
+        "H3": 44.00501203258814,
+        "W": 53.073774642912056,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_notches_Cv14",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_16",
+      "evaluations": 7381,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.3878589377530752,
+        "H2": 30.039991601770645,
+        "H3": 30.040011515971354,
+        "W": 26.447153510958717,
+        "wide_worst_freq_MHz": 4700.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_notches_Cv24",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_17",
+      "evaluations": 8391,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7335695875079418,
+        "H2": 30.04714989678412,
+        "H3": 33.995682880903345,
+        "W": 28.07106736555669,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_notches_Cv13",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_18",
+      "evaluations": 8498,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4327906077132715,
+        "H2": 30.043308264923432,
+        "H3": 38.4045442210787,
+        "W": 49.608395871271576,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_notches_Cv23",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_19",
+      "evaluations": 8494,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6423455898820896,
+        "H2": 30.024162412628787,
+        "H3": 34.7727372772616,
+        "W": 29.52204009767234,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_shunt_Cv14",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_20",
+      "evaluations": 8538,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.009345444597556,
+        "H2": 30.040069931075408,
+        "H3": 77.62793973189514,
+        "W": 78.32429360305751,
+        "wide_worst_freq_MHz": 3200.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_shunt_Cv24",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_21",
+      "evaluations": 8539,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.0418998209662567,
+        "H2": 30.038009566559086,
+        "H3": 61.2433878959539,
+        "W": 77.08545597418667,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_shunt_Cv13",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_22",
+      "evaluations": 8519,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.9185917849046632,
+        "H2": 30.00881252090375,
+        "H3": 95.58497126202916,
+        "W": 92.42018278657653,
+        "wide_worst_freq_MHz": 4500.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_shunt_Cv23",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_23",
+      "evaluations": 8505,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5041893259771,
+        "H2": 30.03555507692779,
+        "H3": 70.43078316869314,
+        "W": 67.45358615186903,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_mixed_Cv14",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_24",
+      "evaluations": 5617,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.191035484024696,
+        "H2": 30.039754831765933,
+        "H3": 31.277215485731283,
+        "W": 20.077895912141432,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_mixed_Cv24",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_25",
+      "evaluations": 2918,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 2.941585647917202,
+        "H2": 30.180263115115764,
+        "H3": 35.06042872057798,
+        "W": 40.047531786756785,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_mixed_Cv13",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_26",
+      "evaluations": 7969,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.1877628621104088,
+        "H2": 30.039999989705315,
+        "H3": 30.040000497871656,
+        "W": 20.07999982407334,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_7GJM_ladder_mixed_Cv23",
+      "area": 19.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_27",
+      "evaluations": 8509,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.001185758354106,
+        "H2": 30.03974492824831,
+        "H3": 56.47370991709,
+        "W": 61.93622226089997,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_notches_Cv14",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_28",
+      "evaluations": 4789,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 4.148096202734279,
+        "H2": 30.598064575581894,
+        "H3": 38.76422423660523,
+        "W": 25.204552293012114,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_notches_Cv24",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_29",
+      "evaluations": 1300,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 16.94400867153154,
+        "H2": 32.598289974799684,
+        "H3": 40.31467000331365,
+        "W": 29.376659090777714,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_notches_Cv13",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_30",
+      "evaluations": 2065,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 4.588580590842293,
+        "H2": 33.3411081185796,
+        "H3": 41.937455072532885,
+        "W": 49.11709786718663,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_notches_Cv23",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_31",
+      "evaluations": 8748,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6532553470295435,
+        "H2": 30.008976522757187,
+        "H3": 32.14173363935795,
+        "W": 33.91742585552331,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_shunt_Cv14",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_32",
+      "evaluations": 8426,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 2.0941433492984447,
+        "H2": 30.044632390398473,
+        "H3": 85.25914055797193,
+        "W": 91.99351840756054,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_shunt_Cv24",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_33",
+      "evaluations": 2213,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 6.910660847429671,
+        "H2": 44.289406798090305,
+        "H3": 80.26146977934174,
+        "W": 114.4391941550167,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_shunt_Cv13",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_34",
+      "evaluations": 8640,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.9068185417028127,
+        "H2": 30.02920491955916,
+        "H3": 89.50703638256927,
+        "W": 80.6446135656384,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_shunt_Cv23",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_35",
+      "evaluations": 8737,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4508872341810735,
+        "H2": 30.045776544950378,
+        "H3": 81.38985637768259,
+        "W": 48.319287278817,
+        "wide_worst_freq_MHz": 4000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_mixed_Cv14",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_36",
+      "evaluations": 8729,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.1914159423313655,
+        "H2": 30.039709982075877,
+        "H3": 31.35795570525534,
+        "W": 20.05970759998297,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_mixed_Cv24",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_37",
+      "evaluations": 8768,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6602567331537699,
+        "H2": 30.037745855908497,
+        "H3": 30.312129022721017,
+        "W": 37.89700832787528,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_mixed_Cv13",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_38",
+      "evaluations": 7171,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.1923848359269997,
+        "H2": 30.03464221046525,
+        "H3": 31.21863401535264,
+        "W": 20.05452600475179,
+        "wide_worst_freq_MHz": 3200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "5L_8GJM_ladder_mixed_Cv23",
+      "area": 20.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_39",
+      "evaluations": 8791,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7828213215810849,
+        "H2": 30.02121692849141,
+        "H3": 44.25584646324442,
+        "W": 52.86838052835045,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "6L_5GJM_ladder_notches",
+      "area": 21.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_40",
+      "evaluations": 8490,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5250289682104365,
+        "H2": 30.039980333888785,
+        "H3": 30.040062285448737,
+        "W": 20.08000492147474,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "6L_5GJM_ladder_mixed",
+      "area": 21.333333333333332,
+      "source_area": 19.0,
+      "stage": "search_41",
+      "evaluations": 3251,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.8527324567874193,
+        "H2": 30.04267672041703,
+        "H3": 60.301393437910505,
+        "W": 37.123510916629286,
+        "wide_worst_freq_MHz": 4000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "6L_6GJM_ladder_notches",
+      "area": 22.0,
+      "source_area": 19.0,
+      "stage": "search_42",
+      "evaluations": 8750,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.663150514078163,
+        "H2": 30.040432681783813,
+        "H3": 30.0398004657966,
+        "W": 20.080418427556257,
+        "wide_worst_freq_MHz": 3500.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "6L_6GJM_ladder_mixed",
+      "area": 22.0,
+      "source_area": 19.0,
+      "stage": "search_43",
+      "evaluations": 3872,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.900429815319085,
+        "H2": 30.073646109637412,
+        "H3": 54.07171130333954,
+        "W": 40.31749763949756,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "6L_7GJM_ladder_notches",
+      "area": 22.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_44",
+      "evaluations": 1722,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 5.616487563418341,
+        "H2": 34.0642279157322,
+        "H3": 31.33350206916481,
+        "W": 25.190903903648163,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "6L_7GJM_ladder_mixed",
+      "area": 22.666666666666664,
+      "source_area": 19.0,
+      "stage": "search_45",
+      "evaluations": 9028,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.071805453985642,
+        "H2": 30.03494184093171,
+        "H3": 66.40947329250976,
+        "W": 58.14542000337062,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B12"
+      }
+    }
+  ],
+  "limitations": [
+    "Local bounded SLSQP/Powell and limited capacitor-placement choices only.",
+    "Constant Q33 across 0–6 GHz is a simplified model; SRF/Q(f) are unverified.",
+    "High-Q LQW04 series chosen abstractly; no part number or exact available inductance verified.",
+    "Continuous extrema and tolerance/EM/physical PCB area unverified.",
+    "Full-grid checks for selected per-area winners; 114-point independent branch-MNA only."
+  ]
+}

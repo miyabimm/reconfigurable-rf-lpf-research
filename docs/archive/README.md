@@ -75,7 +75,7 @@
 - [GitHub不要ブランチ監査・削除記録（2026-10-14）](../maintenance/branch_cleanup_20261014.md) — `docs/maintenance/branch_cleanup_20261014.md`
 - [Phase 2 GitHub Actions CI repair — 2026-10-17](w3_consolidated_documents_20261017.md#d-003) — `docs/phase2_actions_ci_repair_20261017.md`
 - [Phase 2：46ファイルの出典・内容レビュー（2026-10-15）](../phase2_evidence_triage_20261015.md) — `docs/phase2_evidence_triage_20261015.md`
-- [Phase 2：リポジトリ保存最適化レビュー（GitHub-only、2026-10-15）](../phase2_repository_optimization_review_20261015.md) — `docs/phase2_repository_optimization_review_20261015.md`
+- [Phase 2：リポジトリ保存最適化レビュー（GitHub-only、2026-10-15）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_optimization_review_20261015.md) — `docs/phase2_repository_optimization_review_20261015.md`
 - [Phase 2：証拠逆引き・保管区分・条件別Pareto（2026-10-15）](../phase2_storage_pareto_review_20261015.md) — `docs/phase2_storage_pareto_review_20261015.md`
 - [リポジトリ整理・引き継ぎ計画（Phase 2 / 2026-10-12）](w3_consolidated_documents_20261017.md#d-001) — `docs/repository_reorganization_plan.md`
 - [Phase 2 Git保管構造の非破壊監査（2026-10-14）](w3_consolidated_documents_20261017.md#d-004) — `docs/repository_storage_audit_20261014.md`

@@ -1,0 +1,2124 @@
+{
+  "experiment_id": "EXP-049",
+  "phase": "Phase 2",
+  "status": "completed_bounded_highq_topology_continuation",
+  "trial": "RF-T006",
+  "source_highq_sha256": "c496abcfb60c4004cd1bd0b44191b0c3b9e687e109ffee1379b993803e984bde",
+  "target_IL_db": 1.1,
+  "effective_constraints_sha256": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+  "execution_sha": "c010be1e4c44c827f77c42236bf037afddc249ee",
+  "attempted": 85,
+  "evaluations": 627072,
+  "elapsed_seconds": 404.866734351,
+  "screen_points_per_RF_region": 8,
+  "screen_wide_step_MHz": 100,
+  "full_points_per_RF_region": 1001,
+  "full_wide_step_MHz": 1,
+  "selected_per_area": [
+    {
+      "area_cost": 16.666666666666668,
+      "chip_L": 4,
+      "chip_GJM": 7,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_7GJM_ladder_mixed_Cv13_PCB12",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        9.361545280030292,
+        12.886859304865999,
+        2.371238359364003,
+        0.8,
+        0.6849777442364845,
+        1.7877986475521903,
+        1.5648020969527168,
+        0.005000000000017939,
+        1.0230143181465627,
+        0.1220021896726959,
+        0.005000000000008611,
+        0.02000000000000857,
+        0.020000000000003765,
+        -0.09999999999999878,
+        0.0999999999999872,
+        0.1,
+        2.5241582659588153,
+        1.4295372848068144,
+        1.614396746233705,
+        1.2444478508766303,
+        1.410583494338319,
+        0.8069596461559739,
+        0.5638467634609075,
+        0.6694496874701925,
+        0.23889892403430157,
+        0.1928932957032572,
+        0.0,
+        9.243779037233103e-16
+      ],
+      "grid_metrics": {
+        "IL": 1.1879481522075586,
+        "H2": 30.00586275530731,
+        "H3": 30.064054610092864,
+        "W": 20.07569630334509,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:4L_7GJM_ladder_mixed",
+      "round_id": 12,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.1879481522075586,
+        "H2": 30.00586275530731,
+        "H3": 30.064054610092864,
+        "W": 20.07569630334509,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    },
+    {
+      "area_cost": 17.333333333333332,
+      "chip_L": 4,
+      "chip_GJM": 8,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_8GJM_ladder_mixed_Cv13_PCB23",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        8.440291098848807,
+        9.422938851739108,
+        4.456812366393066,
+        0.8,
+        0.8066753033540972,
+        1.9496572314931262,
+        0.8773784121849498,
+        0.15375351453346953,
+        1.1035395562949846,
+        0.26518736910427476,
+        0.08160685609558103,
+        0.018089947966699743,
+        0.02,
+        0.02,
+        -0.09999999999999988,
+        0.1,
+        0.0999999999999998,
+        2.6171625655416815,
+        1.5192138267841602,
+        1.614396746233705,
+        1.2444478508766303,
+        1.506238771266502,
+        0.8657809227184337,
+        0.5713536343260942,
+        0.7098335797135242,
+        0.5375913422863945,
+        0.34450713892908363,
+        5.5511151231257e-17,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.196031254189194,
+        "H2": 30.040133278145987,
+        "H3": 30.04029816789903,
+        "W": 20.079992436317205,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:4L_8GJM_ladder_mixed",
+      "round_id": 41,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.196031254189194,
+        "H2": 30.040133278145987,
+        "H3": 30.04029816789903,
+        "W": 20.079992436317205,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    },
+    {
+      "area_cost": 18.0,
+      "chip_L": 4,
+      "chip_GJM": 9,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_9GJM_ladder_mixed_Cv13_PCB12",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "chip_L_series": [
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33",
+        "LQW04_Q33"
+      ],
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        8.127417923852654,
+        9.082463292688086,
+        4.174867113699306,
+        0.8,
+        0.7411119942904228,
+        1.8471935436348266,
+        0.9413149370467123,
+        0.005000000000010628,
+        1.0010442442229899,
+        0.005,
+        0.005000000000011659,
+        0.05671875042110043,
+        0.2119700965571712,
+        0.020000000000000438,
+        0.020000000000005107,
+        -0.1,
+        0.09999999999999261,
+        0.09999999999999139,
+        2.59634437369181,
+        1.7084558636752611,
+        1.614396746233705,
+        1.2444478508766303,
+        1.5671603447751485,
+        0.9225492502135294,
+        0.5713536343260942,
+        0.7098335797135242,
+        0.5375913422863945,
+        0.34450713892908363,
+        0.0,
+        0.0
+      ],
+      "grid_metrics": {
+        "IL": 1.166797416824525,
+        "H2": 30.039123390409085,
+        "H3": 30.040091313897854,
+        "W": 20.07996780393971,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP049_highq:4L_9GJM_ladder_mixed",
+      "round_id": 72,
+      "mandatory_pass_on_screen_grid": true,
+      "lq_assumptions": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "full_grid_metrics": {
+        "IL": 1.166797416824525,
+        "H2": 30.039123390409085,
+        "H3": 30.040091313897854,
+        "W": 20.07996780393971,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "target_met": false
+    }
+  ],
+  "best_full_grid": {
+    "area_cost": 18.0,
+    "chip_L": 4,
+    "chip_GJM": 9,
+    "pcb_C": 2,
+    "variable_C": 2,
+    "topology": "4L_9GJM_ladder_mixed_Cv13_PCB12",
+    "l_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "GJM_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        -1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        -1
+      ],
+      [
+        1,
+        -1
+      ],
+      [
+        2,
+        -1
+      ],
+      [
+        3,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "PCB_edges": [
+      [
+        1,
+        -1
+      ],
+      [
+        2,
+        -1
+      ]
+    ],
+    "Cv_edges": [
+      [
+        1,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "port_nodes": [
+      0,
+      4
+    ],
+    "l_q": [
+      33.0,
+      33.0,
+      33.0,
+      33.0
+    ],
+    "chip_L_series": [
+      "LQW04_Q33",
+      "LQW04_Q33",
+      "LQW04_Q33",
+      "LQW04_Q33"
+    ],
+    "fixed_GJM_q": 80,
+    "pcb_C_q": 40,
+    "cv_q": 35,
+    "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+    "vector": [
+      8.127417923852654,
+      9.082463292688086,
+      4.174867113699306,
+      0.8,
+      0.7411119942904228,
+      1.8471935436348266,
+      0.9413149370467123,
+      0.005000000000010628,
+      1.0010442442229899,
+      0.005,
+      0.005000000000011659,
+      0.05671875042110043,
+      0.2119700965571712,
+      0.020000000000000438,
+      0.020000000000005107,
+      -0.1,
+      0.09999999999999261,
+      0.09999999999999139,
+      2.59634437369181,
+      1.7084558636752611,
+      1.614396746233705,
+      1.2444478508766303,
+      1.5671603447751485,
+      0.9225492502135294,
+      0.5713536343260942,
+      0.7098335797135242,
+      0.5375913422863945,
+      0.34450713892908363,
+      0.0,
+      0.0
+    ],
+    "grid_metrics": {
+      "IL": 1.166797416824525,
+      "H2": 30.039123390409085,
+      "H3": 30.040091313897854,
+      "W": 20.07996780393971,
+      "wide_worst_freq_MHz": 3000.0,
+      "wide_worst_setting": "B8"
+    },
+    "selected_from": "EXP049_highq:4L_9GJM_ladder_mixed",
+    "round_id": 72,
+    "mandatory_pass_on_screen_grid": true,
+    "lq_assumptions": [
+      33.0,
+      33.0,
+      33.0,
+      33.0
+    ],
+    "full_grid_metrics": {
+      "IL": 1.166797416824525,
+      "H2": 30.039123390409085,
+      "H3": 30.040091313897854,
+      "W": 20.07996780393971,
+      "wide_worst_freq_MHz": 3000.0,
+      "wide_worst_setting": "B8"
+    },
+    "mandatory_pass_full_grid": true,
+    "target_met": false
+  },
+  "target_met": false,
+  "independent_validation": {
+    "points": 114,
+    "method": "independent 9x9 explicit branch-current MNA",
+    "max_abs_db_disagreement": 2.913225216616411e-13,
+    "max_power_balance_W": 1.0408340855860843e-17,
+    "passed": true
+  },
+  "round_summary": [
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_0",
+      "evaluations": 7879,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.777140807475205,
+        "H2": 30.03729531047356,
+        "H3": 34.805216541691394,
+        "W": 30.755614094797274,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_1",
+      "evaluations": 7880,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.882727124823413,
+        "H2": 30.03983645356429,
+        "H3": 34.85697839683358,
+        "W": 28.454729015511425,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv23_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_2",
+      "evaluations": 3238,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 10.088264082188605,
+        "H2": 41.95211103362329,
+        "H3": 31.226016649110143,
+        "W": 27.40038650006525,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv23_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_3",
+      "evaluations": 7940,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7782631282558947,
+        "H2": 30.03934548917439,
+        "H3": 32.81018049109878,
+        "W": 37.42186170532446,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv12_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_4",
+      "evaluations": 7950,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.403615805590424,
+        "H2": 30.03968824739041,
+        "H3": 30.01252587440267,
+        "W": 56.25632066288169,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv12_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_5",
+      "evaluations": 7975,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3738736024604163,
+        "H2": 30.039075494829028,
+        "H3": 30.040996391156956,
+        "W": 57.47611122758805,
+        "wide_worst_freq_MHz": 3700.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv22_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_6",
+      "evaluations": 7850,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.440106265692794,
+        "H2": 30.024092613844537,
+        "H3": 30.041915846616426,
+        "W": 21.78918082356356,
+        "wide_worst_freq_MHz": 3800.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv22_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_7",
+      "evaluations": 7945,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3414744417891735,
+        "H2": 30.039063061227836,
+        "H3": 31.180167699175904,
+        "W": 29.931204668771816,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_8",
+      "evaluations": 7998,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3228835530034888,
+        "H2": 30.029585652767974,
+        "H3": 32.96295570531959,
+        "W": 35.86114044737896,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_notches_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_9",
+      "evaluations": 7957,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2821137852278344,
+        "H2": 30.018636227147155,
+        "H3": 38.96963759437361,
+        "W": 39.97050821236418,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_10",
+      "evaluations": 7881,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.193342249171378,
+        "H2": 30.03853848223223,
+        "H3": 30.052730725630354,
+        "W": 20.077526268829963,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_11",
+      "evaluations": 5383,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.1879481522075586,
+        "H2": 30.00586275530731,
+        "H3": 30.064054610092864,
+        "W": 20.07569630334509,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv23_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_12",
+      "evaluations": 7303,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.691207714756382,
+        "H2": 30.06293131774335,
+        "H3": 71.88588042919085,
+        "W": 69.9352107735998,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv23_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_13",
+      "evaluations": 7995,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6941562678861946,
+        "H2": 30.03520903458483,
+        "H3": 75.59468077740219,
+        "W": 75.10959001149031,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv12_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_14",
+      "evaluations": 8083,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7566459949722808,
+        "H2": 30.026907044354655,
+        "H3": 70.37008232465635,
+        "W": 78.39526495928031,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv12_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_15",
+      "evaluations": 4740,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.7963115458323395,
+        "H2": 30.043190514174206,
+        "H3": 62.35735843671836,
+        "W": 65.4049416731254,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv22_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_16",
+      "evaluations": 7976,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.533441095002643,
+        "H2": 30.001775277700542,
+        "H3": 39.36151283675261,
+        "W": 50.033268245837334,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv22_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_17",
+      "evaluations": 7826,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6292403444127888,
+        "H2": 30.23427574796576,
+        "H3": 37.540102754187906,
+        "W": 50.73268342419751,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_18",
+      "evaluations": 8003,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7924828107832274,
+        "H2": 30.038633115313452,
+        "H3": 48.69792518349026,
+        "W": 65.77293274400046,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_mixed_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_19",
+      "evaluations": 6326,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.8234556045411483,
+        "H2": 30.098343006244583,
+        "H3": 50.33366712490644,
+        "W": 65.29095334046485,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_20",
+      "evaluations": 2494,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.896018660553262,
+        "H2": 30.068741423833487,
+        "H3": 35.790549375844414,
+        "W": 40.82923937382205,
+        "wide_worst_freq_MHz": 3100.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_21",
+      "evaluations": 7961,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.438577633304667,
+        "H2": 30.001123677304427,
+        "H3": 30.034513105783343,
+        "W": 58.6567682300491,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv23_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_22",
+      "evaluations": 2019,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 2.418516883685854,
+        "H2": 30.04279046764369,
+        "H3": 48.34344866480009,
+        "W": 51.75849487652269,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv23_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_23",
+      "evaluations": 7974,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5068368755708685,
+        "H2": 30.156324069419274,
+        "H3": 37.95464773833124,
+        "W": 46.11132355886065,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv12_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_24",
+      "evaluations": 7966,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4423399179752059,
+        "H2": 30.038501649550184,
+        "H3": 69.22358871966293,
+        "W": 63.74564438609458,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv12_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_25",
+      "evaluations": 7952,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2798263916831423,
+        "H2": 30.039316187044047,
+        "H3": 41.414603410581925,
+        "W": 48.50429732120005,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv22_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_26",
+      "evaluations": 5299,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 2.0581839274461156,
+        "H2": 30.046094884904342,
+        "H3": 30.145515116979897,
+        "W": 42.63714167111217,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv22_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_27",
+      "evaluations": 7963,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6844345499666606,
+        "H2": 30.03899009164805,
+        "H3": 30.929870822704753,
+        "W": 29.06707953757224,
+        "wide_worst_freq_MHz": 4700.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv13_PCB23",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_28",
+      "evaluations": 1094,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 6.799078950901892,
+        "H2": 30.33546569501206,
+        "H3": 45.159921228323014,
+        "W": 46.68681749638154,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_7GJM_ladder_shunt_Cv13_PCB12",
+      "area": 16.666666666666668,
+      "source_area": 16.666666666666668,
+      "stage": "search_29",
+      "evaluations": 7994,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.562532053399114,
+        "H2": 30.037119638122924,
+        "H3": 30.035384561611558,
+        "W": 39.1896751756582,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_30",
+      "evaluations": 8242,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4703227151078266,
+        "H2": 30.036798437771132,
+        "H3": 36.43338700683368,
+        "W": 47.94679031464832,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_31",
+      "evaluations": 8223,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4036478710855853,
+        "H2": 30.016646634034416,
+        "H3": 41.59559620091304,
+        "W": 57.358891994012716,
+        "wide_worst_freq_MHz": 4000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv23_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_32",
+      "evaluations": 7991,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.782496751028486,
+        "H2": 30.03854398710085,
+        "H3": 33.33513756835465,
+        "W": 30.78587808937735,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv23_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_33",
+      "evaluations": 8219,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.8027118507671407,
+        "H2": 30.03032044519317,
+        "H3": 33.65864787239354,
+        "W": 38.95516429152507,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv12_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_34",
+      "evaluations": 8222,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.424442020717658,
+        "H2": 30.044464974203088,
+        "H3": 30.038232270943894,
+        "W": 49.05505593939558,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv12_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_35",
+      "evaluations": 8220,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.391124726233912,
+        "H2": 30.051859097819897,
+        "H3": 30.033306944603993,
+        "W": 50.42209716315081,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv22_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_36",
+      "evaluations": 8149,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.46635925363541,
+        "H2": 30.039055081710742,
+        "H3": 41.87416235065311,
+        "W": 48.57524878391664,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv22_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_37",
+      "evaluations": 8208,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4753061122619047,
+        "H2": 30.037926768936547,
+        "H3": 39.430782278575066,
+        "W": 32.94179437369343,
+        "wide_worst_freq_MHz": 3500.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_38",
+      "evaluations": 8233,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2790461168055183,
+        "H2": 30.011524653125697,
+        "H3": 36.92718379475669,
+        "W": 55.76726072263938,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B28"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_notches_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_39",
+      "evaluations": 8205,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2456647782843342,
+        "H2": 30.03884953674795,
+        "H3": 39.06018962825201,
+        "W": 52.02754324496652,
+        "wide_worst_freq_MHz": 3500.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_40",
+      "evaluations": 2419,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.196031254189194,
+        "H2": 30.040133278145987,
+        "H3": 30.04029816789903,
+        "W": 20.079992436317205,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_41",
+      "evaluations": 8228,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.1967198426483279,
+        "H2": 30.03898966281044,
+        "H3": 31.3360079406336,
+        "W": 20.06137568909115,
+        "wide_worst_freq_MHz": 3500.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv23_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_42",
+      "evaluations": 3284,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.746109745988345,
+        "H2": 30.12244882063593,
+        "H3": 84.88419114036509,
+        "W": 79.28582792573411,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv23_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_43",
+      "evaluations": 8219,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5820384857157241,
+        "H2": 30.018306219458953,
+        "H3": 52.043455922193864,
+        "W": 64.41080841728622,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv12_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_44",
+      "evaluations": 4614,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.7103617028293858,
+        "H2": 30.050371213771605,
+        "H3": 45.50420687644128,
+        "W": 54.35986119641888,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv12_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_45",
+      "evaluations": 8247,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6618813718434335,
+        "H2": 30.116583783092736,
+        "H3": 64.54955644365207,
+        "W": 66.58253615570197,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv22_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_46",
+      "evaluations": 8302,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5674453222805798,
+        "H2": 30.000038681955825,
+        "H3": 37.3024518659472,
+        "W": 49.297055988589946,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv22_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_47",
+      "evaluations": 8220,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5346487285030788,
+        "H2": 30.03095714653888,
+        "H3": 39.5347273139624,
+        "W": 50.45359212286972,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_48",
+      "evaluations": 8221,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2509637990182498,
+        "H2": 30.022839137254856,
+        "H3": 39.139280859400515,
+        "W": 44.01350146091761,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_mixed_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_49",
+      "evaluations": 8255,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.7517541219200043,
+        "H2": 30.0370051372242,
+        "H3": 59.615316873906764,
+        "W": 74.92494615995207,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_50",
+      "evaluations": 8222,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3680084392519574,
+        "H2": 30.031156217592418,
+        "H3": 43.214156828116245,
+        "W": 49.18542931072653,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_51",
+      "evaluations": 8140,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3897142335443298,
+        "H2": 30.02270065271891,
+        "H3": 40.70111712104405,
+        "W": 45.270586143543795,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv23_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_52",
+      "evaluations": 4150,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.9459689297977696,
+        "H2": 31.208731197786147,
+        "H3": 45.849815392373074,
+        "W": 53.557584439785515,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv23_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_53",
+      "evaluations": 8422,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.0273130178458945,
+        "H2": 30.025314162980635,
+        "H3": 46.0953913916415,
+        "W": 49.900435622818044,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv12_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_54",
+      "evaluations": 8222,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.302876974977643,
+        "H2": 30.026570947843215,
+        "H3": 42.20827017089361,
+        "W": 49.61740984962486,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv12_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_55",
+      "evaluations": 8226,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3445590578386462,
+        "H2": 30.030648699485774,
+        "H3": 49.881807347455876,
+        "W": 60.423716731122596,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv22_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_56",
+      "evaluations": 8330,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.989625892979964,
+        "H2": 30.042417434890144,
+        "H3": 33.16592425886888,
+        "W": 55.161182267059374,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv22_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_57",
+      "evaluations": 8210,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3446817554262405,
+        "H2": 30.04502364536897,
+        "H3": 30.279508753897602,
+        "W": 28.639598128643193,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv13_PCB23",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_58",
+      "evaluations": 8047,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 2.2244433205185175,
+        "H2": 30.037325617790316,
+        "H3": 31.334736086142733,
+        "W": 33.27501401313943,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "topology": "4L_8GJM_ladder_shunt_Cv13_PCB12",
+      "area": 17.333333333333332,
+      "source_area": 17.333333333333332,
+      "stage": "search_59",
+      "evaluations": 8229,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.309614532802382,
+        "H2": 30.035314564451816,
+        "H3": 30.036251469834667,
+        "W": 44.443403103408215,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv13_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_60",
+      "evaluations": 8449,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2068734929894531,
+        "H2": 30.024911309114323,
+        "H3": 34.11809906168295,
+        "W": 26.148247068435996,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv13_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_61",
+      "evaluations": 8483,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.2760840189210712,
+        "H2": 30.01377742498589,
+        "H3": 30.03769878626749,
+        "W": 47.57426576704625,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv23_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_62",
+      "evaluations": 8472,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.421705676019838,
+        "H2": 30.030006512245496,
+        "H3": 41.53211750134378,
+        "W": 47.93497609598393,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv23_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_63",
+      "evaluations": 8369,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4723237819864248,
+        "H2": 30.01492856932807,
+        "H3": 40.48282422490796,
+        "W": 48.981138398547046,
+        "wide_worst_freq_MHz": 3400.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv12_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_64",
+      "evaluations": 8485,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.8264594147188917,
+        "H2": 30.039126247112492,
+        "H3": 32.649516934118296,
+        "W": 36.582284866071795,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv12_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_65",
+      "evaluations": 8481,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.8560640372932158,
+        "H2": 30.01566131103418,
+        "H3": 33.75238216806575,
+        "W": 36.41321054167844,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv22_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_66",
+      "evaluations": 8500,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.4234669366414732,
+        "H2": 30.038262787333665,
+        "H3": 46.874803064845565,
+        "W": 41.10749796764865,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv22_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_67",
+      "evaluations": 8484,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3028967243312286,
+        "H2": 30.040719652246057,
+        "H3": 39.46334080758898,
+        "W": 38.6274348165307,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv13_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_68",
+      "evaluations": 8488,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.251007375619232,
+        "H2": 30.050641619131547,
+        "H3": 33.973182297980856,
+        "W": 46.15200861005967,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_notches_Cv13_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_69",
+      "evaluations": 8499,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.321654529632266,
+        "H2": 30.07637405831549,
+        "H3": 39.60009765867944,
+        "W": 67.05240538825107,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv13_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_70",
+      "evaluations": 2371,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.168402360872515,
+        "H2": 30.022999560474734,
+        "H3": 30.57509186253009,
+        "W": 20.081192924380762,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv13_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_71",
+      "evaluations": 4232,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 1.166797416824525,
+        "H2": 30.039123390409085,
+        "H3": 30.040091313897854,
+        "W": 20.07996780393971,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv23_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_72",
+      "evaluations": 8480,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.3894644384993993,
+        "H2": 30.03307506884735,
+        "H3": 34.77994924868498,
+        "W": 44.86221981604524,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B28"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv23_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_73",
+      "evaluations": 8472,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.582681074824569,
+        "H2": 30.06987253224906,
+        "H3": 54.27437749961081,
+        "W": 71.75430656785974,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv12_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_74",
+      "evaluations": 8491,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6739844162875326,
+        "H2": 30.041460174490563,
+        "H3": 65.3327326133688,
+        "W": 65.3763519623209,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv12_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_75",
+      "evaluations": 8479,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.623384739559236,
+        "H2": 30.05084336090842,
+        "H3": 66.0955859427421,
+        "W": 62.410393052343444,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv22_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_76",
+      "evaluations": 8495,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.5580594344736474,
+        "H2": 30.04698484076782,
+        "H3": 39.38580748008378,
+        "W": 55.696707155888994,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv22_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_77",
+      "evaluations": 8525,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6612838002116157,
+        "H2": 30.00451138883208,
+        "H3": 45.998521053473326,
+        "W": 57.74089453662274,
+        "wide_worst_freq_MHz": 3900.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv13_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_78",
+      "evaluations": 8450,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 8.267410561564358,
+        "H2": 30.03823003529384,
+        "H3": 41.17567004490434,
+        "W": 43.09961083827283,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_mixed_Cv13_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_79",
+      "evaluations": 8498,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7453877466206549,
+        "H2": 30.039723955733763,
+        "H3": 32.27242354014323,
+        "W": 33.99544403663545,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_shunt_Cv13_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_80",
+      "evaluations": 883,
+      "solver_converged": true,
+      "solver_reason": "Optimization terminated successfully",
+      "feasible": {
+        "IL": 6.242935995760444,
+        "H2": 61.52544122508001,
+        "H3": 71.49489337867126,
+        "W": 86.51796666091556,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_shunt_Cv13_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_81",
+      "evaluations": 8493,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.6499517848950016,
+        "H2": 30.038370094241216,
+        "H3": 34.179416823151755,
+        "W": 35.55242285011818,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_shunt_Cv23_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_82",
+      "evaluations": 8491,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7030933801950574,
+        "H2": 30.021001558091065,
+        "H3": 58.56410001162797,
+        "W": 72.70116504127644,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_shunt_Cv23_PCB12",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_83",
+      "evaluations": 8558,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7592926130040278,
+        "H2": 30.016137776283003,
+        "H3": 66.8912881910149,
+        "W": 84.28959238675908,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "topology": "4L_9GJM_ladder_shunt_Cv12_PCB23",
+      "area": 18.0,
+      "source_area": 18.0,
+      "stage": "search_84",
+      "evaluations": 8481,
+      "solver_converged": false,
+      "solver_reason": "Iteration limit reached",
+      "feasible": {
+        "IL": 1.7692484897420921,
+        "H2": 30.04726463909972,
+        "H3": 57.346171122813274,
+        "W": 61.51227346072104,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    }
+  ],
+  "limitations": [
+    "Local bounded SLSQP/Powell and limited capacitor-placement choices only.",
+    "Constant Q33 across 0–6 GHz is a simplified model; SRF/Q(f) are unverified.",
+    "High-Q LQW04 series chosen abstractly; no part number or exact available inductance verified.",
+    "Continuous extrema and tolerance/EM/physical PCB area unverified.",
+    "Full-grid checks for selected per-area winners; 114-point independent branch-MNA only.",
+    "The 0.8..33nH published series range is not proof of a purchasable exactly tuned part, Q33 at every frequency or SRF beyond 6GHz."
+  ],
+  "LQW04AN_00_min_nH": 0.8,
+  "LQW04AN_00_max_nH": 33.0,
+  "range_reference": "https://www.murata.com/ja-jp/products/inductor/chip/overview/lineup/rf1",
+  "numerical_script_sha256": "1aad375eff093aab6c7ec0bce95c031a20a07deb0cdd670d81f06ba0680316ca",
+  "part_level_SRF_Qf_test": "not_run"
+}
