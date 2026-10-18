@@ -15,7 +15,7 @@
 | 保全・出典・管理・旧計画（当時の状態） | 12 | 元pathを保管し、分類目次で案内 |
 | その他の時点付き研究・計画 | 3 | 元pathを保管し、分類目次で案内 |
 
-現行正式RF-F003と試験RF-T005への閲覧導線は [パレート](pareto_rf_t005_rf_f003_20261017.md)と [制約台帳](../data/constraints/registry.json)を先頭にする。 旧RF-T003/F002/T004や理論研究と混同しない。 全56文書の分類は[CSV](../data/repository_reviews/step4_historical_documents_20261017.csv)、人間向け目次は[docs/archive/README](archive/README.md)に保存。
+現行正式RF-F003と試験RF-T005への閲覧導線は [パレート](pareto_rf_t005_rf_f003_20261017.md)と [制約台帳](../data/constraints/registry.json)を先頭にする。 旧RF-T003/F002/T004や理論研究と混同しない。 全56文書の分類は[CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step4_historical_documents_20261017.csv)、人間向け目次は[docs/archive/README](archive/README.md)に保存。
 
 ## 2. 同一Git blob 34グループ／追加path 38件
 
@@ -37,7 +37,7 @@ Git同内容グループ：**34**、追加path：**38**。重複パスのcheckou
 - `code_snapshot/`と現行スクリプト: 実行時のコード指紋を保護。自動リンク置換や重複除去を禁止。
 - `EXP-012/search_cost.py`と`EXP-013/model013.py`: 同一blobでも実験系譜・実行時点を確認するまで双方保持。
 
-[同一blob台帳CSV](../data/repository_reviews/step4_identical_blob_groups_20261017.csv)にはSHA、全paths、サイズ、仮分類、現在の保全処置を記録する。
+[同一blob台帳CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step4_identical_blob_groups_20261017.csv)にはSHA、全paths、サイズ、仮分類、現在の保全処置を記録する。
 
 ## 3. 過去の46件保全レビュー
 
