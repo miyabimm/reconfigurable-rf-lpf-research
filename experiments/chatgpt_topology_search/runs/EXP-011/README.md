@@ -84,7 +84,7 @@ python experiments/chatgpt_topology_search/runs/EXP-011/compact_search.py \
   --max-new-jobs 3 --checkpoint results/exp011/local/checkpoint.json
 ```
 
-[.github/workflows/lpf-exp011.yml](../../../../.github/workflows/lpf-exp011.yml) に、手動起動可能な**4シャード**のチェックポイントつき分割探索を準備。ワークフローは**現時点で未起動**。候補の高密度／独立検証と新たな探索ジョブは別工程として扱う。
+[.github/workflows/lpf-exp011.yml](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-exp011.yml) に、手動起動可能な**4シャード**のチェックポイントつき分割探索を準備。ワークフローは**現時点で未起動**。候補の高密度／独立検証と新たな探索ジョブは別工程として扱う。
 
 ## 技術的な制限と次の探索
 
