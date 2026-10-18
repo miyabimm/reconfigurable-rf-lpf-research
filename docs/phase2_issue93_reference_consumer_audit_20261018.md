@@ -30,6 +30,22 @@
 
 **CIが成功しても、自動的な削除許可・元データの不要判定・物理RF性能検証にはならない。** PR #92由来workflowの個別退役には、外部依存とmanual dispatch・artifact利用者の確認に加え、所有者の**対象ファイルを指定した明示承認と別PR**が必要。旧5workflow、EXP-046元3 batch JSONは今回の退役対象外。Phase 2を継続し、RF-F003正式・RF-T005試験を混同しない。
 
-## 実行記録（次のゲート）
+## 実行記録：PR #97初回HEAD（実行済み）
 
-新規PR-head CIのworkflow run ID、対象コミットSHA、スキャン総件数、テキスト・バイナリ内訳、`code_or_config`参照の個票、失敗事項をCI実行後に追記する。実行前に結果を推定値で埋めない。
+- **実行CI**：[Phase 2正本統合監査 #39108818212](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39108818212) **SUCCESS**。既存の5検査とEXP-046原本復元を含むjob `five-original-checks-without-retirement` の各stepはSUCCESS。
+- **対象**：PR HEAD `f7a2e5cb8ea7eace5562c745b33319e74e92251b`。GitHub checkoutの合成merge commit `23a24b4f9292dfb53550207d0aac6d0778019504`で`git ls-files`を実行。**この2 SHAを同一視しない**。
+- **測定値**：Git追跡**1,196件**、自己監査スクリプト1件を除外、UTF-8として実走査**1,194件／15,921,270 bytes**、バイナリとしてスキップ**1件**（`data/validation/r1_20261012/completed-checkpoint.zip`）、欠落／root外は**0件**。
+- **一致ファイル**：**7件**（workflow 3件、文書3件、`data/repository_reviews/`内の固定台帳1件）。**`scripts/`・`tests/`・`src/`・`actions/`・その他`code_or_config`区分の直接一致は0件**。旧workflowの内部自己参照・過去の比較台帳は一致に含むが、外部利用証明ではない。
+- **生レポート**：Actions artifact `phase2-bc-first-wave-parity-evidence` 内 `issue93_reference_scan/issue93_tracked_reference_scan.json`。**19,292 bytes、SHA-256 `a5f6a87714f3280ced66edde59196fc2f958b1d7d21aa2d44cfd16f95586317c`**。Artifactは**期限付き（30日）**であり永久保管ではない。元JSONをGitへ固定したとは主張しない。
+
+| 一致区分 | 元Git追跡ファイル | マッチ行の数 |
+|---|---|---:|
+| workflow | `.github/workflows/phase2_bc_wave1_consolidated.yml` | 4 |
+| workflow | `.github/workflows/phase2_first_wave_retention_parity.yml` | 13 |
+| workflow | `.github/workflows/phase2_w4_exp046_exp047_provenance.yml` | 1 |
+| 固定比較台帳 | `data/repository_reviews/phase2_issue93_pr91_canonical_parity_matrix_20261018.csv` | 14 |
+| 文書 | `docs/phase2_first_wave_workflow_parity_review_20261018.md` | 7 |
+| 文書 | `docs/phase2_issue93_pr91_canonical_reconciliation_20261018.md` | 16 |
+| 文書 | `docs/phase2_issue93_reference_consumer_audit_20261018.md` | 3 |
+
+この7件表は**初回HEAD時点**の固定記録であり、この文書を追記した後のブランチ/CIの一致数は変化し得る。再検査時は元source SHAと出力SHAを新たに記録する。これは**追跡UTF-8ファイルの直接リテラル参照に限った否定結果**であり、required checks・外部消費者・手動workflow/API dispatch・動的利用・バイナリ内部は未確認のまま。**退役承認0、削除・停止0件**。
