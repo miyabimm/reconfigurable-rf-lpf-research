@@ -45,7 +45,7 @@ jobs:
           for key in (
             'w3_retired_documents','w3_retained_documents','protected_originals_SHA_verified',
             'w4_historical_225_originals_SHA_verified','w4_exp046_exp047_originals_with_matching_225_SHA',
-            'baseline_workflows_still_tracked','current_tracked_yaml_workflows',
+            'baseline_workflows_still_tracked',
             'exp042_original_zip_count','exp042_archive_member_count',
             'exp042_original_members_recovered_and_SHA_verified',
             'formal_RFF003_pareto_candidates','trial_RFT005_pareto_candidates',
@@ -53,6 +53,10 @@ jobs:
             'new_file_deletions','rf_optimizer_executions','phase3_authorized'
           ):
             assert old[key]==now[key], key
+          # The dated original W5 snapshot had 46 YAMLs; later audit-only
+          # workflows are additive and must not rewrite historical counts.
+          assert now['current_tracked_yaml_workflows'] >= old['current_tracked_yaml_workflows']
+          assert now['baseline_workflows_still_tracked'] == 39
           assert now['protected_originals_SHA_verified']==46
           assert now['w4_historical_225_originals_SHA_verified']==225
           assert now['w4_exp046_exp047_originals_with_matching_225_SHA']==131
