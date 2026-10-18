@@ -12,7 +12,7 @@
 | 成果 | [結果一覧](results/README.md)、[data案内](../data/README.md) | 旧14＋新10件の[派生24候補CSV](../data/catalog/phase2_candidate_catalog_20261017.csv)を現行案内に追加。条件混合禁止 |
 | 実験・スクリプト | [実験索引](../experiments/README.md)、[scripts索引](../scripts/README.md) | `--catalog`、派生生成の`--check`、旧EXP-047専用互換アダプターの用途を区別 |
 | 文書運用 | [docs索引](README.md) | 整理Step 1～5統合済み、追加整理PR #72・W0を区別 |
-| 原時点の歴史 | [Step 1計画](phase2_repository_reorganization_plan_20261017.md)、[Step 5検証記録](phase2_repository_step5_final_verification_20261017.md) | 原文は書き換えず、冒頭にPR #71マージ後の事実を追補 |
+| 原時点の歴史 | [Step 1計画](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[Step 5検証記録](phase2_repository_step5_final_verification_20261017.md) | 原文は書き換えず、冒頭にPR #71マージ後の事実を追補 |
 
 **現在の数値条件は[RF-F003正式制約](../data/constraints/formal/RF-F003.json)／[RF-T005試験条件](../data/constraints/trial/RF-T005.json)を区別。** H2/H3必須30dB有限格子、IL≤0.30dB、公称35dBの判定区分と、物理EM・SRF・Q(f)未検証の限界を維持する。今回数値計算は再実行していない。
 

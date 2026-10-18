@@ -19,7 +19,7 @@ W3でD-001～D-004を[歴史統合資料](../archive/w3_consolidated_documents_2
 
 - [研究結果管理の初版（2026-10-14）](../archive/w3_consolidated_documents_20261017.md#d-002)：RF-F002や当時の候補数など**旧時点の記述**がある。現在のRF-F003や24候補のビューと混同しない。
 - [記録の訂正経緯](../result_record_corrections_20261014.md)。
-- [古いリポジトリ容量監査](../archive/w3_consolidated_documents_20261017.md#d-004)と[2026-10-15 GitHub-only保全レビュー](../phase2_repository_optimization_review_20261015.md)。
+- [古いリポジトリ容量監査](../archive/w3_consolidated_documents_20261017.md#d-004)と[2026-10-15 GitHub-only保全レビュー](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_optimization_review_20261015.md)。
 - [2026-10-15証拠トリアージ](../phase2_evidence_triage_20261015.md)。
 - [当時のリポジトリ引継ぎ計画](../archive/w3_consolidated_documents_20261017.md#d-001)。
 - [2026-10-14ブランチ削除の実行記録](../maintenance/branch_cleanup_20261014.md)：**過去の実行済み事項**。2026-10-17に新たに削除した意味ではない。

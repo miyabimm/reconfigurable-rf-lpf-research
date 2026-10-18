@@ -30,7 +30,7 @@
 
 1. **現行への入口：** `current/` と `results/README.md`。閲覧しやすい説明資料。数値の出典は必ず上記正本へ戻る。
 2. **現行の仕様・手順：** [設計仕様](specification.md)、[運用指示](chatgpt_project_instructions.md)、[実験番号予約方針](experiment_number_reservation_policy_20261015.md)、[RF-F003再ベースライン計画](rf_f003_phase2_rebaseline_plan_20261016.md)。作成日の「未実行」は当時の記録であり、最新EXP-047の局所探索成果と区別する。
-3. **過去時点の成果と保管判断：** [研究履歴索引](historical_results.md)、[2026-10-15証拠棚卸し・Pareto](phase2_storage_pareto_review_20261015.md)、[保全レビュー](phase2_repository_optimization_review_20261015.md)、[証拠トリアージ](phase2_evidence_triage_20261015.md)。その文書内の「現行RF-F002」などは**作成当時の表現**。
+3. **過去時点の成果と保管判断：** [研究履歴索引](historical_results.md)、[2026-10-15証拠棚卸し・Pareto](phase2_storage_pareto_review_20261015.md)、[保全レビュー](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_optimization_review_20261015.md)、[証拠トリアージ](phase2_evidence_triage_20261015.md)。その文書内の「現行RF-F002」などは**作成当時の表現**。
 4. **導入未完の提案：** [GitHub-only研究結果保存方針（提案）](experiment_result_storage_policy_proposal_20261015.md)。提案中の事項を実施済みとみなさない。
 
 ## ドキュメント移動に関する方針
