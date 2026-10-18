@@ -1,7 +1,8 @@
-"""RF-F003 fixed parasitics and RF-T005 explicit trial regression."""
+"""RF-F003 fixed parasitics and RF-T005/T006 explicit trial regression."""
 import hashlib
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,9 @@ from src.lpf.constraint_versions import (load_constraint, validate_registry,
 from src.lpf.port_parasitics import (get_two_port_s, external_cascade_abcd,
                                       external_transducer_gain, _load_verified)
 from src.lpf.constraints import check_counts
+from src.lpf.trial_stopband import (
+    evaluate_trial_additional_stopband, summarize_full_lpf_trial_feasibility,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,6 +56,72 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertTrue(validate_variable_c_connections(
             [{"a":1,"b":0},{"a":1,"b":2,"role":"bridge"},{"a":2,"b":3,"role":"series"}],
             resolved))
+
+    def test_t006_adds_only_mandatory_3_to_6ghz_stopband(self):
+        formal = load_constraint("RF-F003")
+        with self.assertRaises(ValueError):
+            load_constraint("RF-T006")
+        trial = load_constraint("RF-T006", allow_trial=True)
+        self.assertEqual(trial["active_constraint_id"], "RF-T006")
+        self.assertEqual(trial["trial_base_constraint_id"], "RF-F003")
+        self.assertEqual(trial["active_constraint_status"], "trial")
+        self.assertTrue(check_counts(n_var=2, resolved_policy=trial))
+        self.assertFalse(check_counts(n_var=3, resolved_policy=trial))
+        self.assertFalse(check_counts(n_var=3, resolved_policy=formal))
+        extra = trial["trial_additional_stopband"]
+        self.assertEqual((extra["low_hz"], extra["high_hz"], extra["sample_step_hz"]),
+                         (3_000_000_000, 6_000_000_000, 1_000_000))
+        self.assertEqual(extra["min_attenuation_db"], 20)
+        self.assertEqual(len(extra["settings"]), 6)
+        self.assertEqual(extra["reference_planes"], "external_input_to_external_output")
+        resolved_without_metadata = json.loads(json.dumps(trial))
+        for key in ("active_constraint_id", "active_constraint_status",
+                    "trial_base_constraint_id", "trial_variable_c_layout",
+                    "trial_additional_stopband"):
+            resolved_without_metadata.pop(key)
+        original_without_identity = json.loads(json.dumps(formal))
+        for key in ("active_constraint_id", "active_constraint_status"):
+            original_without_identity.pop(key)
+        self.assertEqual(resolved_without_metadata, original_without_identity)
+        self.assertNotEqual(constraint_fingerprint(trial), constraint_fingerprint(formal))
+        self.assertNotIn("trial_additional_stopband", load_constraint("RF-T005", allow_trial=True))
+        self.assertNotIn("trial_additional_stopband", load_constraint())
+
+    def test_t006_wideband_sweep_and_full_lpf_gate(self):
+        trial = load_constraint("RF-T006", allow_trial=True)
+        eye = np.eye(2, dtype=complex)
+        with patch("src.lpf.trial_stopband.external_transducer_gain", return_value=0.001) as gain:
+            ok = evaluate_trial_additional_stopband(trial, lambda setting, f: eye)
+        self.assertEqual(gain.call_count, 6 * 3001)
+        self.assertEqual(ok["total_points"], 18006)
+        self.assertTrue(ok["passes_minimum"])
+        self.assertEqual(ok["worst"]["frequency_hz"], 3_000_000_000)
+        with self.assertRaisesRegex(ValueError, "Complete RF-T006"):
+            summarize_full_lpf_trial_feasibility(
+                trial, worst_il_db=0.83, min_h2_db=30.05, min_h3_db=30.05)
+        summary = summarize_full_lpf_trial_feasibility(
+            trial, worst_il_db=0.83, min_h2_db=30.05, min_h3_db=30.05,
+            additional_stopband=ok)
+        self.assertTrue(summary["mandatory_finite_grid_pass"])
+        self.assertFalse(summary["nominal_il_goal_pass"])
+        current = [None]
+        def callback(setting, f):
+            current[0] = setting
+            return eye
+        def gain_at_one_failure(policy, frequency_hz, lpf_abcd):
+            return 0.02 if current[0] == "B71" and frequency_hz == 3_000_000_000 else 0.001
+        with patch("src.lpf.trial_stopband.external_transducer_gain",
+                   side_effect=gain_at_one_failure):
+            failed = evaluate_trial_additional_stopband(trial, callback)
+        self.assertFalse(failed["passes_minimum"])
+        self.assertEqual(failed["worst"]["setting"], "B71")
+        self.assertEqual(failed["worst"]["frequency_hz"], 3_000_000_000)
+        summary = summarize_full_lpf_trial_feasibility(
+            trial, worst_il_db=0.83, min_h2_db=30.05, min_h3_db=30.05,
+            additional_stopband=failed)
+        self.assertFalse(summary["mandatory_finite_grid_pass"])
+        with self.assertRaisesRegex(ValueError, "No authorized"):
+            evaluate_trial_additional_stopband(load_constraint(), lambda c, f: eye)
 
     def test_legacy_RF_F002_stays_frozen(self):
         previous = load_constraint("RF-F002")
