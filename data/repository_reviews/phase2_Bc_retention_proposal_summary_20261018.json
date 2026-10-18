@@ -51,5 +51,51 @@
     "Current tree savings and Git pack savings are not established.",
     "At least some intermediate-looking JSON contain unique full vectors or incomplete verification; never delete by filename.",
     "No source path is retired merely because a historical workflow API run count is zero."
-  ]
+  ],
+  "pilot_evidence_review": {
+    "original_experiment": "EXP-046",
+    "condition": "RF-T005",
+    "source_files": [
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch0_results.json",
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch1_results.json",
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch2_results.json"
+    ],
+    "batch_records": [
+      {
+        "batch": 0,
+        "variant_count": 3,
+        "eval_count_reported": 130481
+      },
+      {
+        "batch": 1,
+        "variant_count": 3,
+        "eval_count_reported": 124259
+      },
+      {
+        "batch": 2,
+        "variant_count": 4,
+        "eval_count_reported": 169493
+      }
+    ],
+    "unique_variant_names": 10,
+    "vectors_length_each": 30,
+    "total_recorded_eval_count_sum": 424233,
+    "screening_mesh_recorded": "28 x 5 optimization and 28 x 31 screening",
+    "source_declared_followup": "independent MNA and 28 x 1001 for changed layouts pending",
+    "source_duplicate_proof": false,
+    "deletion_eligibility": "not_established",
+    "action": "retain_original_bytes_until_lossless_aggregation_and_independent_checks_are_verified"
+  },
+  "pilot_workflow_review": {
+    "checked_source_count": 5,
+    "source_specific_checks": {
+      "phase2_cleanup_w2.yml": "topology index Python unittest and generated W2 derived data byte check",
+      "phase2_cleanup_w3.yml": "exact approved document deletion restoration and protected originals plus W1 links",
+      "phase2_w4_exp042_crosswalk.yml": "ZIP 19 member SHA CRC and checkpoint 29-vector/stage metric record crosswalk",
+      "phase2_w4_exp042_missing_variants.yml": "three uncurated EXP-042 variants original six member source checks",
+      "phase2_w4_exp046_exp047_provenance.yml": "131 original EXP-046/047 records, Q/capacitor correction lineage, RF-F003 catalog check"
+    },
+    "proved_full_ci_replacement_count": 0,
+    "action": "retain_until_new_consolidated_or_existing_CI_is_demonstrably_equivalent"
+  }
 }
