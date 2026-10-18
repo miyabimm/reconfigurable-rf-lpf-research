@@ -27,7 +27,8 @@ PR #91だけが、`scripts/verify_phase2_bc_exp046_lossless.py --verify-committe
 - PR #91 HEADの[CI 39101884013](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39101884013)：SUCCESS。PR-head SHA `b0f62667b3256a6a25b064eaedd6ce77d1a437fb`。
 - PR #92 HEADの[CI 39102284350](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39102284350)：5 jobともSUCCESSとIssue #93に記録。PR-head SHA `a663787f8f5bd35127eb86b66c9c4e4554eb5dfc`。
 - 最新main `d437b03ac495...`の[Phase 2 regression 39102485318](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39102485318)：SUCCESS。
-- **上記3 runは異なる目的・異なるSHAであり、2後継workflowが同一main SHAで独立にSUCCESSだったとの主張ではない。** 新しい変更ブランチのCI結果も未実行である。
+- **上記3 runは異なる目的・異なるSHAであり、2後継workflowが同一main SHAで独立にSUCCESSだったとの主張ではない。**
+- **PR #94 第1回HEAD `c47c3355666d8eedde5c9827c9facd15a82087ba`で実際に同SHA実行済み**：[正本PR #91型CI run 39106177167](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39106177167) SUCCESS、[比較対象PR #92型CI run 39106177073](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39106177073) SUCCESS。W1/W3/W4/W5の該当監査CIもSUCCESS。ただし**この第1回HEADはmainへ未統合**であり、更新後のbranch HEAD／将来のmain SHAのSUCCESSを意味しない。
 
 ## 3. 今回の実装 — PR #91のtriggerを追加で保護
 
