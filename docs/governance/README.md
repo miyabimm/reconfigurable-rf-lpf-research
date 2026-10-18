@@ -11,7 +11,7 @@
 | EXP番号のmain事前予約 | [実験番号予約方針](../experiment_number_reservation_policy_20261015.md)、[台帳](../../data/experiment_number_registry.csv) |
 | 実行状態と独立検証の分離 | [実験マニフェストの説明](../experiment_manifests.md)、[実験索引](../../data/experiment_index.csv) |
 | **EXP-048以降の実験データ保存（新規v1）** | [Phase 2保存ポリシー／preflight・finalize・監査](phase2_experiment_storage_policy.md)。本PRマージ後の新規実験に適用し、旧結果は不変更 |
-| GitHub-only研究証拠・研究結果の昇格 | [保存方針提案（部分導入）](../experiment_result_storage_policy_proposal_20261015.md) |
+| 2026-10-15当時の保存方針案（歴史資料） | [旧提案・部分導入の経緯](../experiment_result_storage_policy_proposal_20261015.md)。EXP-048以降の規則は上記v1を参照 |
 | 旧保全判断と未リンク証拠 | [46件の旧レビュー](../phase2_evidence_triage_20261015.md)、[Step 4新分類](../phase2_repository_step4_review_20261017.md) |
 
 ## 過去の監査・訂正・ブランチ経緯
