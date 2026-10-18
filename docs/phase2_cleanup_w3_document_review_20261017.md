@@ -7,7 +7,7 @@
 ## 1. 起点・実施範囲
 
 - **レビュー基準main**：`731e901e79cfa367fd06b4350844c6987b30caa5`（PR #72→#73→#75→#78を統合後）。
-- [運用指示正本](chatgpt_project_instructions.md)、[W0固定main監査](phase2_cleanup_w0_current_main_audit_20261017.md)、[W1リンク修正](phase2_cleanup_w1_completion_20261017.md)、[W2構造索引](results/phase2_topology_search_20261017.md)、[整理・削除計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)に従う。
+- [運用指示正本](chatgpt_project_instructions.md)、[W0固定main監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W1リンク修正](phase2_cleanup_w1_completion_20261017.md)、[W2構造索引](results/phase2_topology_search_20261017.md)、[整理・削除計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)に従う。
 - GitHub上のmainにある7文書の本文とGit blob SHAを個別に取得し、W0の削除候補台帳と照合した。判定の機械可読正本は[W3個別台帳](../data/repository_reviews/w3_document_disposition_20261017.csv)。
 - W0で判明したリンク元・静的参照と、mainに現存する[archive目次](archive/README.md)、[governance目次](governance/README.md)、[methods目次](methods/README.md)の参照を確認。**main現行全追跡treeの網羅的な逆参照スキャン・Git履歴全体・動的path・外部URLは本書のGitHub取得だけでは検証していない**。W3 CIで現行文書リンクと対象blobを検査する。
 - 旧W0の「静的流入0」は**旧時点の旧監査値**であり、現在の参照不存在を意味しない。

@@ -29,7 +29,7 @@ W1の対応：
 
 ## 3. W1専用の検証ゲート
 
-[W1全追跡Markdownリンク監査](../scripts/verify_phase2_cleanup_w1_links.py)を新設し、**現在checkoutしたブランチ**を対象に検査する。W0の固定main時点の[監査](phase2_cleanup_w0_current_main_audit_20261017.md)とは独立。
+[W1全追跡Markdownリンク監査](../scripts/verify_phase2_cleanup_w1_links.py)を新設し、**現在checkoutしたブランチ**を対象に検査する。W0の固定main時点の[監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)とは独立。
 
 - 初回修正後の[W1 CI run 39035667408](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39035667408)：**SUCCESS**。当時の追跡ファイル1,120件／Markdown137件／リンク997件、ローカル解決840件、外部URL等未確認140件、同一文書アンカー未確認17件、**欠落したローカルリンク0件**。
 - 現行statusの9入口、原RF/実験の6 blob、README内旧リンクと通常ファイルの互換案内を照合。ファイル削除0件。通常のPhase 2回帰は当初シンボリックリンクを禁止する保存予算監査で失敗したため、安全規則を緩和せず通常ファイルに変更した。
@@ -39,7 +39,7 @@ W1の対応：
 
 ## 4. 残作業と保全ゲート
 
-- [全追跡W0監査](phase2_cleanup_w0_current_main_audit_20261017.md)で7件の旧二次文書が削除候補。今回のW1は**旧文書自体を削除しない**。次のW3で固有の数値・出典を確認し、所有者の明示承認と復旧実証後に処分を検討する。
+- [全追跡W0監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)で7件の旧二次文書が削除候補。今回のW1は**旧文書自体を削除しない**。次のW3で固有の数値・出典を確認し、所有者の明示承認と復旧実証後に処分を検討する。
 - W2の候補接続・結合符号の検索属性拡充は**未実施**。2026-10-17の固定24候補カタログを上書きしない。
 - マージ対象のW1ブランチに対する**最終Phase 2 regression SUCCESS**を別途確認しなければ、main反映完了・W1全面完了とは呼ばない。
 

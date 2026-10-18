@@ -29,7 +29,7 @@
 
 - 元実験の完全ベクトルは [experimentsの案内](../experiments/README.md) → `runs/EXP-NNN/` を参照する。元checkpointと検証overlayを区別する。
 - 別の格子幅・別の独立MNAで確認したことは、条件を揃えた再検証と同じではない。
-- 未リンク、同一Git blob、古いログ・lockだけでは削除可否を決めない。[統合済みPR #71](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/71)により整理Step 1～5を実装。[W0保全監査](../docs/phase2_cleanup_w0_current_main_audit_20261017.md)では要レビュー46件の原SHAが全件一致し、削除は未承認。
+- 未リンク、同一Git blob、古いログ・lockだけでは削除可否を決めない。[統合済みPR #71](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/71)により整理Step 1～5を実装。[W0保全監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)では要レビュー46件の原SHAが全件一致し、削除は未承認。
 - GitHubを長期保全先とし、期限付きActions artifactを唯一の根拠としない。
 
 [プロジェクトREADME](../README.md) ／ [文書一覧](../docs/README.md)
