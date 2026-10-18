@@ -6,7 +6,7 @@
 
 - **基準main：** `bda522d6e8dc3f5d4667c46507b7d1005c93b20e`（[PR #87](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/87)でEXP-046/047 131原本を保全監査後）。
 - **運用正本：** [プロジェクト指示](chatgpt_project_instructions.md)、[正式RF-F003・試験RF-T005](../data/constraints/registry.json)、[6設定・28区間](../data/bands.csv)。
-- **実行コード：** [非破壊検証器](../scripts/verify_phase2_w5_closure.py)。現行Git原本SHA/サイズ、承認台帳、固定ZIPのSHA-256・CRC、候補台帳の条件別件数を照合する。元研究コード・RFモデルを実行しない。GitHub Actionsで[W5専用CI](../.github/workflows/phase2_w5_readonly_closure.yml)を実行し、ゲートごとの判定CSVを固定する。
+- **実行コード：** [非破壊検証器](../scripts/verify_phase2_w5_closure.py)。現行Git原本SHA/サイズ、承認台帳、固定ZIPのSHA-256・CRC、候補台帳の条件別件数を照合する。元研究コード・RFモデルを実行しない。GitHub Actionsで[W5専用CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_w5_readonly_closure.yml)を実行し、ゲートごとの判定CSVを固定する。
 - **固定結果の保存先：** [実行済みのW5総合監査JSON](../data/repository_reviews/w5_phase2_readonly_closure_20261018.json)と[14ゲート対応CSV](../data/repository_reviews/w5_phase2_gate_matrix_20261018.csv)。[初回監査 run 39096126981](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39096126981)の**本体SHA/承認チェック自体はPASS**。初回は結果ファイル未コミットによるW1リンクエラーでworkflow全体がFAILUREだったため、**当初のrun全体をSUCCESSとして扱わない**。実際の固定ファイルをGitに追加し、再度W5/W1/W3/W4/Phase2全回帰を検証する。
 
 ## W0～W5の作業と削除権限の区別
