@@ -17,7 +17,7 @@
 
 [専用読み取りスクリプト](../scripts/preserve_exp042_actions_artifacts.py)で元のGitHub Actions REST APIから固定10 Artifact IDのZIPを取得、ZIP内全memberのCRC・パス安全性とSHA-256、ZIP全体のSHA-256を検査する。**一時URLだけでなくZIPの実体をGitへ保全**するため、各ZIPの元バイト列を無損失Base64として単一JSONに格納し、元run ID／Artifact ID／name／期限メタデータと紐付ける。ZIPバイト列は元Base64をデコードすれば復元でき、一般的なzip展開は本スクリプトの検査後に利用する。
 
-**実体の取得・保全済み：** [バイト同一の10個の元ZIPをBase64格納したGitファイル](../data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)。単なるメタデータではなく**元ZIPバイトそのもの**を含み、独立に復号・ハッシュ照合できる。Git上の[検証ワークフロー](../.github/workflows/phase2_w4_preserve_artifacts.yml)では、保存したZIPとmemberのSHA-256を**認証・ネットワークなしでも再照合**する。オンラインAPIの再取得は手動オプションであり、Artifactが将来失効してもGitのオフライン照合は継続できる。内容の意味・正しいRF判定値・独立MNAの計算結果は、ZIPハッシュが一致しても**未再解析**として扱う。
+**実体の取得・保全済み：** [バイト同一の10個の元ZIPをBase64格納したGitファイル](../data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)。単なるメタデータではなく**元ZIPバイトそのもの**を含み、独立に復号・ハッシュ照合できる。Git上の[検証ワークフロー](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_w4_preserve_artifacts.yml)では、保存したZIPとmemberのSHA-256を**認証・ネットワークなしでも再照合**する。オンラインAPIの再取得は手動オプションであり、Artifactが将来失効してもGitのオフライン照合は継続できる。内容の意味・正しいRF判定値・独立MNAの計算結果は、ZIPハッシュが一致しても**未再解析**として扱う。
 
 **旧metadata上の期限：2027年1月15日（UTC）**。これは2026-10-18にGitHubから取得したメタデータであり延長・短縮され得る。ZIP保全後でもGitHub Actionsを使ってRFソルバーを再実行したとは主張しない。元実験ファイル・旧46保護元証拠・制約・S2Pはすべて残す。
 
