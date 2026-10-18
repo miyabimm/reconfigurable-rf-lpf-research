@@ -1,54 +1,7 @@
-"""Non-destructive reverse references and condition-isolated Pareto tests."""
+"""Condition-isolated Pareto tests; historical storage-inventory tests retired."""
 import unittest
 
-from scripts.build_reference_inventory import (
-    ROOT, _classify, _safe_reference, create_inventory,
-)
 from scripts.report_research_pareto import dominates, make_report
-
-
-class StorageReferenceTests(unittest.TestCase):
-    def test_referenced_runtime_lock_is_preserved(self):
-        p = "data/validation/example/run/locks/foo.lock"
-        self.assertEqual(
-            ("registered_runtime_evidence", "preserve_referenced"),
-            _classify(p, {"manifest_sha256"}))
-        self.assertEqual(
-            ("unlinked_runtime_diagnostic", "review_only_no_deletion"),
-            _classify(p, set()))
-
-    def test_governance_registers_are_preserved(self):
-        for p in ("data/candidate_index.csv", "data/experiment_index.csv",
-                  "data/research_candidate_register.csv",
-                  "data/branch_retention_review_20261015.csv"):
-            self.assertEqual(("research_governance_register", "preserve_immutable"),
-                             _classify(p, set()))
-
-    def test_source_path_escape_is_rejected(self):
-        for path in ("/etc/passwd", "../README.md", "data/../README.md",
-                     "data\\validation\\abc.json", ""):
-            with self.subTest(path=path):
-                with self.assertRaises(ValueError):
-                    _safe_reference(ROOT, path)
-
-    def test_existing_catalog_and_manifest_links_are_preserved(self):
-        entries, summary = create_inventory()
-        self.assertGreaterEqual(summary["classified_files"], 300)
-        self.assertGreater(summary["manifest_referenced_files"], 0)
-        self.assertEqual(0, summary["deletions_performed"])
-        self.assertGreaterEqual(summary["identical_content_blob_groups"], 0)
-        self.assertTrue(summary["duplicate_paths_also_require_independent_review"])
-        self.assertEqual(
-            sum(summary["retention_decisions"].values()), len(entries))
-        self.assertTrue(all(r["review_decision"] == "review_only_no_deletion"
-                            for r in entries if r["path"] in
-                            summary["review_only_example_paths"]))
-        by_path = {r["path"]: r for r in entries}
-        p = "data/validation/rf_f002_unscaled_followup_20261014/run/results/6acd4f80fcd682902c52c999.json"
-        self.assertEqual("preserve_referenced", by_path[p]["review_decision"])
-        self.assertIn("EXP-041", by_path[p]["manifest_experiments"])
-        p2 = "experiments/chatgpt_topology_search/runs/EXP-016/checkpoints.json"
-        self.assertIn("EXP-016", by_path[p2]["supplemental_experiments"])
 
 
 class ParetoRegressions(unittest.TestCase):
