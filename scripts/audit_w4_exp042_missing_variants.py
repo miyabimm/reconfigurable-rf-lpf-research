@@ -149,7 +149,6 @@ def inspect():
         details = area_details(main)
         artifact_id, run_id, zip_sha = source_ids[(artifact, original[0])]
         assert source_ids[(artifact, original[1])] == (artifact_id, run_id, zip_sha)
-        target_source = str(CHECKPOINT_ROOT / artifact.removeprefix("exp042-") + ".json") if False else ""
         # The three missing historical selected-checkpoint paths are explicit.
         variant = artifact.removeprefix("exp042-").removeprefix("area-").removeprefix("pcb-")
         selected_path = CHECKPOINT_ROOT / (variant + ".json")
