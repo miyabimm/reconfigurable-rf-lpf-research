@@ -62,7 +62,7 @@ def text_reconciliation():
       ("T-005", ["24件", "RF-F003", "RF-T005"], "integrated_data_entry_present", "none"),
       ("T-006", ["24候補", "--catalog", "RF-F003"], "conditional_24_catalog_reporter_documented", "none"),
       ("T-007", ["EXP-047", "索引専用アダプター", "manifest"], "strict_vs_legacy_manifest_explained", "none"),
-      ("T-008", ["lpf-target040.yml", "actions/workflows/"], "github_actions_route_not_local_repo_artifact", "none"),
+      ("T-008", ["lpf-target040.yml", "actions/workflows/"], "historical_GitHub_UI_route_not_local_file", "browser_route_clickability_not_verified"),
       ("T-009", ["PR #71", "マージ済み", "当時"], "historical_plan_has_dated_postmerge_addendum", "dated_non_current_PR72_Draft_wording_keep_historical"),
       ("T-010", ["PR #71", "マージ済み", "マージ前"], "historical_validation_has_dated_merge_context", "keep_old_snapshot_test_run_separate_from_current"),
     ]
@@ -222,6 +222,7 @@ def main():
         "original_T_source_changed_from_planning":sum(r["baseline_changed_since_planning"]=="true" for r in t),
         "T_require_new_content_changes":0,
         "T_special_GitHub_Actions_route_count":1,
+        "T_link_UI_validation_open":sum(r["outstanding"]=="browser_route_clickability_not_verified" for r in t),
         "workflow_current_total":len(wf),
         "workflow_legacy_20171017_total":sum(r["original_20171017_workflow"]=="true" for r in wf),
         "workflow_new_since_w4_snapshot":sum(r["original_20171017_workflow"]=="false" for r in wf),
