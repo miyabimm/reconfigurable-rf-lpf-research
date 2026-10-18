@@ -48,7 +48,7 @@ def source_for(t):
    options.append(v)
  options.extend(z for z in CANDIDATES if
                 z["chip_L"]==t["nl"] and z["topology"].endswith(t["mode"])
-                and z.get("full_grid_metrics") is not None)
+                and b.valid(z["grid_metrics"]))
  return min(options,key=lambda r:r.get("full_grid_metrics",r["grid_metrics"])["IL"]) if options else None
 
 def extend_seed(t, oldone):
@@ -172,7 +172,14 @@ def main():
   one["full_grid_metrics"]=mm
   one["mandatory_pass_full_grid"]=b.valid(mm)
   one["IL_target_1p1_met"]=bool(b.valid(mm) and mm["IL"]<=1.1)
-  measured.append(one)
+  if not b.valid(mm):
+   # Do not replace an independently verified stage-1 winner with a coarse false pass.
+   fallback=next((z for z in old["best_per_area"]
+                  if abs(z["area_cost"]-one["area_cost"])<1e-8 and z["mandatory_pass_full_grid"]),None)
+   if fallback is not None:
+    measured.append(dict(fallback,provenance="stage1_verified_fallback"))
+   else:measured.append(one)
+  else:measured.append(one)
   print("AREA_REFINE",key,one["topology"],b.brief(mm),"valid",b.valid(mm),flush=True)
  feasible=[z for z in measured if z["mandatory_pass_full_grid"]]
  best=min(feasible,key=lambda z:z["full_grid_metrics"]["IL"]) if feasible else None
