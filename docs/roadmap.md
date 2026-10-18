@@ -103,7 +103,7 @@
 1. **RG-001／欠落ベクトル回収・独立有限格子追試済み:** 元正式RF-F002 ZIPを回収し、EXP-017の0.301248245dB・30dBの**完全23要素ベクトルと6設定Cv**を新ファイルへ記録。9×9独立MNAの7,001点×28区間で元値を再現、K SPD・電力保存PASS。[追補・元ソースの区別](phase2_exp017_checkpoint_provenance_review_20261015.md)を参照。IL目標と実装物理検証は**未達／未実行**、元ZIP全体のGit原本保存と全453最適化試行の再実行は**未実施**。
 2. **P0 / RG-003:** EXP-034～037の旧warm-start端子remap不備を修正後の成果と混同しない。実行基盤性能と回路性能を分離する。
 3. **P1 / RG-004・RG-008:** 統合候補台帳は回収した正式候補を加えて14件（本追補PR反映時）の選別結果であり全成果網羅ではない。EXP-016/017/021/022/023/024の元manifestのevidence登録は0件（遡及改変せず補助索引あり）。
-4. **P1 / RG-005・RG-007:** **外部アーカイブは使用しない（ユーザー指示）**。現行main 731ファイル/約8.45MB。新規実験の完全候補と再現用最小証拠をGitHubへ保存し、全iterationログは原則保管しない[Git-only保存方針案](experiment_result_storage_policy_proposal_20261015.md)へ変更した。旧6ブランチの先端監査・一時Git bundle復元PASSだが、ブランチ削除は**承認とGitHub内archive ref保全**まで保留。RF-T004小容量ZIPは35member SHA登録済み・**元バイナリGit未収録**。[保管最適化監査](phase2_repository_optimization_review_20261015.md)を参照。
+4. **P1 / RG-005・RG-007:** **外部アーカイブは使用しない（ユーザー指示）**。現行main 731ファイル/約8.45MB。新規実験の完全候補と再現用最小証拠をGitHubへ保存し、全iterationログは原則保管しない[Git-only保存方針案](experiment_result_storage_policy_proposal_20261015.md)へ変更した。旧6ブランチの先端監査・一時Git bundle復元PASSだが、ブランチ削除は**承認とGitHub内archive ref保全**まで保留。RF-T004小容量ZIPは35member SHA登録済み・**元バイナリGit未収録**。[保管最適化監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_optimization_review_20261015.md)を参照。
 5. **P1:** 候補間の周波数格子・独立MNAの共通条件での再比較、元試行環境・seedの再現性確認、物理SRF/寄生/EM・温度公差。新規解析を実行した場合は別検証記録として出典を固定する。
 
 現在の課題ステータスは [研究レビュー台帳](../data/research_review_issues.csv)、候補区分は [研究候補台帳](../data/research_candidate_register.csv)、全39実験は [証拠インベントリ](../data/experiment_evidence_inventory.csv) を参照。
