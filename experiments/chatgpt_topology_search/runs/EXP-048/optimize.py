@@ -287,6 +287,17 @@ def main():
    best={"score":score(incumbent["m"]),"x":incumbent["x"].copy(),
          "topology":topo,"metrics":incumbent["m"],
          "stage":"feasible_IL_refinement"}
+ # Read-back from first independently verified run (Actions 39134476056),
+ # not a new seed or a claim of global convergence; include the earlier best.
+ replay_x=np.array([21.285750003683752,13.096339735885897,10.470135087228337,24.38267808945084,1.9414448372423612,0.47980580858538613,0.2,0.1760789133826822,0.1,0.006803991083479033,-0.1,0.5934828718330297,1.488838267791881,0.4754220170693842,1.312745225821447,0.4798774368148162,1.2567122847811618,0.3173931606360618,0.8372652398941902,0.2572305767534404,0.5871030183126968,0.1320206701954294,0.24219967468600873],dtype=float)
+ replay_m=metrics(replay_x,"all_shunt",coarse)
+ records.append({"topology":"all_shunt","stage":"replay_prior_verified_run",
+                 "source_action_run":39134476056,"score":score(replay_m),
+                 "metrics":replay_m})
+ print("replay_prior",fmt(replay_m),"feasible",candidate_status(replay_m),flush=True)
+ if candidate_status(replay_m) and replay_m["worst_il_db"]<best["metrics"]["worst_il_db"]:
+  best={"score":score(replay_m),"x":replay_x,"topology":"all_shunt",
+        "metrics":replay_m,"stage":"replay_prior_verified_run"}
  # Exact full grids: RF-F003 28 intervals * 1001 and T006 3001 * 6.
  fine=grid(1001,1)
  frozen=metrics(best["x"],best["topology"],fine)
