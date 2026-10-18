@@ -47,7 +47,9 @@ Markdownリンクの正規表現抽出。実際の欠落かコード例由来か
 - Gitの過去コミットからの復元と、現行スクリプト・READMEの参照互換性は別問題。
 - 入力は固定mainの追跡tree。Git履歴全体・未追跡成果・動的参照を網羅していない。
 
-詳細：data/repository_audits/w0_20261017_summary.json、
-data/repository_reviews/w0_cleanup_20261017_summary.json、
-data/repository_reviews/w0_cleanup_20261017_markdown_links.csv、
-data/repository_reviews/w0_cleanup_20261017_deletion_decisions.csv。
+詳細は削除前の固定コミット `d0351e507dd9` にある以下の元データを参照する。現在のmainの監査結果ではない。
+
+- [`w0_20261017_summary.json`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/data/repository_audits/w0_20261017_summary.json)（旧W0固定時点の成果）
+- [`w0_cleanup_20261017_summary.json`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/data/repository_reviews/w0_cleanup_20261017_summary.json)（旧W0固定時点の成果）
+- [`w0_cleanup_20261017_markdown_links.csv`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/data/repository_reviews/w0_cleanup_20261017_markdown_links.csv)（旧W0固定時点の成果）
+- [`w0_cleanup_20261017_deletion_decisions.csv`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/data/repository_reviews/w0_cleanup_20261017_deletion_decisions.csv)（旧W0固定時点の成果）
