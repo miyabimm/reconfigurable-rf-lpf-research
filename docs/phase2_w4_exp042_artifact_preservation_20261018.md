@@ -23,14 +23,14 @@
 
 ## 実際に回収した10個の元ZIPの検証範囲
 
-**2026-10-18の固定回収：** ZIP総サイズ**26,953 bytes**、ZIP内**19 member**、展開後合計**93,748 bytes**。全10 ZIPをCRC/PATH安全性/ZIP-SHA256/member-SHA256で確認し、直接Gitに無損失Base64保全。正しいオンライン取得成功runは [39090026387 の後続実行を含むPR #84](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/84)のチェック一覧を参照し、旧失敗runを成功扱いしない。
+**2026-10-18の固定回収：** ZIP総サイズ**26,953 bytes**、ZIP内**19 member**、展開後合計**93,748 bytes**。全10 ZIPをCRC/PATH安全性/ZIP-SHA256/member-SHA256で確認し、直接Gitに無損失Base64保全。オンライン取得成功の実行は [CI run 39090026387](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39090026387)。失敗した旧[run 39089852327](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39089852327)を成功扱いしない。
 
-**報告済み数値（原ZIPに記載された値であり今回の再計算ではない）：**`verification_7001.json`には、RF-T005のEXP042-30m005（worst IL=0.805148668dB、H2/H3最小約30.05dB）とEXP042-35m005（worst IL=0.878223792dB、H2/H3最小約35.05dB）が保存され、28区間×7,001点の密格子と84点独立MNAを実施したとの元報告がある。元JSONは連続区間極値の証明=false、Q(f)/SRF/EM確認=falseと明記している。**この保全監査は元報告の値を取得・固定したのであり、実際に再計算・新たな同条件独立検証を通したものではない。**
+**報告済み数値（原ZIPに記載された値であり今回の再計算ではない）：** `verification_7001.json`には、RF-T005のEXP042-30m005（worst IL=0.805148668dB、H2/H3最小約30.05dB）とEXP042-35m005（worst IL=0.878223792dB、H2/H3最小約35.05dB）が保存され、28区間×7,001点の密格子と84点独立MNAを実施したとの元報告がある。元JSONは連続区間極値の証明=false、Q(f)/SRF/EM確認=falseと明記している。**この保全監査は元報告の値を取得・固定したのであり、実際に再計算・新たな同条件独立検証を通したものではない。**
 
 ## 実行状態
 
 - GitHub APIメタデータ：既に取得済み（6run、10Artifact）。
-- **元ZIP実体の認証付き取得・SHA-256記録・Git保全：実施済み。** [初回ZIP取得CI 39090026387](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39090026387)は、当初HTTP 401で**失敗**。クロスホスト302へのGitHub Bearer転送を抑制して[再取得CI 39090026387の後続実行](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/84)で**成功**（下の正しい成功run番号参照）。これを元に固定ZIP 10件の26,953 bytes／19ファイルをGitに保存し、各ZIP SHA-256とmember SHA-256を記録。ZIP内容は独立の数値評価を新たに実行していない。
+- **元ZIP実体の認証付き取得・SHA-256記録・Git保全：実施済み。** [初回ZIP取得CI 39089852327](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39089852327)はクロスホスト転送先のHTTP 401で**失敗**。転送先へのBearer認証ヘッダー転送を止めて[再取得CI 39090026387](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39090026387)で**SUCCESS**。これを元に固定ZIP 10件の26,953 bytes／19ファイルをGitに保存し、各ZIP SHA-256とmember SHA-256を記録。ZIP内容は独立の数値評価を新たに実行していない。
 - 数値再計算／独立回路検証／製造・EM評価：未実行。
 - E/W削除承認：0件。実削除：0件。
 
