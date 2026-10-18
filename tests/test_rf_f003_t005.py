@@ -79,7 +79,10 @@ class RFF003T005Tests(unittest.TestCase):
                     "trial_base_constraint_id", "trial_variable_c_layout",
                     "trial_additional_stopband"):
             resolved_without_metadata.pop(key)
-        self.assertEqual(resolved_without_metadata, formal)
+        original_without_identity = json.loads(json.dumps(formal))
+        for key in ("active_constraint_id", "active_constraint_status"):
+            original_without_identity.pop(key)
+        self.assertEqual(resolved_without_metadata, original_without_identity)
         self.assertNotEqual(constraint_fingerprint(trial), constraint_fingerprint(formal))
         self.assertNotIn("trial_additional_stopband", load_constraint("RF-T005", allow_trial=True))
         self.assertNotIn("trial_additional_stopband", load_constraint())
