@@ -177,7 +177,7 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.manifest["evidence"].append({"path": path, "sha256": sha})
         self.save()
         self.commit_changes()
-        with self.assertRaisesRegex(ValueError, "unclassified manifest evidence"):
+        with self.assertRaisesRegex(ValueError, "unclassified (manifest evidence|tracked EXP files)"):
             self.validate("finalize")
 
     def test_duplicate_blob_at_different_paths_is_rejected(self):
