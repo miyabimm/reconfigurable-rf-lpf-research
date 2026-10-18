@@ -59,6 +59,13 @@
       "base_constraint_id": "RF-F003",
       "approved_at": "2026-10-16",
       "description": "Phase 2 trial: up to three variable-C branches (per branch 0..3pF Q35), RF-F003 base otherwise unchanged."
+    },
+    "RF-T006": {
+      "file": "data/constraints/trial/RF-T006.json",
+      "state": "study_authorized",
+      "base_constraint_id": "RF-F003",
+      "approved_at": "2026-10-18",
+      "description": "Phase 2 F003-based trial: no component relaxation, two variable-C branches; additional external-port 3..6GHz full-LPF attenuation >=20dB in all six settings (inclusive 1MHz grid)."
     }
   },
   "historical": {
