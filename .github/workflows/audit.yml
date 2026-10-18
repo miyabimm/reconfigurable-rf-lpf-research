@@ -71,11 +71,24 @@ jobs:
             test_rf_f003_t005.py \
             test_phase2_candidate_catalog.py \
             test_exp047_legacy_manifest_adapter.py \
-            test_github_actions_yaml_keys.py \
-            test_new_experiment_storage.py; do
+            test_github_actions_yaml_keys.py; do
             echo "Running smoke module: $test_file"
             python -m unittest discover -s tests -p "$test_file" -v
           done
 
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
+      - name: Run 12 storage gate tests only when storage governance changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            compare_base="$(git merge-base origin/main HEAD)"
+          else
+            compare_base="$(git rev-parse HEAD^)"
+          fi
+          if git diff --name-only "$compare_base" HEAD | grep -Eq '^(scripts/audit_new_experiment_storage\.py|tests/test_new_experiment_storage\.py|\.github/workflows/audit\.yml); then
+            python -m unittest discover -s tests -p test_new_experiment_storage.py -v
+          else
+            echo "No storage gate changes; retain lightweight 24-test daily smoke."
+          fi
