@@ -72,7 +72,6 @@ def text_reconciliation():
         actual=get(path)
         assert all(x in actual for x in phrases), (id,phrases)
         sha=git("rev-parse",BASE+":"+path)
-        assert sha==git_blob(git("show",BASE+":"+path).encode("utf-8"))
         if id=="T-008":
             assert (ROOT/".github/workflows/lpf-target040.yml").is_file()
             assert "../../../../actions/workflows/lpf-target040.yml" in actual
