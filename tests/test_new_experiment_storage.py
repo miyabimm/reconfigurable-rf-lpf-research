@@ -30,6 +30,7 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.run.mkdir(parents=True)
         dump(self.root / "data/phase2_git_storage_budget.json", {
             "thresholds": {
+                "individual_new_file_soft_bytes": 131072,
                 "individual_new_file_hard_bytes": 1048576,
                 "new_experiment_curated_soft_bytes": 524288,
             }
