@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # EXP-048+ provenance must check the actual origin/main reservation
+          fetch-depth: 0 # EXP-050+ provenance checks the actual origin/main reservation
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
