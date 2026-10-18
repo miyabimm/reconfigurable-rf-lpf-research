@@ -49,7 +49,7 @@ def q_study_options():
     ixset.add(subset)
     top=b.spec(s["chip_L"],s["chip_GJM"],s["topology"].split("_",2)[2])
     top["LQ"]=[33 if j in subset else 25 for j in range(n)]
-    top["Q33_indices"]=subset
+    top["Q33_indices"]=tuple(int(z) for z in subset)
     top["area_units"]=s["area_cost"]+2*len(subset)
     opts.append((top,s))
  return sorted(opts,key=lambda t:(t[0]["area_units"],t[1]["full_grid_metrics"]["IL"],
