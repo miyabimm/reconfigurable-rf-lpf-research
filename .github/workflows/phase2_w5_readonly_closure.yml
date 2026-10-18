@@ -1,0 +1,75 @@
+name: Phase 2 W5 repository non-destructive closure audit
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/verify_phase2_w5_closure.py'
+      - 'docs/phase2_w5_readonly_closure_20261018.md'
+      - 'data/repository_reviews/w5_phase2_readonly_closure_20261018.json'
+      - 'data/repository_reviews/w5_phase2_gate_matrix_20261018.csv'
+      - '.github/workflows/phase2_w5_readonly_closure.yml'
+      - 'docs/roadmap.md'
+      - 'scripts/review_phase2_w4_unindexed.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase2-w5-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check W3 approved history and W4 protected exact Git originals and 10 ZIPs
+        run: |
+          python3 scripts/verify_phase2_w5_closure.py \
+            --output-dir artifacts/phase2_reports/w5 \
+            --emit-chunks
+      - name: Verify 14 review gates match committed report after discovery
+        run: |
+          if test -f data/repository_reviews/w5_phase2_readonly_closure_20261018.json; then
+            cmp artifacts/phase2_reports/w5/w5_readonly_gate_matrix.csv \
+              data/repository_reviews/w5_phase2_gate_matrix_20261018.csv
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          old=json.loads(Path('data/repository_reviews/w5_phase2_readonly_closure_20261018.json').read_text())
+          now=json.loads(Path('artifacts/phase2_reports/w5/w5_readonly_closure_summary.json').read_text())
+          for key in (
+            'w3_retired_documents','w3_retained_documents','protected_originals_SHA_verified',
+            'w4_historical_225_originals_SHA_verified','w4_exp046_exp047_originals_with_matching_225_SHA',
+            'baseline_workflows_still_tracked','current_tracked_yaml_workflows',
+            'exp042_original_zip_count','exp042_archive_member_count',
+            'exp042_original_members_recovered_and_SHA_verified',
+            'formal_RFF003_pareto_candidates','trial_RFT005_pareto_candidates',
+            'unified_catalog_historical_and_current_rows','w4_decision_scopes_unapproved',
+            'new_file_deletions','rf_optimizer_executions','phase3_authorized'
+          ):
+            assert old[key]==now[key], key
+          assert now['protected_originals_SHA_verified']==46
+          assert now['w4_historical_225_originals_SHA_verified']==225
+          assert now['w4_exp046_exp047_originals_with_matching_225_SHA']==131
+          assert now['W4_source_and_workflow_deletion_closed'] is False
+          print('W5 frozen SHA/approval matrix PASS — read-only final closure, no retirement consent')
+          PY
+          else
+            echo 'DISCOVERY ONLY: W5 snapshot not pinned yet. Review and commit current output before merging.'
+          fi
+      - name: Verify original 10 Actions archive ZIPs are restorable offline
+        run: python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
+      - name: Verify tracked documentation links
+        run: python3 scripts/verify_phase2_cleanup_w1_links.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase2-w5-readonly-closure-gate-matrix
+          path: artifacts/phase2_reports/w5/
+          if-no-files-found: warn
+          retention-days: 30
