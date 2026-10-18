@@ -308,7 +308,8 @@ def main():
         # Source report's observed commit is time-variable; compare data fields.
         fixed = json.loads((ROOT / ("data/repository_reviews/" + REPORT_NAME)).read_text(encoding="utf-8"))
         for key in ("source_actions_zip_count", "recovered_original_member_count", "records",
-                    "new_solver_runs", "new_curated_checkpoint_claims", "performed_deletions"):
+                    "historical_stage_lineage", "new_solver_runs",
+                    "new_curated_checkpoint_claims", "performed_deletions"):
             assert fixed[key] == result[key], "Fixed W4 recovery report mismatch: " + key
         print("W4_SOURCE_RESTORE_PASS: six original members recovered byte-identically, no solver/candidate mutation")
     print("W4_SOURCE_RECOVERY_SUMMARY=" + json.dumps({
