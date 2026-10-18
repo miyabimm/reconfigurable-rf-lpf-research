@@ -1,6 +1,6 @@
 # Step B 第2弾：歴史実験workflow 28件の退役候補と復元（2026-10-18）
 
-> **状態：ドラフト差分／検討中、削除の所有者承認なし。** このページは「mainで28件を退役済み」とは主張しない。現時点のmainは **31 workflow**。この第2弾は**28 YAMLの削除案のみ**であり、RF数値結果・実験一次記録・テスト・Python・Git refsは変更しない。研究Phase 2継続／Phase 3未承認。
+> **2026-10-18ユーザー明示承認済み：PR #102の28 YAML一括退役・削除。** この記録はPR #102のmain統合前に更新したものであり、統合を確認するまではmainで退役済みとは扱わない。基準mainは **31 workflow**、統合後の目標は**3 workflow**。RF数値結果・実験一次記録・テスト・Python・Git refsは変更しない。研究Phase 2継続／Phase 3未承認。
 
 ## 必要な最小限の再現経路
 
@@ -62,6 +62,6 @@ git show c6c23bab59aeeea70555b016bdec7806f72d239c:.github/workflows/lpf-exp013.y
 1. [Step Aの軽量スモーク](phase2_stepA_smoke_and_on_demand_checks_20261018.md) がPASSし、3つの残存workflow `audit.yml`／`reserve_experiment_number.yml`／`phase2_bc_wave1_consolidated.yml`を維持する。
 2. **差分の削除パスは表の28 workflow YAMLに限定**。Python、実験結果、候補ベクトル、独立検証、JSON、固定S2P、制約は削除しない。
 3. **manifestでSHA固定されていない**通常文書の削除先相対リンクだけを上記固定Git URLへ変更。**SHA固定の実験README 5件は原本として改変しない**。元相対リンクの参照先は本ページの固定Git版へ誘導し、未実行・未収束・失敗の歴史記録を維持する。
-4. **28パスを対象とした所有者の明示承認後にmainへ統合**する。この案は承認ではない。追加の監査workflowや巨大なSHA台帳は新設しない。
+4. **28パスの一括退役・削除は2026-10-18のユーザー回答「承認します」により個別承認済み**。PR #102の最終headで軽量CI成功と差分範囲を再確認してからmainへ統合する。追加の監査workflowや巨大なSHA台帳は新設しない。
 
 適用後の**目標**は31→3件（日常スモーク、EXP番号予約、歴史的出典照合の手動実行）。GitHub Actionsで新規の探索を起動したい場合は、その時点で**共通の手動runnerを1件だけ追加**するか、既存のローカル`scripts/local_p4.py`等を使う。現在は新たなGitHub Actions探索実装は不要。
