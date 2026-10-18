@@ -8,7 +8,7 @@
 
 ## EXP-050以降の保存証拠運用
 
-既存manifestのschema 1と制約/実行/検証/evidenceの正本は変更しない。 EXP-048/049はv1制定前に完了済みのRF-T006実験として既存形式のまま保護し、後付けのstorage_record/run_summaryは要求しない。新規実験では [Phase 2保存ポリシーv1](governance/phase2_experiment_storage_policy.md) に従い、storage_record.jsonとrun_summary.jsonを補助保存し、mainの番号予約・preflight・Git HEADからの保存読戻し・finalizeを確認する。旧EXP-001～047はこの保存形式を遡及要求しない。CIゲートもRF数値の独立MNA実行には代わらない。
+既存manifestのschema 1と制約/実行/検証/evidenceの正本は変更しない。 EXP-048/049はv1制定前に完了済みのRF-T006実験として既存形式のまま保護し、後付けのstorage_record/run_summaryは要求しない。新規実験では [Phase 2保存ポリシーv1](governance/phase2_experiment_storage_policy.md) に従い、storage_record.jsonとrun_summary.jsonを補助保存し、mainの番号予約・preflight・Git HEADからの保存読戻し・finalizeを確認する。旧EXP-001～049はこの保存形式を遡及要求しない。CIゲートもRF数値の独立MNA実行には代わらない。
 
 ## 過去のEXP-001～015
 
