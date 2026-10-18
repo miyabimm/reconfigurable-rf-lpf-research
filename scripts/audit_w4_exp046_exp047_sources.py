@@ -94,7 +94,7 @@ def assess():
     assert not any(x["experiment_id"] == "EXP-046" for x in cat)
     assert all(x["checkpoint_path"] == x["verification_path"] for x in formal)
     assert all(x["experiment_execution_status"] == "partial" for x in formal)
-    assert all(x["solver_convergence_status"] in ("", "unknown") for x in formal)
+    assert all(x["solver_convergence_status"] == "not_stated_in_snapshot" for x in formal)
     para = json.loads(PARETO.read_text())
     formal_pareto = next(x["candidates"] for x in para["conditions"]
                          if x["constraint_id"] == "RF-F003")
