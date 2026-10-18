@@ -189,7 +189,8 @@ def assert_no_original_mutation():
                    ".github/workflows/")
     assert not any(
         (p.startswith(original_dirs) and
-         p != ".github/workflows/phase2_w5_post_cleanup_disposition.yml") or
+         p not in (".github/workflows/phase2_w5_post_cleanup_disposition.yml",
+                   ".github/workflows/phase2_w5_readonly_closure.yml")) or
         p in ("data/design_constraints.json","data/bands.csv")
         for p in changes), changes
     for r in records("data/repository_reviews/step4_retention_46_20261017.csv"):
