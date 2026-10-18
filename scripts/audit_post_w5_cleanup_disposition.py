@@ -98,7 +98,7 @@ def workflow_review():
     assert len(by_path)==39
     current=[p for p in git("ls-files",".github/workflows").splitlines()
              if p.endswith((".yml",".yaml")) and (ROOT/p).is_file()]
-    assert len(current)==46, len(current)
+    assert len(current)==47, len(current)
     rows=[]
     for p in sorted(current):
         src=get(p)
@@ -249,7 +249,7 @@ def main():
     args.output_dir.mkdir(parents=True,exist_ok=True)
     outputs={
         "text":write_csv(t,T_FIELDS,args.output_dir/"w5_T001_T010_status.csv"),
-        "workflows":write_csv(wf,WF_FIELDS,args.output_dir/"w5_workflow_46_decisions.csv"),
+        "workflows":write_csv(wf,WF_FIELDS,args.output_dir/"w5_workflow_47_decisions.csv"),
         "evidence":write_csv(e,E_FIELDS,args.output_dir/"w5_evidence_225_decisions.csv"),
         "summary":json.dumps(s,indent=2,ensure_ascii=False)+"\n"
     }
