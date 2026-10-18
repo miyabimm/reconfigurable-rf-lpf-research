@@ -1,0 +1,349 @@
+{
+  "experiment_id": "EXP-048",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T006",
+  "base_constraint_id": "RF-F003",
+  "source_experiment_id": "EXP-047",
+  "source_sha256": "eab8591add894303ede2392f4400bdcc6d922b9f6b99f76ac49a0dc3bc8d46d6",
+  "effective_constraint_sha256": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+  "seed": 48006,
+  "method": "Bounded Powell with original 4L 2GJM 2PCB 2Cv seed and same-count capacitor topology rewiring; local non-global",
+  "component_counts": {
+    "LQP02HV_Q25": 4,
+    "GJM01_Q80": 2,
+    "PCB_PATTERN_C_Q40": 2,
+    "IC_VARIABLE_C_Q35": 2
+  },
+  "initial_vector_23": [
+    3.0290137892140896,
+    16.321704353199596,
+    14.723873695794211,
+    6.849417039000567,
+    1.9414448372423612,
+    0.47980580858538613,
+    0.2,
+    0.1760789133826822,
+    0.1,
+    0.006803991083479033,
+    -0.1,
+    0.5934828718330297,
+    1.488838267791881,
+    0.4754220170693842,
+    1.312745225821447,
+    0.4798774368148162,
+    1.2567122847811618,
+    0.3173931606360618,
+    0.8372652398941902,
+    0.2572305767534404,
+    0.5871030183126968,
+    0.1320206701954294,
+    0.24219967468600873
+  ],
+  "baseline_fine": {
+    "worst_il_db": 0.8436523315639601,
+    "min_h2_db": 30.03993865346161,
+    "min_h3_db": 30.03984294128475,
+    "min_3to6_db": 6.940198490743271,
+    "samples_UL": 7007,
+    "samples_DL": 7007,
+    "samples_H2": 7007,
+    "samples_H3": 7007,
+    "samples_wide": 18006,
+    "worst_3to6_MHz": 3000.0,
+    "worst_3to6_setting": "B71"
+  },
+  "selected": {
+    "topology": "all_shunt",
+    "fixed_capacitor_edges": [
+      [
+        1,
+        -1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        2,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_capacitor_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        2,
+        -1
+      ]
+    ],
+    "parameter_order": "L0..L3_nH,Cf0..Cf3_pF,k01,k13,k32,Cv0/Cv2_pF for B71 B12 B28 B13B14 B26 B8",
+    "vector_23": [
+      23.235567998512483,
+      9.549096468584743,
+      11.051186249572636,
+      22.983055104164173,
+      1.976915334402259,
+      0.49938842449696996,
+      0.17750613795955789,
+      0.1989634757025493,
+      0.09832920969061636,
+      -0.037846300971695244,
+      -0.09773638284556457,
+      1.2927632030100047,
+      1.601585335714669,
+      0.5980522991879222,
+      2.0491199573494376,
+      0.6742647155399601,
+      2.3329558960678685,
+      0.5646961957938896,
+      2.7244327700616324,
+      0.22039850702283767,
+      1.059592252965308,
+      0.027671486285868317,
+      0.7099832944338323
+    ],
+    "coarse": {
+      "worst_il_db": 2.9583502795876244,
+      "min_h2_db": 30.856815196735212,
+      "min_h3_db": 37.66891251873627,
+      "min_3to6_db": 26.578101165940005,
+      "samples_UL": 28,
+      "samples_DL": 28,
+      "samples_H2": 28,
+      "samples_H3": 28,
+      "samples_wide": 186,
+      "worst_3to6_MHz": 3000.0,
+      "worst_3to6_setting": "B26"
+    },
+    "fine": {
+      "worst_il_db": 2.9583502795876244,
+      "min_h2_db": 30.856815196735212,
+      "min_h3_db": 37.66891251873627,
+      "min_3to6_db": 26.272111595621364,
+      "samples_UL": 7007,
+      "samples_DL": 7007,
+      "samples_H2": 7007,
+      "samples_H3": 7007,
+      "samples_wide": 18006,
+      "worst_3to6_MHz": 3028.0,
+      "worst_3to6_setting": "B26"
+    },
+    "finite_grid_mandatory_pass": true,
+    "solver_status": "partial_local_search_no_global_convergence_proof"
+  },
+  "coarse_rounds": [
+    {
+      "topology": "original",
+      "stage": "value_retune_original",
+      "evaluations": 299,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "score": 354.23022857983676,
+      "metrics": {
+        "worst_il_db": 2.6020229335891996,
+        "min_h2_db": 22.180723234010877,
+        "min_h3_db": 24.90018074975882,
+        "min_3to6_db": 6.996447611465671,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B71"
+      }
+    },
+    {
+      "topology": "drop_input_bridge",
+      "stage": "topology_screen",
+      "evaluations": 965,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "score": 243.51899482574913,
+      "metrics": {
+        "worst_il_db": 31.190520558415923,
+        "min_h2_db": 20.539109168071423,
+        "min_h3_db": 24.80759271494177,
+        "min_3to6_db": 24.850967630581216,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B71"
+      }
+    },
+    {
+      "topology": "drop_fixed_bridges",
+      "stage": "topology_screen",
+      "evaluations": 648,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "score": 462.13483876032655,
+      "metrics": {
+        "worst_il_db": 27.118850392412654,
+        "min_h2_db": 18.140285786653397,
+        "min_h3_db": 20.82644935659445,
+        "min_3to6_db": 28.291429218705787,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B71"
+      }
+    },
+    {
+      "topology": "all_shunt",
+      "stage": "topology_screen",
+      "evaluations": 1100,
+      "solver_success": false,
+      "solver_message": "Maximum number of function evaluations has been exceeded.",
+      "score": 3.2913336644706974,
+      "metrics": {
+        "worst_il_db": 21.94222442980465,
+        "min_h2_db": 30.25088278108648,
+        "min_h3_db": 45.69869347941902,
+        "min_3to6_db": 53.62934674081415,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B8"
+      }
+    },
+    {
+      "topology": "output_shunt",
+      "stage": "topology_screen",
+      "evaluations": 1100,
+      "solver_success": false,
+      "solver_message": "Maximum number of function evaluations has been exceeded.",
+      "score": 0.9126544965487087,
+      "metrics": {
+        "worst_il_db": 6.0799917999655415,
+        "min_h2_db": 30.572719893949234,
+        "min_h3_db": 30.117242842517467,
+        "min_3to6_db": 20.174392841745373,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3500.0,
+        "worst_3to6_setting": "B8"
+      }
+    },
+    {
+      "topology": "input_shunt",
+      "stage": "topology_screen",
+      "evaluations": 1100,
+      "solver_success": false,
+      "solver_message": "Maximum number of function evaluations has been exceeded.",
+      "score": 2.1876767193622904,
+      "metrics": {
+        "worst_il_db": 14.577724833910963,
+        "min_h2_db": 30.07743903508662,
+        "min_h3_db": 34.75289854748173,
+        "min_3to6_db": 56.430857110927874,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3200.0,
+        "worst_3to6_setting": "B28"
+      }
+    },
+    {
+      "topology": "all_shunt",
+      "stage": "refinement_0",
+      "evaluations": 355,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "score": 174.13159161799962,
+      "metrics": {
+        "worst_il_db": 36.720609965002865,
+        "min_h2_db": 26.54104390928799,
+        "min_h3_db": 21.635628693989823,
+        "min_3to6_db": 43.33735373882287,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B8"
+      }
+    },
+    {
+      "topology": "all_shunt",
+      "stage": "refinement_1",
+      "evaluations": 994,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "score": 87.37795404410191,
+      "metrics": {
+        "worst_il_db": 40.03534521543674,
+        "min_h2_db": 23.850475412304245,
+        "min_h3_db": 28.823376109153763,
+        "min_3to6_db": 38.113318007635584,
+        "samples_UL": 28,
+        "samples_DL": 28,
+        "samples_H2": 28,
+        "samples_H3": 28,
+        "samples_wide": 186,
+        "worst_3to6_MHz": 3000.0,
+        "worst_3to6_setting": "B8"
+      }
+    },
+    {
+      "topology": "all_shunt",
+      "stage": "feasible_IL_refinement_0",
+      "evaluations": 357,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "best_feasible_IL_so_far": 2.9583502795876244
+    },
+    {
+      "topology": "all_shunt",
+      "stage": "feasible_IL_refinement_1",
+      "evaluations": 358,
+      "solver_success": true,
+      "solver_message": "Optimization terminated successfully.",
+      "best_feasible_IL_so_far": 2.9583502795876244
+    }
+  ],
+  "objective_calls": 7276,
+  "elapsed_seconds": 18.859887047999997,
+  "fine_grid": {
+    "original_28_segments_pts": 1001,
+    "wide_frequency_step_MHz": 1,
+    "wide_points_per_setting": 3001,
+    "wide_total": 18006
+  },
+  "independent_validation": {
+    "independent_method": "explicit 5-node plus 4-L-branch 9x9 MNA",
+    "points": 114,
+    "legacy_28_region_endpoint_midpoint": 84,
+    "additional_3to6_probes": 30,
+    "max_abs_attenuation_disagreement_db": 6.252776074688882e-13,
+    "max_power_balance_residual_W": 7.806255641895632e-18,
+    "min_constituent_power_W": 1.252746688663425e-11,
+    "passed": true
+  },
+  "limitations": [
+    "No continuous extrema/Q(f)/SRF/EM/tolerance/physical validation",
+    "Coarse optimization and local heuristic do not prove infeasibility",
+    "Independent MNA verified only 114 specified probes not all grid points"
+  ]
+}
