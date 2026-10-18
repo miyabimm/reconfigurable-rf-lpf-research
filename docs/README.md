@@ -11,6 +11,7 @@
 | 面積–ILパレートの元レポート | [2026-10-17保存スナップショット説明](pareto_rf_t005_rf_f003_20261017.md) |
 | 作業計画・過去の変更履歴 | [ロードマップ](roadmap.md) |
 | 日常の軽量CI・必要時の独立数値検証 | [Step Aスモーク／手動検証](phase2_stepA_smoke_and_on_demand_checks_20261018.md) |
+| Step C一時監査スクリプトの退役候補 | [15ファイルの復元・判断基準](phase2_stepC_dated_audit_retirement_20261018.md) |
 | Step Bの旧監査workflow退役案・復元元 | [第1弾17件の対象一覧](phase2_stepB_workflow_retirement_20261018.md) |
 | Step Bの歴史実験workflow退役案・再現入口 | [第2弾28件の復元一覧（ドラフト）](phase2_stepB_historical_experiment_workflow_retirement_20261018.md) |
 | 未解決の研究・実装・再現性ゲート | [未解決課題](current/open_research_questions.md) |
