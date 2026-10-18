@@ -24,6 +24,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+import urllib.parse
 import zipfile
 from pathlib import Path
 
@@ -85,6 +86,17 @@ def url_json(path, token):
         return json.load(response)
 
 
+class StripAuthorizationOnCrossHostRedirect(urllib.request.HTTPRedirectHandler):
+    """Do not forward GitHub Bearer credential to signed Azure storage URL."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if (redirected is not None and
+            urllib.parse.urlsplit(req.full_url).netloc !=
+                urllib.parse.urlsplit(newurl).netloc):
+            redirected.remove_header("Authorization")
+        return redirected
+
+
 def download_zip(artifact_id, token):
     url = API + "/actions/artifacts/" + str(artifact_id) + "/zip"
     req = urllib.request.Request(url, headers={
@@ -93,7 +105,8 @@ def download_zip(artifact_id, token):
         "X-GitHub-Api-Version": "2022-11-28",
         "User-Agent": "phase2-exp042-read-only-artifact-preservation",
     })
-    with urllib.request.urlopen(req, timeout=45) as response:
+    opener = urllib.request.build_opener(StripAuthorizationOnCrossHostRedirect())
+    with opener.open(req, timeout=45) as response:
         data = response.read(MAX_ZIP + 1)
     assert 0 < len(data) <= MAX_ZIP, (artifact_id, "unexpected size")
     assert zipfile.is_zipfile(io.BytesIO(data)), ("not ZIP", artifact_id)
