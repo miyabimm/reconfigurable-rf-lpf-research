@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Phase 2 Git-only evidence gate for NEW EXP-048+ runs.
+"""Phase 2 Git-only evidence gate for NEW EXP-050+ runs.
 
 This is a provenance/completeness audit, not an RF solver or independent MNA.
-Historical EXP-001..047 are immutable and outside this new storage schema.
+Historical EXP-001..049 (including completed RF-T006 EXP-048/049) are immutable and outside this new storage schema.
 """
 import argparse
 import hashlib
@@ -18,6 +18,7 @@ from scripts.experiment_id_registry import PATH as LEDGER_PATH, read_ledger  # n
 from src.lpf.experiment_manifest import validate_manifest  # noqa: E402
 
 POLICY = "phase2-git-only-v1"
+MIN_NEW_EXP_NUMBER = 50  # EXP-048/049 completed on main before governance v1 rollout
 RUNS = ("experiments/chatgpt_topology_search/runs", "experiments/matching_limit/runs")
 CASES = {"B71", "B12", "B28", "B13+B14", "B26", "B8"}
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
@@ -201,8 +202,8 @@ def reservation_on_main(root, experiment_id, *, main_ref, starting):
 
 
 def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
-    require(EXP.fullmatch(experiment_id) and int(experiment_id[4:]) >= 48,
-            "policy gate applies to EXP-048+")
+    require(EXP.fullmatch(experiment_id) and int(experiment_id[4:]) >= MIN_NEW_EXP_NUMBER,
+            "policy gate applies to EXP-050+; EXP-001..049 preserve original evidence")
     root = Path(root).resolve()
     run = find_run(root, experiment_id)
     record = read_json(run / "storage_record.json")
@@ -349,7 +350,7 @@ def audit_all(root, *, main_ref):
     for base in RUNS:
         for directory in sorted((Path(root) / base).glob("EXP-*")):
             m = EXP.fullmatch(directory.name)
-            if m and int(m.group(1)) >= 48:
+            if m and int(m.group(1)) >= MIN_NEW_EXP_NUMBER:
                 results.append(validate_run(root, directory.name, main_ref=main_ref))
     return results
 
