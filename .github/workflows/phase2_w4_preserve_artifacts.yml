@@ -1,0 +1,42 @@
+name: Phase 2 W4 exact EXP-042 Actions artifact preservation
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/preserve_exp042_actions_artifacts.py'
+      - '.github/workflows/phase2_w4_preserve_artifacts.yml'
+      - 'data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json'
+      - 'docs/phase2_w4_exp042_artifact_preservation_20261018.md'
+      - 'docs/roadmap.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify-and-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Capture original GitHub Actions archives and member SHA256 without running RF solver
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/preserve_exp042_actions_artifacts.py --capture --log-chunks
+      - name: Verify Git-archived exact ZIP bytes offline once added
+        run: |
+          if test -f data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json; then
+            python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
+          else
+            echo "INITIAL CAPTURE ONLY: Git archive not yet committed; this run cannot assert long-term preservation."
+          fi
+      - name: Validate tracked Markdown local links
+        run: python3 scripts/verify_phase2_cleanup_w1_links.py
