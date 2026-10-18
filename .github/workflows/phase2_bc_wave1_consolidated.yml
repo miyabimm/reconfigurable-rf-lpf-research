@@ -1,61 +1,8 @@
-name: Phase 2 B/C consolidated archival parity and EXP-046 lossless source check
+name: Phase 2 historical source verification (on demand)
 
+# No automatic checks for legacy source preservation; run manually if needed.
+# The PR #91 five historical source checks plus EXP-046 roundtrip remain intact.
 on:
-  # Validate the deployed canonical gate on the exact main SHA when this file changes.
-  # Keep routine main pushes outside this extra audit; PR paths remain unchanged.
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/phase2_bc_wave1_consolidated.yml'
-  pull_request:
-    paths:
-      - '.github/workflows/phase2_bc_wave1_consolidated.yml'
-      - 'scripts/verify_phase2_bc_exp046_lossless.py'
-      - 'data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json'
-      - 'docs/phase2_bc_wave1_consolidation_20261018.md'
-      - 'docs/roadmap.md'
-      - '.github/workflows/phase2_cleanup_w2.yml'
-      - '.github/workflows/phase2_cleanup_w3.yml'
-      - '.github/workflows/phase2_w4_exp042_crosswalk.yml'
-      - '.github/workflows/phase2_w4_exp042_missing_variants.yml'
-      - '.github/workflows/phase2_w4_exp046_exp047_provenance.yml'
-      - 'scripts/build_phase2_topology_search.py'
-      - 'tests/test_phase2_topology_search.py'
-      - 'data/catalog/phase2_topology_search_20261017*'
-      - 'docs/results/phase2_topology_search_20261017.md'
-      - 'docs/results/README.md'
-      - 'data/catalog/README.md'
-      - 'docs/phase2_cleanup_w3_document_review_20261017.md'
-      - 'docs/archive/w3_consolidated_documents_20261017.md'
-      - 'docs/archive/README.md'
-      - 'docs/governance/README.md'
-      - 'data/repository_reviews/phase2_cleanup_deletion_candidates_20261017.csv'
-      - 'data/repository_reviews/w3_document_disposition_20261017.csv'
-      - 'scripts/verify_phase2_cleanup_w3.py'
-      - 'docs/README.md'
-      - 'docs/current/*.md'
-      - 'scripts/audit_w4_exp042_artifact_checkpoint_crosswalk.py'
-      - 'docs/phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md'
-      - 'data/repository_reviews/w4_exp042_member_crosswalk_20261018.csv'
-      - 'data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json'
-      - 'scripts/audit_w4_exp042_missing_variants.py'
-      - 'data/repository_reviews/w4_exp042_recovered_original_members_20261018/**'
-      - 'data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json'
-      - 'docs/phase2_w4_exp042_missing_variant_recovery_20261018.md'
-      - 'scripts/audit_w4_exp046_exp047_sources.py'
-      - 'data/repository_reviews/w4_exp046_exp047_*_20261018.*'
-      - 'docs/phase2_w4_exp046_exp047_source_review_20261018.md'
-      # Preserve the wider PR #92 trigger envelope while PR #91 is canonical.
-      # This is additive: no original verification checks or workflows are removed.
-      - '.github/workflows/phase2_first_wave_retention_parity.yml'
-      - 'scripts/**'
-      - 'data/catalog/**'
-      - 'data/repository_reviews/**'
-      - 'data/pareto_snapshots/**'
-      - 'experiments/chatgpt_topology_search/runs/EXP-042/**'
-      - 'experiments/chatgpt_topology_search/runs/EXP-046/**'
-      - 'experiments/chatgpt_topology_search/runs/EXP-047/**'
-      - 'docs/**'
   workflow_dispatch:
 
 permissions:
