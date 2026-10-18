@@ -8,7 +8,7 @@
 
 ## 2026-10-18：Issue #93／PR #91正本化と非破壊整理の着手
 
-所有者の明示指定により、**PR #91の`phase2_bc_wave1_consolidated.yml`を第1波監査の正本とする**。[正本化・機能差・退役ゲート報告](phase2_issue93_pr91_canonical_reconciliation_20261018.md)と[8項目の対応行列](../data/repository_reviews/phase2_issue93_pr91_canonical_parity_matrix_20261018.csv)を作成し、PR #92の広域`pull_request.paths`を正本側へ追加する非破壊PRを準備。独立jobのcheck名とartifact名・外部依存、同一main SHAでの後継CI再検証・branch protection詳細は未解決。**重複するPR #92 workflowと旧5件、EXP-046元JSONは全件保持し、削除・停止は個別owner承認後の別PRに限定する。** Phase 2継続、Phase 3停止。
+所有者の明示指定により、**PR #91の`phase2_bc_wave1_consolidated.yml`を第1波監査の正本とする**。[正本化・機能差・退役ゲート報告](phase2_issue93_pr91_canonical_reconciliation_20261018.md)と[8項目の対応行列](../data/repository_reviews/phase2_issue93_pr91_canonical_parity_matrix_20261018.csv)を作成し、PR #92の広域`pull_request.paths`を正本側へ追加する[非破壊PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94)を作成。初回PR-head同一SHAで正本・比較CIはともにSUCCESS（main統合後の同SHA検証は未実施）。独立jobのcheck名とartifact名・外部依存、同一main SHAでの後継CI再検証・branch protection詳細は未解決。**重複するPR #92 workflowと旧5件、EXP-046元JSONは全件保持し、削除・停止は個別owner承認後の別PRに限定する。** Phase 2継続、Phase 3停止。
 
 ## 2026-10-18：B/C第1波の実行結果（削除・停止なし）
 
