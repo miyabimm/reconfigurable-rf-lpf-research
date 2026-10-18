@@ -1,0 +1,3173 @@
+{
+  "experiment_id": "EXP-049",
+  "status": "completed_local_exploration",
+  "phase": "Phase 2",
+  "trial": "RF-T006",
+  "base_formal": "RF-F003",
+  "target_IL_db": 1.1,
+  "mandatory_H2_db": 30,
+  "mandatory_H3_db": 30,
+  "mandatory_3to6GHz_db": 20,
+  "effective_constraints_sha256": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+  "origin_EXP048_selected_sha256": "0805149289e8245dd117b991106ef3674a7cb3ae116d371948f60de78986d141",
+  "seed": 49006,
+  "source_execution_sha": "9b7ed739fd17f3a5ccc0a6a67ee484e600f4ebb9",
+  "explored_area_levels": [
+    6.0,
+    6.666666666666666,
+    7.0,
+    7.333333333333334,
+    7.666666666666666,
+    8.0,
+    8.333333333333334,
+    8.666666666666666
+  ],
+  "searched_topology_templates": 35,
+  "completed_starts": 83,
+  "evaluations": 113647,
+  "elapsed_seconds": 95.594623936,
+  "best_per_area": [
+    {
+      "area_cost": 6.0,
+      "chip_L": 4,
+      "chip_GJM": 3,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_3GJM_ladder_shunt",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        20.46976921119998,
+        26.964724908758637,
+        0.4786626806441273,
+        18.193272259622642,
+        2.1241021572726018,
+        1.4984353644325805,
+        1.0077928761253663,
+        0.020003941293138275,
+        0.11144054968945197,
+        -0.05929268925927089,
+        0.09001125215581633,
+        -0.09811419804311523,
+        1.1478426741857193,
+        1.815263509169095,
+        1.0715304814493205,
+        1.1480930933283258,
+        0.7099138427967965,
+        1.1492524871834517,
+        0.710857326633108,
+        1.4074633940220305,
+        0.0,
+        0.2843156984264117,
+        0.002205075052471233,
+        0.008757527126045939
+      ],
+      "grid_metrics": {
+        "IL": 2.127431302591364,
+        "H2": 30.435862042098144,
+        "H3": 62.00872688990345,
+        "W": 77.03180200912931,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      },
+      "selected_from": "filter",
+      "round_id": 11,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.127431302591364,
+        "H2": 30.435862042098144,
+        "H3": 62.00872688990345,
+        "W": 77.03180200912931,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "chip_L": 4,
+      "chip_GJM": 4,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_4GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        6.872306526084736,
+        26.99848810931971,
+        8.695852358257456,
+        12.537156615206207,
+        1.6029473311055658,
+        7.997664345550194,
+        1.2532177689751463,
+        0.4374011071321165,
+        0.19714941549644185,
+        0.17905935345686722,
+        -0.09691412176744346,
+        -0.09595217805159281,
+        -0.008204363278406806,
+        2.219042281601084,
+        2.9977373525730555,
+        2.9973876128496815,
+        2.9975247030646432,
+        2.997388342310473,
+        2.997515529106664,
+        2.9973617396746968,
+        2.9974468554034304,
+        2.050988798522201,
+        2.997405897751267,
+        1.8559323495563766,
+        1.8565277237385036
+      ],
+      "grid_metrics": {
+        "IL": 2.0540586510193064,
+        "H2": 30.017927147430164,
+        "H3": 41.896517352918664,
+        "W": 32.82795998211914,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP047",
+      "round_id": 21,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.0540586510193064,
+        "H2": 30.017927147430164,
+        "H3": 41.896517352918664,
+        "W": 32.82409227339206,
+        "wide_worst_freq_MHz": 5936.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 7.0,
+      "chip_L": 5,
+      "chip_GJM": 3,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_3GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        7.118412547138815,
+        17.387945774027454,
+        26.999816733585302,
+        26.98344962963099,
+        24.11837017964585,
+        1.8977213237488177,
+        7.997408382384288,
+        7.9977611315113295,
+        0.17782154550588625,
+        0.051103405415068776,
+        -0.09574275274955836,
+        0.08885438199983176,
+        -0.09741236138734044,
+        -0.09789996795541653,
+        2.973086870924169,
+        2.0939306097999664,
+        2.9893303157302076,
+        1.8703536367587321,
+        2.8995705923158157,
+        2.093332017822866,
+        2.997861709492696,
+        2.1841939509539956,
+        1.1550018163874158,
+        1.8468939999468843,
+        1.3183720915810067,
+        1.6401671725245353
+      ],
+      "grid_metrics": {
+        "IL": 2.3503853202505725,
+        "H2": 33.28778360139812,
+        "H3": 56.58050294997068,
+        "W": 52.98508393592432,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B26"
+      },
+      "selected_from": "EXP047",
+      "round_id": 28,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.3503853202505725,
+        "H2": 33.28778360139812,
+        "H3": 56.58050294997068,
+        "W": 52.982724025011095,
+        "wide_worst_freq_MHz": 3273.0,
+        "wide_worst_setting": "B26"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "chip_L": 4,
+      "chip_GJM": 5,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_5GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        8.438152427995977,
+        15.73883035043421,
+        0.478331149926916,
+        11.574920021059132,
+        1.5742368855148607,
+        0.01334180951627072,
+        7.997715960619022,
+        0.5449211322050583,
+        2.044413741573213,
+        0.19750692252704707,
+        0.1975325424749901,
+        0.023576557503506144,
+        -0.09724414722335399,
+        -0.08527448387910667,
+        1.852512058442114,
+        0.00013368316613569103,
+        2.994536861771131,
+        1.853088507171526,
+        2.9955665340221485,
+        2.5609349321862265,
+        2.9360426000108104,
+        2.2904239451090374,
+        0.7093528786545419,
+        2.2913892838002474,
+        0.2724263761868893,
+        1.1478305136494564
+      ],
+      "grid_metrics": {
+        "IL": 2.1481731860127358,
+        "H2": 30.407008917274695,
+        "H3": 30.051090732657208,
+        "W": 37.36603616430713,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "selected_from": "filter",
+      "round_id": 41,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.1481731860127358,
+        "H2": 30.407008917274695,
+        "H3": 29.954466497481356,
+        "W": 37.36603616430713,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "mandatory_pass_full_grid": false,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "chip_L": 5,
+      "chip_GJM": 4,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_4GJM_ladder_mixed",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        7.099904556791403,
+        2.423496972659735,
+        18.382664650447744,
+        3.4335862138614974,
+        19.354571227691007,
+        1.5610928589983457,
+        2.8099127453938157,
+        0.28873238352359126,
+        1.476386253948131,
+        0.03348176143429066,
+        0.1150155281000757,
+        0.09736887650071503,
+        0.0851193495084928,
+        -0.06461580162663641,
+        -0.08196601125010515,
+        0.9297208510653893,
+        1.855647700984824,
+        0.709950598937749,
+        1.8556476905103194,
+        0.7097496672345086,
+        1.855510127520614,
+        0.6097411959716389,
+        1.8563013785572566,
+        0.2734341691504992,
+        1.1262150746495359,
+        0.0021994123075722155,
+        0.9994667733799358
+      ],
+      "grid_metrics": {
+        "IL": 2.191883020025483,
+        "H2": 30.041949955723872,
+        "H3": 47.31688644793639,
+        "W": 33.11988008201836,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP048",
+      "round_id": 45,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.191883020025483,
+        "H2": 30.041949955723872,
+        "H3": 47.31688644793639,
+        "W": 32.912537098796264,
+        "wide_worst_freq_MHz": 3426.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 8.0,
+      "chip_L": 4,
+      "chip_GJM": 6,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "4L_6GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        4
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        7.447463536326291,
+        5.357490474849109,
+        7.408968263180549,
+        10.666042145460587,
+        1.5593423090506178,
+        0.8855827182976549,
+        0.9007945542332886,
+        0.6518364087708914,
+        1.234861258873427,
+        1.301816773663807,
+        0.07009941344827471,
+        0.03772655943402035,
+        -0.08045419162075196,
+        -0.07584305531801204,
+        -0.0562966912697447,
+        1.8240469467843623,
+        2.0705806102957167,
+        2.9649088487758055,
+        1.8298563790788545,
+        1.8247006252489864,
+        1.827919901647357,
+        1.8240551324448102,
+        1.826241621206726,
+        0.7057019578010298,
+        1.115584806789765,
+        0.019132140814131077,
+        1.0405900190357393
+      ],
+      "grid_metrics": {
+        "IL": 1.8475740824210016,
+        "H2": 30.00194199084888,
+        "H3": 52.03737717769525,
+        "W": 37.185652376474835,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "filter",
+      "round_id": 60,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 1.8475740824210016,
+        "H2": 30.00194199084888,
+        "H3": 52.03737717769525,
+        "W": 37.185652376474835,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "chip_L": 5,
+      "chip_GJM": 5,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "5L_5GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        5
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        6.63377989706245,
+        0.40151165457991844,
+        5.246841475245192,
+        8.109437885702562,
+        8.877353361949863,
+        1.692836143263094,
+        0.0071777661898401734,
+        0.5557252414406422,
+        1.0530025428314502,
+        1.0992989490135918,
+        0.19851761466627363,
+        0.19727862964909398,
+        0.08382190822773136,
+        0.00780814819691021,
+        -0.09739764263649277,
+        -0.01350984983007219,
+        2.9715141249376287,
+        2.981303066770455,
+        2.9702233628053722,
+        2.979377837355639,
+        2.970272074015385,
+        2.978765227878954,
+        2.9684956295605445,
+        2.974179403364039,
+        2.967837870600474,
+        2.971444373847397,
+        2.0959031147443534,
+        2.8350151423050485
+      ],
+      "grid_metrics": {
+        "IL": 2.3992626934227133,
+        "H2": 30.054586354722595,
+        "H3": 31.823257786106996,
+        "W": 38.22829494749109,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP047",
+      "round_id": 73,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.3992626934227133,
+        "H2": 30.054586354722595,
+        "H3": 31.447901689067415,
+        "W": 38.22829494749109,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "chip_L": 6,
+      "chip_GJM": 4,
+      "pcb_C": 2,
+      "variable_C": 2,
+      "topology": "6L_4GJM_ladder_notches",
+      "l_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "Cv_edges": [
+        [
+          1,
+          -1
+        ],
+        [
+          5,
+          -1
+        ]
+      ],
+      "port_nodes": [
+        0,
+        6
+      ],
+      "l_q": 25,
+      "fixed_GJM_q": 80,
+      "pcb_C_q": 40,
+      "cv_q": 35,
+      "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+      "vector": [
+        9.667245335983786,
+        3.5978092308607295,
+        0.40151172752940667,
+        0.40151183602575413,
+        20.03285209798731,
+        17.763175546997097,
+        1.2470168033648616,
+        0.007358568353952655,
+        0.007238868488670391,
+        0.00723886848867028,
+        0.19763198885064354,
+        0.19763198885064354,
+        -0.09736887650071502,
+        -0.09736887650071505,
+        -0.09736887650071502,
+        -0.09736887650071505,
+        -0.016718427000252375,
+        2.9978005876924274,
+        2.997800587692428,
+        2.9978005876924274,
+        2.997800587692428,
+        2.997800587692427,
+        2.997800587692428,
+        2.9978005876924274,
+        2.9978005876924274,
+        1.1474437552814596,
+        2.7316895810591495,
+        1.8563013785572566,
+        2.293995479808203
+      ],
+      "grid_metrics": {
+        "IL": 2.884655832975436,
+        "H2": 30.07065901524357,
+        "H3": 41.67669918267769,
+        "W": 48.85067957709457,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "selected_from": "EXP047",
+      "round_id": 80,
+      "mandatory_pass_on_screen_grid": true,
+      "full_grid_metrics": {
+        "IL": 2.884655832975436,
+        "H2": 30.07065901524357,
+        "H3": 41.67669918267769,
+        "W": 48.85067957709457,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "mandatory_pass_full_grid": true,
+      "IL_target_1p1_met": false
+    }
+  ],
+  "best_full_grid": {
+    "area_cost": 8.0,
+    "chip_L": 4,
+    "chip_GJM": 6,
+    "pcb_C": 2,
+    "variable_C": 2,
+    "topology": "4L_6GJM_ladder_notches",
+    "l_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "GJM_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        1,
+        -1
+      ],
+      [
+        2,
+        -1
+      ]
+    ],
+    "PCB_edges": [
+      [
+        2,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "Cv_edges": [
+      [
+        1,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "port_nodes": [
+      0,
+      4
+    ],
+    "l_q": 25,
+    "fixed_GJM_q": 80,
+    "pcb_C_q": 40,
+    "cv_q": 35,
+    "parameter_order": "L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
+    "vector": [
+      7.447463536326291,
+      5.357490474849109,
+      7.408968263180549,
+      10.666042145460587,
+      1.5593423090506178,
+      0.8855827182976549,
+      0.9007945542332886,
+      0.6518364087708914,
+      1.234861258873427,
+      1.301816773663807,
+      0.07009941344827471,
+      0.03772655943402035,
+      -0.08045419162075196,
+      -0.07584305531801204,
+      -0.0562966912697447,
+      1.8240469467843623,
+      2.0705806102957167,
+      2.9649088487758055,
+      1.8298563790788545,
+      1.8247006252489864,
+      1.827919901647357,
+      1.8240551324448102,
+      1.826241621206726,
+      0.7057019578010298,
+      1.115584806789765,
+      0.019132140814131077,
+      1.0405900190357393
+    ],
+    "grid_metrics": {
+      "IL": 1.8475740824210016,
+      "H2": 30.00194199084888,
+      "H3": 52.03737717769525,
+      "W": 37.185652376474835,
+      "wide_worst_freq_MHz": 6000.0,
+      "wide_worst_setting": "B8"
+    },
+    "selected_from": "filter",
+    "round_id": 60,
+    "mandatory_pass_on_screen_grid": true,
+    "full_grid_metrics": {
+      "IL": 1.8475740824210016,
+      "H2": 30.00194199084888,
+      "H3": 52.03737717769525,
+      "W": 37.185652376474835,
+      "wide_worst_freq_MHz": 6000.0,
+      "wide_worst_setting": "B8"
+    },
+    "mandatory_pass_full_grid": true,
+    "IL_target_1p1_met": false
+  },
+  "independent_MNA": {
+    "points": 114,
+    "method": "independent 9x9 explicit branch-current MNA",
+    "max_abs_db_disagreement": 2.1600499167107046e-12,
+    "max_power_balance_W": 6.938893903907228e-18,
+    "passed": true
+  },
+  "target_met": false,
+  "stopped_early_after_target_area": null,
+  "round_summary": [
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_T_bridge",
+      "origin": "EXP048",
+      "evaluations": 327,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.5415830320907435,
+        "H2": 36.37908147293765,
+        "H3": 30.090114490577513,
+        "W": 27.320316519717043,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.5340120277048426,
+        "H2": 36.32229902026461,
+        "H3": 30.057886455193326,
+        "W": 27.27105205804151,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_T_bridge",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 4.274331361788427,
+        "H2": 30.081677308841176,
+        "H3": 34.28816897995398,
+        "W": 40.747699154001715,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 4.2448005378138145,
+        "H2": 30.019083231829697,
+        "H3": 34.28816897995398,
+        "W": 40.747699154001715,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_T_bridge",
+      "origin": "filter",
+      "evaluations": 1308,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 6.666327733840438,
+        "H2": 30.077696174797484,
+        "H3": 37.43106703412147,
+        "W": 39.22581484069547,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 6.657231047644379,
+        "H2": 30.060307277918774,
+        "H3": 37.43106703412147,
+        "W": 39.22581484069547,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_T_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 10.924802614218969,
+        "H2": 30.036109912327795,
+        "H3": 40.81202970957398,
+        "W": 27.204938780566252,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 10.924060218213791,
+        "H2": 30.03562383488779,
+        "H3": 40.81155249700066,
+        "W": 27.204302537451234,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_T_mixed",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 7.828734444168431,
+        "H2": 30.01963612409725,
+        "H3": 48.18863093254759,
+        "W": 30.364383707052923,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 7.822747153793845,
+        "H2": 30.016543174624218,
+        "H3": 48.18744796363024,
+        "W": 30.352213886016905,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 4.87475923848597,
+        "H2": 30.099112141347977,
+        "H3": 64.43554728422284,
+        "W": 67.1431668020519,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 4.87475923848597,
+        "H2": 30.099112141347977,
+        "H3": 64.43554728422284,
+        "W": 67.1431668020519,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 4.419970976519871,
+        "H2": 30.089672464290032,
+        "H3": 55.67122660220438,
+        "W": 62.11288265882969,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 4.411835929128401,
+        "H2": 30.06108904541179,
+        "H3": 55.67557963027891,
+        "W": 62.11653349391172,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 689,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 7.419775231854033,
+        "H2": 30.734452040916203,
+        "H3": 41.81897804618028,
+        "W": 42.96618177007916,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 7.419775231854033,
+        "H2": 30.734452040916203,
+        "H3": 41.81897804618028,
+        "W": 42.96618177007916,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.813254209838542,
+        "H2": 33.73537122736832,
+        "H3": 51.14584448868209,
+        "W": 55.63302686900311,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B28"
+      },
+      "feasible_screen": {
+        "IL": 2.813254209838542,
+        "H2": 33.73537122736832,
+        "H3": 51.14584448868209,
+        "W": 55.63302686900311,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B28"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 686,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.8684886337715887,
+        "H2": 31.908392376746235,
+        "H3": 44.461082593257984,
+        "W": 44.24557442459456,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.8684886337715887,
+        "H2": 31.908392376746235,
+        "H3": 44.461082593257984,
+        "W": 44.24557442459456,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.127431302591364,
+        "H2": 30.435862042098144,
+        "H3": 62.00872688990345,
+        "W": 77.03180200912931,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      },
+      "feasible_screen": {
+        "IL": 2.127431302591364,
+        "H2": 30.435862042098144,
+        "H3": 62.00872688990345,
+        "W": 77.03180200912931,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "area_cost": 6.0,
+      "topology": "4L_3GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.8800701539659306,
+        "H2": 30.135366656036865,
+        "H3": 57.77616980674434,
+        "W": 76.86227583046278,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.8800701539659306,
+        "H2": 30.135366656036865,
+        "H3": 57.77616980674434,
+        "W": 76.86227583046278,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_T_bridge",
+      "origin": "EXP048",
+      "evaluations": 697,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.012632403309938,
+        "H2": 36.85470359341258,
+        "H3": 30.926010556515067,
+        "W": 21.41387505647089,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B12"
+      },
+      "feasible_screen": {
+        "IL": 3.012632403309938,
+        "H2": 36.85470359341258,
+        "H3": 30.926010556515067,
+        "W": 21.41387505647089,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_T_bridge",
+      "origin": "EXP047",
+      "evaluations": 708,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.5442140329365683,
+        "H2": 30.116502097129015,
+        "H3": 30.249301532031435,
+        "W": 35.68855139295819,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B13+B14"
+      },
+      "feasible_screen": {
+        "IL": 3.54076756738612,
+        "H2": 30.01057752275016,
+        "H3": 30.167252145901656,
+        "W": 35.688742957865394,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_T_bridge",
+      "origin": "filter",
+      "evaluations": 1105,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 5.515268349201008,
+        "H2": 33.15105933043465,
+        "H3": 31.625845690304427,
+        "W": 24.780973819337575,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 5.515268349201008,
+        "H2": 33.15105933043465,
+        "H3": 31.625845690304427,
+        "W": 24.780973819337575,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_T_mixed",
+      "origin": "filter",
+      "evaluations": 731,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 4.595578622890998,
+        "H2": 30.08517651910459,
+        "H3": 36.678114688354206,
+        "W": 21.32788817600251,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      },
+      "feasible_screen": {
+        "IL": 4.58412895917501,
+        "H2": 30.052368705829785,
+        "H3": 36.65388658396911,
+        "W": 21.303019159558758,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_T_mixed",
+      "origin": "EXP048",
+      "evaluations": 669,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.277533818881921,
+        "H2": 30.22595298828763,
+        "H3": 30.68793225709515,
+        "W": 30.211461861233833,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.277533818881921,
+        "H2": 30.22595298828763,
+        "H3": 30.68793225709515,
+        "W": 30.211461861233833,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 8.86299145966521,
+        "H2": 30.091685536617497,
+        "H3": 43.75965838721007,
+        "W": 45.051479774278185,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 8.834753262055836,
+        "H2": 30.004825427664223,
+        "H3": 43.625296531540215,
+        "W": 44.92082881723678,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1039,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.8964284085821412,
+        "H2": 33.85983869683993,
+        "H3": 32.85482799563106,
+        "W": 48.501479956870824,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.8964284085821412,
+        "H2": 33.85983869683993,
+        "H3": 32.85482799563106,
+        "W": 48.501479956870824,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 13.797444151924383,
+        "H2": 32.11224122436306,
+        "H3": 30.086925426273098,
+        "W": 25.567033087950698,
+        "wide_worst_freq_MHz": 5250.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 13.797444151924383,
+        "H2": 32.11224122436306,
+        "H3": 30.086925426273098,
+        "W": 25.567033087950698,
+        "wide_worst_freq_MHz": 5250.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.0541681805352914,
+        "H2": 30.13524424253903,
+        "H3": 42.012091229982104,
+        "W": 32.86134574835246,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.0540586510193064,
+        "H2": 30.017927147430164,
+        "H3": 41.896517352918664,
+        "W": 32.82795998211914,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 700,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.3234333062714256,
+        "H2": 32.80918188079895,
+        "H3": 41.5492625543658,
+        "W": 31.878858943931874,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.3234333062714256,
+        "H2": 32.80918188079895,
+        "H3": 41.5492625543658,
+        "W": 31.878858943931874,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.4103383620163408,
+        "H2": 30.119473330320865,
+        "H3": 46.00016089552607,
+        "W": 80.46416840410151,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.4103383620163408,
+        "H2": 30.119473330320865,
+        "H3": 46.00016089552607,
+        "W": 80.46416840410151,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 6.666666666666666,
+      "topology": "4L_4GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.351011173103349,
+        "H2": 30.55060982315252,
+        "H3": 50.16407202766419,
+        "W": 56.872049501735574,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.351011173103349,
+        "H2": 30.55060982315252,
+        "H3": 50.16407202766419,
+        "W": 56.872049501735574,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.231479040266427,
+        "H2": 33.74625570764218,
+        "H3": 48.260428763845255,
+        "W": 47.31863293686211,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B28"
+      },
+      "feasible_screen": {
+        "IL": 3.231479040266427,
+        "H2": 33.74625570764218,
+        "H3": 48.260428763845255,
+        "W": 47.31863293686211,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B28"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1484,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.843367578467195,
+        "H2": 30.084779583284977,
+        "H3": 32.1310168906099,
+        "W": 34.75718325751791,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.7934589641266387,
+        "H2": 30.012404567495516,
+        "H3": 32.0237805434184,
+        "W": 34.70529046540828,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1094,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 7.421535561980509,
+        "H2": 24.56039167347075,
+        "H3": 30.133832881203027,
+        "W": 32.468893471985574,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": null
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.3503853202505725,
+        "H2": 33.28778360139812,
+        "H3": 56.58050294997068,
+        "W": 52.98508393592432,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 2.3503853202505725,
+        "H2": 33.28778360139812,
+        "H3": 56.58050294997068,
+        "W": 52.98508393592432,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 734,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 20.52191023462884,
+        "H2": 31.43848657563324,
+        "H3": 53.50985430583167,
+        "W": 54.39289334438836,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 20.52191023462884,
+        "H2": 31.43848657563324,
+        "H3": 53.50985430583167,
+        "W": 54.39289334438836,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.3394864843440732,
+        "H2": 30.154056379136094,
+        "H3": 50.02091751278841,
+        "W": 62.59097234596592,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.3394864843440732,
+        "H2": 30.154056379136094,
+        "H3": 50.02091751278841,
+        "W": 62.59097234596592,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.0,
+      "topology": "5L_3GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.7242535820168907,
+        "H2": 30.207403935132188,
+        "H3": 57.717875800048446,
+        "W": 78.52416728650947,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.7242535820168907,
+        "H2": 30.207403935132188,
+        "H3": 57.717875800048446,
+        "W": 78.52416728650947,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_T_bridge",
+      "origin": "EXP048",
+      "evaluations": 733,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.532905629156435,
+        "H2": 30.289739529584082,
+        "H3": 30.812267451270262,
+        "W": 25.407037688545728,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.532905629156435,
+        "H2": 30.289739529584082,
+        "H3": 30.812267451270262,
+        "W": 25.407037688545728,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_T_bridge",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.041039379989607,
+        "H2": 30.085871575445665,
+        "H3": 42.17958905052661,
+        "W": 44.22703818878051,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.01835651003435,
+        "H2": 30.021176421894857,
+        "H3": 42.11009241698587,
+        "W": 44.12270024503054,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_T_bridge",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.925442149369751,
+        "H2": 30.098196232136942,
+        "H3": 34.86872342626648,
+        "W": 29.48904021603367,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.9183084797958676,
+        "H2": 30.063956443200617,
+        "H3": 35.30451923300031,
+        "W": 29.48774191684325,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_T_mixed",
+      "origin": "filter",
+      "evaluations": 1100,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 9.094270946243892,
+        "H2": 30.752317265224658,
+        "H3": 30.10376862179548,
+        "W": 24.242844565418,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 9.09057321322892,
+        "H2": 30.766645820591805,
+        "H3": 30.05299977328463,
+        "W": 24.241893171794878,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_T_mixed",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.6327759017542363,
+        "H2": 30.276369140223032,
+        "H3": 43.73219040668799,
+        "W": 34.42749215712905,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 3.6327759017542363,
+        "H2": 30.276369140223032,
+        "H3": 43.73219040668799,
+        "W": 34.42749215712905,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 6.381274788689288,
+        "H2": 30.086067959913557,
+        "H3": 40.00325476538026,
+        "W": 41.57989660976047,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 6.355968191924244,
+        "H2": 30.034649012042745,
+        "H3": 40.08290181447251,
+        "W": 41.66520884770574,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1491,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.1128748956734635,
+        "H2": 32.35680952932795,
+        "H3": 30.275992011276614,
+        "W": 46.424731284544826,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.1128748956734635,
+        "H2": 32.35680952932795,
+        "H3": 30.275992011276614,
+        "W": 46.424731284544826,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.146730894573819,
+        "H2": 30.09203762285754,
+        "H3": 42.52692336490224,
+        "W": 33.0474037382037,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.139960330314535,
+        "H2": 30.058295610684034,
+        "H3": 42.49098909617455,
+        "W": 32.98545295379681,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.619536277937156,
+        "H2": 30.127100645038688,
+        "H3": 30.131466718726713,
+        "W": 28.213604989990344,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.6170557438551025,
+        "H2": 30.05982921082188,
+        "H3": 30.138865836449526,
+        "W": 28.226374824448737,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 1448,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.149522006469797,
+        "H2": 30.408861293806964,
+        "H3": 30.098786260535828,
+        "W": 37.38394938269623,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 2.1481731860127358,
+        "H2": 30.407008917274695,
+        "H3": 30.051090732657208,
+        "W": 37.36603616430713,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.4997948528767817,
+        "H2": 30.252246309501103,
+        "H3": 50.468789798054736,
+        "W": 49.29175720615768,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.4997948528767817,
+        "H2": 30.252246309501103,
+        "H3": 50.468789798054736,
+        "W": 49.29175720615768,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.333333333333334,
+      "topology": "4L_5GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.8783797515420377,
+        "H2": 30.173157596655788,
+        "H3": 72.4623779470118,
+        "W": 117.98162967565327,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 2.874624857165002,
+        "H2": 30.035843610699136,
+        "H3": 72.26194915705891,
+        "W": 117.32954990646036,
+        "wide_worst_freq_MHz": 3300.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.4635065133518896,
+        "H2": 31.17528063963677,
+        "H3": 57.08043792051846,
+        "W": 82.57405646103024,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.4635065133518896,
+        "H2": 31.17528063963677,
+        "H3": 57.08043792051846,
+        "W": 82.57405646103024,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.19684301287614,
+        "H2": 30.592731968341834,
+        "H3": 47.475426159280474,
+        "W": 33.660027177732516,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.191883020025483,
+        "H2": 30.041949955723872,
+        "H3": 47.31688644793639,
+        "W": 33.11988008201836,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1523,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.811919654896559,
+        "H2": 32.464954291706974,
+        "H3": 35.27178553957945,
+        "W": 37.07628076079933,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.811919654896559,
+        "H2": 32.464954291706974,
+        "H3": 35.27178553957945,
+        "W": 37.07628076079933,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 787,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.4206872316225994,
+        "H2": 33.084472527697535,
+        "H3": 50.56190699016355,
+        "W": 54.70088750064714,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.4206872316225994,
+        "H2": 33.084472527697535,
+        "H3": 50.56190699016355,
+        "W": 54.70088750064714,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.645538278959661,
+        "H2": 38.419858772882726,
+        "H3": 37.72006985261028,
+        "W": 39.077606847414444,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.645538278959661,
+        "H2": 38.419858772882726,
+        "H3": 37.72006985261028,
+        "W": 39.077606847414444,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.1375608383143034,
+        "H2": 31.06197055992181,
+        "H3": 53.117713462060685,
+        "W": 59.81621564788155,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.1375608383143034,
+        "H2": 31.06197055992181,
+        "H3": 53.117713462060685,
+        "W": 59.81621564788155,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 7.666666666666666,
+      "topology": "5L_4GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.0524726040376016,
+        "H2": 30.329536660065543,
+        "H3": 57.79679922800746,
+        "W": 72.39616634244334,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.0524726040376016,
+        "H2": 30.329536660065543,
+        "H3": 57.79679922800746,
+        "W": 72.39616634244334,
+        "wide_worst_freq_MHz": 4800.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_T_bridge",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.5950962989368715,
+        "H2": 30.313016770146625,
+        "H3": 39.49135269507525,
+        "W": 41.204205813411185,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.585325293284777,
+        "H2": 30.00243055892664,
+        "H3": 39.446610353095544,
+        "W": 41.1335504835798,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_T_bridge",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.6430638471352887,
+        "H2": 30.125290506942015,
+        "H3": 33.62626636820319,
+        "W": 35.75515612413629,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.6430638471352887,
+        "H2": 30.125290506942015,
+        "H3": 33.62626636820319,
+        "W": 35.75515612413629,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_T_bridge",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.0861190088056145,
+        "H2": 30.772218230101277,
+        "H3": 39.58981002298506,
+        "W": 34.51687151721801,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.0861190088056145,
+        "H2": 30.772218230101277,
+        "H3": 39.58981002298506,
+        "W": 34.51687151721801,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_T_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 4.861556694550339,
+        "H2": 30.194281575514555,
+        "H3": 33.23629207215932,
+        "W": 38.89524916892577,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 4.861556694550339,
+        "H2": 30.194281575514555,
+        "H3": 33.23629207215932,
+        "W": 38.89524916892577,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_T_mixed",
+      "origin": "EXP048",
+      "evaluations": 811,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.586159258549296,
+        "H2": 30.443089592577902,
+        "H3": 39.23103115010182,
+        "W": 22.204051352716924,
+        "wide_worst_freq_MHz": 4650.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.586159258549296,
+        "H2": 30.443089592577902,
+        "H3": 39.23103115010182,
+        "W": 22.204051352716924,
+        "wide_worst_freq_MHz": 4650.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.07809673504182,
+        "H2": 30.099902414195938,
+        "H3": 46.86094297140737,
+        "W": 51.22512584611612,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.045072704730597,
+        "H2": 30.023912730930668,
+        "H3": 46.50448842019718,
+        "W": 50.88913193709995,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.3005459923725677,
+        "H2": 31.57754398905653,
+        "H3": 30.728321803837844,
+        "W": 46.170133554016275,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.3005459923725677,
+        "H2": 31.57754398905653,
+        "H3": 30.728321803837844,
+        "W": 46.170133554016275,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 1.892941265015137,
+        "H2": 30.485137767279763,
+        "H3": 35.51459668282111,
+        "W": 37.07302940653768,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 1.892941265015137,
+        "H2": 30.485137767279763,
+        "H3": 35.51459668282111,
+        "W": 37.07302940653768,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.652186919308781,
+        "H2": 30.625616191451385,
+        "H3": 40.07083505718825,
+        "W": 41.49290875945658,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.652186919308781,
+        "H2": 30.625616191451385,
+        "H3": 40.07083505718825,
+        "W": 41.49290875945658,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 1114,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 1.8485359968815303,
+        "H2": 30.09897145441378,
+        "H3": 52.058658137872825,
+        "W": 37.183011830904505,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 1.8475740824210016,
+        "H2": 30.00194199084888,
+        "H3": 52.03737717769525,
+        "W": 37.185652376474835,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.63463844898906,
+        "H2": 30.598337719407724,
+        "H3": 30.709064052779485,
+        "W": 54.14289819969184,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.63463844898906,
+        "H2": 30.598337719407724,
+        "H3": 30.709064052779485,
+        "W": 54.14289819969184,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "4L_6GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 2.4020007393565623,
+        "H2": 30.2333929513574,
+        "H3": 61.14740142137513,
+        "W": 52.32793952603538,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.4020007393565623,
+        "H2": 30.2333929513574,
+        "H3": 61.14740142137513,
+        "W": 52.32793952603538,
+        "wide_worst_freq_MHz": 3600.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 5.59503033493818,
+        "H2": 30.09236474605415,
+        "H3": 61.62921047160869,
+        "W": 59.58563677853483,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 5.576725981169811,
+        "H2": 30.02657567590573,
+        "H3": 61.66598400788982,
+        "W": 59.6046613291503,
+        "wide_worst_freq_MHz": 4200.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 1594,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.56517856123525,
+        "H2": 30.100176276501287,
+        "H3": 57.57827853154785,
+        "W": 67.68226592305571,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.5623895194193063,
+        "H2": 30.052235838276392,
+        "H3": 57.5443019444771,
+        "W": 67.64116898795959,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1196,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 4.038175396593879,
+        "H2": 38.117019648030556,
+        "H3": 49.61142869971793,
+        "W": 40.70328345619737,
+        "wide_worst_freq_MHz": 3900.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 4.038175396593879,
+        "H2": 38.117019648030556,
+        "H3": 49.61142869971793,
+        "W": 40.70328345619737,
+        "wide_worst_freq_MHz": 3900.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 1183,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 14.490427143015253,
+        "H2": 30.089912664431424,
+        "H3": 43.781221697347654,
+        "W": 50.664603257272034,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      },
+      "feasible_screen": {
+        "IL": 14.485807962111627,
+        "H2": 30.026581219605145,
+        "H3": 43.746413944705196,
+        "W": 50.63683488421786,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B26"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.3877109445339357,
+        "H2": 34.539454177852534,
+        "H3": 55.80006071240814,
+        "W": 40.746601546974404,
+        "wide_worst_freq_MHz": 3750.0,
+        "wide_worst_setting": "B12"
+      },
+      "feasible_screen": {
+        "IL": 3.3877109445339357,
+        "H2": 34.539454177852534,
+        "H3": 55.80006071240814,
+        "W": 40.746601546974404,
+        "wide_worst_freq_MHz": 3750.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 6.477874318016759,
+        "H2": 30.559207888375948,
+        "H3": 51.07058351302329,
+        "W": 100.00606227633364,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 6.477874318016759,
+        "H2": 30.559207888375948,
+        "H3": 51.07058351302329,
+        "W": 100.00606227633364,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.0,
+      "topology": "6L_3GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.1571083911283395,
+        "H2": 30.436149214502226,
+        "H3": 53.99432742986087,
+        "W": 77.05211810561151,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.1571083911283395,
+        "H2": 30.436149214502226,
+        "H3": 53.99432742986087,
+        "W": 77.05211810561151,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1132,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.481887204181394,
+        "H2": 30.440655605329454,
+        "H3": 51.99494588575508,
+        "W": 63.84964928633816,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.481887204181394,
+        "H2": 30.440655605329454,
+        "H3": 51.99494588575508,
+        "W": 63.84964928633816,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 768,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.9583439632848862,
+        "H2": 39.18930194683165,
+        "H3": 51.40139707905148,
+        "W": 40.578121689789114,
+        "wide_worst_freq_MHz": 5850.0,
+        "wide_worst_setting": "B12"
+      },
+      "feasible_screen": {
+        "IL": 2.9583439632848862,
+        "H2": 39.18930194683165,
+        "H3": 51.40139707905148,
+        "W": 40.578121689789114,
+        "wide_worst_freq_MHz": 5850.0,
+        "wide_worst_setting": "B12"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 4.063276629350536,
+        "H2": 33.252030453495806,
+        "H3": 51.92711669275124,
+        "W": 37.49184354446208,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 4.063276629350536,
+        "H2": 33.252030453495806,
+        "H3": 51.92711669275124,
+        "W": 37.49184354446208,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 830,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.402539389037863,
+        "H2": 30.096815421569417,
+        "H3": 33.55197754171047,
+        "W": 37.45997618358332,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.3992626934227133,
+        "H2": 30.054586354722595,
+        "H3": 31.823257786106996,
+        "W": 38.22829494749109,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 769,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.301358196293327,
+        "H2": 30.092927480569802,
+        "H3": 57.008053920393344,
+        "W": 40.10279211707229,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.2914109221187093,
+        "H2": 30.028154966967048,
+        "H3": 57.045900928942174,
+        "W": 40.13419051725794,
+        "wide_worst_freq_MHz": 6000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.461493668097249,
+        "H2": 31.224218241499095,
+        "H3": 52.779806528674584,
+        "W": 52.078240245258925,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.461493668097249,
+        "H2": 31.224218241499095,
+        "H3": 52.779806528674584,
+        "W": 52.078240245258925,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.333333333333334,
+      "topology": "5L_5GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.321140940862814,
+        "H2": 30.11197748974983,
+        "H3": 75.33245744260768,
+        "W": 76.89751469326657,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": {
+        "IL": 3.311564784172462,
+        "H2": 30.028525300009683,
+        "H3": 75.35723665920972,
+        "W": 76.91018341338417,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B71"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_mixed",
+      "origin": "filter",
+      "evaluations": 1618,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.2163077132170366,
+        "H2": 30.1780661868461,
+        "H3": 70.57119049409584,
+        "W": 90.77134886299838,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.2161969289695422,
+        "H2": 30.007411468542475,
+        "H3": 70.58481450684467,
+        "W": 90.73768760507774,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_mixed",
+      "origin": "EXP048",
+      "evaluations": 767,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.601218672761206,
+        "H2": 41.880578233299666,
+        "H3": 40.9619250766014,
+        "W": 28.47680974759183,
+        "wide_worst_freq_MHz": 5250.0,
+        "wide_worst_setting": "B28"
+      },
+      "feasible_screen": {
+        "IL": 3.601218672761206,
+        "H2": 41.880578233299666,
+        "H3": 40.9619250766014,
+        "W": 28.47680974759183,
+        "wide_worst_freq_MHz": 5250.0,
+        "wide_worst_setting": "B28"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_notches",
+      "origin": "EXP048",
+      "evaluations": 1650,
+      "solver_success": false,
+      "reason": "Maximum number of function evaluations has been exceeded.",
+      "best_screen": {
+        "IL": 3.023123490133439,
+        "H2": 30.391462310611544,
+        "H3": 31.896802011518545,
+        "W": 34.68729892053731,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      },
+      "feasible_screen": {
+        "IL": 3.023123490133439,
+        "H2": 30.391462310611544,
+        "H3": 31.896802011518545,
+        "W": 34.68729892053731,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B13+B14"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_notches",
+      "origin": "EXP047",
+      "evaluations": 817,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 2.884655832975436,
+        "H2": 30.07065901524357,
+        "H3": 41.67669918267769,
+        "W": 48.85067957709457,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 2.884655832975436,
+        "H2": 30.07065901524357,
+        "H3": 41.67669918267769,
+        "W": 48.85067957709457,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_notches",
+      "origin": "filter",
+      "evaluations": 812,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 13.509217563933447,
+        "H2": 29.121912684673585,
+        "H3": 30.09553641164599,
+        "W": 21.408676111516364,
+        "wide_worst_freq_MHz": 3450.0,
+        "wide_worst_setting": "B71"
+      },
+      "feasible_screen": null
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_shunt",
+      "origin": "filter",
+      "evaluations": 842,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 4.961091175382661,
+        "H2": 30.98864032322433,
+        "H3": 70.9719674461596,
+        "W": 99.64686063110847,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 4.961091175382661,
+        "H2": 30.98864032322433,
+        "H3": 70.9719674461596,
+        "W": 99.64686063110847,
+        "wide_worst_freq_MHz": 3000.0,
+        "wide_worst_setting": "B8"
+      }
+    },
+    {
+      "area_cost": 8.666666666666666,
+      "topology": "6L_4GJM_ladder_shunt",
+      "origin": "EXP048",
+      "evaluations": 1141,
+      "solver_success": true,
+      "reason": "Optimization terminated successfully.",
+      "best_screen": {
+        "IL": 3.7966171363024874,
+        "H2": 37.419818634211545,
+        "H3": 59.73750313827924,
+        "W": 71.31286454740247,
+        "wide_worst_freq_MHz": 3750.0,
+        "wide_worst_setting": "B8"
+      },
+      "feasible_screen": {
+        "IL": 3.7966171363024874,
+        "H2": 37.419818634211545,
+        "H3": 59.73750313827924,
+        "W": 71.31286454740247,
+        "wide_worst_freq_MHz": 3750.0,
+        "wide_worst_setting": "B8"
+      }
+    }
+  ],
+  "verification": {
+    "legacy_28_intervals_samples_per_segment": 1001,
+    "legacy_evaluations": 28028,
+    "extra_3001_per_setting": 3001,
+    "extra_evaluations": 18006,
+    "independent_probe_count": 114
+  },
+  "limitations": [
+    "Bounded local optimization; no global infeasibility or optimality proof.",
+    "Only a finite set of 4L/5L/6L capacitive topologies searched.",
+    "Constant-Q lumped inductors: practical 3-6GHz SRF and Q(f) unverified.",
+    "Continuous-frequency extrema, EM, tolerance, yield, packaging and physical footprints not validated.",
+    "Coarse screening differs from complete finite grids; full-grid scores are separately reported."
+  ]
+}
