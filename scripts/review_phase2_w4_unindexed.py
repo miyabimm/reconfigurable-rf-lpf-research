@@ -99,6 +99,7 @@ def build():
             "scripts/verify_phase2_w5_closure.py",
             "docs/phase2_w5_readonly_closure_20261018.md",
             "docs/phase2_w4_exp042_missing_variant_recovery_20261018.md",
+            "docs/phase2_Bc_retention_and_retirement_policy_20261018.md",
         }:
             continue
         body = _safe_read_text(ROOT / rel)
