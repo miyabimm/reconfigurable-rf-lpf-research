@@ -12,6 +12,22 @@
 - 面積variantの`area_*.json`と`*_independent.json`は[チェックポイント](../experiments/chatgpt_topology_search/runs/EXP-042/checkpoints/pcb_cf1.json)など6変種の元Git記録に対応づけ、**29要素・保存された密格子値・84点記録**を比較。診断用`driven_passband_magnetic_q.json`は[GitのQ診断](../experiments/chatgpt_topology_search/runs/EXP-042/passband_magnetic_q_probe.json)に由来を紐付けるが、全内容の同一性を推測しない。
 - 比較結果を個票CSVと要約JSONに保存。出典のステージが異なる場合に新しい方で上書きしたり、許容差一致だけで重複削除したりしない。
 
+## 実行済みの個票照合結果（2026-10-18）
+
+[Actions CI 39091150899](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39091150899)で**10 ZIP／19 member**を元バイト・member SHA-256・ZIP CRC・全Git追跡ファイルの実バイトSHA-256と比較した。**内容のバイト完全一致は1件のみ**で、その1件は0 byteの`python_stderr.txt`（別実験の空ログと同一）だった。これは研究成果を重複排除できることの証明ではない。元ZIPと選別済みGit checkpointは**別の出典として両方保管**する。
+
+| 元Artifact内の記録 | Git側の候補・検証 | 実行した照合の結果 | 判定 |
+|---|---|---|---|
+| `target_30.json` | `selected_checkpoints_rft005.json`のEXP042-30m005 | **29ベクトル成分一致**、最悪IL/H2/H3一致、solver_success=falseも一致 | 同じ保存段階の選別候補。ただし元Artifactの独立保管は継続 |
+| `target_35.json` | 同ファイルのEXP042-35m005 | **別の最適化段階**。元ZIPはsolver_success=false、Git選別はtrue。29要素差最大**0.259916758**、記録メトリック差最大**0.001251304 dB** | **代替不可**。元途中段階と選別候補を両方保持 |
+| `verification_7001.json` | `verified_7001.json` | 両候補とも28区間×7001点・84独立MNA点の記載が一致、IL/H2/H3記録差最大**7.11×10⁻¹⁵ dB** | **保存済み報告の整合**。新しいRF再計算ではない |
+| `area_pcb_both.json`, `area_pcb_cf1.json` | `checkpoints/pcb_both.json`, `checkpoints/pcb_cf1.json` | 29要素ベクトル、保存メトリックとも一致 | 選別済みcheckpointに対応。ただし元ZIPは保持 |
+| `area_cf1.json` | `checkpoints/cf1.json` | 29要素差最大**0.010156763**、保存メトリック差最大**1.58×10⁻⁵** | **異なる局所解／stage**。削除・同一化不可 |
+| `area_cf2.json`, `area_both.json`, `area_pcb_cf2.json`と各`*_independent.json` | `checkpoints/cf2.json`, `checkpoints/both.json`, `checkpoints/pcb_cf2.json` | **該当する想定パスは現行mainに存在しない（6 member）** | ZIPが現存する一次成果物。選別checkpointの存在を主張しない |
+| `driven_passband_magnetic_q.json`およびstdout等 | `passband_magnetic_q_probe.json`ほか | 診断変種の名前・参照先を関連付けたが、全データ同値は未確認 | 再現・失敗解析用の別の資料として保持 |
+
+**確認済みの差異は数値探索の別段階として保留する。** 「同じ候補ID」や「数値がほぼ一致する」ことは、バイト重複・復元可能性・代替保全を意味しない。元runでの開始条件・seed・反復制限、各Artifactの選別過程をさらに確認する必要がある。存在しない3つのチェックポイントを新規数値として復元・捏造しない。
+
 ## 重要な判定上の区別
 
 1. `target_35.json`は、元ZIPのselectedに`solver_success=false`（iteration limit）と記され、Git選別`EXP042-35m005`は`solver_success=true`。L値・29要素ベクトルも異なる。これは**元runの異なるstageが保管された可能性**として個別保持し、同一実行結果や矛盾と直ちに断定しない。最終候補の数値はGit選別`verified_7001.json`を出典とする。
@@ -21,8 +37,8 @@
 ## 実行・記録状態
 
 - 元Artifact ZIP保全とSHA/CRC：**PR #84で実行済み**。
-- 全19memberのbyte比較、6variantのベクトル比較、30/35dB stageの違いと7001点記録比較：**本PRのGitHub Actionsで実行し、個票と集計を固定する工程**。成功後にこの節を結果で更新。
+- 全19memberのbyte比較、6variantのベクトル比較、30/35dB stageの違いと7001点記録比較：**実行済み**（[W4専用CI 39091150899](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39091150899)：SUCCESS）。[個票CSV](../data/repository_reviews/w4_exp042_member_crosswalk_20261018.csv)と[要約JSON](../data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json)を保全し、以後のPRでも実ファイルとの完全一致を検査する。
 - 新しいRF最適化・高密度MNA計算：**実施しない**。
 - 個別削除許可・削除実行：**どちらも0件**。
 
-**削除可否の未決項目：** 元ArtifcatとGit資料の意味的非互換・元run履歴・失敗時の解析ログ・復元に必要な元CLI/依存を含めてレビューするまでは、移動や削除の根拠としない。
+**削除可否の未決項目：** 元ArtifactとGit資料の意味的非互換・元run履歴・失敗時の解析ログ・復元に必要な元CLI/依存を含めてレビューするまでは、移動や削除の根拠としない。
