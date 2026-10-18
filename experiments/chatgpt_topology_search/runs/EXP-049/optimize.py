@@ -142,7 +142,8 @@ def transfer(x,t,g):
  n=t["nl"];nn=t["nn"];l,gjm,pcb,k,cv=params(x,t)
  om=2e6*np.pi*g["f"];npoints=len(om)
  # Chip L offdiagonal M=j*k*sqrt(L_i L_(i+1)), Q25 assumed constant.
- H=np.diag(l/25+1j*l).astype(complex)
+ LQ=np.asarray(t.get("LQ",[25.]*n),float)
+ H=np.diag(l/LQ+1j*l).astype(complex)
  for (a,b),coupling in zip(physical_neighbor_couplings(t),k):
   mut=1j*coupling*np.sqrt(l[a]*l[b])
   H[a,b]+=mut;H[b,a]+=mut
@@ -210,7 +211,8 @@ def independent(x,t,points):
  errors=[];balances=[]
  for j,(ff,ic) in enumerate(zip(grid["f"],grid["case"])):
   om=2e6*np.pi*ff
-  Z=np.diag(l/25+1j*l).astype(complex)
+  LQ=np.asarray(t.get("LQ",[25.]*n),float)
+  Z=np.diag(l/LQ+1j*l).astype(complex)
   for (a,b),mut in zip(physical_neighbor_couplings(t),k):
    z=1j*mut*np.sqrt(l[a]*l[b]);Z[a,b]+=z;Z[b,a]+=z
   inc=np.zeros((nn,n))
@@ -241,7 +243,7 @@ def independent(x,t,points):
   reflected=abs(1-100*iext)**2/200
   inloss=(vext*np.conj(iext)).real-(vv[pi]*np.conj(iint)).real
   outloss=(vv[po]*np.conj(Yl*vv[po])).real-pout
-  Lloss=sum(om*1e-9*l[z]/25*abs(ii[z])**2 for z in range(n))
+  Lloss=sum(om*1e-9*l[z]/LQ[z]*abs(ii[z])**2 for z in range(n))
   Closs=0
   for (u,v),y in zip(t["G"]+t["P"]+t["V"],YY):
    voltage=vv[u] if v<0 else vv[u]-vv[v]
@@ -255,7 +257,10 @@ def represent(x,t,met,source,round_id):
  return dict(area_cost=t["area_units"],chip_L=t["nl"],chip_GJM=t["ng"],
              pcb_C=t["count_pcb"],variable_C=2,topology=t["name"],
              l_edges=t["L"],GJM_edges=t["G"],PCB_edges=t["P"],Cv_edges=t["V"],
-             port_nodes=t["ports"],l_q=25,fixed_GJM_q=80,pcb_C_q=40,cv_q=35,
+             port_nodes=t["ports"],l_q=t.get("LQ",[25.]*t["nl"]),
+             chip_L_series=[("LQW04_Q33" if q==33 else "LQP02HV_Q25")
+                            for q in t.get("LQ",[25.]*t["nl"])],
+             fixed_GJM_q=80,pcb_C_q=40,cv_q=35,
              parameter_order="L_nH, GJM_C_pF, PCB_C_pF, adjacent_k, Cv0/Cv1 per B71 B12 B28 B13+B14 B26 B8",
              vector=np.asarray(x).tolist(),grid_metrics=met,
              selected_from=source,round_id=round_id,
