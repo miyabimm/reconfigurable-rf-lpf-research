@@ -96,6 +96,8 @@ def build():
             "scripts/audit_w4_exp042_missing_variants.py",
             "scripts/audit_w4_exp046_exp047_sources.py",
             "docs/phase2_w4_exp046_exp047_source_review_20261018.md",
+            "scripts/verify_phase2_w5_closure.py",
+            "docs/phase2_w5_readonly_closure_20261018.md",
             "docs/phase2_w4_exp042_missing_variant_recovery_20261018.md",
         }:
             continue
