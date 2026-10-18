@@ -60,7 +60,7 @@
 
 **旧0.32dB対現行0.51dBの制約比較:** [EXP-003の独立レビュー](experiments/chatgpt_topology_search/runs/EXP-003/README.md)で、旧4可変C回路CP07（0.328924dB）と現行A7-01（0.508389dB）を同じL/C Qで比較。旧回路でチップ結合だけ一列隣接へ変えても、4可変Cを保持した再最適化解は0.337660dBだった。**現在の2枝・対GND・各4pFという可変C機能制約が主要なボトルネック候補**。旧解は現行の正式候補ではない。
 
-**新しい中間目標：最大IL 0.40dB（公称H2/H3≥35dB、6設定UL/DL全帯域）**。まず [EXP-004](experiments/chatgpt_topology_search/runs/EXP-004/README.md) で現行コスト7基準A7-01（0.508389dB）の更新を狙う。局所探索98件では未達、42条件は未完了。再現可能な[ベクトル化探索器](experiments/chatgpt_topology_search/runs/EXP-004/sweep_040.py)、[手動分割Actions](.github/workflows/lpf-target040.yml)、[進捗集計器](experiments/chatgpt_topology_search/runs/EXP-004/summarize.py)を準備済み。**大規模Actions探索はまだ起動していない**。最終0.30dB目標とPhase 3停止は維持。
+**新しい中間目標：最大IL 0.40dB（公称H2/H3≥35dB、6設定UL/DL全帯域）**。まず [EXP-004](experiments/chatgpt_topology_search/runs/EXP-004/README.md) で現行コスト7基準A7-01（0.508389dB）の更新を狙う。局所探索98件では未達、42条件は未完了。再現可能な[ベクトル化探索器](experiments/chatgpt_topology_search/runs/EXP-004/sweep_040.py)、[手動分割Actions](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-target040.yml)、[進捗集計器](experiments/chatgpt_topology_search/runs/EXP-004/summarize.py)を準備済み。**大規模Actions探索はまだ起動していない**。最終0.30dB目標とPhase 3停止は維持。
 
 **Phase 2・コスト7の更新基準（EXP-005、2026-10-12）:** [A7-03](experiments/chatgpt_topology_search/runs/EXP-005/A7-03.json) で、6設定最大IL **0.507331dB**、H2/H3最小約35.02dBを発見。既存A7-01の0.508389dBを0.001058dB改善（SLSQP未収束、7,001点／周波数区間の数値検証、代表点の独立MNA確認）。[EXP-005レポート](experiments/chatgpt_topology_search/runs/EXP-005/README.md) に追加132局所探索の実施範囲と不成立を記録。**0.40dB目標は未達、hard cap6は変更せず、Phase 3も停止。**
 
@@ -114,6 +114,6 @@ uv run --frozen python scripts/verify_no_pcb_tunable_candidates.py
 
 自動CIでは、基準値を固定したLPF-007/008の有限グリッド回帰と、matching-onlyの解析的既知回路の回帰も検証する。新しい候補は `data/candidate_index.csv` へ追加でき、LPF-007/008を削除することはできない。
 
-大規模P4-Aは[手動Actions](.github/workflows/lpf-p4-a.yml)で実行し、限定的なArtifact保存・再開・集計の再検証には[手動スモーク](.github/workflows/lpf-p4-a-smoke.yml)を利用する。
+大規模P4-Aは[手動Actions](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-p4-a.yml)で実行し、限定的なArtifact保存・再開・集計の再検証には[手動スモーク](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-p4-a-smoke.yml)を利用する。
 
 旧G1の[1シャード実行](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38128578799)・[2シャード実行](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38128871403)に加え、PR #10変更後の計算構成でも[実機スモーク](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38139630751)が **PASS**。新構成では1シャードの3グラフをArtifact越しに2回再開し、G1集計が完了した。これはソフトウェア動作確認であり、P4-A網羅探索やIL改善の完了ではない。
