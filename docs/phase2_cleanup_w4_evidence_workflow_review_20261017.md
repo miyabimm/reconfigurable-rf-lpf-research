@@ -23,10 +23,10 @@ W4では[読み取り専用監査スクリプト](../scripts/audit_phase2_cleanu
 
 ## 3. 監査前の実装上の重要事項（mainの実ファイル本文を確認）
 
-- [EXP-042 RF-T005全系最適化](../.github/workflows/exp042_rf_t005.yml)はmainのEXP番号予約と試験制約を検査し、ユーザー手動`workflow_dispatch`で30/35dB目標を選ぶ。高密度検証jobとArtifacts作成も含む。**機能用途のあるworkflow**であり、「EXP終了＝不要」ではない。
-- [EXP-042 manifest再生成workflow](../.github/workflows/exp042_manifest.yml)は特定研究ブランチをcheckoutし、manifest・experiment indexを更新する`contents:write`とpushを持つ。**歴史的な書込副作用、固定参照元の保全と適切な廃止ゲート**を分ける。
-- [EXP-042 passband-Q](../.github/workflows/exp042_passband_q.yml)は実行ログ、stdout/stderr、終了コードをArtifactsに集める。欠損・途中中断を含む実行出典の破壊を避ける。
-- [EXP-043独立3L MNA](../.github/workflows/exp043_verify_3l.yml)はcheckpointから独立枝電流解析を起動し、再検証可能なコードパスを提供する。
+- [EXP-042 RF-T005全系最適化](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/exp042_rf_t005.yml)はmainのEXP番号予約と試験制約を検査し、ユーザー手動`workflow_dispatch`で30/35dB目標を選ぶ。高密度検証jobとArtifacts作成も含む。**機能用途のあるworkflow**であり、「EXP終了＝不要」ではない。
+- [EXP-042 manifest再生成workflow](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/exp042_manifest.yml)は特定研究ブランチをcheckoutし、manifest・experiment indexを更新する`contents:write`とpushを持つ。**歴史的な書込副作用、固定参照元の保全と適切な廃止ゲート**を分ける。
+- [EXP-042 passband-Q](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/exp042_passband_q.yml)は実行ログ、stdout/stderr、終了コードをArtifactsに集める。欠損・途中中断を含む実行出典の破壊を避ける。
+- [EXP-043独立3L MNA](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/exp043_verify_3l.yml)はcheckpointから独立枝電流解析を起動し、再検証可能なコードパスを提供する。
 - [EXP番号事前予約workflow](../.github/workflows/reserve_experiment_number.yml)は新規実験着手の中央ゲート。**削除候補に含めない**。
 
 ## 4. W4実削除を検討する前の必須ゲート

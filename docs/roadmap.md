@@ -166,7 +166,7 @@ PR #47（Full-LPF runner統合）は`origin/main`の`eb1de13841c1b4a74f18f4f9320
 - 回帰CI：[実行38139630762](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38139630762) **PASS**。89ユニットテスト、監査、LPF-007/008の保存済みIL/H2/H3との数値照合、Q・可変C制約、代表点独立MNAと電力収支を実行。matching-only既知回路の解析解回帰を追加。新しいLPF回路の最適化はしていない。
 - G1新構成スモーク：[実行38139630751](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38139630751)、ソースコミット `fe322ea204b5ff232150da0902cead2923980205` で **PASS**。GitHub-hosted Ubuntuの3ジョブで、1シャード・3サンプリンググラフを1件ずつ計算。Artifactを2回復元し、最終チェックポイントは`completed`、残り0件、`resume_count=2`。既存のG1集計器が`overall_complete=true`、`optimized_graphs=3`、欠落0件・エラー0件を報告。
 - このスモークの条件は各グラフ1初期値・1最適化反復、粗い通過帯域2点/セグメント、検証3点/セグメント。**数値精度・高調波減衰・P4-Aの探索網羅率・新性能の証明ではない**。修正後もPhase 2のまま、Phase 3は未承認。
-- PR #10では設計仕様文書への参照先等が変わり、以前のG1チェックポイントとは設定ハッシュが異なる。**旧Artifactを互換とみなして復元しない**。計算条件のソース指紋が一致する新runだけ再開可能。スモーク後にワークフローを手動専用の[再利用可能な検証手順](../.github/workflows/lpf-p4-a-smoke.yml)へ整理した（計算ソース・RF数値制約は不変更）。
+- PR #10では設計仕様文書への参照先等が変わり、以前のG1チェックポイントとは設定ハッシュが異なる。**旧Artifactを互換とみなして復元しない**。計算条件のソース指紋が一致する新runだけ再開可能。スモーク後にワークフローを手動専用の[再利用可能な検証手順](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-p4-a-smoke.yml)へ整理した（計算ソース・RF数値制約は不変更）。
 
 **ChatGPT主導の新トポロジー考案は上記ゲートに並行して継続**する。良好解を体系探索の初期値に、体系探索の良好グラフを専用最適化の対象にする。
 
@@ -178,7 +178,7 @@ PR #47（Full-LPF runner統合）は`origin/main`の`eb1de13841c1b4a74f18f4f9320
 
 [EXP-004探索レポート](../experiments/chatgpt_topology_search/runs/EXP-004/README.md)に、6設定のIL≤0.40dB・公称H2/H3≥35dBを中間目標として設定。保存済みコスト7基準はA7-01の0.508389dB。3直列LC・2シャントLC・5チップLの有限局所探索98件では更新解未発見、42組合せ未完了。高速周波数方向一括MNAのA7-01基準照合と101ユニットテストは成功。コスト7は別の実験予算であり、承認済みhard cap6はそのまま保持する。
 
-次は[手動4シャードGitHub Actions](../.github/workflows/lpf-target040.yml)を使って、複数初期値・十分な反復・失敗を含む進捗記録を確保する。新しい最良解は高密度の6設定全帯域・独立MNA・電力保存・SPD・面積で再確認するまで基準へ昇格させない。なおスクリプトやワークフロー追加を計算完了とはみなさず、実行済みArtifactを根拠とする。目標0.30dBとPhase 3停止は変更しない。
+次は[手動4シャードGitHub Actions](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-target040.yml)を使って、複数初期値・十分な反復・失敗を含む進捗記録を確保する。新しい最良解は高密度の6設定全帯域・独立MNA・電力保存・SPD・面積で再確認するまで基準へ昇格させない。なおスクリプトやワークフロー追加を計算完了とはみなさず、実行済みArtifactを根拠とする。目標0.30dBとPhase 3停止は変更しない。
 
 ## EXP-005：コスト7ベンチマーク更新（2026-10-12）
 
