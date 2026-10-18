@@ -1,0 +1,39 @@
+{
+  "original_zip_count": 10,
+  "member_count": 19,
+  "members_byte_identical_to_existing_tracked_git_files": 1,
+  "variants_with_identical_selected_29_vector_and_metrics": 2,
+  "target_30_stage": "same_selected_vector",
+  "target_35_stage": "different_optimizer_stage_not_duplicate_candidate",
+  "dense_7001_finite_grid_record_relation": "same_recorded_finite_grid_metrics",
+  "by_comparison_gate": {
+    "different_optimizer_stage_not_duplicate_candidate": 1,
+    "different_selected_vector_or_metrics": 1,
+    "only_archived_actions_artifact_provenance": 6,
+    "preserve_source_log": 3,
+    "retain_original_and_checkpoint": 3,
+    "retained_distinct_diagnostic_not_a_checkpoint_duplicate": 1,
+    "same_recorded_finite_grid_metrics": 1,
+    "same_selected_vector": 3
+  },
+  "unrepresented_curated_checkpoint_member_count": 6,
+  "unrepresented_curated_checkpoint_member_paths": [
+    "exp042-area-cf2:area_cf2.json",
+    "exp042-area-cf2:area_cf2_independent.json",
+    "exp042-pcb-pcb_cf2:area_pcb_cf2.json",
+    "exp042-pcb-pcb_cf2:area_pcb_cf2_independent.json",
+    "exp042-area-both:area_both.json",
+    "exp042-area-both:area_both_independent.json"
+  ],
+  "owner_approved_removals": 0,
+  "files_deleted": 0,
+  "rf_optimization_runs": 0,
+  "new_independent_mna_runs": 0,
+  "limitations": [
+    "Byte matching uses SHA256 over tracked Git file content.",
+    "Semantic comparison is only on explicitly mapped recorded checkpoint metrics and 29-vectors.",
+    "Different stage is not corruption; never merge distinct optimizer stages automatically.",
+    "Independent record comparison does not recompute RF network response or prove global minima.",
+    "Raw Actions ZIP and Git curated checkpoints must both be retained pending owner approval."
+  ]
+}
