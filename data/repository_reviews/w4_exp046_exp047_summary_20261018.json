@@ -1,0 +1,63 @@
+{
+  "kind": "Phase 2 W4 EXP-046/047 immutable original source audit",
+  "baseline_main": "abde1a1df3c768c479abcfd5941741a82b8c6483",
+  "checkout": "a195cb7a5c44c13e4ccf55b66c39d9402536cffe",
+  "source_total": 131,
+  "by_experiment": {
+    "EXP-046": 35,
+    "EXP-047": 96
+  },
+  "by_kind": {
+    "archived_in_chat_source_code": 54,
+    "archived_numeric_or_diagnostic_data": 75,
+    "chronological_source_interpretation": 2
+  },
+  "verified_original_blob_count": 131,
+  "protected_other_46_sha_match": 46,
+  "exp046": {
+    "constraint_id": "RF-T005",
+    "archive_sha": "0774f3025e7ad5b1a7c782fdf0fc6b8b828d0af5",
+    "archive_sha_is_verified_execution_sha": false,
+    "source_worktree_dirty": true,
+    "original_seed": null,
+    "original_environment": null,
+    "corrected_power_accounting_source": "independent_verified_1001_corrected.json",
+    "superseded_power_diagnostic_source": "independent_verified_1001.json",
+    "numerical_result_replayed": false,
+    "new_candidate_promotion": 0
+  },
+  "exp047": {
+    "constraint_id": "RF-F003",
+    "original_manifest_blob_sha1": "94973b5e5a9e9b0fcd3a3ad9ffd39ea4197475e0",
+    "index_adapter_is_strict_replay_manifest": false,
+    "original_optimizer_commit": null,
+    "original_random_seed": null,
+    "original_environment": null,
+    "actions_search_executed": false,
+    "pre_correction_Q_index_bug_excluded_records": [
+      "nested_loss_reduction_round2_20261017.json",
+      "nested_loss_reduction_round3_20261017.json",
+      "second_pcb_independent_corrected_28x1001_20261017.json",
+      "second_pcb_nested_20261017.json",
+      "third_pcb_screen_20261017.json"
+    ],
+    "verified_candidate_record_count": 6,
+    "registered_formal_pareto_candidate_count": 4,
+    "formal_pareto_git_sha_verified": 4,
+    "numerical_result_replayed": false
+  },
+  "owner_experiment_source_deletion_approvals": 0,
+  "original_experiment_deletions": 0,
+  "new_optimizer_runs": 0,
+  "new_independent_MNA_runs": 0,
+  "w5_read_only_inventory_can_proceed": true,
+  "w4_evidence_removal_authorized": false,
+  "limitations": [
+    "Manifest path names are only historical lineage references; file hashes do not verify runtime execution.",
+    "Q assignment classification is from manifest and saved documentation, not a fresh RF numeric re-evaluation.",
+    "EXP-046 capacitor power correction must not be confused with EXP-047 Q-index bug.",
+    "The 4 RF-F003 formal candidates are compared to their saved catalog/pareto evidence, not re-optimized.",
+    "Source-level replay dependencies, dynamic Code Mode connections, external S2Ps and exact Python/JS environment not independently reconstructed.",
+    "Read-only W5 audit may proceed, but no E/W deletion, Phase 3 gate or W4 completion is authorized."
+  ]
+}
