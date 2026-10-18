@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   phase2_optimization:
@@ -43,3 +43,14 @@ jobs:
           path: results/EXP-048/selected.json
           retention-days: 14
           if-no-files-found: warn
+      - name: Preserve complete selected numerical checkpoint as Git evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp results/EXP-048/selected.json experiments/chatgpt_topology_search/runs/EXP-048/selected.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-048/selected.json
+          git commit -m "results(EXP-048): preserve selected RF-T006 4L 2Cv numerical checkpoint"
+          git push origin HEAD:refs/heads/experiment/exp048-rft006-4l2cv-a5p333
