@@ -72,7 +72,7 @@ Reproduce these fixed-value stress calculations with [q_sensitivity.py](q_sensit
 
 [Sweep engine](sweep.py) defines **38 unique constrained graph/control families** (baseline, alternate Cv2 edges, 2-control subsets, and 25 single-GJM rewires). It accepts deterministic seeds, shard count/index, starting points, optimizer iterations, per-subband grids, and a checkpoint path. It rejects resumes with changed code/design-spec/band/optimization fingerprint; it records both failed starts and uncompleted jobs. This general runnable engine was prepared and **smoke-tested locally**, but a complete large GitHub Actions sweep **has not been launched**. Its future multistart results may differ from the numerical local prototypes above.
 
-[Manual GitHub Actions workflow](../../../../.github/workflows/lpf-exp009.yml) prepares preflight verification, eight sharded optimization jobs with artifacts/resume, and an [aggregate report](aggregate.py) that does not misreport unfinished searches as complete. This workflow is an implementation plan; it has not yet executed. It may need to be merged into the default branch before the manual dispatch is available in the GitHub Actions UI.
+[Manual GitHub Actions workflow](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-exp009.yml) prepares preflight verification, eight sharded optimization jobs with artifacts/resume, and an [aggregate report](aggregate.py) that does not misreport unfinished searches as complete. This workflow is an implementation plan; it has not yet executed. It may need to be merged into the default branch before the manual dispatch is available in the GitHub Actions UI.
 
 ### Policy status and next technical priorities
 
