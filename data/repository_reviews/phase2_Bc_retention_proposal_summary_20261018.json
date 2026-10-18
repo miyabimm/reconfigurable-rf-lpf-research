@@ -1,0 +1,55 @@
+{
+  "asof_date": "2026-10-18",
+  "base_main": "42c1d91c7dcff5dff14c24fa0c0010737040b5d3",
+  "selected_policy": "B_leaning_C_non_destructive",
+  "phase": "Phase 2",
+  "workflows": {
+    "total": 47,
+    "classification": {
+      "A_OPERATIONS_KEEP": 2,
+      "A_OR_B_KEEP_UNTIL_REPLACED": 7,
+      "B_CONSOLIDATE_W4_PROTECTION": 1,
+      "C1_EARLY_RETIRE_REVIEW": 9,
+      "C2_AFTER_REPLAY_RETIRE_REVIEW": 28
+    },
+    "first_wave_review": [
+      ".github/workflows/phase2_cleanup_w2.yml",
+      ".github/workflows/phase2_cleanup_w3.yml",
+      ".github/workflows/phase2_w4_exp042_crosswalk.yml",
+      ".github/workflows/phase2_w4_exp042_missing_variants.yml",
+      ".github/workflows/phase2_w4_exp046_exp047_provenance.yml"
+    ],
+    "owner_approved_retirements": 0
+  },
+  "evidence": {
+    "sample_reviewed": 225,
+    "classes": {
+      "A_KEEP_ORIGINAL_PROVENANCE": 128,
+      "B_KEEP_UNTIL_NUMERIC_EQUIVALENCE": 81,
+      "C_SCREEN_FOR_AGGREGATION_NOT_DELETION": 16
+    },
+    "byte_identical_pairs_within_225": 0,
+    "aggregation_review_only_count": 16,
+    "aggregation_review_only_total_original_bytes": 271406,
+    "first_wave_review": [
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch0_results.json",
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch1_results.json",
+      "experiments/chatgpt_topology_search/runs/EXP-046/bridge_cap_relocation_batch2_results.json"
+    ],
+    "number_of_files_approved_for_deletion": 0,
+    "coverage_note": "225 is the W4 preselected unindexed subset of dated 747 E001/E002 sources; not the entire repository or live savings"
+  },
+  "actions": {
+    "source_deletions": 0,
+    "workflow_deletions": 0,
+    "workflow_disables": 0,
+    "branch_deletions": 0,
+    "RF_numeric_runs": 0
+  },
+  "interpretation": [
+    "All marked C candidates require manual evidence comparability validation; none has proven redundancy.",
+    "Current tree savings and Git pack savings are not established.",
+    "At least some intermediate-looking JSON contain unique full vectors or incomplete verification; never delete by filename.",
+    "No source path is retired merely because a historical workflow API run count is zero."
+  ]
+}
