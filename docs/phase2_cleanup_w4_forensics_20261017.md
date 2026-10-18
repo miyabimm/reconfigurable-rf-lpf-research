@@ -8,7 +8,7 @@
 - [225件の個別解析](../scripts/review_phase2_w4_unindexed.py)では元[機械参照索引](../scripts/build_reference_inventory.py)の`review_only_no_deletion`に該当するE-001/E-002ファイルを抽出。本文での元path一致／解決可能なMarkdownリンク／workflowからの元path一致／basenameのみの弱い言及を別カラムにする。JSONのキー構造、文書、ソースコード、checkpoint、run/検証群を分類。**元path文字列が存在しないことと実際の未使用を同義にしない**。
 - [GitHub Actionsの利用履歴解析](../scripts/review_phase2_w4_action_runs.py)ではmainで追跡されていた39 workflowそれぞれのGitHub Actions REST API登録状態、API可視の実行件数、最新3runのID・日時・event・conclusion・source SHAを、CIに渡された読取権限のtokenで取得する。**API可視の件数は保存期間とGitHub表示に依存し、永久の実行履歴ではない**。0件でも未使用とは決定しない。
 - 最新ブランチでの非破壊性は前回の[W4保全検証](../scripts/audit_phase2_cleanup_w4.py)（46ファイルGit blob一致と削除0件）を再実行し、RF制約・S2P・実験出典が変更されていないことを別ゲートで検査。
-- 実行証拠は[専用CI](../.github/workflows/phase2_cleanup_w4_run_forensics.yml)のCSV/JSON artifactsとrun URLに保存し、重要な固定結果を`data/repository_reviews/`に移記する。**実測CI以前の結果を推測で記入しない**。
+- 実行証拠は[専用CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_cleanup_w4_run_forensics.yml)のCSV/JSON artifactsとrun URLに保存し、重要な固定結果を`data/repository_reviews/`に移記する。**実測CI以前の結果を推測で記入しない**。
 
 ## 事前の保全判定
 

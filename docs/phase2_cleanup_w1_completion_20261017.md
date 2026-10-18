@@ -33,7 +33,7 @@ W1の対応：
 
 - 初回修正後の[W1 CI run 39035667408](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39035667408)：**SUCCESS**。当時の追跡ファイル1,120件／Markdown137件／リンク997件、ローカル解決840件、外部URL等未確認140件、同一文書アンカー未確認17件、**欠落したローカルリンク0件**。
 - 現行statusの9入口、原RF/実験の6 blob、README内旧リンクと通常ファイルの互換案内を照合。ファイル削除0件。通常のPhase 2回帰は当初シンボリックリンクを禁止する保存予算監査で失敗したため、安全規則を緩和せず通常ファイルに変更した。
-- 旧[Step 5統合検証workflow](../.github/workflows/phase2_step5_integration.yml)は過去の1,043元pathに対する**日付固定監査**であり、2026-10-17より後の正当な文書変更を許可できない構造だったため、通常のPRゲートから分離し手動`workflow_dispatch`で当時のmerge treeを再検証する形へ変更。現行のPRは[Phase 2 regression](../.github/workflows/audit.yml)＋[W1リンク専用CI](../.github/workflows/phase2_cleanup_w1.yml)で検査する。
+- 旧[Step 5統合検証workflow](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_step5_integration.yml)は過去の1,043元pathに対する**日付固定監査**であり、2026-10-17より後の正当な文書変更を許可できない構造だったため、通常のPRゲートから分離し手動`workflow_dispatch`で当時のmerge treeを再検証する形へ変更。現行のPRは[Phase 2 regression](../.github/workflows/audit.yml)＋[W1リンク専用CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_cleanup_w1.yml)で検査する。
 
 **注意：** GitHub外部URLの到達性、文書アンカー、任意の動的生成リンクの網羅は未保証。CIは**全元実験の新しいRF独立解析・物理実測・連続帯域の保証ではない**。
 
