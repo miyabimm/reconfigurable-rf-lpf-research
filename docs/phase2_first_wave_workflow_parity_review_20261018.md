@@ -6,7 +6,7 @@
 
 - 調査起点main：`c83952a74c63c204265daf225edd252dc62d14e7`（PR #90統合後）。正式RF-F003、試験RF-T005の区分を変更しない。
 - 方針正本：[C寄りのB保管・退役方針](phase2_Bc_retention_and_retirement_policy_20261018.md)。
-- 新規の一時的な後継候補：[`phase2_first_wave_retention_parity.yml`](../.github/workflows/phase2_first_wave_retention_parity.yml)。
+- 新規の一時的な後継候補：[`phase2_first_wave_retention_parity.yml`（PR #92時点の歴史的ソース）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/552aa86775aaa2f7364ee441735afe6e07bc71b8/.github/workflows/phase2_first_wave_retention_parity.yml)。
 - 5つの既存定義はそのまま維持し、同じ読み取り専用Python検証器を別jobで実行する。元のworkflow実行履歴・元run・SHAを上書きしない。
 - 元データと候補台帳の再計算は行わない。これらの検査は**過去の原本・記録間の整合監査**であり、RF独立MNAやQ(f)、SRF、EMの検証ではない。
 
