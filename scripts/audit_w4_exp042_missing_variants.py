@@ -137,6 +137,74 @@ def area_details(main):
     }
 
 
+def recorded_pareto_context(variant, area, il, metric, independent):
+    """Read existing RF-T005 two-axis snapshot; do not alter candidate status."""
+    source_path = ROOT / "data/pareto_snapshots/rf_t005_rf_f003_20261017.json"
+    snapshot = json.loads(source_path.read_text(encoding="utf-8"))
+    condition = next(c for c in snapshot["conditions"] if c["constraint_id"] == "RF-T005")
+    assert independent["independent_MNA_points"] == 84 and independent["pass"] is True
+    assert min(metric["min_h2_db"], metric["min_h3_db"]) >= 30
+    choices = [
+        c for c in condition["candidates"]
+        if abs(float(c["chip_area_units"]) - area) < 1e-9
+        and c["verification"]["points_per_interval"] == 1001
+        and c["verification"]["mesh_frequency_intervals"] == 28
+        and c["verification"]["finite_mesh_H2_H3_30dB_pass"] is True
+    ]
+    assert len(choices) == 1, ("unexpected same-area Pareto source", variant, choices)
+    base = choices[0]
+    assert base["metrics"]["worst_il_db"] < il
+    return {
+        "comparison_scope": "same_RF_T005_reported_finite_28x1001_mesh_30dB_required_two_axes_only",
+        "same_area_existing_candidate_id": base["id"],
+        "same_area_existing_candidate_checkpoint_path": base["source"]["complete_parameter_vector"]["path"],
+        "source_area_units": area,
+        "source_worst_il_db": il,
+        "anchor_worst_il_db": base["metrics"]["worst_il_db"],
+        "reported_source_minus_anchor_worst_il_dB": il - base["metrics"]["worst_il_db"],
+        "observation": "not_better_than_existing_same_area_observed_candidate",
+        "source_is_promoted_to_catalog": False,
+        "limitation": "historical records only; H margin, Q(f), SRF, tolerances, physical feasibility and same-run independent RF reanalysis not asserted",
+    }
+
+
+def optimizer_stage_lineage():
+    """Compare prior SHA-verified crosswalk against documented Actions run origin."""
+    with CROSSWALK.open(newline="", encoding="utf-8") as fp:
+        rows = list(csv.DictReader(fp))
+    reference = {
+        row["member_path"]: row for row in rows
+        if row["member_path"] in ("target_35.json", "area_cf1.json")
+    }
+    assert set(reference) == {"target_35.json", "area_cf1.json"}
+    selected = json.loads((ROOT / "experiments/chatgpt_topology_search/runs/EXP-042/selected_checkpoints_rft005.json").read_text())
+    cf1 = json.loads((CHECKPOINT_ROOT / "cf1.json").read_text())
+    return [
+        {
+            "source_artifact_member": "target_35.json",
+            "source_actions_run_id": int(reference["target_35.json"]["run_id"]),
+            "curated_checkpoint_origin_run_id": selected["github_actions"]["run_id"],
+            "different_actions_run_ids": int(reference["target_35.json"]["run_id"]) != selected["github_actions"]["run_id"],
+            "source_solver_success": reference["target_35.json"]["artifact_solver_success"],
+            "curated_solver_success": reference["target_35.json"]["curated_solver_success"],
+            "previous_vector_delta_max_abs": reference["target_35.json"]["full_vector_max_abs_delta"],
+            "previous_metrics_delta_max_abs_dB": reference["target_35.json"]["metric_max_abs_delta"],
+            "stage_classification": "different_run_and_parameter_vector_retain_both",
+        },
+        {
+            "source_artifact_member": "area_cf1.json",
+            "source_actions_run_id": int(reference["area_cf1.json"]["run_id"]),
+            "curated_checkpoint_origin_run_id": cf1["original_action_run_id"],
+            "different_actions_run_ids": int(reference["area_cf1.json"]["run_id"]) != cf1["original_action_run_id"],
+            "source_solver_success": reference["area_cf1.json"]["artifact_solver_success"],
+            "curated_solver_success": reference["area_cf1.json"]["curated_solver_success"],
+            "previous_vector_delta_max_abs": reference["area_cf1.json"]["full_vector_max_abs_delta"],
+            "previous_metrics_delta_max_abs_dB": reference["area_cf1.json"]["metric_max_abs_delta"],
+            "stage_classification": "different_run_and_parameter_vector_retain_both",
+        }
+    ]
+
+
 def inspect():
     validate_origin()
     originals, source_ids = load_zip_originals()
@@ -147,6 +215,18 @@ def inspect():
         main = json.loads(originals[(artifact, original[0])])
         independent = json.loads(originals[(artifact, original[1])])
         details = area_details(main)
+        assert main["constraint_id"] == "RF-T005"
+        assert main["dense_grid_per_segment"] == 1001
+        assert main["dense_pass_30db"] is True
+        assert main["dense_pass_interim_IL"] is False
+        area = numeric(main["chip_area"], "source chip area")
+        screening = recorded_pareto_context(
+            variant=artifact.removeprefix("exp042-").removeprefix("area-").removeprefix("pcb-"),
+            area=area,
+            il=details["source_dense_metrics_reported"]["worst_il_db"],
+            metric=details["source_dense_metrics_reported"],
+            independent=independent
+        )
         artifact_id, run_id, zip_sha = source_ids[(artifact, original[0])]
         assert source_ids[(artifact, original[1])] == (artifact_id, run_id, zip_sha)
         # The three missing historical selected-checkpoint paths are explicit.
@@ -170,6 +250,7 @@ def inspect():
             "recovered_independent_repo_path": str((GIT_COPY_DIR / original[1]).relative_to(ROOT)),
             "curated_checkpoint_path_absent": str(selected_path.relative_to(ROOT)),
             "recorded_run_details": details,
+            "two_axis_source_screening": screening,
             "independent_report_top_level_keys": sorted(independent),
             "independent_report_raw_fields": independent,
             "independent_report_not_recomputed": True,
@@ -204,6 +285,7 @@ def main():
         "recovered_original_member_count": 6,
         "recorded_variants": len(records),
         "records": records,
+        "historical_stage_lineage": optimizer_stage_lineage(),
         "new_solver_runs": 0,
         "independent_network_validation_new_runs": 0,
         "new_curated_checkpoint_claims": 0,
@@ -238,6 +320,9 @@ def main():
             "metrics": r["recorded_run_details"]["source_dense_metrics_reported"],
             "selected_solver_success": r["recorded_run_details"]["selected_solver_success_reported"],
             "h30_reported_mesh_pass": r["recorded_run_details"]["h2_h3_30dB_pass_on_reported_mesh"],
+            "pareto_observation": r["two_axis_source_screening"]["observation"],
+            "same_area_existing_candidate_id": r["two_axis_source_screening"]["same_area_existing_candidate_id"],
+            "il_gap_dB": r["two_axis_source_screening"]["reported_source_minus_anchor_worst_il_dB"],
             "independent_keys": r["independent_report_top_level_keys"],
         } for r in records],
         "original_member_bytes": sum(len(v) for v in originals.values()),
