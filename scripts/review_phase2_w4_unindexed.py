@@ -90,6 +90,7 @@ def build():
             "data/repository_reviews/", "data/repository_audits/"
         )) or rel in {
             "docs/phase2_cleanup_w4_forensics_20261017.md",
+            "docs/phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md",
             "scripts/review_phase2_w4_unindexed.py",
             "scripts/review_phase2_w4_action_runs.py",
         }:
