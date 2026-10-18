@@ -130,6 +130,75 @@ def fmt(m):
 def candidate_status(m):
  return (m is not None and m["min_h2_db"]>=30 and m["min_h3_db"]>=30
          and m["min_3to6_db"]>=20)
+def independently_verify(x,topo):
+ """Explicit 9x9 nodal + L branch-current MNA; separate from Schur nodal Y."""
+ cf,var=TOPOLOGIES[topo]
+ cases=[];frequency=[]
+ for b in BANDS:
+  a,z=float(b["low_mhz"]),float(b["high_mhz"])
+  for ff in (a,(a+z)/2,z):
+   cases.append(SETTINGS.index(b["case"]));frequency.append(ff)
+ for case in range(6):
+  for ff in (3000.,3066.,4000.,5000.,6000.):
+   cases.append(case);frequency.append(ff)
+ freq=np.asarray(frequency);case=np.asarray(cases)
+ g={"f":freq,"case":case,"role":np.full(len(freq),"wide"),
+    "pre":external(freq,"input_parasitic"),
+    "post":external(freq,"output_parasitic")}
+ reference=eval_vector(x,topo,g)
+ errors=[];residuals=[];losses=[]
+ for j,(fc,setting) in enumerate(zip(freq,case)):
+  omega=2e6*np.pi*fc; L=x[:4]
+  ZLmat=np.diag(L/25+1j*L).astype(complex)
+  for (a,b),k in zip(((0,1),(1,3),(3,2)),x[8:11]):
+   mutual=1j*k*np.sqrt(L[a]*L[b]);ZLmat[a,b]+=mutual;ZLmat[b,a]+=mutual
+  tin,tout=g["pre"][j],g["post"][j];load=60-40j
+  Din=tin[0,1]+50*tin[1,1]
+  Yin=(tin[0,0]+50*tin[1,0])/Din
+  Is=1/Din
+  Dout=tout[0,0]*load+tout[0,1]
+  Yout=(tout[1,0]*load+tout[1,1])/Dout
+  capacitors=np.r_[x[4:8],x[11:].reshape(6,2)[setting]]
+  si=omega*capacitors*1e-12/(1+1/Q**2)
+  Yc=si/Q+1j*si
+  A9=np.zeros((9,9),complex)
+  for (u,v),y in zip(cf+var,Yc):
+   A9[u,u]+=y
+   if v>=0:
+    A9[v,v]+=y;A9[u,v]-=y;A9[v,u]-=y
+  A9[0,0]+=Yin;A9[2,2]+=Yout
+  A9[:5,5:]=INC;A9[5:,:5]=INC.T
+  A9[5:,5:]=-omega*1e-9*ZLmat
+  rhs=np.zeros(9,complex);rhs[0]=Is
+  solution=np.linalg.solve(A9,rhs)
+  voltage=solution[:5];current=solution[5:]
+  pout=load.real*abs(voltage[2]/Dout)**2
+  attenuation=-10*np.log10(pout/.005)
+  errors.append(abs(attenuation-reference[j]))
+  in_current=Is-Yin*voltage[0]
+  vext=tin[0,0]*voltage[0]+tin[0,1]*in_current
+  iext=tin[1,0]*voltage[0]+tin[1,1]*in_current
+  reflected=abs(1-100*iext)**2/200
+  inloss=(vext*np.conj(iext)).real-(voltage[0]*np.conj(in_current)).real
+  outloss=(voltage[2]*np.conj(Yout*voltage[2])).real-pout
+  Lloss=sum(omega*1e-9*L[h]/25*abs(current[h])**2 for h in range(4))
+  Closs=0
+  for (u,v),y in zip(cf+var,Yc):
+   z=voltage[u] if v<0 else voltage[u]-voltage[v]
+   Closs+=y.real*abs(z)**2
+  terms=(pout,reflected,inloss,outloss,Lloss,Closs)
+  losses.append(min(terms))
+  residuals.append(abs(.005-sum(terms)))
+ result={"independent_method":"explicit 5-node plus 4-L-branch 9x9 MNA",
+         "points":len(freq),"legacy_28_region_endpoint_midpoint":84,
+         "additional_3to6_probes":30,
+         "max_abs_attenuation_disagreement_db":max(errors),
+         "max_power_balance_residual_W":max(residuals),
+         "min_constituent_power_W":min(losses),
+         "passed":bool(max(errors)<1e-8 and max(residuals)<1e-10
+                       and min(losses)>=-1e-12)}
+ return result
+
 def main():
  global calls
  print("EXP-048 reservation verified on main before execution; Phase 2 RF-T006",flush=True)
@@ -183,12 +252,49 @@ def main():
   if j:x=np.array([np.clip(a+RNG.normal(0,0.04*(hi-lo)),lo,hi)
                     for a,(lo,hi) in zip(x,BND)])
   opt(topo,x,2000,f"refinement_{j}")
- # Exact comparison to RF-T006 grid: all 3001 highstop frequencies per setting.
- fine=grid(101,1)
+ # Feasible-point local IL reduction, retaining explicit H2/H3 and wideband margins.
+ if candidate_status(best["metrics"]):
+  topo=best["topology"]
+  incumbent={"x":best["x"].copy(),"m":best["metrics"]}
+  for j in range(2):
+   if time.monotonic()-started>700:break
+   origin=incumbent["x"].copy()
+   if j:
+    origin=np.array([np.clip(a+RNG.normal(0,0.012*(hi-lo)),lo,hi)
+                     for a,(lo,hi) in zip(origin,BND)])
+   trace=[0]
+   def penalized(y):
+    global calls
+    calls+=1;trace[0]+=1
+    m=metrics(y,topo,coarse)
+    if m is None:return 1e7
+    if (m["min_h2_db"]>=30.05 and m["min_h3_db"]>=30.05
+        and m["min_3to6_db"]>=20.20
+        and m["worst_il_db"]<incumbent["m"]["worst_il_db"]):
+     incumbent["x"]=np.array(y).copy();incumbent["m"]=m
+    return (m["worst_il_db"]
+            +20*max(0,30.05-m["min_h2_db"])**2
+            +20*max(0,30.05-m["min_h3_db"])**2
+            +8*max(0,20.2-m["min_3to6_db"])**2)
+   res=minimize(penalized,origin,method="Powell",bounds=BND,
+       options={"maxfev":2800,"xtol":0.002,"ftol":0.0002})
+   records.append({"topology":topo,"stage":f"feasible_IL_refinement_{j}",
+                   "evaluations":trace[0],"solver_success":bool(res.success),
+                   "solver_message":str(res.message),
+                   "best_feasible_IL_so_far":incumbent["m"]["worst_il_db"]})
+   print("IL refinement",j,"best",fmt(incumbent["m"]),flush=True)
+  if incumbent["m"]["worst_il_db"]<best["metrics"]["worst_il_db"]:
+   best={"score":score(incumbent["m"]),"x":incumbent["x"].copy(),
+         "topology":topo,"metrics":incumbent["m"],
+         "stage":"feasible_IL_refinement"}
+ # Exact full grids: RF-F003 28 intervals * 1001 and T006 3001 * 6.
+ fine=grid(1001,1)
  frozen=metrics(best["x"],best["topology"],fine)
  original=metrics(X0,"original",fine)
  print("fine_baseline",fmt(original),"fine_selected",fmt(frozen),flush=True)
  print("full_18006_pass",candidate_status(frozen),flush=True)
+ independent=independently_verify(best["x"],best["topology"])
+ print("independent_validation",json.dumps(independent),flush=True)
  OUT.parent.mkdir(parents=True,exist_ok=True)
  payload={"experiment_id":"EXP-048","phase":"Phase 2","constraint_id":"RF-T006",
           "base_constraint_id":"RF-F003","source_experiment_id":"EXP-047",
@@ -206,16 +312,17 @@ def main():
           "solver_status":"partial_local_search_no_global_convergence_proof"},
           "coarse_rounds":records,"objective_calls":calls,
           "elapsed_seconds":time.monotonic()-started,
-          "fine_grid":{"original_28_segments_pts":101,"wide_frequency_step_MHz":1,
+          "fine_grid":{"original_28_segments_pts":1001,"wide_frequency_step_MHz":1,
                        "wide_points_per_setting":3001,"wide_total":18006},
-          "independent_validation":"not_run",
+          "independent_validation":independent,
           "limitations":["No continuous extrema/Q(f)/SRF/EM/tolerance/physical validation",
                          "Coarse optimization and local heuristic do not prove infeasibility",
-                         "No independently implemented network solver in this run"]}
+                         "Independent MNA verified only 114 specified probes not all grid points"]}
  OUT.write_text(json.dumps(payload,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
  print("EXP048_RESULT_JSON",json.dumps({"best_topology":best["topology"],
       "original_fine":original,"selected_fine":frozen,
       "score":best["score"],"attempted_evaluations":calls,
-      "full_pass":candidate_status(frozen)}),flush=True)
+      "full_pass":candidate_status(frozen),
+      "selected_vector_23":best["x"].tolist(),"validation":independent}),flush=True)
  print("RESULT_PATH",OUT,flush=True)
 if __name__=="__main__":main()
