@@ -2,7 +2,7 @@
   "schema_version": 1,
   "study_phase": "Phase 2",
   "source_main_commit": "c1b874c1e240ac3fedfeaa67064783f0918ed9a2",
-  "checked_out_sha": "b6178554e111e7ecf05700f01c38b26b35f178a8",
+  "checked_out_sha": "e4534fec583c7cfaa91f52f6e00fa96ebbc236cf",
   "status": "read_only_historical_artifact_source_extraction_no_new_rf_run",
   "source_actions_zip_count": 3,
   "recovered_original_member_count": 6,
@@ -104,6 +104,18 @@
           "start",
           "vector"
         ]
+      },
+      "two_axis_source_screening": {
+        "comparison_scope": "same_RF_T005_reported_finite_28x1001_mesh_30dB_required_two_axes_only",
+        "same_area_existing_candidate_id": "T005_4L_A4p667_EXP042",
+        "same_area_existing_candidate_checkpoint_path": "experiments/chatgpt_topology_search/runs/EXP-042/checkpoints/pcb_both.json",
+        "source_area_units": 4.666666666666667,
+        "source_worst_il_db": 0.8221913346045763,
+        "anchor_worst_il_db": 0.8195645153820337,
+        "reported_source_minus_anchor_worst_il_dB": 0.002626819222542598,
+        "observation": "not_better_than_existing_same_area_observed_candidate",
+        "source_is_promoted_to_catalog": false,
+        "limitation": "historical records only; H margin, Q(f), SRF, tolerances, physical feasibility and same-run independent RF reanalysis not asserted"
       },
       "independent_report_top_level_keys": [
         "experiment",
@@ -225,6 +237,18 @@
           "start",
           "vector"
         ]
+      },
+      "two_axis_source_screening": {
+        "comparison_scope": "same_RF_T005_reported_finite_28x1001_mesh_30dB_required_two_axes_only",
+        "same_area_existing_candidate_id": "T005_4L_A5p333_EXP042",
+        "same_area_existing_candidate_checkpoint_path": "experiments/chatgpt_topology_search/runs/EXP-042/checkpoints/pcb_cf1.json",
+        "source_area_units": 5.333333333333333,
+        "source_worst_il_db": 0.8135542713830224,
+        "anchor_worst_il_db": 0.8113065857640376,
+        "reported_source_minus_anchor_worst_il_dB": 0.002247685618984807,
+        "observation": "not_better_than_existing_same_area_observed_candidate",
+        "source_is_promoted_to_catalog": false,
+        "limitation": "historical records only; H margin, Q(f), SRF, tolerances, physical feasibility and same-run independent RF reanalysis not asserted"
       },
       "independent_report_top_level_keys": [
         "experiment",
@@ -350,6 +374,18 @@
           "vector"
         ]
       },
+      "two_axis_source_screening": {
+        "comparison_scope": "same_RF_T005_reported_finite_28x1001_mesh_30dB_required_two_axes_only",
+        "same_area_existing_candidate_id": "T005_4L_A5p333_EXP042",
+        "same_area_existing_candidate_checkpoint_path": "experiments/chatgpt_topology_search/runs/EXP-042/checkpoints/pcb_cf1.json",
+        "source_area_units": 5.333333333333333,
+        "source_worst_il_db": 0.8128002691874816,
+        "anchor_worst_il_db": 0.8113065857640376,
+        "reported_source_minus_anchor_worst_il_dB": 0.0014936834234440255,
+        "observation": "not_better_than_existing_same_area_observed_candidate",
+        "source_is_promoted_to_catalog": false,
+        "limitation": "historical records only; H margin, Q(f), SRF, tolerances, physical feasibility and same-run independent RF reanalysis not asserted"
+      },
       "independent_report_top_level_keys": [
         "experiment",
         "independent_MNA_points",
@@ -373,6 +409,30 @@
       "replay_executed": false,
       "owner_delete_approval": "not_granted",
       "disposition": "retain_source_exact_originals_not_curated_candidate"
+    }
+  ],
+  "historical_stage_lineage": [
+    {
+      "source_artifact_member": "target_35.json",
+      "source_actions_run_id": 38999677194,
+      "curated_checkpoint_origin_run_id": 38774357292,
+      "different_actions_run_ids": true,
+      "source_solver_success": "False",
+      "curated_solver_success": "True",
+      "previous_vector_delta_max_abs": "0.25991675776769591",
+      "previous_metrics_delta_max_abs_dB": "0.0012513041705730643",
+      "stage_classification": "different_run_and_parameter_vector_retain_both"
+    },
+    {
+      "source_artifact_member": "area_cf1.json",
+      "source_actions_run_id": 38999677183,
+      "curated_checkpoint_origin_run_id": 38775558755,
+      "different_actions_run_ids": true,
+      "source_solver_success": "True",
+      "curated_solver_success": "",
+      "previous_vector_delta_max_abs": "0.010156762602793967",
+      "previous_metrics_delta_max_abs_dB": "1.5785433305381957e-05",
+      "stage_classification": "different_run_and_parameter_vector_retain_both"
     }
   ],
   "new_solver_runs": 0,
