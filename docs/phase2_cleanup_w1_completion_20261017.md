@@ -23,7 +23,7 @@
 W1の対応：
 
 - 一旦試みた旧READMEのリンク直接修正は**撤回**。Git blob SHA `639261f3e4f49c8fc7618e365c672019518b1108` を完全復元。
-- 元READMEの`../../../../actions/workflows/lpf-target040.yml`が解決するよう、**通常ファイル**`actions/workflows/lpf-target040.yml`を新設。これは旧リンクの閲覧用案内であり、**実行可能なworkflowでもシンボリックリンクでもない**。実際の定義は[.github/workflows/lpf-target040.yml](../.github/workflows/lpf-target040.yml)、操作画面は[GitHub Actions workflow](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/workflows/lpf-target040.yml)。元READMEの旧pathから画面に自動転送されるわけではない。
+- 元READMEの`../../../../actions/workflows/lpf-target040.yml`が解決するよう、**通常ファイル**`actions/workflows/lpf-target040.yml`を新設。これは旧リンクの閲覧用案内であり、**実行可能なworkflowでもシンボリックリンクでもない**。実際の定義は[.github/workflows/lpf-target040.yml](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-target040.yml)、操作画面は[GitHub Actions workflow](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/workflows/lpf-target040.yml)。元READMEの旧pathから画面に自動転送されるわけではない。
 - `uv.lock`、EXP-004の元manifest／README、EXP-047の元manifest／候補checkpoint、外部固定S2P、RF制約JSONは変更せず、Git blob同一性を検査。
 - 元研究の説明中に残る旧RF条件は、当時の実験条件の記録として保持。2026-10-17の正式RF-F003の現況へ昇格させない。
 
