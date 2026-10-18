@@ -1,0 +1,55 @@
+name: EXP-049 T006 high-Q area escalation (temporary)
+on:
+  push:
+    branches:
+      - experiment/exp049-t006-area-stepup-1p1db
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-049/highq.py'
+      - '.github/workflows/exp049_highq_t006.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  highq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: ${{ github.workspace }}
+      EXP049_HIGHQ_MAX_SECONDS: "370"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install numerical dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 scipy==1.15.3
+      - name: Reverify EXP-049 main reservation and RF-T006
+        run: |
+          python scripts/experiment_id_registry.py --experiment-id EXP-049 --owner MasayaTakagi
+          python -c "from src.lpf.constraint_versions import load_constraint; p=load_constraint('RF-T006',allow_trial=True); assert p['trial_base_constraint_id']=='RF-F003'"
+      - name: Explore high-Q33 chip-L alternatives
+        run: python -u experiments/chatgpt_topology_search/runs/EXP-049/highq.py
+      - name: Preserve high-Q area and verification evidence
+        run: |
+          set -euo pipefail
+          cp results/EXP-049/highq.json experiments/chatgpt_topology_search/runs/EXP-049/highq.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-049/highq.json
+          git commit -m "results(EXP-049): retain Q33 area substitutions with full-grid and MNA evidence"
+          git push origin HEAD:refs/heads/experiment/exp049-t006-area-stepup-1p1db
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: EXP-049-high-Q
+          path: results/EXP-049/highq.json
+          retention-days: 14
+          if-no-files-found: warn
