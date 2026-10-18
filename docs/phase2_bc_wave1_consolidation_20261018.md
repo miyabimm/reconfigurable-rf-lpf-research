@@ -35,7 +35,7 @@
 
 **注意：** この集約を追記した段階では元データも残るのでGitの現在treeはむしろ増加している。「34,818−11,692＝23,126 bytes」は**将来元3件を本当に消すことが承認され、他の変更がなかったと仮定した現在tree上の概算差**であり、Gitの履歴・pack・Actions容量の実削減値ではない。承認前に原本を削除せず、既存の分割ファイルを参照する研究runnerや履歴資料を変更しない。
 
-[初回発見CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39101712307)では元JSONの計10配置・424,233評価・ビット単位のzlib復元を検証して、Gitへ可逆JSONを固定した。**Gitに固定した状態での厳格な再復元検査**は後続の共通CIで行う。パレート候補の新規登録、物理Q(f)/SRF/EM、公差、独立MNAの新規計算はしていない。
+[初回発見CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39101712307)では元JSONの計10配置・424,233評価・ビット単位のzlib復元を検証して、Gitへ可逆JSONを固定した。[固定済み元JSONの再復元CI 39101884013](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39101884013)は**SUCCESS**となり、`EXP046_LOSSLESS_COMMITTED_PASS`で3元JSONへのバイト完全一致を確認した。パレート候補の新規登録、物理Q(f)/SRF/EM、公差、独立MNAの新規計算はしていない。
 
 ## 削除判断の現状
 
