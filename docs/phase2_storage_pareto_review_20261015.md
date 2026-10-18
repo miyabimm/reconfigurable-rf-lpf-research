@@ -1,5 +1,7 @@
 # Phase 2：証拠逆引き・保管区分・条件別Pareto（2026-10-15）
 
+> **保全用の歴史記録（2026-10-15基準）。** このページの旧 `scripts/build_reference_inventory.py` は軽量化によりmainから退役。元コードは [固定Git原本](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py) から復元できる。古いActions artifactは恒久保管先ではなく、以降の最新CI構成を説明しない。Pareto計算コード `scripts/report_research_pareto.py` と数値分類テストは引き続き保持する。
+
 本書は既存結果の非破壊的な管理方法を定める。研究Phase 2を継続し、Phase 3開始、正式制約RF-F002の変更、歴史的証拠の移動・削除は行わない。PR #50の証拠棚卸し成果を起点として開発し、PR #50はmainへSquash Merge済み（統合コミット `7881f2e624621fb0053eb9ba36d0aa891eec7da4`）。本PR #51のbaseはmain。
 
 ## 保全と逆引き

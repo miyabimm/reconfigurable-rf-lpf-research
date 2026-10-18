@@ -6,7 +6,6 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from scripts.build_reference_inventory import _classify
 from scripts.verify_external_trial_zip import MANIFEST, verify_zip
 
 
@@ -22,8 +21,6 @@ class ExternalTrialZipTests(unittest.TestCase):
         self.assertFalse(data["original_archive_held_in_github"])
         self.assertFalse(data["archive_retention_verified"])
         self.assertEqual(35, len({r["path"] for r in data["members"]}))
-        self.assertEqual(("research_governance_register", "preserve_immutable"),
-                         _classify("data/external_trial_zip_manifest_20261015.json", set()))
 
     def test_verifier_checks_content_without_extraction(self):
         with tempfile.TemporaryDirectory() as temp:
