@@ -1,5 +1,7 @@
 # Phase 2：46ファイルの出典・内容レビュー（2026-10-15）
 
+> **保全用の歴史記録（2026-10-15基準）。** 本文にある `scripts/build_reference_inventory.py`、`scripts/triage_unlinked_evidence.py`、`tests/test_triage_unlinked_evidence.py` は軽量化でmainから退役した当時の専用生成・検査ツール。元コードは [固定Git原本](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/tree/f0337963688d2a7155b8e28488d6723f2578e73e/scripts) および [旧専用テスト](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/tests/test_triage_unlinked_evidence.py) から復元できる。データ `data/research_storage_triage.csv` と46件の調査対象原本は保持する。本文の実行コマンドは当時の再現手順であり、現行mainでは直接実行できない。
+
 PR #49～#51のmain統合後の非破壊的な再点検。基準main：dacf0dcbefe5ed191528ace190f0578ff56330fd。研究はPhase 2のまま。正式制約RF-F002、試験条件RF-T004、旧制約RF-F001等を区別し、Phase 3には移行しない。
 
 ## 調査範囲
