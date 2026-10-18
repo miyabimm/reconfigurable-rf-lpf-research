@@ -1,0 +1,128 @@
+name: Phase 2 B/C consolidated archival parity and EXP-046 lossless source check
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/phase2_bc_wave1_consolidated.yml'
+      - 'scripts/verify_phase2_bc_exp046_lossless.py'
+      - 'data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json'
+      - 'docs/phase2_bc_wave1_consolidation_20261018.md'
+      - 'docs/roadmap.md'
+      - '.github/workflows/phase2_cleanup_w2.yml'
+      - '.github/workflows/phase2_cleanup_w3.yml'
+      - '.github/workflows/phase2_w4_exp042_crosswalk.yml'
+      - '.github/workflows/phase2_w4_exp042_missing_variants.yml'
+      - '.github/workflows/phase2_w4_exp046_exp047_provenance.yml'
+      - 'scripts/build_phase2_topology_search.py'
+      - 'tests/test_phase2_topology_search.py'
+      - 'data/catalog/phase2_topology_search_20261017*'
+      - 'docs/results/phase2_topology_search_20261017.md'
+      - 'docs/results/README.md'
+      - 'data/catalog/README.md'
+      - 'docs/phase2_cleanup_w3_document_review_20261017.md'
+      - 'docs/archive/w3_consolidated_documents_20261017.md'
+      - 'docs/archive/README.md'
+      - 'docs/governance/README.md'
+      - 'data/repository_reviews/phase2_cleanup_deletion_candidates_20261017.csv'
+      - 'data/repository_reviews/w3_document_disposition_20261017.csv'
+      - 'scripts/verify_phase2_cleanup_w3.py'
+      - 'docs/README.md'
+      - 'docs/current/*.md'
+      - 'scripts/audit_w4_exp042_artifact_checkpoint_crosswalk.py'
+      - 'docs/phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md'
+      - 'data/repository_reviews/w4_exp042_member_crosswalk_20261018.csv'
+      - 'data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json'
+      - 'scripts/audit_w4_exp042_missing_variants.py'
+      - 'data/repository_reviews/w4_exp042_recovered_original_members_20261018/**'
+      - 'data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json'
+      - 'docs/phase2_w4_exp042_missing_variant_recovery_20261018.md'
+      - 'scripts/audit_w4_exp046_exp047_sources.py'
+      - 'data/repository_reviews/w4_exp046_exp047_*_20261018.*'
+      - 'docs/phase2_w4_exp046_exp047_source_review_20261018.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  five-original-checks-without-retirement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: W2 original topology unittest and exact report derivation
+        run: |
+          python3 -m unittest tests.test_phase2_topology_search -v
+          python3 scripts/build_phase2_topology_search.py --check
+      - name: W3 exact Git history restoration and protected original source bytes
+        run: |
+          python3 scripts/verify_phase2_cleanup_w3.py
+          python3 scripts/verify_phase2_cleanup_w1_links.py
+      - name: W4 EXP-042 original 19-member ZIP versus Git vector-and-metric crosswalk
+        run: |
+          python3 scripts/audit_w4_exp042_artifact_checkpoint_crosswalk.py \
+            --output-dir artifacts/phase2_reports/bc/w4_exp042_crosswalk
+          cmp artifacts/phase2_reports/bc/w4_exp042_crosswalk/exp042_zip_member_to_git_crosswalk.csv \
+            data/repository_reviews/w4_exp042_member_crosswalk_20261018.csv
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          expected=json.loads(Path("data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json").read_text())
+          actual=json.loads(Path("artifacts/phase2_reports/bc/w4_exp042_crosswalk/exp042_crosswalk_summary.json").read_text())
+          assert expected == actual
+          assert actual["original_zip_count"] == 10 and actual["member_count"] == 19
+          assert actual["rf_optimization_runs"] == 0 and actual["files_deleted"] == 0
+          print("BC_W4_CROSSWALK_PARITY_PASS")
+          PY
+          python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
+      - name: W4 exact six original EXP-042 JSON members and source provenance
+        run: |
+          python3 scripts/audit_w4_exp042_missing_variants.py \
+            --output-dir artifacts/phase2_reports/bc/w4_exp042_missing_variants \
+            --verify-committed-recovery
+          python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
+      - name: W4 exact 131 EXP-046/047 original blobs and correction lineage
+        run: |
+          python3 scripts/audit_w4_exp046_exp047_sources.py \
+            --output-dir artifacts/phase2_reports/bc/w4_exp046_047
+          cmp artifacts/phase2_reports/bc/w4_exp046_047/w4_exp046_exp047_131_provenance.csv \
+            data/repository_reviews/w4_exp046_exp047_131_20261018.csv
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          expected=json.loads(Path("data/repository_reviews/w4_exp046_exp047_summary_20261018.json").read_text())
+          actual=json.loads(Path("artifacts/phase2_reports/bc/w4_exp046_047/w4_exp046_exp047_provenance_summary.json").read_text())
+          for k in ("source_total","by_experiment","by_kind","verified_original_blob_count",
+                    "protected_other_46_sha_match","exp046","exp047",
+                    "original_experiment_deletions","new_optimizer_runs","new_independent_MNA_runs",
+                    "w4_evidence_removal_authorized"):
+              assert expected[k] == actual[k], k
+          assert actual["source_total"] == 131
+          print("BC_W4_131_PROVENANCE_PARITY_PASS")
+          PY
+      - name: EXP-046 ten unique placement vectors and byte-for-byte original source roundtrip
+        run: |
+          if test -f data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json; then
+            python3 scripts/verify_phase2_bc_exp046_lossless.py \
+              --output-dir artifacts/phase2_reports/bc/exp046_lossless \
+              --verify-committed
+          else
+            python3 scripts/verify_phase2_bc_exp046_lossless.py \
+              --output-dir artifacts/phase2_reports/bc/exp046_lossless \
+              --emit-envelope-chunks
+          fi
+      - name: Verify tracked Markdown references at end of consolidated audit
+        run: python3 scripts/verify_phase2_cleanup_w1_links.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase2-bc-first-wave-parity-evidence
+          path: artifacts/phase2_reports/bc/
+          retention-days: 30
+          if-no-files-found: warn

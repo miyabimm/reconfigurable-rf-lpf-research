@@ -96,11 +96,20 @@ def workflow_review():
     archived=records("data/repository_reviews/w4_workflow_runs_20261017.csv")
     by_path={x["workflow_path"]:x for x in archived}
     assert len(by_path)==39
-    current=[p for p in git("ls-files",".github/workflows").splitlines()
+    # The 47-workflow CSV is a dated baseline, not a permanent live count.
+    # Check its exact original paths/SHA, allowing new audit-only additions.
+    tracked=[p for p in git("ls-files",".github/workflows").splitlines()
              if p.endswith((".yml",".yaml")) and (ROOT/p).is_file()]
-    assert len(current)==47, len(current)
+    fixed=records("data/repository_reviews/w5_followup_workflows_47_20261018.csv")
+    fixed_by_path={r["workflow_path"]:r for r in fixed}
+    assert len(fixed)==len(fixed_by_path)==47
+    assert set(fixed_by_path).issubset(set(tracked))
+    for p,r in fixed_by_path.items():
+        assert git_blob((ROOT/p).read_bytes())==r["current_source_sha1"], (
+            "Frozen W5 workflow changed: "+p)
+    current=sorted(fixed_by_path)
     rows=[]
-    for p in sorted(current):
+    for p in current:
         src=get(p)
         prior=by_path.get(p)
         words = {
@@ -185,12 +194,17 @@ def assert_no_original_mutation():
     assert not git("diff","--diff-filter=D","--name-only",BASE,"HEAD")
     changes=git("diff","--name-only",BASE,"HEAD").splitlines()
     original_dirs=("experiments/","candidates/","data/validation/","data/constraints/",
-                   "data/parasitics/","data/pareto_snapshots/","data/catalog/",
-                   ".github/workflows/")
+                   "data/parasitics/","data/pareto_snapshots/","data/catalog/")
+    # The two W5 audit workflows were legitimately updated in the fixed
+    # post-W5 snapshot; all others on that frozen list must remain unchanged.
+    fixed_workflows={r["workflow_path"] for r in records(
+        "data/repository_reviews/w5_followup_workflows_47_20261018.csv")}
+    legacy_allowed={".github/workflows/phase2_w5_post_cleanup_disposition.yml",
+                    ".github/workflows/phase2_w5_readonly_closure.yml"}
     assert not any(
-        (p.startswith(original_dirs) and
-         p not in (".github/workflows/phase2_w5_post_cleanup_disposition.yml",
-                   ".github/workflows/phase2_w5_readonly_closure.yml")) or
+        p.startswith(original_dirs) or
+        (p.startswith(".github/workflows/") and
+         (p in fixed_workflows and p not in legacy_allowed)) or
         p in ("data/design_constraints.json","data/bands.csv")
         for p in changes), changes
     for r in records("data/repository_reviews/step4_retention_46_20261017.csv"):
