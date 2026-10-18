@@ -9,6 +9,12 @@ on:
       - 'docs/phase2_w4_exp042_artifact_preservation_20261018.md'
       - 'docs/roadmap.md'
   workflow_dispatch:
+    inputs:
+      recapture_from_github:
+        description: 'Optional: query current GitHub ZIP API again (may expire), never change Git records'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -26,17 +32,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Capture original GitHub Actions archives and member SHA256 without running RF solver
+      - name: Restore archived exact ZIP bytes offline and check member SHA256 / CRC
+        run: python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
+      - name: Optional freshness check against current GitHub artifact API
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.recapture_from_github }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          python3 scripts/preserve_exp042_actions_artifacts.py --capture --log-chunks
-      - name: Verify Git-archived exact ZIP bytes offline once added
-        run: |
-          if test -f data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json; then
-            python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
-          else
-            echo "INITIAL CAPTURE ONLY: Git archive not yet committed; this run cannot assert long-term preservation."
-          fi
+          python3 scripts/preserve_exp042_actions_artifacts.py --capture
       - name: Validate tracked Markdown local links
         run: python3 scripts/verify_phase2_cleanup_w1_links.py
