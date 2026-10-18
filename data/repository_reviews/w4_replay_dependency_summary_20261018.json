@@ -1,0 +1,50 @@
+{
+  "baseline_main": "fd8c3fb4dc9f972dfd3d646009facb25cf344a0b",
+  "checked_out_sha": "be886b8673680a0e7a7a7d937818e3c43b9a4f62",
+  "reviewed_originals": 225,
+  "original_bytes": 2046501,
+  "protected_46_sha_pass": 46,
+  "groups": {
+    "EXP-042": 30,
+    "EXP-043": 25,
+    "EXP-044": 12,
+    "EXP-045": 26,
+    "EXP-046": 35,
+    "EXP-047": 96,
+    "exp047_legacy_manifest_adapter_20261017.json": 1
+  },
+  "constraint_from_manifest": {
+    "RF-F003": 96,
+    "RF-T005": 128,
+    "unknown": 1
+  },
+  "manifest_exact_path_literals": 25,
+  "manifest_basename_hints_not_proof": 25,
+  "readme_basename_hints_not_proof": 92,
+  "workflow_exact_path_refs": 20,
+  "source_mentions_external_s2p": 60,
+  "source_mentions_tool_fetch": 59,
+  "source_mentions_dynamic_path_construct": 72,
+  "source_mentions_checkpoint": 34,
+  "syntax": {
+    "node_async_function_compile/compiled_without_execution": 34,
+    "node_module_parse/parsed_syntax_only": 25,
+    "not_applicable/not_a_source_file": 139,
+    "python_ast_parse/parsed_syntax_only": 27
+  },
+  "replay_executions": 0,
+  "deletions": 0,
+  "owner_delete_approvals": 0,
+  "limitations": [
+    "Regex lexical analysis cannot prove dynamic runtime paths or unused files.",
+    "Manifest/README basename hints may match unrelated same-name files.",
+    "Python AST and Node module syntax checks do not execute solvers or validate math.",
+    "Historical in-chat scripts can require a Code Mode wrapper and custom tools.",
+    "No 28x1001 or 84-point independent MNA rerun occurred."
+  ],
+  "observation_run_id": 39088382917,
+  "observation_url": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39088382917",
+  "observation_result": "success",
+  "source_csv": "data/repository_reviews/w4_replay_dependency_225_20261018.csv",
+  "note": "PR checkout source-syntax static gate observation; cached result, not current main live measurement. No RF numerical solver invoked."
+}

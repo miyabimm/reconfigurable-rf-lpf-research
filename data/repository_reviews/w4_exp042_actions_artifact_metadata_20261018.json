@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "phase": "Phase 2",
+  "source": "GitHub Actions connector REST metadata: fetch_workflow_run_artifacts and fetch_workflow_run_jobs",
+  "observed_date_utc": "2026-10-18",
+  "source_main": "fd8c3fb4dc9f972dfd3d646009facb25cf344a0b",
+  "scope": "Six selected EXP-042 runs only; not all runs or workflows",
+  "runs": [
+    {
+      "workflow": "exp042-rf-t005-verify.yml",
+      "run_id": 38999427474,
+      "job_conclusions": [
+        "verify:success"
+      ],
+      "artifacts": []
+    },
+    {
+      "workflow": "exp042_area.yml",
+      "run_id": 38999677183,
+      "job_conclusions": [
+        "area / cf2:success",
+        "area / both:success",
+        "area / cf1:success"
+      ],
+      "artifacts": [
+        {
+          "id": 12088985846,
+          "name": "exp042-area-both",
+          "bytes": 2438,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088632009,
+          "name": "exp042-area-cf1",
+          "bytes": 2446,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088229457,
+          "name": "exp042-area-cf2",
+          "bytes": 2427,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        }
+      ]
+    },
+    {
+      "workflow": "exp042_rf_t005.yml",
+      "run_id": 38999677194,
+      "job_conclusions": [
+        "EXP-042 full S2P 7001-grid / independent MNA:success",
+        "RF-T005 H2H3 30 dB:success",
+        "RF-T005 H2H3 35 dB:success"
+      ],
+      "artifacts": [
+        {
+          "id": 12088487740,
+          "name": "exp042-rft005-target-30",
+          "bytes": 2165,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088289237,
+          "name": "exp042-rft005-independent-7001",
+          "bytes": 804,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088043349,
+          "name": "exp042-rft005-target-35",
+          "bytes": 2239,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        }
+      ]
+    },
+    {
+      "workflow": "exp042_manifest.yml",
+      "run_id": 38822654644,
+      "job_conclusions": [
+        "manifest:failure"
+      ],
+      "artifacts": []
+    },
+    {
+      "workflow": "exp042_passband_q.yml",
+      "run_id": 38999310277,
+      "job_conclusions": [
+        "evaluate:success"
+      ],
+      "artifacts": [
+        {
+          "id": 12087479657,
+          "name": "exp042-4L-passband-magnetic-Q",
+          "bytes": 6825,
+          "expires_at": "2027-01-15T03:34:29Z",
+          "expired_at_observation": false
+        }
+      ]
+    },
+    {
+      "workflow": "exp042_pcb.yml",
+      "run_id": 38999677216,
+      "job_conclusions": [
+        "area / pcb_cf2:success",
+        "area / pcb_both:success",
+        "area / pcb_cf1:success"
+      ],
+      "artifacts": [
+        {
+          "id": 12088791299,
+          "name": "exp042-pcb-pcb_cf1",
+          "bytes": 2526,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088572256,
+          "name": "exp042-pcb-pcb_cf2",
+          "bytes": 2511,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        },
+        {
+          "id": 12088338868,
+          "name": "exp042-pcb-pcb_both",
+          "bytes": 2572,
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
+        }
+      ]
+    }
+  ],
+  "total_runs": 6,
+  "artifacts_metadata_visible": 10,
+  "artifacts_contents_examined": 0,
+  "artifacts_downloaded": 0,
+  "rf_numerical_replay_performed": 0,
+  "notes": [
+    "Artifact metadata available at observation time does not guarantee future availability; expiration dates may change.",
+    "A successful Actions job is evidence of the recorded job result, not an independent new numerical validation in this audit.",
+    "Run 38999427474 has a successful verify job but zero currently visible artifacts; do not infer what it produced or that evidence was not saved elsewhere.",
+    "Manifest run 38822654644 has failed job and no currently visible artifacts; retain source and failure context.",
+    "Original Git checkpoint/manifests remain separate primary evidence; no removal approved.",
+    "expired_at_observation=false for all 10 observed artifacts; the flag is an API metadata snapshot only."
+  ]
+}
