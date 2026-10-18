@@ -1,4 +1,4 @@
-"""Focused gates for the EXP-048+ Git-only storage policy (no RF simulations)."""
+"""Focused gates for the EXP-050+ Git-only storage policy (no RF simulations)."""
 import hashlib
 import json
 import subprocess
@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.audit_new_experiment_storage import (
-    CASES, inspect_new_git_files, validate_checkpoint, validate_run,
+    CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, validate_checkpoint, validate_run,
     validate_selection, validate_summary,
 )
 
@@ -26,7 +26,7 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.run = self.root / "experiments/chatgpt_topology_search/runs/EXP-048"
+        self.run = self.root / "experiments/chatgpt_topology_search/runs/EXP-050"
         self.run.mkdir(parents=True)
         dump(self.root / "data/phase2_git_storage_budget.json", {
             "thresholds": {
@@ -43,7 +43,7 @@ class StoragePolicyGateTests(unittest.TestCase):
             "estimated_curated_bytes": 2000,
         }
         self.manifest = {
-            "experiment_id": "EXP-048",
+            "experiment_id": "EXP-050",
             "constraints": {"constraint_id": "RF-F003"},
             "execution": {"status": "planned"},
             "validation": {"numerical": "not_run", "independent": "not_run"},
@@ -52,7 +52,7 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.record = {
             "schema_version": 1,
             "policy": "phase2-git-only-v1",
-            "experiment_id": "EXP-048",
+            "experiment_id": "EXP-050",
             "phase": "Phase 2",
             "stage": "planned",
             "selection": self.selection,
@@ -64,11 +64,36 @@ class StoragePolicyGateTests(unittest.TestCase):
         with patch(SCRIPT + ".validate_manifest"), patch(
             SCRIPT + ".reservation_on_main", return_value={"constraint_id": "RF-F003"}
         ):
-            return validate_run(self.root, "EXP-048", mode=mode)
+            return validate_run(self.root, "EXP-050", mode=mode)
 
     def save(self):
         dump(self.run / "manifest.json", self.manifest)
         dump(self.run / "storage_record.json", self.record)
+
+    def test_exp_048_049_preserved_no_retroactive_manifest_migration(self):
+        # Historical runs have no storage_record; the new CI must ignore them.
+        legacy48 = self.run.parent / "EXP-048"
+        legacy49 = self.run.parent / "EXP-049"
+        legacy48.mkdir()
+        legacy49.mkdir()
+        (legacy48 / "manifest.json").write_text('{"experiment_id":"EXP-048"}')
+        (legacy49 / "manifest.json").write_text('{"experiment_id":"EXP-049"}')
+        with patch(SCRIPT + ".inspect_new_git_files", return_value=0), patch(
+            SCRIPT + ".validate_run", return_value={"experiment_id": "EXP-050"}
+        ) as validate:
+            result = audit_all(self.root, main_ref="origin/main")
+        self.assertEqual(50, MIN_NEW_EXP_NUMBER)
+        self.assertEqual([{"experiment_id": "EXP-050"}], result)
+        validate.assert_called_once_with(self.root, "EXP-050", main_ref="origin/main")
+        self.assertFalse((legacy48 / "storage_record.json").exists())
+        self.assertFalse((legacy49 / "storage_record.json").exists())
+
+    def test_exp_047_to_049_preflight_and_finalize_rejected(self):
+        for legacy in ("EXP-047", "EXP-048", "EXP-049"):
+            with self.subTest(legacy=legacy):
+                for mode in ("preflight", "finalize"):
+                    with self.assertRaisesRegex(ValueError, "EXP-050+"):
+                        validate_run(self.root, legacy, mode=mode)
 
     def test_preflight_valid_requires_selection_and_planned_manifest(self):
         self.save()
@@ -111,7 +136,7 @@ class StoragePolicyGateTests(unittest.TestCase):
         summary = self.base + "/run_summary.json"
         sha_candidate = dump(self.root / candidate, self.checkpoint())
         sha_summary = dump(self.root / summary, {
-            "experiment_id": "EXP-048",
+            "experiment_id": "EXP-050",
             "attempts": {"planned": 2, "attempted": 2, "converged": 1,
                          "nonconverged": 1, "failed": 0, "not_started": 0},
             "selected_candidate_count": 1,
@@ -221,17 +246,17 @@ class StoragePolicyGateTests(unittest.TestCase):
 
     def test_summary_count_rule(self):
         summary = {
-            "experiment_id": "EXP-048",
+            "experiment_id": "EXP-050",
             "attempts": {"planned": 4, "attempted": 3, "converged": 1,
                          "nonconverged": 1, "failed": 1, "not_started": 1},
             "selected_candidate_count": 0,
             "no_candidate_reason": "none passed",
             "limitations": [],
         }
-        validate_summary(summary, "EXP-048", 0)
+        validate_summary(summary, "EXP-050", 0)
         summary["attempts"]["failed"] = 2
         with self.assertRaisesRegex(ValueError, "outcomes do not sum"):
-            validate_summary(summary, "EXP-048", 0)
+            validate_summary(summary, "EXP-050", 0)
 
     def test_bad_storage_selection(self):
         validate_selection(self.selection)
