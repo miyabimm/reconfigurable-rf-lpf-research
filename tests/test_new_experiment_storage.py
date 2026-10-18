@@ -8,7 +8,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.audit_new_experiment_storage import (
-    CASES, validate_checkpoint, validate_run, validate_selection, validate_summary,
+    CASES, inspect_new_git_files, validate_checkpoint, validate_run,
+    validate_selection, validate_summary,
 )
 
 SCRIPT = "scripts.audit_new_experiment_storage"
@@ -154,6 +155,68 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
             self.validate("finalize")
+
+    def commit_changes(self):
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "-c", "user.name=test", "-c",
+                        "user.email=test@example.invalid", "commit", "-qm",
+                        "additional evidence"], cwd=self.root, check=True)
+
+    def test_unclassified_tracked_checkpoint_cannot_linger(self):
+        self.complete()
+        dump(self.run / "checkpoints/orphan.json", {"unused": "raw intermediate"})
+        self.commit_changes()
+        with self.assertRaisesRegex(ValueError, "unclassified tracked EXP"):
+            self.validate("finalize")
+
+    def test_unregistered_supporting_evidence_must_be_classified(self):
+        self.complete()
+        path = self.base + "/source/snapshot.txt"
+        sha = dump(self.root / path, {"source": "sample"})
+        self.manifest["evidence"].append({"path": path, "sha256": sha})
+        self.save()
+        self.commit_changes()
+        with self.assertRaisesRegex(ValueError, "unclassified manifest evidence"):
+            self.validate("finalize")
+
+    def test_duplicate_blob_at_different_paths_is_rejected(self):
+        file = self.complete()
+        extra = self.base + "/source/duplicate.json"
+        original = (self.root / file).read_bytes()
+        (self.root / extra).parent.mkdir(parents=True, exist_ok=True)
+        (self.root / extra).write_bytes(original)
+        sha = hashlib.sha256(original).hexdigest()
+        self.manifest["evidence"].append({"path": extra, "sha256": sha})
+        self.record["supporting_evidence"] = [{
+            "path": extra, "sha256": sha, "role": "source_snapshot",
+            "reason": "deliberate duplicate for guard testing",
+        }]
+        self.save()
+        self.commit_changes()
+        with self.assertRaisesRegex(ValueError, "duplicate content stored"):
+            self.validate("finalize")
+
+    def test_record_itself_must_be_committed_at_head(self):
+        self.complete()
+        self.record["limitations"].append("dirty final record")
+        self.save()
+        with self.assertRaisesRegex(ValueError, "differs from committed"):
+            self.validate("finalize")
+
+    def test_force_added_results_scratch_is_rejected(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "-c", "user.name=test", "-c",
+                        "user.email=test@example.invalid", "commit", "-qm",
+                        "baseline"], cwd=self.root, check=True)
+        subprocess.run(["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
+                       cwd=self.root, check=True)
+        scratch = self.root / "results" / "intermediate.json"
+        scratch.parent.mkdir(parents=True, exist_ok=True)
+        scratch.write_text('{"iteration":1}\n', encoding="utf-8")
+        self.commit_changes()
+        with self.assertRaisesRegex(ValueError, "transient files committed"):
+            inspect_new_git_files(self.root, "origin/main")
 
     def test_summary_count_rule(self):
         summary = {
