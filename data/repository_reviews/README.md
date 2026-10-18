@@ -1,15 +1,14 @@
-# Phase 2 Step 4 repository evidence review
+# Historical Phase 2 repository reviews
 
-This directory contains derived, read-only inventories from main at
-`bdb39904379637aeca5cf56ec3096e9e1b15f62a`.
+Research source evidence and the original review decisions are immutable Git history, not active operational data. This directory continues to hold evidence recovery records which current manual verification scripts use.
 
-- `step4_historical_documents_20261017.csv`: 56 original documentation paths.
-- `step4_identical_blob_groups_20261017.csv`: 34 identical Git blobs across 38 additional paths.
-- `step4_retention_46_20261017.csv`: the 46 original pending-review evidence paths.
-- `step4_summary_20261017.json`: count checks and limitations.
+The original Step 4 static tree inventories were removed from today's checkout for lightweight maintenance; recover original bytes from commit [`cd129eabaebb`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/tree/cd129eabaebb3a5581533d4cfcbd55cef4765117):
 
-The generator is [Step 4 audit](../../scripts/audit_repository_reorganization_step4.py).
-The explanatory review is [Step 4 report](../../docs/phase2_repository_step4_review_20261017.md).
+- [Historical `step4_historical_documents_20261017.csv`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step4_historical_documents_20261017.csv) — fixed dated audit output, not an RF numerical result.
+- [Historical `step4_identical_blob_groups_20261017.csv`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step4_identical_blob_groups_20261017.csv) — fixed dated audit output, not an RF numerical result.
+- [Historical `step4_summary_20261017.json`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step4_summary_20261017.json) — fixed dated audit output, not an RF numerical result.
+- [Historical `step5_integration_20261017.json`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/cd129eabaebb3a5581533d4cfcbd55cef4765117/data/repository_reviews/step5_integration_20261017.json) — fixed dated audit output, not an RF numerical result.
 
-These records are not deletion instructions. Original research files and paths
-remain unchanged. Phase 2 continues; Phase 3 needs explicit owner approval.
+Active historical evidence retained in this directory includes the [original 46-item preservation list](step4_retention_46_20261017.csv), EXP-042 recovered original ZIP and members, and EXP-046/047 original-source crosswalk. This directory's original Step 4 explanatory report is [here](../../docs/phase2_repository_step4_review_20261017.md). The retired report generator is recoverable at the same pinned commit: [`scripts/audit_repository_reorganization_step4.py`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_repository_reorganization_step4.py).
+
+Phase 2 continues; Phase 3 requires explicit owner approval.
