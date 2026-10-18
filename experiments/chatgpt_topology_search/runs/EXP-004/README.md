@@ -45,7 +45,7 @@ A7-01同一グラフを使い、**制約の正式変更はしない**まま、�
 新しい周波数一括解析は、一定Qモデルの結合Lインピーダンス `Z_L=ω(R+jM)` が周波数に比例することを利用し、`Y_L(ω)=B·(R+jM)^{-1}·Bᵀ/ω` としてコイル行列の反転を周波数ごとに繰り返さない。Cは `Y_C(ω)=ωC/(1/Q_C−j)` として各周波数の節点方程式をバッチ化する。**保存済みA7-01の6設定全ての数値を再現済み**。これは数学的な高速化であり、固有の小規模一次探索結果を直ちに改善するものではない。
 
 - [ベクトル化・多初期値の再現可能な探索器](sweep_040.py)
-- [決定的な4分割・個別ジョブごとのcheckpointとresume](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-target040.yml)（**手動起動専用**）
+- [決定的な4分割・個別ジョブごとのcheckpointとresume](../../../../.github/workflows/lpf-target040.yml)（**手動起動専用**）
 - [完成・失敗・未実行の集計器](summarize.py)
 - [一次探索の範囲と数値結果](screening_summary.json)
 
