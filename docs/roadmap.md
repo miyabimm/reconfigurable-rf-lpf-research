@@ -6,6 +6,10 @@
 >
 > **時系列の解釈：** この下には2026-10-16以前に書かれた未実装・未実行計画が歴史として残る。**2026-10-17のEXP-047局所数値探索・独立MNAを消さず、かつRF-F003共通runnerによる網羅最適化の完了ともみなさない**。過去のRF-F002成果・旧PRの状態は現在の公式実績を意味しない。
 
+## 2026-10-18：Issue #93／PR #91正本化と非破壊整理の着手
+
+所有者の明示指定により、**PR #91の`phase2_bc_wave1_consolidated.yml`を第1波監査の正本とする**。[正本化・機能差・退役ゲート報告](phase2_issue93_pr91_canonical_reconciliation_20261018.md)と[8項目の対応行列](../data/repository_reviews/phase2_issue93_pr91_canonical_parity_matrix_20261018.csv)を作成し、PR #92の広域`pull_request.paths`を正本側へ追加する非破壊PRを準備。独立jobのcheck名とartifact名・外部依存、同一main SHAでの後継CI再検証・branch protection詳細は未解決。**重複するPR #92 workflowと旧5件、EXP-046元JSONは全件保持し、削除・停止は個別owner承認後の別PRに限定する。** Phase 2継続、Phase 3停止。
+
 ## 2026-10-18：B/C第1波の実行結果（削除・停止なし）
 
 [旧5監査CIとEXP-046可逆集約の調査](phase2_bc_wave1_consolidation_20261018.md)を実施。旧5workflowの検査処理を[新しい共通CI](../.github/workflows/phase2_bc_wave1_consolidated.yml)で同条件実行できる見込みを確認し、EXP-046元3batch（RF-T005、10配置、計424,233報告評価、全30要素ベクトル）について34,818元bytes→11,692 bytesの可逆保存JSONを追加した。保存元は削除せず、後継CIの検証ステータス運用・trigger同等性と原本パス依存を継続審査。**原本退役承認0・変更0・Phase 2継続**。
