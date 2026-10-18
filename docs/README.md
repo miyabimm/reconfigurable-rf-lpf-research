@@ -12,6 +12,7 @@
 | 作業計画・過去の変更履歴 | [ロードマップ](roadmap.md) |
 | 日常の軽量CI・必要時の独立数値検証 | [Step Aスモーク／手動検証](phase2_stepA_smoke_and_on_demand_checks_20261018.md) |
 | Step Bの旧監査workflow退役案・復元元 | [第1弾17件の対象一覧](phase2_stepB_workflow_retirement_20261018.md) |
+| Step Bの歴史実験workflow退役案・再現入口 | [第2弾28件の復元一覧（ドラフト）](phase2_stepB_historical_experiment_workflow_retirement_20261018.md) |
 | 未解決の研究・実装・再現性ゲート | [未解決課題](current/open_research_questions.md) |
 | RF-F003の仕様要約 | [設計仕様](specification.md) |
 | 研究運用の指示正本 | [ChatGPTプロジェクト運用指示](chatgpt_project_instructions.md) |
