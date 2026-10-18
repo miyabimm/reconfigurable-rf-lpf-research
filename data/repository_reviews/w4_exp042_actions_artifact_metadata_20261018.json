@@ -27,19 +27,22 @@
           "id": 12088985846,
           "name": "exp042-area-both",
           "bytes": 2438,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088632009,
           "name": "exp042-area-cf1",
           "bytes": 2446,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088229457,
           "name": "exp042-area-cf2",
           "bytes": 2427,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         }
       ]
     },
@@ -56,19 +59,22 @@
           "id": 12088487740,
           "name": "exp042-rft005-target-30",
           "bytes": 2165,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088289237,
           "name": "exp042-rft005-independent-7001",
           "bytes": 804,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088043349,
           "name": "exp042-rft005-target-35",
           "bytes": 2239,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         }
       ]
     },
@@ -91,7 +97,8 @@
           "id": 12087479657,
           "name": "exp042-4L-passband-magnetic-Q",
           "bytes": 6825,
-          "expires_at": "2027-01-15T03:34:29Z"
+          "expires_at": "2027-01-15T03:34:29Z",
+          "expired_at_observation": false
         }
       ]
     },
@@ -108,19 +115,22 @@
           "id": 12088791299,
           "name": "exp042-pcb-pcb_cf1",
           "bytes": 2526,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088572256,
           "name": "exp042-pcb-pcb_cf2",
           "bytes": 2511,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         },
         {
           "id": 12088338868,
           "name": "exp042-pcb-pcb_both",
           "bytes": 2572,
-          "expires_at": "2027-01-15T03:40:20Z"
+          "expires_at": "2027-01-15T03:40:20Z",
+          "expired_at_observation": false
         }
       ]
     }
@@ -135,6 +145,7 @@
     "A successful Actions job is evidence of the recorded job result, not an independent new numerical validation in this audit.",
     "Run 38999427474 has a successful verify job but zero currently visible artifacts; do not infer what it produced or that evidence was not saved elsewhere.",
     "Manifest run 38822654644 has failed job and no currently visible artifacts; retain source and failure context.",
-    "Original Git checkpoint/manifests remain separate primary evidence; no removal approved."
+    "Original Git checkpoint/manifests remain separate primary evidence; no removal approved.",
+    "expired_at_observation=false for all 10 observed artifacts; the flag is an API metadata snapshot only."
   ]
 }
