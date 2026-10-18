@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "purpose": "W5 Phase 2 non-destructive repository cleanup closure audit",
+  "baseline_main": "bda522d6e8dc3f5d4667c46507b7d1005c93b20e",
+  "executed_head": "06177e947f722a9e9fac432e9da60c8897e339f2",
+  "w3_retired_documents": [
+    "D-001",
+    "D-002",
+    "D-003",
+    "D-004"
+  ],
+  "w3_retained_documents": [
+    "D-005",
+    "D-006",
+    "D-007"
+  ],
+  "historical_text_cleanup_ledger_rows_not_proof_of_current_state": 10,
+  "protected_originals_SHA_verified": 46,
+  "w4_historical_225_originals_SHA_verified": 225,
+  "w4_exp046_exp047_originals_with_matching_225_SHA": 131,
+  "baseline_workflows_still_tracked": 39,
+  "current_tracked_yaml_workflows": 46,
+  "baseline_workflows_api_counts_are_dated": true,
+  "w4_decision_scopes_unapproved": [
+    "E-001",
+    "E-002",
+    "W-001",
+    "W-OTHER"
+  ],
+  "exp042_original_zip_count": 10,
+  "exp042_archive_member_count": 19,
+  "exp042_original_members_recovered_and_SHA_verified": 6,
+  "formal_RFF003_pareto_candidates": 4,
+  "trial_RFT005_pareto_candidates": 6,
+  "unified_catalog_historical_and_current_rows": 24,
+  "owner_new_experiment_delete_approvals": 0,
+  "new_file_deletions": 0,
+  "rf_optimizer_executions": 0,
+  "independent_MNA_new_executions": 0,
+  "phase": "Phase 2",
+  "phase3_authorized": false,
+  "W5_read_only_closure_eligible": true,
+  "W4_source_and_workflow_deletion_closed": false,
+  "unresolved": [
+    "Historic T-001..T-010 W0 ledger not reconciled to current tree: do not equate dated not_started flags to present outstanding edits.",
+    "W4 experiment and workflow deletion requires per-item owner consent and verified dependency/resume impact.",
+    "EXP-046/047 in-chat Code Mode execution commit, seed, environment and external source dependencies not reconstructed.",
+    "Formal RF-F003 common-runner independent matched-grid numerical replay not performed by W5.",
+    "Continuous extrema, SRF, Q(f), EM, manufacturer S parameters, simultaneous k, thermal/tolerance and measurement outstanding."
+  ]
+}
