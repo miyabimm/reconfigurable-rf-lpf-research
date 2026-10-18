@@ -8,9 +8,9 @@
 
 固定した個票：
 
-- [workflow 47件の「保持・退役審査段階」CSV](../data/repository_reviews/phase2_Bc_workflow_retention_proposals_20261018.csv)
-- [元実験・validation証拠225件の「保全・集約審査段階」CSV](../data/repository_reviews/phase2_Bc_evidence_screening_225_20261018.csv)
-- [集計・第1波・未承認状態JSON](../data/repository_reviews/phase2_Bc_retention_proposal_summary_20261018.json)
+- [workflow 47件の「保持・退役審査段階」CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/214cbb21e87d3f3e99177d4a7c9eaf741a74394b/data/repository_reviews/phase2_Bc_workflow_retention_proposals_20261018.csv)
+- [元実験・validation証拠225件の「保全・集約審査段階」CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/214cbb21e87d3f3e99177d4a7c9eaf741a74394b/data/repository_reviews/phase2_Bc_evidence_screening_225_20261018.csv)
+- [集計・第1波・未承認状態JSON](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/214cbb21e87d3f3e99177d4a7c9eaf741a74394b/data/repository_reviews/phase2_Bc_retention_proposal_summary_20261018.json)
 
 今回の「C寄り」とは、**不必要な新規中間データをGitに大量保存しないこと、古いworkflowの停止・除去可否を優先審査すること**である。元原本については削除可能性を実証したものだけを、後日の**対象ファイルごとの承認**と別PRで扱う。
 
