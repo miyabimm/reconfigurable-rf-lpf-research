@@ -6,6 +6,10 @@
 >
 > **時系列の解釈：** この下には2026-10-16以前に書かれた未実装・未実行計画が歴史として残る。**2026-10-17のEXP-047局所数値探索・独立MNAを消さず、かつRF-F003共通runnerによる網羅最適化の完了ともみなさない**。過去のRF-F002成果・旧PRの状態は現在の公式実績を意味しない。
 
+## 2026-10-18：RF-T006試験条件の追加（条件・判定器整備、数値探索未実行）
+
+**ユーザー指示に基づきRF-F003ベースのRF-T006を追加。** 正式RF-F003と3可変C試験RF-T005は変更せず、RF-T006は最大2可変Cのまま、全6設定・外部端子間・3.000～6.000 GHzで減衰≥20dBを必須条件とする（端点を含む1MHz格子・計18,006点）。従来UL/DL・H2/H3（最低30dB、公称35dB）は継承。試験条件は[RF-T006](../data/constraints/trial/RF-T006.json)と[レジストリ](../data/constraints/registry.json)、評価手順は[制約ガイド](../data/constraints/README.md)。**現時点は条件JSONと評価器・回帰テストの整備だけで、新EXP予約・探索・T006適合候補の取得は未実行。** 3～6 GHzの減衰要件に既存F003パレート点が適合済みだとは扱わない。Phase 2継続、Phase 3停止。
+
 ## 2026-10-18：Issue #93の追跡ファイル全体の直接参照監査（PR #97、退役なし）
 
 [PR #97](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/97)で正本PR #91に[読み取り専用の参照監査](phase2_issue93_reference_consumer_audit_20261018.md)を追加。初回CIは[SUCCESS](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39108818212)で、1196追跡ファイルのうち1194 UTF-8ファイル（約15.9 MB）を走査し、7ファイルに名称の直接参照があった。**`scripts/`/`tests/`/`src/`等のcode/configで直接一致0**。ただし旧バイナリZIP 1件と自己監査スクリプト1件は除外し、動的・外部参照、required checks、artifact/API利用は検証していない。**PR #92・旧5workflow・元EXP-046 JSONは全件保持**。Owner個別退役承認0、Phase 2継続。
