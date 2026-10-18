@@ -17,3 +17,15 @@ venv/
 /results/
 /artifacts/
 /checkpoints/
+
+# Disposable test/coverage and local experiment scratch (never curate raw dumps)
+/scratch/
+/tmp/
+/htmlcov/
+/.coverage*
+/.ruff_cache/
+/.mypy_cache/
+*.tmp
+*.part
+*.pstats
+*.prof

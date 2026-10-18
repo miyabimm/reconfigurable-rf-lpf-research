@@ -22,6 +22,16 @@
 
 2026-10-15の出典棚卸し・46ファイル保全分類を生成した旧ツールは、研究原本を維持したまま既定のリポジトリから退役。必要時は [build_reference_inventory.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py) と [triage_unlinked_evidence.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/triage_unlinked_evidence.py) を固定コミットから取り出す。旧報告書・分類CSV・原実験データは削除しない。
 
+## 新規EXP保存ゲート（本PRのmain統合後）
+
+EXP-050以降の開始前・保存完了・PR監査は [保存ポリシー](../docs/governance/phase2_experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象はEXP-050以降の新規runのmanifestとstorage_record。EXP-001～049（完了済みEXP-048/049を含む）は既存のまま保護し、書き換えない。
+
+~~~bash
+python scripts/audit_new_experiment_storage.py preflight EXP-NNN
+python scripts/audit_new_experiment_storage.py finalize EXP-NNN
+python scripts/audit_new_experiment_storage.py audit
+~~~
+
 ## プログラム実行の前提
 
 通常のリポジトリ環境は `uv.lock` に固定されたuvで管理される。たとえば既存回帰を実行する場合はルートで次の操作を行う。

@@ -10,7 +10,8 @@
 | RF数値・正式／試験条件 | [RF制約レジストリ](../../data/constraints/registry.json) |
 | EXP番号のmain事前予約 | [実験番号予約方針](../experiment_number_reservation_policy_20261015.md)、[台帳](../../data/experiment_number_registry.csv) |
 | 実行状態と独立検証の分離 | [実験マニフェストの説明](../experiment_manifests.md)、[実験索引](../../data/experiment_index.csv) |
-| GitHub-only研究証拠・研究結果の昇格 | [保存方針提案（部分導入）](../experiment_result_storage_policy_proposal_20261015.md) |
+| **EXP-050以降の実験データ保存（Git-only v1）** | [Phase 2保存ポリシー／preflight・finalize・監査](phase2_experiment_storage_policy.md)。既存EXP-001～049の保存証拠は不変更 |
+| 旧保存方針案（歴史資料） | [2026-10-15旧提案](../experiment_result_storage_policy_proposal_20261015.md)。新規EXPには上記v1を参照 |
 | 旧保全判断と未リンク証拠 | [46件の旧レビュー](../phase2_evidence_triage_20261015.md)、[Step 4新分類](../phase2_repository_step4_review_20261017.md) |
 
 ## 過去の監査・訂正・ブランチ経緯
