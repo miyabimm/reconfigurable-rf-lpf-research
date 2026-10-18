@@ -1,8 +1,14 @@
 # Phase 2：新規実験のGitHub-only保存ポリシー v1
 
-**ポリシーID：phase2-git-only-v1。** 本変更のmainマージ以降に新規作成する **EXP-048以降**へ適用する。旧EXP-001～047の原manifest／checkpoint／証拠には遡及適用しない。研究はPhase 2、Phase 3は所有者の明示承認まで停止する。
+**ポリシーID：phase2-git-only-v1。** 本変更のmainマージ以降に新規作成する **EXP-050以降**へ適用する。**EXP-001～049（特にRF-T006のEXP-048/049）**の原manifest／checkpoint／証拠には遡及適用しない。研究はPhase 2、Phase 3は所有者の明示承認まで停止する。
 
 **既存根拠：** [運用正本](../chatgpt_project_instructions.md)、[整理計画（固定履歴版）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[2026-10-15保存方針案](../experiment_result_storage_policy_proposal_20261015.md)、[既存容量基準](../../data/phase2_git_storage_budget.json)、[EXP番号中央予約](../experiment_number_reservation_policy_20261015.md)。当時の提案・歴史記録は上書きしない。
+
+## 適用開始と歴史的実験の保護
+
+**適用はEXP-050以降のみ。** 保存規則を策定していたPR #116は、RF-T006条件でEXP-048とEXP-049が2026-10-18に探索・保存された後でmainへ統合するため、両実験には遡及適用しない。両実験の既存manifest、数値結果、独立MNA記録と実行コードを移動・変更・削除せず、`storage_record.json`や`run_summary.json`を後付けで要求しない。従来のSHA・実験索引・台帳は正本のまま保護する。
+
+**対象外なのは新保存形式への遡及変換のみ。** EXP-048/049はRF試験の追跡対象として保持し、将来の新EXPでそのベクトルを使用する場合はEXP-050以降の保存規則を守る。常時CIのauditはEXP-001～049を新形式で検査しないが、最新mainに現存すること・manifest/選抜結果が不変であることを別途マージ前に確認する。既存証拠の削除を承認するものではない。
 
 ## 1. A/B/Cの役割
 
@@ -29,13 +35,13 @@ results/                 # Git管理外のraw一時出力
 
 汎用探索の experiments/matching_limit/runs/EXP-NNN/ も同じ扱いとする。元manifestの再評価結果を元実験の結果に改竄せず、別validation overlayへ保存する。Paretoの固定スナップショットも上書きしない。
 
-storage_record.json は以下の形式で探索開始前に作る（**例示のみ、EXP-048が予約・実行済みであるとの意味ではない**）。
+storage_record.json は以下の形式で探索開始前に作る（**EXP-050の架空例示**。予約や実際の探索実行を意味しない）。
 
 ~~~json
 {
   "schema_version": 1,
   "policy": "phase2-git-only-v1",
-  "experiment_id": "EXP-048",
+  "experiment_id": "EXP-050",
   "phase": "Phase 2",
   "stage": "planned",
   "selection": {
@@ -64,7 +70,7 @@ run_summary.json の最低構造は次のとおり。試行（start等）の件�
 
 ~~~json
 {
-  "experiment_id": "EXP-048",
+  "experiment_id": "EXP-050",
   "attempts": {
     "planned": 100, "attempted": 85, "converged": 20,
     "nonconverged": 60, "failed": 5, "not_started": 15
@@ -102,7 +108,7 @@ python scripts/audit_new_experiment_storage.py finalize EXP-NNN
 
 PASSまで生rawの自動削除は禁止。証拠が欠落した場合はpreservation_incompleteを記録して必要なrawを保持し、勝手にcompleteへ昇格しない。保存済み候補の独立MNA、6設定の全区間極値、SPD、受動性、電力収支、SRF/EM、温度公差は別に実行し、**実施した範囲のみ**検証結果へ記録する。
 
-**G4 PR/CI。** 次でEXP-048以降のrunを一括監査する。古い実験は監査形式の対象外。
+**G4 PR/CI。** 次でEXP-050以降のrunを一括監査する。古い実験は監査形式の対象外。
 
 ~~~bash
 python scripts/audit_new_experiment_storage.py audit
