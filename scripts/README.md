@@ -24,7 +24,7 @@
 
 ## 新規EXP保存ゲート（本PRのmain統合後）
 
-EXP-048以降の開始前・保存完了・PR監査は [保存ポリシー](../docs/governance/phase2_experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象は新規runのmanifestとstorage_recordであり、旧EXPは書き換えない。
+EXP-050以降の開始前・保存完了・PR監査は [保存ポリシー](../docs/governance/phase2_experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象はEXP-050以降の新規runのmanifestとstorage_record。EXP-001～049（完了済みEXP-048/049を含む）は既存のまま保護し、書き換えない。
 
 ~~~bash
 python scripts/audit_new_experiment_storage.py preflight EXP-NNN
