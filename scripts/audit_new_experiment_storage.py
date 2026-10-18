@@ -310,16 +310,17 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
 
     if mode == "finalize":
         require(stage == "complete", "preservation is not complete; do not delete raw data")
-    if stage == "complete":
-        # The A/B registry must be complete: nothing in the manifest outside
-        # the selection record, and no stray tracked file inside the new run.
-        require(set(evidence_in_manifest) == paths,
-                "unclassified manifest evidence; use supporting_evidence with role and reason")
+    # CI audits unfinished runs as well: a stray tracked checkpoint is not
+    # permitted merely because preservation was never marked complete.
+    if mode == "audit" or stage == "complete":
         run_relative = run.relative_to(root).as_posix()
         allowed = paths | {run_relative + "/manifest.json",
                            run_relative + "/storage_record.json"}
         leftovers = tracked_run_files(root, run) - allowed
         require(not leftovers, "unclassified tracked EXP files: " + ", ".join(sorted(leftovers)))
+    if stage == "complete":
+        require(set(evidence_in_manifest) == paths,
+                "unclassified manifest evidence; use supporting_evidence with role and reason")
         for core in (run_relative + "/manifest.json", run_relative + "/storage_record.json"):
             total += len(tracked_file(root, core, committed=True))
         recorded_hashes = [e["sha256"] for e in manifest["evidence"]]
