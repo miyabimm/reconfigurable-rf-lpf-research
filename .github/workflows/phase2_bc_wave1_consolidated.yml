@@ -39,6 +39,17 @@ on:
       - 'scripts/audit_w4_exp046_exp047_sources.py'
       - 'data/repository_reviews/w4_exp046_exp047_*_20261018.*'
       - 'docs/phase2_w4_exp046_exp047_source_review_20261018.md'
+      # Preserve the wider PR #92 trigger envelope while PR #91 is canonical.
+      # This is additive: no original verification checks or workflows are removed.
+      - '.github/workflows/phase2_first_wave_retention_parity.yml'
+      - 'scripts/**'
+      - 'data/catalog/**'
+      - 'data/repository_reviews/**'
+      - 'data/pareto_snapshots/**'
+      - 'experiments/chatgpt_topology_search/runs/EXP-042/**'
+      - 'experiments/chatgpt_topology_search/runs/EXP-046/**'
+      - 'experiments/chatgpt_topology_search/runs/EXP-047/**'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
