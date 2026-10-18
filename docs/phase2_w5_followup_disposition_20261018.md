@@ -13,7 +13,7 @@
 
 ## 2. 旧workflowを含む全定義の個別分類
 
-[47 workflowの個票](../data/repository_reviews/w5_followup_workflows_47_20261018.csv)は、2017ではなく**2026-10-17の旧39 workflow API履歴**と、2026-10-18の本PR作業ツリーに実在するYAMLを対応づけた。**39件は旧W4台帳に掲載済み、後続に追加された8件の監査workflowを含めてPRヘッド47件**（PR #88統合直後のmainは46件）。過去の履歴数と現在の実行履歴を混同しない。
+[47 workflowの個票](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/045d286cf09fd45d74580d9bf6c98e7d9fcde698/data/repository_reviews/w5_followup_workflows_47_20261018.csv)は、2017ではなく**2026-10-17の旧39 workflow API履歴**と、2026-10-18の本PR作業ツリーに実在するYAMLを対応づけた。**39件は旧W4台帳に掲載済み、後続に追加された8件の監査workflowを含めてPRヘッド47件**（PR #88統合直後のmainは46件）。過去の履歴数と現在の実行履歴を混同しない。
 
 | 静的検出・役割 | 確認数 | 判定 |
 |---|---:|---|

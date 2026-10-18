@@ -20,7 +20,7 @@
 | W4 — 元46／225件 | [Step4旧46件](../data/repository_reviews/step4_retention_46_20261017.csv)、[W4元225件](../data/repository_reviews/w4_unindexed_225_review_20261017.csv)、[225件再実行依存](../data/repository_reviews/w4_replay_dependency_225_20261018.csv) | 静的参照、元blob・構文の監査は実行済み。元実験再計算や削除可能性の証明ではない |
 | W4 — EXP-042 | [10個の元Actions ZIP](../data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)、[19ファイルのZIP↔Git照合](../data/repository_reviews/w4_exp042_member_crosswalk_20261018.csv)、[6元JSON復元](../data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json) | 元ZIPバイト・CRC・SHAを保存。数値候補の同定、別run段階と未選別の歴史証拠を保持。独立MNAの新規再実行は**未実施** |
 | W4 — EXP-046/047 | [131元ファイル個別台帳](../data/repository_reviews/w4_exp046_exp047_131_20261018.csv)・[出典監査報告](phase2_w4_exp046_exp047_source_review_20261018.md) | RF-T005探索35原本、正式RF-F003探索96原本の出典と訂正を分類。原実行seed・environment・Code Mode環境の欠損は未復元 |
-| W4 — workflow | [歴史39workflow実行履歴](../data/repository_reviews/w4_workflow_runs_20261017.csv)・[W4削除判断](../data/repository_reviews/w4_cleanup_decision_gates_20261017.csv) | 過去時点でのAPI可視履歴であり、現在の全workflowの実行履歴ではない。E-001/E-002/W-001/W-OTHERに削除承認なし |
+| W4 — workflow | [歴史39workflow実行履歴](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/045d286cf09fd45d74580d9bf6c98e7d9fcde698/data/repository_reviews/w4_workflow_runs_20261017.csv)・[W4削除判断](../data/repository_reviews/w4_cleanup_decision_gates_20261017.csv) | 過去時点でのAPI可視履歴であり、現在の全workflowの実行履歴ではない。E-001/E-002/W-001/W-OTHERに削除承認なし |
 | **W5** | 本監査のGitHub Actionsと14ゲート判定 | **読み取り専用の総合監査を実施すること自体は可能**。W4の実際の削除・旧workflow停止・Phase 3承認とは完全に分離する |
 
 ## W5本体監査で実際に照合した数値
