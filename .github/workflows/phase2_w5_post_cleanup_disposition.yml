@@ -36,8 +36,8 @@ jobs:
           if test -f data/repository_reviews/w5_followup_summary_20261018.json; then
             cmp artifacts/phase2_reports/w5/post_cleanup/w5_T001_T010_status.csv \
               data/repository_reviews/w5_followup_T001_T010_status_20261018.csv
-            cmp artifacts/phase2_reports/w5/post_cleanup/w5_workflow_46_decisions.csv \
-              data/repository_reviews/w5_followup_workflows_46_20261018.csv
+            cmp artifacts/phase2_reports/w5/post_cleanup/w5_workflow_47_decisions.csv \
+              data/repository_reviews/w5_followup_workflows_47_20261018.csv
             cmp artifacts/phase2_reports/w5/post_cleanup/w5_evidence_225_decisions.csv \
               data/repository_reviews/w5_followup_evidence_225_20261018.csv
             python3 - <<'PY'
@@ -57,7 +57,7 @@ jobs:
           assert old['source_deletions']==old['workflow_deletions']==0
           assert old['workflow_approved_for_removal']==0
           assert old['evidence_requires_retention']==225
-          print('POST-W5 EXACT SNAPSHOT PASS: 10 T, 46 workflows, 225 sources, no approved removals')
+          print('POST-W5 EXACT SNAPSHOT PASS: 10 T, 47 workflows (46 on baseline main), 225 sources, no approved removals')
           PY
           else
             echo 'Discovery stage: generate audit outputs to commit, then rerun.'
