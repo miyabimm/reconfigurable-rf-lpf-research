@@ -89,7 +89,7 @@ def seed(t,seed_type):
  n,k=t["nl"],t["ng"]
  src=np.array(FORMAL["vector"],float)
  if seed_type=="EXP048":
-  l=np.r_[BASE[:4],*[[] for _ in range(0)]]; ks=BASE[8:11]
+  l=BASE[:4].copy(); ks=BASE[8:11].copy()
   if n>4:
    # Partition the shortest L to preserve initial current path scale.
    l=np.r_[l, np.full(n-4,5.)]
@@ -135,14 +135,17 @@ def params(x,t):
  return (x[:n],x[n:n+k],x[n+k:n+k+2],
          x[n+k+2:n+k+2+n-1],x[n+k+2+n-1:].reshape(6,2))
 
+def physical_neighbor_couplings(t):
+ return ((0,1),(1,3),(3,2)) if t["mode"].startswith("T") else tuple((i,i+1) for i in range(t["nl"]-1))
+
 def transfer(x,t,g):
  n=t["nl"];nn=t["nn"];l,gjm,pcb,k,cv=params(x,t)
  om=2e6*np.pi*g["f"];npoints=len(om)
  # Chip L offdiagonal M=j*k*sqrt(L_i L_(i+1)), Q25 assumed constant.
  H=np.diag(l/25+1j*l).astype(complex)
- for i,coupling in enumerate(k):
-  mut=1j*coupling*np.sqrt(l[i]*l[i+1])
-  H[i,i+1]+=mut;H[i+1,i]+=mut
+ for (a,b),coupling in zip(physical_neighbor_couplings(t),k):
+  mut=1j*coupling*np.sqrt(l[a]*l[b])
+  H[a,b]+=mut;H[b,a]+=mut
  try:inv=np.linalg.inv(H)
  except np.linalg.LinAlgError:return None
  inc=np.zeros((nn,n))
@@ -208,8 +211,8 @@ def independent(x,t,points):
  for j,(ff,ic) in enumerate(zip(grid["f"],grid["case"])):
   om=2e6*np.pi*ff
   Z=np.diag(l/25+1j*l).astype(complex)
-  for m,mut in enumerate(k):
-   z=1j*mut*np.sqrt(l[m]*l[m+1]);Z[m,m+1]+=z;Z[m+1,m]+=z
+  for (a,b),mut in zip(physical_neighbor_couplings(t),k):
+   z=1j*mut*np.sqrt(l[a]*l[b]);Z[a,b]+=z;Z[b,a]+=z
   inc=np.zeros((nn,n))
   for h,(u,v) in enumerate(t["L"]):inc[u,h]+=1;inc[v,h]-=1
   tc=grid["inp"][j];to=grid["out"][j];load=60-40j
