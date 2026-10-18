@@ -10,7 +10,7 @@
 - RF数値正本：[constraints/registry.json](../data/constraints/registry.json) が指定する[正式RF-F003](../data/constraints/formal/RF-F003.json)。RF-T005は[試験](../data/constraints/trial/RF-T005.json)。周波数帯は[bands.csv](../data/bands.csv)。
 - 今回の計画起点main：`055b222c79c73c7fbeacb19383f21c1da0625195`（2026-10-17、[統合PR #71](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/71)のマージ）。実作業前にはmainの最新SHAを再取得し、差分を取り直す。
 - 原[2026-10-17整理計画](phase2_repository_reorganization_plan_20261017.md)はStep 1～5の原判断を残す履歴であり、この文書はその**追加の品質仕上げ・不要物削除フェーズ（研究のPhase 2内）**に当たる。
-- 旧[Step 1監査](repository_audits/step1_20261017_report.md)：2026-10-17整理開始時の1,043 tracked path／12,859,345非圧縮bytes／同一blob34組・追加38path。新mainの**現在値ではない**。旧静的参照カウントも当時の値に過ぎない。
+- 旧[Step 1監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/docs/repository_audits/step1_20261017_report.md)：2026-10-17整理開始時の1,043 tracked path／12,859,345非圧縮bytes／同一blob34組・追加38path。新mainの**現在値ではない**。旧静的参照カウントも当時の値に過ぎない。
 - [Step 4保全判断](phase2_repository_step4_review_20261017.md)と[46件台帳](../data/repository_reviews/step4_retention_46_20261017.csv)は全件`retain_pending_source_context_review`。**この46件を本計画の承認によって削除可能にしたとは解釈しない**。
 - [Step 5統合検証](phase2_repository_step5_final_verification_20261017.md)：マージ直前の[Phase 2 regression](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39028160775)とStep 3/4/5 CIはSUCCESS。マージ後mainのCI結果は別実行として確認が必要。
 

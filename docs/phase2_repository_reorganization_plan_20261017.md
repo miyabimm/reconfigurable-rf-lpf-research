@@ -204,9 +204,9 @@ README（現況）
 
 **Step 1：実行済み（自動棚卸し・一次保全分類・代表的原証拠照合）。** 監査対象main SHAは `bdb39904379637aeca5cf56ec3096e9e1b15f62a`。
 
-- [全追跡ファイル・参照監査レポート](repository_audits/step1_20261017_report.md)：1,043ファイル、12,859,345B、静的参照2,943、同一Git blob34組、A66/B717/C214/D46。
-- [機械可読集計・分割CSV](../data/repository_audits/step1_20261017_summary.json)：全ファイル、依存辺、同内容blob、未解決リンクの逆引きデータ。
-- [事後ソース照合と既存CI課題](repository_audits/step1_20261017_review_notes.md)：リンク候補2件（実文書の修正候補1、テスト用フィクスチャ1）。既存Phase 2 regressionはEXP-047 manifest形式の監査エラーで失敗。Step 1専用監査の実施・保存と全CI PASSを混同しない。
+- [全追跡ファイル・参照監査レポート](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/docs/repository_audits/step1_20261017_report.md)：1,043ファイル、12,859,345B、静的参照2,943、同一Git blob34組、A66/B717/C214/D46。
+- [機械可読集計・分割CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/data/repository_audits/step1_20261017_summary.json)：全ファイル、依存辺、同内容blob、未解決リンクの逆引きデータ。
+- [事後ソース照合と既存CI課題](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/d0351e507dd9fd39338f7e4a69c2003bae3d531f/docs/repository_audits/step1_20261017_review_notes.md)：リンク候補2件（実文書の修正候補1、テスト用フィクスチャ1）。既存Phase 2 regressionはEXP-047 manifest形式の監査エラーで失敗。Step 1専用監査の実施・保存と全CI PASSを混同しない。
 - RF-F003互換コピー、2つのS2P SHA256、パレート10候補の元完全ベクトルblob SHAは照合PASS。静的抽出外の動的参照、履歴全体、削除可否の最終判断は未実施。
 - **元研究ファイルの移動・削除は0件、RF制約変更は0件、新規EXP・新規最適化なし。Phase 2継続。**
 
