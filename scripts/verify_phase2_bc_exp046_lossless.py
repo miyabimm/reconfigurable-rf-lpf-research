@@ -140,8 +140,15 @@ def build() -> tuple[dict, dict]:
 
 
 def verify(envelope: dict, reference: dict) -> None:
-    assert envelope["format"] == reference["format"]
-    assert len(envelope["entries"]) == 3
+    # Reversible source identity must survive changes in the zlib encoder.
+    # Compression streams may differ by installed library version, while
+    # the original raw bytes, line endings, order and Git blob must not.
+    for key in ("format", "experiment_id", "constraint_id", "source_main",
+                "original_variants", "recorded_evaluations_sum", "source_total_bytes"):
+        assert envelope[key] == reference[key], ("archive metadata", key)
+    assert len(envelope["entries"]) == len(reference["entries"]) == 3
+    expected = {e["source_path"]: e for e in reference["entries"]}
+    assert set(expected) == set(SOURCES)
     recovered: dict[str, bytes] = {}
     for member in envelope["entries"]:
         encoded = member["zlib_base64"]
@@ -157,7 +164,15 @@ def verify(envelope: dict, reference: dict) -> None:
         assert member["source_path"] not in recovered
         recovered[member["source_path"]] = raw
     assert set(recovered) == set(SOURCES)
-    assert envelope == reference, "Pinned consolidated source changed"
+    for source_path, original_meta in expected.items():
+        persisted = next(e for e in envelope["entries"] if e["source_path"] == source_path)
+        for key in ("source_git_blob_sha1", "source_sha256", "source_bytes",
+                    "reported_eval_count", "variants"):
+            assert persisted[key] == original_meta[key], (
+                "Original manifest changed", source_path, key
+            )
+    # zlib-bytes/base64 themselves are not compared against newly recompressed
+    # bytes, because future zlib versions can produce different streams.
 
 
 def main() -> None:
