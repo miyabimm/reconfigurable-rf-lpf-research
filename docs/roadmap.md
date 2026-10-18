@@ -6,6 +6,12 @@
 >
 > **時系列の解釈：** この下には2026-10-16以前に書かれた未実装・未実行計画が歴史として残る。**2026-10-17のEXP-047局所数値探索・独立MNAを消さず、かつRF-F003共通runnerによる網羅最適化の完了ともみなさない**。過去のRF-F002成果・旧PRの状態は現在の公式実績を意味しない。
 
+## 2026-10-18：PR #94・#95 main統合後の確認結果
+
+- **正本**：[PR #91](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/91)の`phase2_bc_wave1_consolidated.yml`を[PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94)で広域trigger被覆しmain統合。main `69247eba09a8...`の[Phase 2 regression](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107016474)はSUCCESS。
+- **main同SHA固定出典監査PASS**：[PR #95](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/95)で正本workflow自身のmain更新時のみ`push`起動を追加。マージSHA `a8cf6ee98b06a3f2ce0cee3a5e7f845dfda3d49d`の[統合監査run 39107751329](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107751329)はSUCCESS（旧5監査＋EXP-046可逆原本）。同SHAの[全回帰run 39107751399](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107751399)はこの記録時点では実行中。経過は[Issue #93](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/issues/93)と[正本化追補](phase2_issue93_pr91_canonical_reconciliation_20261018.md)を参照。
+- **停止・削除なし**：PR #92重複CI、旧5workflow、EXP-046元3 batch JSONを保全。6 workflowの元Git blobを取得・現物一致確認。対象85文書・49workflow YAMLの静的参照調査は実施済みだが、外部artifact/check名依存、実験runや手動起動の用途は未確定。**個別退役は対象別のユーザー明示承認と別PRまで保留**。正式RF-F003・試験RF-T005を区分しPhase 2継続、Phase 3未承認。
+
 ## 2026-10-18：Issue #93／PR #91正本化と非破壊整理の着手
 
 所有者の明示指定により、**PR #91の`phase2_bc_wave1_consolidated.yml`を第1波監査の正本とする**。[正本化・機能差・退役ゲート報告](phase2_issue93_pr91_canonical_reconciliation_20261018.md)と[8項目の対応行列](../data/repository_reviews/phase2_issue93_pr91_canonical_parity_matrix_20261018.csv)を作成し、PR #92の広域`pull_request.paths`を正本側へ追加する[非破壊PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94)を作成。初回PR-head同一SHAで正本・比較CIはともにSUCCESS（main統合後の同SHA検証は未実施）。独立jobのcheck名とartifact名・外部依存、同一main SHAでの後継CI再検証・branch protection詳細は未解決。**重複するPR #92 workflowと旧5件、EXP-046元JSONは全件保持し、削除・停止は個別owner承認後の別PRに限定する。** Phase 2継続、Phase 3停止。

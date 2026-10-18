@@ -59,6 +59,19 @@ PR #92の広い`pull_request.paths`をPR #91正本に移すため、既存の個
 5. **実行履歴・復元**：旧workflowの手動dispatch・元run artifact・履歴・ブランチ参照と、上記の固定Git blob SHAからの元定義復旧手順を退役前に確認する。
 6. **main統合後の同SHA検証**：PR #91正本の拡張trigger、元10 ZIP/19 member、EXP-042元6 JSON、EXP-046/047 131原本、EXP-046元3 JSONバイト復元、W3/W1リンク、全回帰を同一revisionで確認する。コネクタからのジョブ確認やプルリクエストCI結果を、独立RF解析の代用にしない。
 
+## 4a. 2026-10-18 main上の正本監査の追補結果
+
+**本節はPR #94統合後の実行済み追補であり、上記PR-head当時の「未実施」記録を遡及改変しない。**
+
+- [PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94) は main `69247eba09a8a82a8a9ce4db22a334e7e612e280` にマージ済み。[そのSHAのPhase 2 regression](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107016474) は**SUCCESS**。
+- [PR #95](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/95) は正本の自己変更時のみ`main` `push`で同じ検査を走らせる最小triggerを追加し、main `a8cf6ee98b06a3f2ce0cee3a5e7f845dfda3d49d` にマージ済み。一般の`docs/**`等のmain pushでは追加監査を走らせない。
+- **同一main SHAでの正本検査が実行済み**：[PR #95統合後の正本B/C audit run 39107751329](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107751329) は`push` / `head_sha=a8cf6ee98b06...` / `SUCCESS`。単一job `five-original-checks-without-retirement` SUCCESS、結合成果物 `phase2-bc-first-wave-parity-evidence`（31,770 bytes／期限付き）を確認。元5検査とEXP-046元3 JSON完全復元の固定出典検証ゲートを本main SHAで通過したという意味であり、独立RF数値再実行ではない。
+- 同SHAの[Phase 2 regression run 39107751399](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107751399) はこの追補の作成時点で**実行中**。回帰全体の成否を正本CIから推測しない。
+- **退役前の静的参照チェック**：main上の`docs/`以下Markdown 85件と`.github/workflows/` YAML 49件の文字列参照を確認。PR #92定義名・旧3 artifact名・新正本CI名は、正本／重複workflow定義と歴史・整理報告2文書にのみ明示参照があった。この限定チェックでは`scripts/`、`tests/`、APIの動的参照やGitHub外のrequired-check / artifact利用は確認できない。
+- PR #92と旧5workflowの6件は、それぞれ保護対象Git blob SHAから取得した内容とmain現物が一致。Git blobからの**定義取得**は確認済みだが、退役後の手動dispatchや旧run再演の完全復旧まで保証していない。
+
+**残ゲート**：個別job/check名と3 artifact名の下流消費者、外部設定・手動起動用途、branch protection API 403の解消、PR #92および旧5定義の個別所有者削除承認。原本・定義の削除停止0件を維持する。
+
 ## 5. 削除なしでの完了条件と次工程
 
 - **今回の変更**：PR #91を正本とする判定を記録し、正本のPR trigger対象を追加し、対応行列をGitに作成。**削除／無効化／移動 0件、Git ref変更 0件**。
