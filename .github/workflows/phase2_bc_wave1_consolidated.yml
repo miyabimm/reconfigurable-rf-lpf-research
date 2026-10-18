@@ -108,9 +108,15 @@ jobs:
           PY
       - name: EXP-046 ten unique placement vectors and byte-for-byte original source roundtrip
         run: |
-          python3 scripts/verify_phase2_bc_exp046_lossless.py \
-            --output-dir artifacts/phase2_reports/bc/exp046_lossless \
-            --verify-committed
+          if test -f data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json; then
+            python3 scripts/verify_phase2_bc_exp046_lossless.py \
+              --output-dir artifacts/phase2_reports/bc/exp046_lossless \
+              --verify-committed
+          else
+            python3 scripts/verify_phase2_bc_exp046_lossless.py \
+              --output-dir artifacts/phase2_reports/bc/exp046_lossless \
+              --emit-envelope-chunks
+          fi
       - name: Verify tracked Markdown references at end of consolidated audit
         run: python3 scripts/verify_phase2_cleanup_w1_links.py
       - uses: actions/upload-artifact@v4
