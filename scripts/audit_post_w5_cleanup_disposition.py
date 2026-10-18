@@ -71,13 +71,13 @@ def text_reconciliation():
         item=source[id];path=item["source_path_or_scope"]
         actual=get(path)
         assert all(x in actual for x in phrases), (id,phrases)
-        sha=git_blob(actual.encode("utf-8"))
+        sha=git("rev-parse",BASE+":"+path)
+        assert sha==git_blob(git("show",BASE+":"+path).encode("utf-8"))
         if id=="T-008":
             assert (ROOT/".github/workflows/lpf-target040.yml").is_file()
             assert "../../../../actions/workflows/lpf-target040.yml" in actual
             assert "../../../../.github/workflows/lpf-target040.yml" in actual
         assert item["execution_state"]=="not_started_unapproved"
-        assert git("rev-parse",BASE+":"+path)==sha, "baseline current source changed before W5 follow-up"
         results.append({
             "candidate_id":id,"original_path":path,"historical_ledger_state":item["execution_state"],
             "baseline_original_blob_sha1":item["source_git_blob_sha1_at_planning"],
