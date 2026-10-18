@@ -134,6 +134,9 @@ jobs:
               --output-dir artifacts/phase2_reports/bc/exp046_lossless \
               --emit-envelope-chunks
           fi
+      - name: Inventory tracked literal references to first-wave workflow and artifact interfaces
+        run: |
+          python3 scripts/audit_phase2_issue93_consumers.py --output-dir artifacts/phase2_reports/bc/issue93_reference_scan
       - name: Verify tracked Markdown references at end of consolidated audit
         run: python3 scripts/verify_phase2_cleanup_w1_links.py
       - uses: actions/upload-artifact@v4
