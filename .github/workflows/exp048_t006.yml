@@ -1,0 +1,42 @@
+name: EXP-048 T006 optimization (temporary research runner)
+on:
+  push:
+    branches:
+      - experiment/exp048-rft006-4l2cv-a5p333
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-048/optimize.py'
+      - '.github/workflows/exp048_t006.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase2_optimization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install numerical dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 scipy==1.15.3
+      - name: Preflight EXP-048 reservation and trial identity
+        run: |
+          python scripts/experiment_id_registry.py --experiment-id EXP-048 --owner MasayaTakagi
+          python -c "from src.lpf.constraint_versions import load_constraint; x=load_constraint('RF-T006',allow_trial=True); assert x['trial_base_constraint_id']=='RF-F003'; assert x['components']['IC_VARIABLE_C']['max_branches_principle']==2"
+      - name: Execute EXP-048 RF-T006 bounded optimization
+        run: python -u experiments/chatgpt_topology_search/runs/EXP-048/optimize.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: EXP-048-selected
+          path: results/EXP-048/selected.json
+          retention-days: 14
+          if-no-files-found: warn
