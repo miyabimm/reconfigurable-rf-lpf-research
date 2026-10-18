@@ -120,7 +120,9 @@ def archive_members():
 def exact_git_sha_index():
     # All Git tracked present files, not just known curated checkpoints.
     # Metadata, diagnostics, and source scripts are eligible for exact match.
-    names = [x for x in git("ls-files", "-z").split("\0") if x]
+    # Historical crosswalk predates PR #86's exact original member copies;
+    # preserve the original baseline tree for a comparable fixed snapshot.
+    names = [x for x in git("ls-tree", "-r", "--name-only", BASE).splitlines() if x]
     indices = collections.defaultdict(list)
     for rel in names:
         f = ROOT / rel
