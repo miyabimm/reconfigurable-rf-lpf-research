@@ -83,7 +83,34 @@ def summarize_full_lpf_trial_feasibility(policy, *, worst_il_db, min_h2_db,
                 or additional_stopband.get("finite_grid_only") is not True
                 or type(additional_stopband.get("passes_minimum")) is not bool):
             raise ValueError("Complete RF-T006 stopband evidence is required")
-        wideband_ok = additional_stopband["passes_minimum"]
+        if additional_stopband.get("total_points") != (
+                additional_stopband["points_per_setting"] * len(extra_spec["settings"])):
+            raise ValueError("Incomplete RF-T006 frequency sweep")
+        vals = []
+        for setting in extra_spec["settings"]:
+            item = additional_stopband["settings"].get(setting)
+            if not isinstance(item, dict):
+                raise ValueError("Missing RF-T006 setting stopband summary")
+            minimum = item.get("minimum_attenuation_db")
+            f = item.get("worst_frequency_hz")
+            if (type(minimum) not in (int, float) or not math.isfinite(minimum)
+                    or type(f) is not int or f < extra_spec["low_hz"]
+                    or f > extra_spec["high_hz"]
+                    or (f - extra_spec["low_hz"]) % extra_spec["sample_step_hz"] != 0
+                    or item.get("passes_minimum") is not (
+                        minimum >= extra_spec["min_attenuation_db"])):
+                raise ValueError("Inconsistent RF-T006 setting stopband summary")
+            vals.append(minimum)
+        inferred_ok = min(vals) >= extra_spec["min_attenuation_db"]
+        worst = additional_stopband.get("worst")
+        if (not isinstance(worst, dict)
+                or worst.get("minimum_attenuation_db") != min(vals)
+                or worst.get("setting") not in extra_spec["settings"]
+                or additional_stopband["settings"][worst["setting"]]["minimum_attenuation_db"] != min(vals)
+                or worst.get("frequency_hz") != additional_stopband["settings"][worst["setting"]]["worst_frequency_hz"]
+                or additional_stopband["passes_minimum"] is not inferred_ok):
+            raise ValueError("Inconsistent RF-T006 total stopband summary")
+        wideband_ok = inferred_ok
     else:
         if additional_stopband is not None:
             raise ValueError("Unexpected additional trial stopband evidence")
