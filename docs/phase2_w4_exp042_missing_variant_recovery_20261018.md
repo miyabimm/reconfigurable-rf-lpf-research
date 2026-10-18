@@ -31,7 +31,7 @@
 
 **元run番号で確定したstageの差：** 保存元`target_35.json`はActions **38999677194**、選別`EXP042-35m005`は選別台帳上 **38774357292**。保存元`area_cf1.json`はActions **38999677183**、選別済み`cf1.json`は **38775558755**。**同じrunの異なる最適化stageと断定できず、少なくとも別Actions runの記録**である。前回の29ベクトル成分差・メトリック差の確認を維持し、両方保持。
 
-対応する分析・3構成の数値スクリーンと履歴出典の確認は、[専用CI](../.github/workflows/phase2_w4_exp042_missing_variants.yml)でGit固定の原本と突合する。**本作業の独立RFソルバー実行回数は0**。
+対応する分析・3構成の数値スクリーンと履歴出典の確認は、[専用CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/.github/workflows/phase2_w4_exp042_missing_variants.yml)でGit固定の原本と突合する。**本作業の独立RFソルバー実行回数は0**。
 
 ## 未実施と承認境界
 
