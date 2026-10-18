@@ -25,6 +25,21 @@
 - 参考元コードと元独立検証JSONを保持する。正式RF-F003の保存済み候補は[2026-10-17パレート台帳](../data/pareto_snapshots/rf_t005_rf_f003_20261017.json)の**4件**。候補JSONのGit blob SHA・[候補catalog](../data/catalog/phase2_candidate_catalog_20261017.csv)と参照先の対応を監査する。確認できるのは**記録の同一性・出典**であり、数値の新規RF独立検証ではない。
 - 修正Q80後の28×1001有限格子、84点独立MNAという既存報告に、連続帯域極値・Q(f)/SRF/EM・公差／温度・同時結合物理性の保証はない。
 
+## GitHub Actionsで実行した監査結果（2026-10-18）
+
+[W4 EXP-046・EXP-047原本出典CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39093528326) **SUCCESS**。実行checkoutで元blob 131件／旧46件全件の照合に成功し、同時に正式4候補の記録先Git SHAを照合した。個票の[固定CSV](../data/repository_reviews/w4_exp046_exp047_131_20261018.csv)と[集計JSON](../data/repository_reviews/w4_exp046_exp047_summary_20261018.json)をGitに保存。後続CIで同じ131件に対するCSVのバイト完全一致を再検査する。
+
+| 出典分類 | EXP-046 | EXP-047 | 合計 |
+|---|---:|---:|---:|
+| 元のin-chat JavaScriptプログラム | 個別CSV参照 | 個別CSV参照 | **54件** |
+| 元数値結果・診断JSON | 個別CSV参照 | 個別CSV参照 | **75件** |
+| 時系列解釈README | 1 | 1 | **2件** |
+| **元ファイル計** | **35件** | **96件** | **131件** |
+
+- **EXP-046**：元manifestのworking_tree_dirty=true、seed／環境null、archive SHAは実行状態の確定SHAではないことを固定。容量電力会計の**訂正前・訂正後2ファイル**を履歴として保全。GitHub Actionsの元探索再実行や未収束点の排除をこの監査では行っていない。
+- **EXP-047**：元manifestは非標準。旧adapterと元manifestのSHA一致。元optimizer commit・seed・環境はすべてunknown。元manifestのQインデックス誤割当リスト**5原本**を正式RF-F003性能順位から除外する分類を記録（原ファイルの削除はしない）。manifestがいう検証済みの**6候補**と、現行正式パレート採録**4候補**の区別を維持し、その4件の元ファイルのGit blob SHAとカタログ参照を確認。
+- 判定：元原本**131件保持**、旧46件全件保持、原本削除承認0、実削除0、数値最適化再実行0、新規独立MNA実行0。**W5で読み取り専用の全体ゲート監査に進むことは可能**だが、W4の実験原本・workflow削除やW4完全終了は未承認である。
+
 ## 判定／完了ゲート
 
 **今回確定するもの：** 131元blobのSHA同一性、過去の訂正前後区分、manifest欠損を欠損のまま記録、4個の正式RF-F003候補の元Git出典チェック。調査結果は固定CSV・JSONへ保存する。各ファイルを「索引未登録＝削除可能」と分類しない。
