@@ -50,6 +50,8 @@ jobs:
       MKL_NUM_THREADS: "1"
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # EXP-048+ provenance must check the actual origin/main reservation
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -69,7 +71,11 @@ jobs:
             test_rf_f003_t005.py \
             test_phase2_candidate_catalog.py \
             test_exp047_legacy_manifest_adapter.py \
-            test_github_actions_yaml_keys.py; do
+            test_github_actions_yaml_keys.py \
+            test_new_experiment_storage.py; do
             echo "Running smoke module: $test_file"
             python -m unittest discover -s tests -p "$test_file" -v
           done
+
+      - name: Verify future EXP storage policy (read only)
+        run: python scripts/audit_new_experiment_storage.py audit
