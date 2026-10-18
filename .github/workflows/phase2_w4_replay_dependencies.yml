@@ -31,6 +31,28 @@ jobs:
           python3 scripts/audit_phase2_w4_replay_dependencies.py \
             --output-dir artifacts/phase2_reports/w4/replay_gate \
             --emit-csv-chunks
+      - name: Check all 225 source replay gates agree byte-for-byte with committed snapshot
+        run: |
+          cmp artifacts/phase2_reports/w4/replay_gate/w4_replay_dependency_225.csv \
+              data/repository_reviews/w4_replay_dependency_225_20261018.csv
+      - name: Confirm source replay snapshot semantics and protection
+        run: |
+          python3 - <<'PY'
+          import csv, json
+          from pathlib import Path
+          summary=json.loads(Path('data/repository_reviews/w4_replay_dependency_summary_20261018.json').read_text())
+          now=json.loads(Path('artifacts/phase2_reports/w4/replay_gate/w4_replay_dependency_summary.json').read_text())
+          for key in ('reviewed_originals', 'original_bytes', 'protected_46_sha_pass',
+                      'groups', 'constraint_from_manifest', 'manifest_exact_path_literals',
+                      'workflow_exact_path_refs', 'syntax', 'replay_executions', 'deletions'):
+              assert summary[key] == now[key], key
+          with Path('data/repository_reviews/w4_replay_dependency_225_20261018.csv').open(newline='') as f:
+              rows=list(csv.DictReader(f))
+          assert len(rows)==225
+          assert all(r['replay_performed']=='false' and
+                     r['owner_delete_approval']=='not_granted' for r in rows)
+          print('W4 preserved source snapshot PASS: 225 exact entries, 0 solver runs, 0 approvals')
+          PY
       - name: Validate directly observed EXP-042 Actions artifact metadata
         run: |
           python3 - <<'PY'
@@ -43,6 +65,8 @@ jobs:
              38822654644,38999310277,38999677216}
           assert sum(len(r['artifacts']) for r in data['runs'])==10
           assert all(a['expires_at'].startswith('2027-01-15T')
+                     for r in data['runs'] for a in r['artifacts'])
+          assert all(a['expired_at_observation'] is False
                      for r in data['runs'] for a in r['artifacts'])
           assert data['artifacts_contents_examined']==0
           assert data['rf_numerical_replay_performed']==0
