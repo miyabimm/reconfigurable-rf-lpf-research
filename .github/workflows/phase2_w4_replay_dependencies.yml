@@ -1,0 +1,59 @@
+name: Phase 2 W4 replay dependency and artifact provenance audit
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit_phase2_w4_replay_dependencies.py'
+      - '.github/workflows/phase2_w4_replay_dependencies.yml'
+      - 'docs/phase2_cleanup_w4_replay_dependencies_20261018.md'
+      - 'data/repository_reviews/w4_exp042_actions_artifact_metadata_20261018.json'
+      - 'data/repository_reviews/w4_replay_dependency_*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-deletion-replay-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Review all 225 originals, manifest cross-references and non-executed code syntax
+        run: |
+          node --version
+          python3 scripts/audit_phase2_w4_replay_dependencies.py \
+            --output-dir artifacts/phase2_reports/w4/replay_gate \
+            --emit-csv-chunks
+      - name: Validate directly observed EXP-042 Actions artifact metadata
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('data/repository_reviews/w4_exp042_actions_artifact_metadata_20261018.json').read_text())
+          assert data['phase']=='Phase 2' and data['total_runs']==6
+          assert {r['run_id'] for r in data['runs']}=={
+             38999427474,38999677183,38999677194,
+             38822654644,38999310277,38999677216}
+          assert sum(len(r['artifacts']) for r in data['runs'])==10
+          assert all(a['expires_at'].startswith('2027-01-15T')
+                     for r in data['runs'] for a in r['artifacts'])
+          assert data['artifacts_contents_examined']==0
+          assert data['rf_numerical_replay_performed']==0
+          print('W4 ARTIFACT METADATA PASS: 6 observed runs, 10 metadata records, 0 downloaded/recomputed')
+          PY
+      - name: Check tracked Markdown relative links
+        run: python3 scripts/verify_phase2_cleanup_w1_links.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase2-w4-replay-225-original-source-review
+          path: artifacts/phase2_reports/w4/replay_gate/
+          if-no-files-found: warn
+          retention-days: 30
