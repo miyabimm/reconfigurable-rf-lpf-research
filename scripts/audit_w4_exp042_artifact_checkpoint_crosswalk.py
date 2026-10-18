@@ -215,13 +215,25 @@ def main():
         key = name[len("exp042-"):]
         assert key in SOURCES, ("unmapped artifact name", name)
         counterpart = RUN / SOURCES[key]
-        assert counterpart.is_file()
         counterpart_rel = str(counterpart.relative_to(ROOT))
-        if counterpart_rel not in curated_cache:
-            curated_cache[counterpart_rel] = json.loads(counterpart.read_text(encoding="utf-8"))
-        related = curated_cache[counterpart_rel]
-        (record, variant, art_success, curated_success,
-         vecdiff, metdiff, fields, gate) = compare_one(entry, member, data, related)
+        if counterpart.is_file():
+            if counterpart_rel not in curated_cache:
+                curated_cache[counterpart_rel] = json.loads(counterpart.read_text(encoding="utf-8"))
+            related = curated_cache[counterpart_rel]
+            (record, variant, art_success, curated_success,
+             vecdiff, metdiff, fields, gate) = compare_one(entry, member, data, related)
+            counterpart_sha = git_blob(counterpart.read_bytes())
+        else:
+            # The original Actions ZIP is preserved. Do not invent an
+            # equivalent curated checkpoint path when one does not exist.
+            record = "no_corresponding_curated_git_checkpoint"
+            variant = key
+            art_success = ""
+            curated_success = ""
+            vecdiff = metdiff = None
+            fields = ""
+            gate = "only_archived_actions_artifact_provenance"
+            counterpart_sha = ""
         rows.append({
             "artifact_id": entry["artifact_id"],
             "artifact_name": name,
@@ -231,7 +243,7 @@ def main():
             "member_sha256": sha256(data),
             "byte_identical_git_paths": ";".join(sorted(mapping.get(sha256(data), []))),
             "curated_git_path": counterpart_rel,
-            "curated_git_blob_sha1": git_blob(counterpart.read_bytes()),
+            "curated_git_blob_sha1": counterpart_sha,
             "json_record_comparison": record,
             "candidate_or_variant": variant,
             "artifact_solver_success": art_success,
@@ -256,6 +268,12 @@ def main():
         "target_35_stage": next(r["comparison_gate"] for r in rows if r["member_path"] == "target_35.json"),
         "dense_7001_finite_grid_record_relation": next(r["comparison_gate"] for r in rows if r["member_path"] == "verification_7001.json"),
         "by_comparison_gate": dict(sorted(by_gate.items())),
+        "unrepresented_curated_checkpoint_member_count": sum(
+            r["comparison_gate"] == "only_archived_actions_artifact_provenance" for r in rows),
+        "unrepresented_curated_checkpoint_member_paths": [
+            r["artifact_name"] + ":" + r["member_path"] for r in rows
+            if r["comparison_gate"] == "only_archived_actions_artifact_provenance"
+        ],
         "owner_approved_removals": 0,
         "files_deleted": 0,
         "rf_optimization_runs": 0,
