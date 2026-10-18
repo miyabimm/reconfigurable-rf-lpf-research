@@ -28,14 +28,13 @@ jobs:
           python-version: '3.12'
       - name: Extract 3 originally uncurated EXP-042 variants and classify saved numeric records
         run: |
+          python3 scripts/audit_w4_exp042_missing_variants.py \
+            --output-dir artifacts/phase2_reports/w4/missing_variants \
+            --emit-original-chunks
           if test -f data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json; then
             python3 scripts/audit_w4_exp042_missing_variants.py \
               --output-dir artifacts/phase2_reports/w4/missing_variants \
               --verify-committed-recovery
-          else
-            python3 scripts/audit_w4_exp042_missing_variants.py \
-              --output-dir artifacts/phase2_reports/w4/missing_variants \
-              --emit-original-chunks
           fi
       - name: Confirm all ten original archive ZIPs still validate offline
         run: python3 scripts/preserve_exp042_actions_artifacts.py --verify-repository
