@@ -55,12 +55,13 @@ git show c6c23bab59aeeea70555b016bdec7806f72d239c:.github/workflows/lpf-exp013.y
 - `lpf-exp009/010/011.yml`, `lpf-target040.yml`, `lpf-p4-a.yml`等はGitHub Artifactsのcheckpoint復元・分割集計を利用している。**過去のArtifactが失効していれば、元runの途中からのビット同一再開は保証できない**。元YAML・スクリプトを復元した上で、新しいrunで再計算するか、Gitに保存された独立チェックポイントから再開条件を検証する。
 - `exp043_gjm_q_vs_cap.yml`と`exp043_pcb_gjm.yml`には`OFFSPEC`比較も含まれる。**現行RF-T005適合の証明として扱わない**。歴史的RF-F001/F002/T003と現行正式RF-F003／試験RF-T005は混同しない。
 - 最終値、考察、完全L/C/k・6設定可変C、制約・S2P SHA、保存元の失敗・中断・訂正情報は`experiments/`と`data/`に保持。CIジョブ定義や期間限定Artifact名の保存を数値証拠の保存と取り違えない。
+- **EXP-004/005/009/011/012の元READMEは元manifestからSHA固定された一次証拠**。これらを旧workflow相対リンク修正のために書き換えると出典検証が失敗することを[PR #102 初回CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39120876568)で確認したため、**5件を元blobへバイト同一で復元済み**。元README中の退役済みworkflowへの相対リンクは歴史資料としてそのまま残し、閲覧者は**本ページの固定コミットリンク**からYAML・コマンドを回収する。旧UIの「Run workflow」案内も当時の説明であり、退役後に直接起動できるという意味ではない。
 
 ## Draft PRの受入条件
 
 1. [Step Aの軽量スモーク](phase2_stepA_smoke_and_on_demand_checks_20261018.md) がPASSし、3つの残存workflow `audit.yml`／`reserve_experiment_number.yml`／`phase2_bc_wave1_consolidated.yml`を維持する。
 2. **差分の削除パスは表の28 workflow YAMLに限定**。Python、実験結果、候補ベクトル、独立検証、JSON、固定S2P、制約は削除しない。
-3. 過去文書の削除先相対リンクは上記の固定Git URLへ変更してリンク切れを防ぐ。文書には過去時点の事実（未実行、未収束、失敗）を残す。
+3. **manifestでSHA固定されていない**通常文書の削除先相対リンクだけを上記固定Git URLへ変更。**SHA固定の実験README 5件は原本として改変しない**。元相対リンクの参照先は本ページの固定Git版へ誘導し、未実行・未収束・失敗の歴史記録を維持する。
 4. **28パスを対象とした所有者の明示承認後にmainへ統合**する。この案は承認ではない。追加の監査workflowや巨大なSHA台帳は新設しない。
 
 適用後の**目標**は31→3件（日常スモーク、EXP番号予約、歴史的出典照合の手動実行）。GitHub Actionsで新規の探索を起動したい場合は、その時点で**共通の手動runnerを1件だけ追加**するか、既存のローカル`scripts/local_p4.py`等を使う。現在は新たなGitHub Actions探索実装は不要。
