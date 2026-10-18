@@ -145,6 +145,7 @@ def main():
   nonlocal best
   localcount=[0]
   def fun(y):
+   nonlocal best
    global calls
    calls+=1;localcount[0]+=1
    m=metrics(y,topo,coarse)
@@ -156,7 +157,7 @@ def main():
     print("progress",topo,tag,localcount[0],"current",round(z,3),
           "global",round(best["score"],3),fmt(best["metrics"]),flush=True)
    return z
-  r=minimize(fun,np.clip(x,*zip(*BND)) if False else x,
+  r=minimize(fun,x,
              method="Powell",bounds=BND,options={"maxfev":limit,
                    "xtol":0.003,"ftol":0.0003})
   m=metrics(r.x,topo,coarse)
