@@ -93,6 +93,8 @@ def build():
             "docs/phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md",
             "scripts/review_phase2_w4_unindexed.py",
             "scripts/review_phase2_w4_action_runs.py",
+            "scripts/audit_w4_exp042_missing_variants.py",
+            "docs/phase2_w4_exp042_missing_variant_recovery_20261018.md",
         }:
             continue
         body = _safe_read_text(ROOT / rel)
