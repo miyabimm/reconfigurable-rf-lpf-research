@@ -321,7 +321,7 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         leftovers = tracked_run_files(root, run) - allowed
         require(not leftovers, "unclassified tracked EXP files: " + ", ".join(sorted(leftovers)))
         for core in (run_relative + "/manifest.json", run_relative + "/storage_record.json"):
-            tracked_file(root, core, committed=True)
+            total += len(tracked_file(root, core, committed=True))
         recorded_hashes = [e["sha256"] for e in manifest["evidence"]]
         require(len(recorded_hashes) == len(set(recorded_hashes)),
                 "duplicate content stored under different evidence paths")
@@ -329,9 +329,15 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         require(record.get("git_readback") == "passed", "no HEAD readback confirmation")
         require(total <= budget["new_experiment_curated_soft_bytes"] or exception is not None,
                 "curated run exceeds 512KiB without documented owner exception")
+    soft_review = sorted(
+        name for name in paths
+        if (root / name).stat().st_size > budget["individual_new_file_soft_bytes"]
+    )
     return {"experiment_id": experiment_id, "stage": stage,
             "checkpoints": len(checkpoints), "validation_records": len(validations),
-            "curated_bytes": total, "committed_readback": committed,
+            "supporting_records": len(supporting), "curated_bytes": total,
+            "soft_file_review_paths": soft_review,
+            "committed_readback": committed,
             "numerical_validation": manifest["validation"]["numerical"],
             "independent_validation": manifest["validation"]["independent"]}
 
