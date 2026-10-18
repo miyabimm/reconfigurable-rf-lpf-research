@@ -10,6 +10,10 @@
 
 [PR #97](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/97)で正本PR #91に[読み取り専用の参照監査](phase2_issue93_reference_consumer_audit_20261018.md)を追加。初回CIは[SUCCESS](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39108818212)で、1196追跡ファイルのうち1194 UTF-8ファイル（約15.9 MB）を走査し、7ファイルに名称の直接参照があった。**`scripts/`/`tests/`/`src/`等のcode/configで直接一致0**。ただし旧バイナリZIP 1件と自己監査スクリプト1件は除外し、動的・外部参照、required checks、artifact/API利用は検証していない。**PR #92・旧5workflow・元EXP-046 JSONは全件保持**。Owner個別退役承認0、Phase 2継続。
 
+## 2026-10-18：PR #92重複workflowの個別退役（所有者承認あり・統合前の変更記録）
+
+**2026-10-18 18:46 JSTのユーザー明示指示**により、直前に提示したPR #92由来の`.github/workflows/phase2_first_wave_retention_parity.yml` **1件のみ**の退役・削除を承認済みとして扱う。旧5件の監査workflow、EXP-046元3 JSON、その他研究原本の削除は**承認されていない**。[個別退役・元Git blob復元・残余リスク記録](phase2_issue93_pr92_retirement_20261018.md)に対象SHA・PR #91正本との違い・実行済み前提を明示。新PRで削除を提案し、CI成功・main検証後に実退役を確定する。旧job/check名、3 artifactの外部下流依存は未知のままであり、不存在は証明していない。Phase 2継続、Phase 3停止。
+
 ## 2026-10-18：PR #94・#95 main統合後の確認結果
 
 - **正本**：[PR #91](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/91)の`phase2_bc_wave1_consolidated.yml`を[PR #94](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/94)で広域trigger被覆しmain統合。main `69247eba09a8...`の[Phase 2 regression](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39107016474)はSUCCESS。
