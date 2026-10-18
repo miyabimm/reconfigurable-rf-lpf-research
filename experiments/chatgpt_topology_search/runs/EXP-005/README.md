@@ -53,7 +53,7 @@ python experiments/chatgpt_topology_search/runs/EXP-002/verify_area7.py --refere
 ```
 
 - CIの `tests/test_area7_reference.py` はA7-03を含めて粗い再計算／エネルギー照合と正式hard cap6の非改変を監査。
-- **数値計算の完了とコード・GitHubへの保存は別**。未実行の大規模手動GitHub Actions（[lpf-target040.yml](../../../../.github/workflows/lpf-target040.yml)）を計算結果に算入しない。
+- **数値計算の完了とコード・GitHubへの保存は別**。未実行の大規模手動GitHub Actions（[lpf-target040.yml](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-target040.yml)）を計算結果に算入しない。
 - 最終的な実装性能にはSパラ・実部品Q(f)・C寄生・2組強結合のレイアウトEM・公差・非線形・広帯域連続保証が必要。
 
 **次の優先課題：** コスト7の最良成立値をA7-03へ更新して固定回帰し、2個の対GND可変Cで3個以上の伝送零点を**協調して移動できる結合共振型**を体系的探索に加える。Phase 3は引き続き停止。
