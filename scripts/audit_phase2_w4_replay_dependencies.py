@@ -97,8 +97,23 @@ def validate_syntax(path, raw):
             input=raw, cwd=ROOT, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, timeout=8
         )
-        return ("node_module_parse", "parsed_syntax_only" if test.returncode == 0
-                else "not_module_parseable_without_wrapper")
+        if test.returncode == 0:
+            return "node_module_parse", "parsed_syntax_only"
+        # Original Code Mode files may require an async function wrapper. Compile
+        # source in that context without ever *calling* the resulting function.
+        wrapper = subprocess.run(
+            [node, "-e", (
+                "const fs=require('fs');"
+                "const source=fs.readFileSync(0,'utf8');"
+                "const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;"
+                "new AsyncFunction('tools','text',source);"
+            )],
+            input=raw, cwd=ROOT, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, timeout=8
+        )
+        return ("node_async_function_compile",
+                "compiled_without_execution" if wrapper.returncode == 0
+                else "incompatible_with_both_static_parser_contexts")
     return "not_applicable", "not_a_source_file"
 
 
