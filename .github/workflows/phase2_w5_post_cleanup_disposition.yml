@@ -1,0 +1,76 @@
+name: Phase 2 W5 post-audit text workflow evidence disposition
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit_post_w5_cleanup_disposition.py'
+      - 'data/repository_reviews/w5_followup_*.csv'
+      - 'data/repository_reviews/w5_followup_summary_20261018.json'
+      - '.github/workflows/phase2_w5_post_cleanup_disposition.yml'
+      - 'docs/phase2_w5_followup_disposition_20261018.md'
+      - 'docs/roadmap.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  post-w5-disposition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit 10 dated text tasks, baseline 46 workflow definitions and 225 original evidence decisions
+        run: |
+          python3 scripts/audit_post_w5_cleanup_disposition.py \
+            --output-dir artifacts/phase2_reports/w5/post_cleanup \
+            --emit-chunks
+      - name: Check fixed results after review
+        run: |
+          if test -f data/repository_reviews/w5_followup_summary_20261018.json; then
+            cmp artifacts/phase2_reports/w5/post_cleanup/w5_T001_T010_status.csv \
+              data/repository_reviews/w5_followup_T001_T010_status_20261018.csv
+            cmp artifacts/phase2_reports/w5/post_cleanup/w5_workflow_46_decisions.csv \
+              data/repository_reviews/w5_followup_workflows_46_20261018.csv
+            cmp artifacts/phase2_reports/w5/post_cleanup/w5_evidence_225_decisions.csv \
+              data/repository_reviews/w5_followup_evidence_225_20261018.csv
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          old=json.loads(Path('data/repository_reviews/w5_followup_summary_20261018.json').read_text())
+          now=json.loads(Path('artifacts/phase2_reports/w5/post_cleanup/w5_followup_summary.json').read_text())
+          for key in (
+              'historical_T_candidates_reconciled','original_T_source_changed_from_planning',
+              'workflow_current_total','workflow_legacy_20171017_total','workflow_new_since_w4_snapshot',
+              'workflow_manual_dispatch','workflow_write_mutating_lexical_hints',
+              'workflow_artifact_replay_hints','evidence_225_reviewed',
+              'evidence_EXP046_EXP047_subset','protected_46_unchanged',
+              'experiment_approvals_to_delete','source_deletions','workflow_deletions','phase3_started'
+          ):
+              assert old[key]==now[key],key
+          assert old['source_deletions']==old['workflow_deletions']==0
+          assert old['workflow_approved_for_removal']==0
+          assert old['evidence_requires_retention']==225
+          print('POST-W5 EXACT SNAPSHOT PASS: 10 T, 46 workflows, 225 sources, no approved removals')
+          PY
+          else
+            echo 'Discovery stage: generate audit outputs to commit, then rerun.'
+          fi
+      - name: Verify prior W5 main SHA and original protection constraints
+        run: |
+          python3 scripts/verify_phase2_w5_closure.py --output-dir artifacts/phase2_reports/w5/closure
+      - name: Verify local Markdown links
+        run: python3 scripts/verify_phase2_cleanup_w1_links.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase2-w5-followup-disposition-evidence
+          path: artifacts/phase2_reports/w5/post_cleanup/
+          if-no-files-found: warn
+          retention-days: 30
