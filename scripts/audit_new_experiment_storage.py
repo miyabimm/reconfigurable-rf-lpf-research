@@ -25,6 +25,11 @@ EXP = re.compile(r"EXP-(\d{3,})\Z")
 STAGES = {"planned", "running", "preservation_incomplete", "complete"}
 REASONS = {"best", "pareto", "30db_boundary", "35db_boundary",
            "topology_diversity", "representative_failure", "other"}
+SUPPORT_ROLES = {"source_snapshot", "dirty_patch", "representative_failure",
+                 "recovery_state", "method_note", "other"}
+DISPOSABLE_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
+                   ".tox", "htmlcov"}
+DISPOSABLE_SUFFIXES = {".tmp", ".part", ".swp", ".pyc", ".pyo", ".pstats", ".prof"}
 
 
 def require(condition, message):
@@ -71,6 +76,49 @@ def evidence_check(root, item, *, committed, max_file_bytes, exception):
     require(len(raw) <= max_file_bytes or exception,
             "file exceeds 1MiB without approved exception: " + item["path"])
     return len(raw)
+
+
+def inspect_new_git_files(root, main_ref):
+    """Reject newly committed scratch/cache files, even when force-added past .gitignore.
+
+    This compares the merge base for PRs; for a push directly to main, inspect
+    the latest commit against its first parent. No historical paths are touched.
+    """
+    root = Path(root)
+    try:
+        main_head = git(root, "rev-parse", main_ref).decode().strip()
+        local_head = git(root, "rev-parse", "HEAD").decode().strip()
+        if main_head == local_head:
+            baseline = "HEAD^"
+        else:
+            baseline = git(root, "merge-base", main_ref, "HEAD").decode().strip()
+        newly_added = git(root, "diff", "--diff-filter=A", "--name-only", "-z",
+                          baseline, "HEAD").split(b"\0")
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("cannot inspect newly added Git paths; fetch main first") from exc
+    rejected = []
+    for raw in newly_added:
+        if not raw:
+            continue
+        name = raw.decode("utf-8")
+        parts = PurePosixPath(name).parts
+        if (name.startswith(("results/", "artifacts/", "checkpoints/", "scratch/", "tmp/"))
+                or any(part in DISPOSABLE_DIRS for part in parts)
+                or PurePosixPath(name).suffix.lower() in DISPOSABLE_SUFFIXES
+                or PurePosixPath(name).name.startswith(".coverage")):
+            rejected.append(name)
+    require(not rejected,
+            "transient files committed to Git (keep under ignored results/ instead): "
+            + ", ".join(sorted(rejected)))
+    return len(newly_added) - (1 if not newly_added[-1] else 0)
+
+
+def tracked_run_files(root, run):
+    try:
+        result = git(root, "ls-files", "-z", "--", run.relative_to(root).as_posix())
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("cannot inspect tracked EXP files") from exc
+    return {name.decode("utf-8") for name in result.split(b"\0") if name}
 
 
 def validate_checkpoint(payload, candidate_id):
@@ -194,8 +242,10 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
     evidence_in_manifest = {e["path"]: e["sha256"] for e in manifest["evidence"]}
     checkpoints = record.get("checkpoints")
     validations = record.get("validation_overlays")
-    require(isinstance(checkpoints, list) and isinstance(validations, list),
-            "checkpoint/validation lists required")
+    supporting = record.get("supporting_evidence", [])
+    require(isinstance(checkpoints, list) and isinstance(validations, list)
+            and isinstance(supporting, list),
+            "checkpoint/validation/supporting lists required")
 
     for item in checkpoints:
         require(isinstance(item, dict) and
@@ -230,12 +280,27 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         require(evidence_in_manifest.get(name) == item["sha256"],
                 "validation overlay absent/mismatched in manifest evidence")
 
+    for item in supporting:
+        require(isinstance(item, dict)
+                and item.get("role") in SUPPORT_ROLES
+                and isinstance(item.get("reason"), str) and item["reason"].strip(),
+                "supporting evidence must have recognized role and specific reason")
+        name = item.get("path")
+        require(name not in paths, "duplicate evidence path")
+        paths.add(name)
+        total += evidence_check(root, item, committed=committed,
+                                max_file_bytes=budget["individual_new_file_hard_bytes"],
+                                exception=exception is not None)
+        require(evidence_in_manifest.get(name) == item["sha256"],
+                "supporting evidence absent/mismatched in manifest evidence")
+
     summary_ref = record.get("summary")
     if stage in {"complete", "preservation_incomplete"}:
         require(isinstance(summary_ref, dict), "final/partial run requires a summary reference")
     if summary_ref is not None:
         name = summary_ref.get("path")
         require(name not in paths, "summary also used as checkpoint/validation")
+        paths.add(name)
         total += evidence_check(root, summary_ref, committed=committed,
                                 max_file_bytes=budget["individual_new_file_hard_bytes"],
                                 exception=exception is not None)
@@ -246,6 +311,20 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
     if mode == "finalize":
         require(stage == "complete", "preservation is not complete; do not delete raw data")
     if stage == "complete":
+        # The A/B registry must be complete: nothing in the manifest outside
+        # the selection record, and no stray tracked file inside the new run.
+        require(set(evidence_in_manifest) == paths,
+                "unclassified manifest evidence; use supporting_evidence with role and reason")
+        run_relative = run.relative_to(root).as_posix()
+        allowed = paths | {run_relative + "/manifest.json",
+                           run_relative + "/storage_record.json"}
+        leftovers = tracked_run_files(root, run) - allowed
+        require(not leftovers, "unclassified tracked EXP files: " + ", ".join(sorted(leftovers)))
+        for core in (run_relative + "/manifest.json", run_relative + "/storage_record.json"):
+            tracked_file(root, core, committed=True)
+        recorded_hashes = [e["sha256"] for e in manifest["evidence"]]
+        require(len(recorded_hashes) == len(set(recorded_hashes)),
+                "duplicate content stored under different evidence paths")
         require(summary_ref is not None, "complete run requires a summary")
         require(record.get("git_readback") == "passed", "no HEAD readback confirmation")
         require(total <= budget["new_experiment_curated_soft_bytes"] or exception is not None,
@@ -258,6 +337,7 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
 
 
 def audit_all(root, *, main_ref):
+    inspect_new_git_files(root, main_ref)
     results = []
     for base in RUNS:
         for directory in sorted((Path(root) / base).glob("EXP-*")):
