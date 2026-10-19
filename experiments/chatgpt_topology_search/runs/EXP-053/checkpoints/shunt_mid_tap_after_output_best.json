@@ -322,5 +322,65 @@
     "Nominal constant-Q Phase2 finite grid 28x1001; no global or continuous extrema proof",
     "No study of physical magnetic coupling realizability or H2/H3 extra margin, per owner directive",
     "No Q(f), SRF, PCB EM, tolerance or Phase 3 qualification"
-  ]
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "LsA"
+      ],
+      "k": 0.09999999999981136
+    },
+    {
+      "pair": [
+        "LsA",
+        "LsB"
+      ],
+      "k": 0.1
+    },
+    {
+      "pair": [
+        "LsB",
+        "L1"
+      ],
+      "k": -0.09999999999994444
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "LsA",
+    "LsB",
+    "L1"
+  ],
+  "fixed_values": {
+    "L_nH": [
+      2.09898139104222,
+      7.386059854144015,
+      0.41641552490325595,
+      3.1410590342607048
+    ],
+    "fixed_C_pF": [
+      4.158119198478745,
+      0.02366366198235734,
+      0.8565759763333703
+    ],
+    "fixed_C_Q": [
+      80,
+      40,
+      80
+    ],
+    "L_Q": 25,
+    "DTC_Q": 35,
+    "adjacent_k": [
+      0.09999999999981136,
+      0.1,
+      -0.09999999999994444
+    ],
+    "fixed_shunt_DTC_parasitic_C_pF": 0.5,
+    "parasitic_Q": 40,
+    "chip_area_units": 5.333333333333333,
+    "pcb_C_count": 1,
+    "GJM_count": 2,
+    "grounded_DTC_count": 1
+  }
 }
