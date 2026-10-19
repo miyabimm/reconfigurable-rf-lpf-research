@@ -394,7 +394,23 @@
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area3_rft007_best.json",
-      "sha256": "d4fb163877083200fef42c841cf5d72cbbf2386e573b28b9d5c4acd5ccbc0108"
+      "sha256": "161f00b539f27b406d662c7059d73ea7b1a695379d0c80a3c2b71a82c06f982a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area3_independent_mna.json",
+      "sha256": "cd7221afe1386f3a12122adfe313a57fa7ea3112f6a5ebffe1cd6068e91df781"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
+      "sha256": "f84a09205367912a33e28d8be3b97d52e0c643bc1edb3f9d664c643431ac0213"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
+      "sha256": "bc956177c53a35c6e7841866ae676e659c41821da28e5d704b40860c7850b8a7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
+      "sha256": "4a321963d2b8cd1a742c1bde2e1c71095996b3594bafd992129d893e41d7301c"
     }
   ],
   "limitations": [
@@ -402,6 +418,7 @@
     "EXP-050 has 6 ordered topology checkpoints; only area3 step1 is numerically analyzed.",
     "Finite-grid 30dB verification and 84 independent 7x7 MNA points; no continuous-frequency proof.",
     "Constant-Q ideal component models and fixed port S2Ps are not actual PCB EM or product Q(f)/SRF measurements.",
-    "Source Actions artifact may expire; curated best complete vector and original artifact SHA256 are permanently tracked in Git."
+    "Source Actions artifact may expire; curated best complete vector and original artifact SHA256 are permanently tracked in Git.",
+    "New EXP-050+ phase2-git-only-v1 evidence inventory was added as audit-driven correction after first numerical run; the initial pre-run storage gate was not claimed as passed."
   ]
 }
