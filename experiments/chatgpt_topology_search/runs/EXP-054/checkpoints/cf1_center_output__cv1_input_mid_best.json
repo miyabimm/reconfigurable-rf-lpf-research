@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-054",
+  "constraint_id": "RF-T007",
+  "phase": "Phase 2",
+  "candidate_id": "EXP054-T007-4L-CF1-CENTER-CV1-MID-001",
+  "variant": "cf1_center_output__cv1_input_mid",
+  "source_experiment": "EXP-053",
+  "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/split_input_shunt_center_best.json",
+  "source_run_id": 39291751571,
+  "source_artifact_id": 12206715575,
+  "source_raw_json_sha256": "28cfe12add525cacdf674ac94e75a7f1637089239db119722ef5606ce28f1853",
+  "source_zip_sha256": "e75075a77dff9f2dae8ba36252840aa2a457d18180b53326c27e9a0f86c663a0",
+  "executed_commit_sha": "e4eedad22c5f57a912b5b7d95b7f9b62d8054979",
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        1,
+        4
+      ]
+    ],
+    "Cf0": [
+      0,
+      1
+    ],
+    "Cf1": [
+      1,
+      2
+    ],
+    "Cp": [
+      4,
+      -1
+    ],
+    "Cv0": [
+      4,
+      -1
+    ],
+    "Cv1": [
+      0,
+      3
+    ],
+    "Cv2": [
+      1,
+      2
+    ],
+    "fixed_shunt_parasitic_edge": [
+      4,
+      -1
+    ],
+    "chip_L_physical_row": [
+      "L0",
+      "LsA",
+      "LsB",
+      "L1"
+    ]
+  },
+  "component_types": {
+    "L": "LQP02HV",
+    "L_Q": 25,
+    "GJM_Q": 80,
+    "PCB_Q": 40,
+    "DTC_Q": 35,
+    "fixed_parasitic_Q": 40,
+    "fixed_parasitic_pf": 0.5
+  },
+  "component_count": {
+    "L": 4,
+    "GJM": 2,
+    "PCB_C": 1,
+    "IC_VARIABLE_C": 3,
+    "grounded_DTC": 1
+  },
+  "area_units": 5.333333333333333,
+  "vector_parameter_order": "L0,L1,LsA,LsB,Cf0,Cf1,Cp,Ctrap_absent_0,k_L0_LsA,k_LsA_LsB,k_LsB_L1,6x(Cv0,Cv1,Cv2)",
+  "vector": [
+    1.9895877196346115,
+    7.233550121275614,
+    0.5654316503291861,
+    3.847960431656033,
+    3.1597951480383175,
+    0.1999999999999988,
+    0.8017461195515917,
+    0,
+    0.09999999999999985,
+    -0.09999999999999919,
+    -0.023548648433896317,
+    0.30921488576848905,
+    2.9999999999999996,
+    1.4754180437433912,
+    0.2046535237514102,
+    2.5152402256739554,
+    1.2731049901636586,
+    0.11578443478202934,
+    2.4790938189454685,
+    1.1726327177315776,
+    0.008495245591780377,
+    1.255057812751172,
+    0.7890426376725522,
+    0.1439762203368686,
+    0.7469545905214692,
+    0.4658355469970039,
+    1.2151886080033416e-15,
+    7.880347238883393e-17,
+    0.2811093252553675
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.30921488576848905,
+      2.9999999999999996,
+      1.4754180437433912
+    ],
+    "B12": [
+      0.2046535237514102,
+      2.5152402256739554,
+      1.2731049901636586
+    ],
+    "B28": [
+      0.11578443478202934,
+      2.4790938189454685,
+      1.1726327177315776
+    ],
+    "B13+B14": [
+      0.008495245591780377,
+      1.255057812751172,
+      0.7890426376725522
+    ],
+    "B26": [
+      0.1439762203368686,
+      0.7469545905214692,
+      0.4658355469970039
+    ],
+    "B8": [
+      1.2151886080033416e-15,
+      7.880347238883393e-17,
+      0.2811093252553675
+    ]
+  },
+  "numeric": {
+    "worst_IL_db": 0.8841507802465959,
+    "min_H2_db": 30.00499999982463,
+    "min_H3_db": 30.00500000000161,
+    "H2H3_hard_30dB_pass": true,
+    "selected_SLSQP_converged": true,
+    "frequency_regions": 28,
+    "points_per_region": 1001,
+    "internal_precision_guard_dB": 30.005
+  },
+  "independent_MNA": {
+    "max_IL_difference_db": 1.9895196601282805e-13,
+    "max_power_balance_residual_W": 6.071532165918825e-18,
+    "min_dissipative_term_W": 3.2587862202004523e-22,
+    "min_L_matrix_eigenvalue_nH": 0.5510076783265125,
+    "method": "independent 9x9 coupled-L branch-current KCL/KVL",
+    "probes": 84,
+    "PASS": true
+  },
+  "limitations": [
+    "Finite 28x1001 model only, no continuous extremum/global optimum",
+    "No additional H2/H3 margin optimization or physical k feasibility study per owner direction",
+    "Nominal Q constant, physical SRF/EM/tolerance not studied"
+  ]
+}
