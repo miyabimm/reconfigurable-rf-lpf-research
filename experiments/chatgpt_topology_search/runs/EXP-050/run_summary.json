@@ -6,20 +6,20 @@
   "purpose": "Six RF-T005 Pareto topology adaptations in area-ascending order",
   "attempts": {
     "planned": 12,
-    "attempted": 6,
+    "attempted": 8,
     "converged": 6,
-    "nonconverged": 0,
+    "nonconverged": 2,
     "failed": 0,
-    "not_started": 6
+    "not_started": 4
   },
-  "selected_candidate_count": 3,
+  "selected_candidate_count": 4,
   "completed_steps": [
     "1_of_6_area3",
     "2_of_6_area3p667",
-    "3_of_6_area4p333"
+    "3_of_6_area4p333",
+    "4_of_6_area4p667"
   ],
   "steps_pending": [
-    "4_area4p667",
     "5_area5p333",
     "6_area6"
   ],
@@ -47,13 +47,24 @@
       "min_H2_db": 30.019999999558145,
       "min_H3_db": 30.019999999932732,
       "independent_MNA_84_probe_pass": true
+    },
+    {
+      "chip_area": 4.666666666666667,
+      "candidate_id": "EXP050-T007-A4P667-4L-001",
+      "worst_IL_db": 1.7446727994152442,
+      "min_H2_db": 30.00587976960268,
+      "min_H3_db": 30.014460789012567,
+      "independent_MNA_84_probe_pass": true,
+      "solver_converged": false,
+      "pareto_dominated_by": "EXP050-T007-A4P333-3L-001"
     }
   ],
   "no_candidate_reason": null,
   "limitations": [
-    "3/6 topology steps not started",
+    "2/6 topology steps not started",
     "Numerical finite-grid only",
     "No continuous extrema/Q(f)/SRF/EM/physical tolerance verification",
-    "Initial EXP-050 manifest post-run backfill disclosed in manifest"
+    "Initial EXP-050 manifest post-run backfill disclosed in manifest",
+    "Fourth topology optimized candidate meets strict finite-grid 30dB and MNA, but its selected local SLSQP run did NOT converge; should not be called an optimized solution bound."
   ]
 }
