@@ -37,6 +37,12 @@
       "selection_reason": "topology_diversity",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area4p667_rft007_initial.json",
       "sha256": "cc088c0af31280b5d5e28e94a6193ab011081df168c202fbab34011920faa2d1"
+    },
+    {
+      "candidate_id": "EXP050-T007-A5P333-4L-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area5p333_rft007_best.json",
+      "sha256": "b9596a28abb8be226dcf78ad408008f32bb5fa48c00140815fc8104e75d8ac6a"
     }
   ],
   "validation_overlays": [
@@ -63,6 +69,12 @@
       "status": "passed",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area4p667_independent_mna.json",
       "sha256": "36506d0dc3984a4fdc5e9103f46e8ccbdbb83b749590d69dadd4af228944da88"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area5p333_independent_mna.json",
+      "sha256": "e905596a97ed20f09233fb63f06b3c4f2a7d84fb950ecaac86a3f7a263efbc2d"
     }
   ],
   "supporting_evidence": [
@@ -70,7 +82,7 @@
       "role": "method_note",
       "reason": "Phase 2 interpretation, topology, T005/T007 separation, execution state and physical limitations",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "5e8ab07c69d17bc4fd09ff91e0587182ff69fb73b2ed02e6842040b2a52b6f22"
+      "sha256": "e781d70b7e40f9d21f503c18f44bcaac852b86d0824922e0d6138b384a6baec2"
     },
     {
       "role": "source_snapshot",
@@ -95,17 +107,23 @@
       "reason": "Step4 4L RF-T007 independent two-shunt 0.5pF/Q40 numeric optimizer and independent explicit 9x9 coupled-L MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area4p667_rft007.py",
       "sha256": "de4370da55cda3a7e7b9f3f7c5c92d0a82f56e0ee99588322d82354410831827"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-050 step5 4L RF-T007 GJM Cf0/Cf2 Q80, PCB Cf1/Cp Q40, two fixed DTC shunt C Q40, four-start minimax and 9x9 independent MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py",
+      "sha256": "f1fedf3cd2dc3d187ac29a9132e0e462595611f0af446a80791e11b6c8146bca"
     }
   ],
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-    "sha256": "08134001c2a4938e4e5734e024d47c4463d99828cb36534d8897e9e9b2b40311"
+    "sha256": "51c929300a5ae92cacce3b6c220a7ec789e8e7f5b5894b9056032f23f07f4d61"
   },
   "size_exception": null,
   "git_readback": "pending_until_all_six_steps_completed_and_merged",
   "limitations": [
     "EXP-050 original pre-run storage_record was omitted; created in PR after successful first numeric run and documented as audit-driven backfill.",
-    "This run remains in progress with two remaining distinct Pareto topology steps not started.",
+    "This run remains in progress with one remaining distinct Pareto topology step not started.",
     "At this stage the first three checkpoints, independent MNA overlay and method records exist in the branch; full experiment finalization has not occurred.",
     "Actions artifact ZIP and raw JSON SHA256 are recorded in the curated checkpoint, preserving raw-to-curated provenance."
   ]

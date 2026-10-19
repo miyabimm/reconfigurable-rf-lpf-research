@@ -365,7 +365,7 @@
       5.333333333333333,
       6
     ],
-    "completed_step": "4_of_6_EXP042_area4p667",
+    "completed_step": "5_of_6_EXP042_area5p333",
     "baseline_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json",
     "fixed_shunt_parasitic_pf": 0.5,
     "fixed_shunt_parasitic_q": 40,
@@ -379,7 +379,8 @@
     "stage_2_to_6": "pending",
     "stage_3_to_6": "pending",
     "stage_4_to_6": "pending",
-    "stage_5_to_6": "pending"
+    "stage_5_to_6": "pending",
+    "stage_6": "pending"
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
@@ -391,8 +392,8 @@
     "numerical": "passed",
     "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": "28 intervals x 1001 for each of 4 steps",
-    "independent_grid": "28 intervals x 3 explicit MNA samples for each of 4 steps"
+    "analysis_grid": "28 intervals x 1001 for each of 5 completed steps",
+    "independent_grid": "28 intervals x 3 explicit MNA samples for each of 5 completed steps"
   },
   "evidence": [
     {
@@ -405,11 +406,11 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-      "sha256": "08134001c2a4938e4e5734e024d47c4463d99828cb36534d8897e9e9b2b40311"
+      "sha256": "51c929300a5ae92cacce3b6c220a7ec789e8e7f5b5894b9056032f23f07f4d61"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "5e8ab07c69d17bc4fd09ff91e0587182ff69fb73b2ed02e6842040b2a52b6f22"
+      "sha256": "e781d70b7e40f9d21f503c18f44bcaac852b86d0824922e0d6138b384a6baec2"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
@@ -450,6 +451,18 @@
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area4p667_independent_mna.json",
       "sha256": "36506d0dc3984a4fdc5e9103f46e8ccbdbb83b749590d69dadd4af228944da88"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py",
+      "sha256": "f1fedf3cd2dc3d187ac29a9132e0e462595611f0af446a80791e11b6c8146bca"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area5p333_rft007_best.json",
+      "sha256": "b9596a28abb8be226dcf78ad408008f32bb5fa48c00140815fc8104e75d8ac6a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area5p333_independent_mna.json",
+      "sha256": "e905596a97ed20f09233fb63f06b3c4f2a7d84fb950ecaac86a3f7a263efbc2d"
     }
   ],
   "limitations": [

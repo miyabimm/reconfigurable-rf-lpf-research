@@ -1,0 +1,50 @@
+name: EXP-050 RF-T007 area5p333 sequential rebaseline
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py'
+      - '.github/workflows/exp050_rft007_area5p333.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rf-t007-area5p333:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check main EXP reservation, policy and evidence gate
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-050 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+      - name: Run second sequential rebaseline (3L area5p333)
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py \
+            --starts 4 --maxiter 180 --coarse 9 --refine 21 \
+            --dense 1001 --mna 3 \
+            --out results/EXP-050/area5p333_rft007.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp050-rft007-area5p333-run
+          path: results/EXP-050/area5p333_rft007.json
+          if-no-files-found: warn
+          retention-days: 30
