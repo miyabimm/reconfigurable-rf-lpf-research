@@ -9,7 +9,7 @@
 | Step | Source | Area | L | Original T005 IL dB | T007 adaption status |
 |---|---|---:|---:|---:|---|
 | 1 | EXP-043 `checkpoints/zero_gjm_double.json` | 3 | 3 | 0.944268363 | **Executed: 0.938309198dB / H2≥30.020 / H3≥30.019969, independent MNA PASS** |
-| 2 | EXP-045 `checkpoints/t3l_extra_pcb_out_0p2_prelim.json` | 3⅔ | 3 | 0.895180009 | Pending |
+| 2 | EXP-045 `checkpoints/t3l_extra_pcb_out_0p2_prelim.json` | 3⅔ | 3 | 0.895180009 | **Executed: 0.909728967dB, H2/H3≥30.02dB, independent MNA PASS** |
 | 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | Pending |
 | 4 | EXP-042 `checkpoints/pcb_both.json` | 4⅔ | 4 | 0.819564515 | Pending |
 | 5 | EXP-042 `checkpoints/pcb_cf1.json` | 5⅓ | 4 | 0.811306586 | Pending |
@@ -45,7 +45,7 @@ SLSQP coarse/refined stages reported success for both attempted starts; source g
 
 **Provenance correction:** The first numeric job ran after main EXP-050 reservation, but the required `manifest.json` was inadvertently omitted in the first PR head, causing an unrelated smoke audit to fail. The complete manifest and derived experiment index were then added as an explicit post-run provenance backfill; source execution commit and artifact hashes are retained. This is not falsely represented as a pre-run manifest. The audit must pass before the PR can be merged.
 
-**Unperformed:** Next five Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
+**Unperformed:** Next four Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
 
 
 ## Local reproducibility
@@ -56,3 +56,16 @@ uv sync --frozen
 uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-050 --owner MasayaTakagi
 OPENBLAS_NUM_THREADS=1 uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py --starts 2 --maxiter 100 --coarse 9 --refine 21 --dense 1001 --mna-points 3
 ```
+
+## Second step: area 3⅔ EXP-045 (2026-10-19)
+
+[GitHub Actions run 39260000528](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39260000528) SUCCESS; original raw JSON SHA256 `0ea7db5a622e0e1b9edd0078ccec7bd925ffbbb0d31e83348658cefa1c1bf99d`. Full vector: [checkpoint](checkpoints/area3p667_rft007_best.json); independent 84-point MNA: [validation](validation/area3p667_independent_mna.json).
+
+| Condition/setting | worst IL dB | min H2 dB | min H3 dB | Verdict |
+|---|---:|---:|---:|---|
+| RF-T005 saved, no shunt parasitic | 0.895180009 | 30.008000 | 30.008000 | Historical T005 PASS |
+| RF-T007 same original vector | 1.076529383 | 20.534928 | 19.774387 | FAIL |
+| RF-T007 Cv0-compensated only | 1.076529383 | 20.534928 | 23.167561 | FAIL |
+| **RF-T007 local reoptimized** | **0.909728967** | **30.020000** | **30.020000** | **PASS**, finite 28×1001 grid |
+
+The electrical model separately stamps shunt GJM Cp (Q80) and the 0.5pF DTC fixed parasitic (Q40). Only shunt DTC Cv0 receives the parasitic; Cv1/Cv2 are not grounded. The full 7×7 independent coupled-L MNA passed 84 boundary/midpoint probes: IL difference ≤1.5632×10⁻¹³dB, power residual ≤5.2042×10⁻¹⁸W, minimum L matrix eigenvalue 3.21549nH. The result is a numerical Phase 2 best-found local point; H2/H3 30dB margin only ~0.02dB, and physical/tolerance/continuous-band feasibility is not established. Steps 3–6 are not yet executed.
