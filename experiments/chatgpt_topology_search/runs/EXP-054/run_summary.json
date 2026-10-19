@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-054",
+  "constraint_id": "RF-T007",
+  "phase": "Phase 2",
+  "stage": "completed_combined_topology_sweep",
+  "source_run_id": 39291751571,
+  "source_artifact_id": 12206715575,
+  "raw_json_sha256": "28cfe12add525cacdf674ac94e75a7f1637089239db119722ef5606ce28f1853",
+  "zip_sha256": "e75075a77dff9f2dae8ba36252840aa2a457d18180b53326c27e9a0f86c663a0",
+  "code_execution_sha": "e4eedad22c5f57a912b5b7d95b7f9b62d8054979",
+  "attempts": {
+    "planned": 40,
+    "attempted": 40,
+    "converged": 33,
+    "nonconverged": 7,
+    "failed": 0,
+    "not_started": 0
+  },
+  "graph_counts": {
+    "tested": 20,
+    "baseline": 1,
+    "novel_compound_edges": 19
+  },
+  "selection_count": 3,
+  "numerical_grid": {
+    "band_segments": 28,
+    "points_per_segment": 1001,
+    "MNA_probes_per_selected_graph": 84,
+    "mandatory_H2H3_min_db": 30,
+    "internal_guard_db": 30.005
+  },
+  "reference_EXP053_IL_db": 0.8757946642355757,
+  "source_pointwise_model_discrepancy_db": 0,
+  "best_observed": {
+    "variant": "reference",
+    "worst_IL_db": 0.8757946642327631,
+    "new_topology": false,
+    "strict_H2H3_30dB": true,
+    "independent_MNA_PASS": true
+  },
+  "best_new_variant": {
+    "variant": "cf1_center_output__cv1_input_mid",
+    "worst_IL_db": 0.8841507802465959,
+    "strict_H2H3_30dB": true,
+    "independent_MNA_PASS": true,
+    "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/cf1_center_output__cv1_input_mid_best.json"
+  },
+  "topology_improvement_vs_reference_db": 0,
+  "all_tested_variants": [
+    {
+      "variant": "reference",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8757946642327631,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_input_mid__cv1_mid_center",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8952116563475471,
+      "attempted_starts": 2,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_mid_center__cv1_input_mid",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8864695579617753,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_input_mid__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.9258447413034161,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_mid_center__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 1.0002536104142306,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_input_tip__cv1_mid_center",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.9245427255469036,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_center_tip__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.9948736335667194,
+      "attempted_starts": 2,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_mid_output__cv1_input_mid",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8841941248801823,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_mid_output__cv2_input_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.955326182686351,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_input_mid__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8899687537367942,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_center_output__cv1_input_mid",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8841507802465959,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_input_tip__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8909038817166142,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cp_mid_ground__cv1_input_mid",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 6.641185588157068,
+      "attempted_starts": 2,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cp_center_ground__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.9107153338311273,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cp_mid_ground__cv2_center_tip",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 1.1168384831090903,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_input_mid__cv1_mid_center__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 2.135471080949744,
+      "attempted_starts": 2,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf1_mid_output__cv1_input_mid__cv2_center_tip",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 1.0515337116346997,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_mid_center__cf1_mid_output__cv2_center_tip",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 1.048047044851511,
+      "attempted_starts": 2,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_input_mid__cf1_center_output__cv1_mid_center",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.8975295438656719,
+      "attempted_starts": 2,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    },
+    {
+      "variant": "cf0_mid_center__cp_mid_ground__cv2_mid_output",
+      "area_units": 5.333333333333333,
+      "worst_IL_db": 0.9629319970865395,
+      "attempted_starts": 2,
+      "converged_starts": 0,
+      "nonconverged_starts": 2,
+      "dense_H2H3_30dB_eligible": true,
+      "selected_independent_9x9_MNA_84": "PASS"
+    }
+  ],
+  "retained_checkpoint_ids": [
+    "EXP054-T007-4L-REFERENCE-001",
+    "EXP054-T007-4L-CF1-CENTER-CV1-MID-001",
+    "EXP054-T007-4L-CF1-MIDOUT-CV1-MID-001"
+  ],
+  "conclusion": "No new combined fixed-C/non-ground-DTC edge variant outperformed the EXP-053 base 4L best at the same 30.005dB internal H2/H3 guard. The current observed area5⅓ 4L best remains EXP-053 IL0.875794664236dB. These are local finite-grid results, not a proof all topologies are worse.",
+  "limitations": [
+    "Selected eligible, but nonconverged local SLSQP solutions must not be called converged. 7/40 not converged.",
+    "All 20 graphs had at least one finite grid eligible local point and independent MNA check, but only 3 curated full vectors stored in Git.",
+    "Nominal constant-Q 28x1001, no global or continuous-frequency proof.",
+    "Owner excluded extra harmonic rejection margin study and physical magnetic coupling feasibility.",
+    "Phase 2 RF-T007 trial only; formal RF-F003 unchanged."
+  ]
+}
