@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-054",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 3,
     "retain": [
@@ -14,27 +14,69 @@
     "rule": "Keep at most three top strict H2/H3>=30dB independently verified 4L electrical topology candidates, each full 29-parameter vector and all 6 DTC Cv triples, with independent 84-probe 9x9 MNA.",
     "estimated_curated_bytes": 90000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [
+  "checkpoints": [
     {
-      "role": "source_snapshot",
-      "reason": "EXP-054 executable twenty 4L multi-branch electrical graphs and explicit independent 9x9 MNA",
-      "path": "experiments/chatgpt_topology_search/runs/EXP-054/sweep_4l_combined_c_dtc.py",
-      "sha256": "25dbe9e01ac2ca4f09751879acd4bfaa41189ee5665fa3cddb33cb609581d22f"
+      "candidate_id": "EXP054-T007-4L-REFERENCE-001",
+      "selection_reason": "30db_boundary",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/reference_best.json",
+      "sha256": "7f3fde54b6a498f86b5e72d0ad6a726ca9d23f26a17f5bed59864ef5e9a60032"
     },
     {
-      "role": "method_note",
-      "reason": "Preregistered EXP-054 Phase2 topologies, component limits, owner exclusions and RF-T007 mandatory criteria",
-      "path": "experiments/chatgpt_topology_search/runs/EXP-054/README.md",
-      "sha256": "d56a2911a95e5576df755e850aca8f9b9ad72939d6d21f3cc4fde85fa8cda82c"
+      "candidate_id": "EXP054-T007-4L-CF1-CENTER-CV1-MID-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/cf1_center_output__cv1_input_mid_best.json",
+      "sha256": "69af6f69cb7a02b1db485002a33a7aaa6dd795a87d42ab848610bcec065d3bd8"
+    },
+    {
+      "candidate_id": "EXP054-T007-4L-CF1-MIDOUT-CV1-MID-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/cf1_mid_output__cv1_input_mid_best.json",
+      "sha256": "4c7d29319bcc4759a59e23c24e657a1dc87a0059c42db1848fb5a3392de1cf11"
     }
   ],
-  "summary": null,
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/reference_independent_mna.json",
+      "sha256": "0add1336dc7d0520da98a8ad4a01ad73b9e4f15a641242ea09803c66ca8d9447"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/cf1_center_output__cv1_input_mid_independent_mna.json",
+      "sha256": "eb2ccd41e95538aab764b0e3e5cac5742a701e3968caa2e57679c1780a40a881"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/cf1_mid_output__cv1_input_mid_independent_mna.json",
+      "sha256": "9582d7871f91b87046abe15fdf31b5831e234fc436bbb2bdadb915a5406310f3"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Executed EXP-054 20 4L combined Q80/Q40 C and Q35 DTC graph variants, no new best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/README.md",
+      "sha256": "118ff70a346cdc39bae8ba1d2ce45e80209971727d6ece30e8073831420c3349"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-054 solver with RF-T007 Q40 always-on ground shunt parasite and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/sweep_4l_combined_c_dtc.py",
+      "sha256": "25dbe9e01ac2ca4f09751879acd4bfaa41189ee5665fa3cddb33cb609581d22f"
+    }
+  ],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-054/run_summary.json",
+    "sha256": "8fbc07222d6348d1ed7aa748d01bdc92262aa3fcb99aad1984a9e054b35c3bea"
+  },
   "size_exception": null,
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
-    "EXP-054 pre-run Git-only evidence inventory; no numeric result yet.",
-    "EXP-053 source checkpoint complete and stored on main."
+    "Curation saves three complete 29-parameter vectors and MNA; full 40 starts original Actions raw artifact SHA256 28cfe12add525cacdf674ac94e75a7f1637089239db119722ef5606ce28f1853 retained by GitHub Actions per retention period.",
+    "Observed local 20-graph sweep did not improve EXP-053; do not infer global optimality.",
+    "Scope excludes extra H2/H3 margin and physical mutual-k realizability assessment."
   ]
 }
