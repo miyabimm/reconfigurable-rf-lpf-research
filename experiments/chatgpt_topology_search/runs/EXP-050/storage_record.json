@@ -119,6 +119,12 @@
       "reason": "Final EXP-050 step6 area6 RF-T007 4L with three fixed GJM Q80, one PCB Q40, two fixed 0.5pF/Q40 DTC shunts and independent 9x9 MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_rft007.py",
       "sha256": "e38105403285d78c01750bcd5d3fb1d9d58fd882504b74bd67e3dd861be42604"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Last-step near-miss seed from area6 initial 4-start SLSQP, with strict H2/H3>=30dB admission, separate RF-T007 0.5pF/Q40 shunt branches and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_nearmiss_refine.py",
+      "sha256": "73be549fa4fce1e138b08a67b399014d508788c728251311518cdd6b3dedb6cf"
     }
   ],
   "summary": {
