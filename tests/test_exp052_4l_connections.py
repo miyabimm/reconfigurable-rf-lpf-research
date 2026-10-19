@@ -35,7 +35,6 @@ class FourLConnectionTests(unittest.TestCase):
         for name in sweep.VARIANTS:
             ev=sweep.Evaluator(policy,3,name)
             self.assertEqual(ev.cap_inc.shape,(5,7))
-            self.assertEqual(ev.cap_edges[3],ev.cap_edges[6]) if False else None
             self.assertEqual(ev.cap_edges[3],ev.cap_edges[-1])
             self.assertEqual(ev.cap_edges[3][1],-1)
             m=ev.summary(x)
