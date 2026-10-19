@@ -342,7 +342,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "a48e153a5a1e64f2c4e91e6475c49ab0af15dda0",
+    "execution_sha": "ba6fc7422115f45ef6d0be39929f37c0142a4caf",
     "archive_sha": null,
     "working_tree_dirty": false
   },
@@ -377,30 +377,53 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": null
+    "evaluation_count": 6
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": "2 selected RF-T007 4L candidates × 28 segments ×1001 per interval, all six settings, H2/H3>=30dB",
+    "independent_grid": "2 selected RF-T007 candidates × 84 separate explicit 9×9 mutually-coupled-L MNA probes and power conservation"
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-056/README.md",
-      "sha256": "cdf1e0938699f0101aba7d34b581f89a99d84efc1f6a70261d09b6ad6a8bb172"
+      "sha256": "ba32832de9274ab9eba9c7e8a6da957008ad0ec64885d89cc4cddbe53d3492a4"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-056/refine_nonconverged.py",
       "sha256": "e3f90fb2a5101976ec3a02fd7893759527a3d2b29a72d19c76610a9bd0f3ffd3"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/run_summary.json",
+      "sha256": "d16500f731c09ec249975ebc71a117c1ad67c815c1a1977d1fe2a66d2e320f2d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/checkpoints/cv1_output_shunt_tip_converged_best.json",
+      "sha256": "edf300e6fabc4ada18a67d0680864d0e52e1c913f5af3e8060dd59e4b3d08479"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/validation/cv1_output_shunt_tip_independent_mna.json",
+      "sha256": "1ecea8b1f06a2d895443d1a98852fd38a008a9a73503b11126c86859a0545493"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/checkpoints/cv1_input_parallel_L0_converged_best.json",
+      "sha256": "f8513a7b3519cb510591ba3d1c2b64bc43fb8f21fabea65e8e7859724cc7a3fb"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/validation/cv1_input_parallel_L0_independent_mna.json",
+      "sha256": "ac0da713ce1df881343dd7b0425f5f491e25596b1d969df6c47f43f21dbb52ae"
     }
   ],
   "limitations": [
-    "Pre-run only; no EXP056 SLSQP / independent MNA results yet",
-    "Raising iteration ceiling does not guarantee converged or superior solutions",
-    "Same RF-T007 nominal constant-Q model; no Q(f), SRF, physical coupling, EM, tolerance, measured S2P or Phase3"
+    "EXP-056 Actions 39344219070 SUCCESS, 6/6 warmstart maxiter500/280 SLSQP stages fully converged; 0 nonconverged and 0 failed.",
+    "Both selected designs mandatory H2/H3≥30dB on 28x1001 finite grid; independent 84 point 9x9 MNA and passive power balance PASS.",
+    "New converged IL0.8490840503908837 for Cv1(2,4), IL0.8572685822250599 for Cv1(0,1); prior EXP055 best IL0.8173655897607699 remains better.",
+    "Changing both warm-start state and iterations does not isolate effects; historical EXP055 nonconvergence remains immutable.",
+    "Full 6 starts raw source Actions ZIP ID12231005251 SHA256 ab548ebb5a76ea680b6dbd83e4ee411ed7444f5cc4d60a088dddef68283efa38; inner JSON SHA256 35a38af9b9f1a0599252c9351a69e2032ab6e37ac40dd1410d652a2242f02ac2.",
+    "Nominal constant-Q finite grid local results. No continuous extrema, extra harmonic margin, physical k, SRF, Q(f), PCB EM, tolerance, measured parasitics or Phase3."
   ]
 }
