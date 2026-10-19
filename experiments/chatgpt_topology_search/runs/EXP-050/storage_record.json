@@ -59,6 +59,12 @@
       "reason": "Step2 dedicated RF-T007 area3p667 GJM Q80 plus separate Q40 shunt parasitic optimizer and independent 7x7 MNA source",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3p667_rft007.py",
       "sha256": "fbd11b8388676fc4844409a14aad2f85b499ec92e30e50a48e9ec3bfe23d8c9a"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Step3 dedicated 3L 2-GJM RF-T007 optimizer stamps Q80 fixed GJM separately from Q40 grounded shunt-DTC parasitic and performs independent 7x7 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area4p333_rft007.py",
+      "sha256": "6773f07aedf2f6349b463b71e282494184dd54812709b3ac7cdada62c1138487"
     }
   ],
   "summary": {
