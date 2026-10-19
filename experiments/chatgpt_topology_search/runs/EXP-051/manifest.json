@@ -342,7 +342,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "44f9eb2388c59d0c9eff2693aac250d0b877c21b",
+    "execution_sha": "c50cd56ca222b5b5dd25dd835beff437a8e6977d",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -387,31 +387,53 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": "planned 28x1001 per variant",
-    "independent_grid": "planned 28x3 9x9 MNA per selected variant"
+    "analysis_grid": "28 disjoint segments x 1001 points (six settings; each variant)",
+    "independent_grid": "28 intervals x 3 points = 84 explicit 9x9 MNA probes per selected variant"
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-051/README.md",
-      "sha256": "a8ae6ae8a65de8edc95cc47cf735de0bbeaa582633314d8ce2a3bf743aabff4c"
+      "sha256": "93a871a087dcd4954467b21d5769a0b9bd33129cf38951f3f675f41b759eabe6"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-051/optimize_one_shunt_4l.py",
       "sha256": "c4395c9f830e2f1526a96e93838201f0c66be11e4661d599a149d5e560a9c7ec"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/checkpoints/one_shunt_4l_plain_best.json",
+      "sha256": "7f0358b9187fa4d665e48b2cc7234c8ef51a9043696f3f820bcc4ed9fcd67848"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/checkpoints/one_shunt_4l_trap_best.json",
+      "sha256": "062d2e792925124d173ab4e552cc9fc00fbf40341709c5c5544e9cfbdabaf0a2"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/validation/plain_independent_9x9_mna.json",
+      "sha256": "05153d72a98fa07be562a1189a95cf85db00f5adae917a3e53fccf8b96d2cfb8"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/validation/trap_independent_9x9_mna.json",
+      "sha256": "ffe59f5e6800cca266c12a78f38346194945070df734ffbf45620faf49f3959e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/run_summary.json",
+      "sha256": "74b7d2f84c559cab28f1c16a2c5a416ecc1fd8a376406cca5e80c34fcc358e1b"
     }
   ],
   "limitations": [
-    "Pre-run: no EXP-051 numerical execution has been performed.",
     "No formal RF-F003 change or Phase3 permission.",
     "3L-to-4L exact electrical equivalence is model-level; 4L adds chip area.",
-    "Only a local finite-grid comparison, not global 4L optimality or EM/SRF/Q(f)/tolerance validation."
+    "Only a local finite-grid comparison, not global 4L optimality or EM/SRF/Q(f)/tolerance validation.",
+    "EXP-051 executed with one physical grounded DTC plus 0.5pF Q40 only, not any formal RF-F003 promotion; six local SLSQP starts converged.",
+    "Best plain 4L has k(LsA,LsB)=+0.10 at approved bound; simultaneous physical coupling unverified.",
+    "No hardware SRF/Q(f)/PCB EM or fixed-DTC parasitic tolerance; ~0.02dB H2/H3 grid margin."
   ]
 }
