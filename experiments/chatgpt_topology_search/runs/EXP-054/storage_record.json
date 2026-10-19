@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-054",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "30db_boundary"
+    ],
+    "rule": "Keep at most three top strict H2/H3>=30dB independently verified 4L electrical topology candidates, each full 29-parameter vector and all 6 DTC Cv triples, with independent 84-probe 9x9 MNA.",
+    "estimated_curated_bytes": 90000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-054 executable twenty 4L multi-branch electrical graphs and explicit independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/sweep_4l_combined_c_dtc.py",
+      "sha256": "25dbe9e01ac2ca4f09751879acd4bfaa41189ee5665fa3cddb33cb609581d22f"
+    },
+    {
+      "role": "method_note",
+      "reason": "Preregistered EXP-054 Phase2 topologies, component limits, owner exclusions and RF-T007 mandatory criteria",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/README.md",
+      "sha256": "d56a2911a95e5576df755e850aca8f9b9ad72939d6d21f3cc4fde85fa8cda82c"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "EXP-054 pre-run Git-only evidence inventory; no numeric result yet.",
+    "EXP-053 source checkpoint complete and stored on main."
+  ]
+}
