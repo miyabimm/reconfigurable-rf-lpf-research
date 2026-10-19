@@ -1,0 +1,390 @@
+{
+  "candidate_id": "EXP050-T007-A6-4L-001",
+  "experiment_id": "EXP-050",
+  "constraint_id": "RF-T007",
+  "phase": "Phase 2",
+  "step": "6_of_6",
+  "source_experiment": "EXP-042",
+  "source_candidate_id": "EXP042-30m005",
+  "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-042/selected_checkpoints_rft005.json",
+  "initial_actions_run_id": 39267630715,
+  "initial_artifact_sha256": "1450bee1ed5dff9a8a92c0022b5aaf9af45ddee7645bf0dcd39476c31d6d49cb",
+  "refinement_actions_run_id": 39268341205,
+  "refinement_artifact_id": 12193778603,
+  "refinement_raw_json_sha256": "1e33f8b95b633e6c6dda27197f0028882e7b7566a2d8dc27b255ad6d50762711",
+  "refinement_zip_sha256": "4b73374c26385b5be8067c6f87815ddd69b07caabbf9c63adcd9511482a46e20",
+  "source_refinement_code_sha": "fc4b669812c5b49756deb20542b7e6f26f2333c7",
+  "chip_area_units": 6,
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "GND_node": -1,
+    "chip_L_physical_order": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ]
+  },
+  "components": [
+    {
+      "name": "L0",
+      "kind": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 2.0106505930399465,
+      "Q": 25
+    },
+    {
+      "name": "L1",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 2.6990824472188755,
+      "Q": 25
+    },
+    {
+      "name": "L2",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 27,
+      "Q": 25
+    },
+    {
+      "name": "L3",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 7.423926485127167,
+      "Q": 25
+    },
+    {
+      "name": "Cf0",
+      "kind": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pf": 6.89323820133534,
+      "Q": 80
+    },
+    {
+      "name": "Cf1",
+      "kind": "GJM01",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pf": 0.05072379343645682,
+      "Q": 80
+    },
+    {
+      "name": "Cf2",
+      "kind": "GJM01",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pf": 0.5285795520851679,
+      "Q": 80
+    },
+    {
+      "name": "Cp",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pf": 0.02,
+      "Q": 40
+    },
+    {
+      "name": "Cv0_par",
+      "kind": "DTC_SHUNT_PARASITIC_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pf": 0.5,
+      "Q": 40
+    },
+    {
+      "name": "Cv1_par",
+      "kind": "DTC_SHUNT_PARASITIC_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pf": 0.5,
+      "Q": 40
+    },
+    {
+      "name": "Cv0",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "Q": 35,
+      "bounds_pF": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "Cv1",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "Q": 35,
+      "bounds_pF": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "Cv2",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "bounds_pF": [
+        0,
+        3
+      ]
+    }
+  ],
+  "couplings": [
+    {
+      "L": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.06011480719772836
+    },
+    {
+      "L": [
+        "L1",
+        "L3"
+      ],
+      "k": -0.01742293321934973
+    },
+    {
+      "L": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.012640070023596444
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "fixed_values": {
+    "L_nH": [
+      2.0106505930399465,
+      2.6990824472188755,
+      27,
+      7.423926485127167
+    ],
+    "fixed_C_pf": [
+      6.89323820133534,
+      0.05072379343645682,
+      0.5285795520851679,
+      0.02
+    ],
+    "fixed_C_Q": [
+      80,
+      80,
+      80,
+      40
+    ],
+    "adjacent_k": [
+      -0.06011480719772836,
+      -0.01742293321934973,
+      -0.012640070023596444
+    ],
+    "shunt_DTC_parasitic_count": 2,
+    "parasitic_each_pf": 0.5,
+    "parasitic_Q": 40
+  },
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      1.6884609812937303,
+      4.154113806104544e-17,
+      1.4562772452762376
+    ],
+    "B12": [
+      2.5796740996763816,
+      3,
+      0.18391512207679522
+    ],
+    "B28": [
+      2.49373153738077,
+      2.9998951023562186,
+      0.2991605361598753
+    ],
+    "B13+B14": [
+      2.7295442894709665,
+      2.9999509904835016,
+      0.14597936389440902
+    ],
+    "B26": [
+      0.9890000108897704,
+      0,
+      0.7117329292696145
+    ],
+    "B8": [
+      1.9968700898592715,
+      3,
+      0
+    ]
+  },
+  "vector": [
+    2.0106505930399465,
+    2.6990824472188755,
+    27,
+    7.423926485127167,
+    6.89323820133534,
+    0.05072379343645682,
+    0.5285795520851679,
+    0.02,
+    -0.06011480719772836,
+    -0.01742293321934973,
+    -0.012640070023596444,
+    1.6884609812937303,
+    4.154113806104544e-17,
+    1.4562772452762376,
+    2.5796740996763816,
+    3,
+    0.18391512207679522,
+    2.49373153738077,
+    2.9998951023562186,
+    0.2991605361598753,
+    2.7295442894709665,
+    2.9999509904835016,
+    0.14597936389440902,
+    0.9890000108897704,
+    0,
+    0.7117329292696145,
+    1.9968700898592715,
+    3,
+    0
+  ],
+  "historical_T005": {
+    "worst_IL_db": 0.8051486682137015,
+    "min_H2_db": 30.04999999266435,
+    "min_H3_db": 30.04999999910771,
+    "prior_solver_converged": false
+  },
+  "T007_original_vector": {
+    "worst_IL_db": 2.0430174952633475,
+    "min_H2_db": 7.574388987862175,
+    "min_H3_db": 7.204263280827762,
+    "pass": false
+  },
+  "T007_initial_strict_but_high_IL": {
+    "worst_IL_db": 4.205431961005406,
+    "min_H2_db": 30.020000000963037,
+    "min_H3_db": 30.01999766164198,
+    "pass": true
+  },
+  "T007_initial_near_miss": {
+    "worst_IL_db": 1.238320696359824,
+    "min_H2_db": 29.989127447049167,
+    "min_H3_db": 30.012056550482068,
+    "pass": false
+  },
+  "T007_refined": {
+    "worst_IL_db": 1.233552323466932,
+    "min_H2_db": 30.019999999999058,
+    "min_H3_db": 30.019999999999474,
+    "pass_finite_H2H3_30dB": true,
+    "segments": 28,
+    "samples_per_segment": 1001,
+    "critical_IL": {
+      "case": "B12",
+      "MHz": 699
+    },
+    "coarse_SLSQP_converged": true,
+    "refined_SLSQP_converged": true,
+    "refinement_starts": 3
+  },
+  "independent_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 1.5631940186722204e-13,
+    "max_power_balance_residual_W": 5.204170427930421e-18,
+    "min_L_eigenvalue_nH": 1.9832121012225845,
+    "pass": true
+  },
+  "T007_Pareto": "dominated_by_area4p333_3L_0p891827dB",
+  "limitations": [
+    "Six historical T005 Pareto topologies each locally reoptimized; this does not establish global Pareto frontier",
+    "4L non-ground Cv2 has no parasitic; two grounded fixed Q40 branches always present",
+    "No Q(f)/SRF, EM, physical tolerance, continuous-frequency extrema, or Phase3"
+  ]
+}

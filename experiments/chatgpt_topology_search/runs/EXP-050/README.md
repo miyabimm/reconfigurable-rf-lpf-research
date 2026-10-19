@@ -13,7 +13,7 @@
 | 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | **Executed: 0.891827011dB, H2/H3≥30.02dB; MNA PASS** |
 | 4 | EXP-042 `checkpoints/pcb_both.json` | 4⅔ | 4 | 0.819564515 | **Executed: 1.744672799dB, H2/H3 ≥30dB; MNA PASS; SLSQP nonconverged / dominated** |
 | 5 | EXP-042 `checkpoints/pcb_cf1.json` | 5⅓ | 4 | 0.811306586 | **Executed: 1.054411931dB; H2/H3≥30.02dB, converged, MNA PASS, dominated** |
-| 6 | EXP-042 `selected_checkpoints_rft005.json` (EXP042-30m005) | 6 | 4 | 0.805148668 | Pending |
+| 6 | EXP-042 `selected_checkpoints_rft005.json` (EXP042-30m005) | 6 | 4 | 0.805148668 | **Executed: 1.233552323dB, H2/H3≥30.02, MNA PASS; locally converged but Pareto dominated** |
 
 Reference: `data/pareto_snapshots/rf_t005_rf_f003_20261017.json`. A numerical comparison of T005 and T007 is not a same-constraint improvement claim.
 
@@ -45,7 +45,7 @@ SLSQP coarse/refined stages reported success for both attempted starts; source g
 
 **Provenance correction:** The first numeric job ran after main EXP-050 reservation, but the required `manifest.json` was inadvertently omitted in the first PR head, causing an unrelated smoke audit to fail. The complete manifest and derived experiment index were then added as an explicit post-run provenance backfill; source execution commit and artifact hashes are retained. This is not falsely represented as a pre-run manifest. The audit must pass before the PR can be merged.
 
-**Unperformed:** Next one Pareto step, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
+**Unperformed:** None of the six prescribed topology points; further robustness and 4L re-optimization remain, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
 
 
 ## Local reproducibility
@@ -107,4 +107,25 @@ Only Cv0 and Cv1 are grounded and each receives permanently fixed 0.5pF/Q40; non
 | T007 two-shunt Cv compensation | 1.353438308 | 7.288567 | 7.931260 | FAIL |
 | **T007 SLSQP reoptimized** | **1.054411931** | **30.020000** | **30.020000** | **PASS** |
 
-4 starts x max180 local SLSQP: two converged, two nonconverged; selected start=1 converged coarse/refined. Four LQP02HV Q25, fixed Cf0/Cf2 GJM Q80, Cf1/Cp PCB Q40, with two independent fixed shunt parasitics (Cv0 and Cv1, 0.5pF/Q40 each). Bridge Cv2 has none. The 28×1001 frequency-mesh candidate passed H2/H3≥30dB; independent 9×9 coupled-L MNA passed 84 samples, maximum IL difference 8.455×10⁻¹³dB, power residual 1.301×10⁻¹⁷W, minimum L eig 2.63774nH. This locally converged design is nonetheless chip-area/IL Pareto-dominated by the area4⅓ 3L T007 candidate. Physical/Q(f)/SRF/EM/tolerance and continuous frequency extrema are not verified. Only step6 area6 remains unperformed.
+4 starts x max180 local SLSQP: two converged, two nonconverged; selected start=1 converged coarse/refined. Four LQP02HV Q25, fixed Cf0/Cf2 GJM Q80, Cf1/Cp PCB Q40, with two independent fixed shunt parasitics (Cv0 and Cv1, 0.5pF/Q40 each). Bridge Cv2 has none. The 28×1001 frequency-mesh candidate passed H2/H3≥30dB; independent 9×9 coupled-L MNA passed 84 samples, maximum IL difference 8.455×10⁻¹³dB, power residual 1.301×10⁻¹⁷W, minimum L eig 2.63774nH. This locally converged design is nonetheless chip-area/IL Pareto-dominated by the area4⅓ 3L T007 candidate. Physical/Q(f)/SRF/EM/tolerance and continuous frequency extrema are not verified. All six listed topology adaptations have been numerically performed.
+
+## Sixth step: area 6 EXP-042 4L, final RF-T007 adaptation (2026-10-19)
+
+Initial 4-start [Actions 39267630715](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39267630715): at least one strict H2/H3≥30dB numerical candidate was found, but its worst IL was **4.205431961dB**. Another candidate had worst IL **1.238320696dB**, H2=**29.989127447dB** and H3=30.012056550dB, so was **NOT RF-T007 compliant**. The near-miss was retained explicitly as a failure diagnostic with full vector, not a compliant candidate. Original raw JSON SHA256 `1450bee1ed5dff9a8a92c0022b5aaf9af45ddee7645bf0dcd39476c31d6d49cb`.
+
+Controlled extra 3-start [Actions 39268341205](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39268341205) reoptimized the near-miss with RF-T007 two grounded 0.5pF/Q40 fixed parasitics. **3/3 refinements converged**, best full finite-grid candidate: worst IL **1.233552323dB**, min H2 **30.020000dB**, min H3 **30.020000dB**; 28×1001 sample strict PASS. Frozen full 29-parameter vector: [best checkpoint](checkpoints/area6_rft007_best.json), [independent 9×9 coupled-L MNA](validation/area6_independent_mna.json), [initial near-miss record](validation/area6_initial_nearmiss_diagnostic.json). Refined JSON SHA256 `1e33f8b95b633e6c6dda27197f0028882e7b7566a2d8dc27b255ad6d50762711`; ZIP SHA256 `4b73374c26385b5be8067c6f87815ddd69b07caabbf9c63adcd9511482a46e20`. MNA (84 probe points) max IL difference 1.5632×10⁻¹³dB, power balance residual 5.2042×10⁻¹⁸W, L matrix min eig 1.98321nH. This is a converged local seed result, **not** a global minimax or continuous-band guarantee.
+
+## Consolidated Phase 2 RF-T007 local Pareto findings (six original RF-T005 topology checkpoints)
+
+| Historical area | L | RF-T005 saved worst IL dB | RF-T007 retuned worst IL dB | Strict H2/H3≥30dB finite-grid | Independent coupled-L MNA | Status within sampled RF-T007 six |
+|---:|---:|---:|---:|---|---|---|
+| **3** | 3L | 0.944268 | **0.938309** | PASS | PASS 84pt | **Non-dominated** |
+| **3⅔** | 3L | 0.895180 | **0.909729** | PASS | PASS 84pt | **Non-dominated** |
+| **4⅓** | 3L | 0.879245 | **0.891827** | PASS | PASS 84pt | **Non-dominated; minimum IL of six** |
+| 4⅔ | 4L | 0.819565 | 1.744673 | PASS | PASS 84pt | **Dominated**, selected SLSQP nonconverged |
+| 5⅓ | 4L | 0.811307 | 1.054412 | PASS | PASS 84pt | **Dominated**, selected SLSQP converged |
+| 6 | 4L | 0.805149 | 1.233552 | PASS | PASS 84pt | **Dominated**, near-miss refinement SLSQP converged |
+
+**Comparison rule:** Original RF-T005 numbers are archival results under a DIFFERENT trial and must not be used as direct improvements or as RF-T007-verified metrics. Only the RF-T007 IL numbers above form the sampled Pareto relationship. All six maintain their original chip-area formula and PCB component-count ceilings. All 3L topologies had exactly one grounded DTC with fixed parasitic; all EXP-042 4L topologies had two grounded DTCs. T007 adds no parasitic to any non-ground bridge DTC. Chip cost for unavoidable DTC shunt parasitic remains zero, but practical PCB/IC physical implementation overhead is NOT modeled.
+
+**Scope of completion:** Original six historical topology checkpoints were adapted and evaluated using RF-T007; 19 total local starts (12 converged/7 nonconverged), 28×1001 finite mesh, 84 point independent MNA per selected checkpoint. This completes the **specified sequential pilot** only; neither global minimax, continuous-frequency extrema, component-specific Q(f)/SRF, tolerance, simultaneous physical k, distributed PCB EM nor actual prototype measurements have been verified. Further four-L multistart/topology redesign could change the frontier. Phase 2 continues; Phase 3 is stopped pending owner approval.

@@ -365,7 +365,7 @@
       5.333333333333333,
       6
     ],
-    "completed_step": "5_of_6_EXP042_area5p333",
+    "completed_step": "6_of_6_EXP042_area6_refined",
     "baseline_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json",
     "fixed_shunt_parasitic_pf": 0.5,
     "fixed_shunt_parasitic_q": 40,
@@ -380,11 +380,13 @@
     "stage_3_to_6": "pending",
     "stage_4_to_6": "pending",
     "stage_5_to_6": "pending",
-    "stage_6": "pending"
+    "stage_6": "executed_after_three_extra_local_nearmiss_starts",
+    "completed_topology_count": 6,
+    "stage_5_and_6": "executed_with_additional_SLSQP_starts_as_documented"
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "partial",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
@@ -392,8 +394,8 @@
     "numerical": "passed",
     "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": "28 intervals x 1001 for each of 5 completed steps",
-    "independent_grid": "28 intervals x 3 explicit MNA samples for each of 5 completed steps"
+    "analysis_grid": "28 distinct bands x 1001 finite samples for six retained T007 variants",
+    "independent_grid": "28 bands x 3 points explicit 7x7 or 9x9 coupled-L MNA per retained variant"
   },
   "evidence": [
     {
@@ -406,11 +408,11 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-      "sha256": "51c929300a5ae92cacce3b6c220a7ec789e8e7f5b5894b9056032f23f07f4d61"
+      "sha256": "566e6c79d9ecc118e690802249c2ecc470b3c7402b7dd51d6970e624d3a3d27e"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "e781d70b7e40f9d21f503c18f44bcaac852b86d0824922e0d6138b384a6baec2"
+      "sha256": "46d6b5e613e7ffc9b434ab0e35f9353fd38f51ab1372e50120a7b4c63c2d25cb"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
@@ -463,6 +465,26 @@
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area5p333_independent_mna.json",
       "sha256": "e905596a97ed20f09233fb63f06b3c4f2a7d84fb950ecaac86a3f7a263efbc2d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_rft007.py",
+      "sha256": "e38105403285d78c01750bcd5d3fb1d9d58fd882504b74bd67e3dd861be42604"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_nearmiss_refine.py",
+      "sha256": "73be549fa4fce1e138b08a67b399014d508788c728251311518cdd6b3dedb6cf"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area6_rft007_best.json",
+      "sha256": "9341c27ae8d6eb1c6c2a4b69e485d7d409a26580c6bde78204e9eb5eeeb3769e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area6_independent_mna.json",
+      "sha256": "c3f7d54c699e3f041e0430ac2b72a5d1dd98ca09add47a5d5c93c4b300db6599"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area6_initial_nearmiss_diagnostic.json",
+      "sha256": "375593837417dc5538413e9399b99fce64a65bef277ba50b3cf985919eb51eb9"
     }
   ],
   "limitations": [
@@ -472,6 +494,9 @@
     "Constant-Q ideal component models and fixed port S2Ps are not actual PCB EM or product Q(f)/SRF measurements.",
     "Source Actions artifact may expire; curated best complete vector and original artifact SHA256 are permanently tracked in Git.",
     "New EXP-050+ phase2-git-only-v1 evidence inventory was added as audit-driven correction after first numerical run; the initial pre-run storage gate was not claimed as passed.",
-    "Fourth area4p667 selected SLSQP local candidate did NOT converge, although dense H2/H3>=30dB and independent MNA passed."
+    "Fourth area4p667 selected SLSQP local candidate did NOT converge, although dense H2/H3>=30dB and independent MNA passed.",
+    "All six archived T005 Pareto candidates have been locally adapted to T007; sampled frontier is not global. Area4p667 local result nonconverged and dominated.",
+    "Manifest code.execution_sha refers to first EXP-050 run; each later checkpoint and workflow retains its execution SHA and source provenance.",
+    "EXP-050 complete refers to planned numerical Phase2 pilot and verified Git evidence only; not a Phase3 or physical circuit qualification."
   ]
 }

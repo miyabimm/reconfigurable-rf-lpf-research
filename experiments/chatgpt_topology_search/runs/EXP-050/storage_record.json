@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-050",
   "phase": "Phase 2",
-  "stage": "running",
+  "stage": "complete",
   "selection": {
     "top_k": 1,
     "retain": [
@@ -43,6 +43,12 @@
       "selection_reason": "topology_diversity",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area5p333_rft007_best.json",
       "sha256": "b9596a28abb8be226dcf78ad408008f32bb5fa48c00140815fc8104e75d8ac6a"
+    },
+    {
+      "candidate_id": "EXP050-T007-A6-4L-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area6_rft007_best.json",
+      "sha256": "9341c27ae8d6eb1c6c2a4b69e485d7d409a26580c6bde78204e9eb5eeeb3769e"
     }
   ],
   "validation_overlays": [
@@ -75,6 +81,12 @@
       "status": "passed",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area5p333_independent_mna.json",
       "sha256": "e905596a97ed20f09233fb63f06b3c4f2a7d84fb950ecaac86a3f7a263efbc2d"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area6_independent_mna.json",
+      "sha256": "c3f7d54c699e3f041e0430ac2b72a5d1dd98ca09add47a5d5c93c4b300db6599"
     }
   ],
   "supporting_evidence": [
@@ -82,7 +94,7 @@
       "role": "method_note",
       "reason": "Phase 2 interpretation, topology, T005/T007 separation, execution state and physical limitations",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "e781d70b7e40f9d21f503c18f44bcaac852b86d0824922e0d6138b384a6baec2"
+      "sha256": "46d6b5e613e7ffc9b434ab0e35f9353fd38f51ab1372e50120a7b4c63c2d25cb"
     },
     {
       "role": "source_snapshot",
@@ -113,18 +125,38 @@
       "reason": "EXP-050 step5 4L RF-T007 GJM Cf0/Cf2 Q80, PCB Cf1/Cp Q40, two fixed DTC shunt C Q40, four-start minimax and 9x9 independent MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py",
       "sha256": "f1fedf3cd2dc3d187ac29a9132e0e462595611f0af446a80791e11b6c8146bca"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Final EXP-050 step6 area6 RF-T007 4L with three fixed GJM Q80, one PCB Q40, two fixed 0.5pF/Q40 DTC shunts and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_rft007.py",
+      "sha256": "e38105403285d78c01750bcd5d3fb1d9d58fd882504b74bd67e3dd861be42604"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Last-step near-miss seed from area6 initial 4-start SLSQP, with strict H2/H3>=30dB admission, separate RF-T007 0.5pF/Q40 shunt branches and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_nearmiss_refine.py",
+      "sha256": "73be549fa4fce1e138b08a67b399014d508788c728251311518cdd6b3dedb6cf"
+    },
+    {
+      "role": "representative_failure",
+      "reason": "Full area6 RF-T007 1.2383dB near-miss vector with H2 below 30dB; refinement achieved 1.23355dB compliant selected candidate",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area6_initial_nearmiss_diagnostic.json",
+      "sha256": "375593837417dc5538413e9399b99fce64a65bef277ba50b3cf985919eb51eb9"
     }
   ],
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-    "sha256": "51c929300a5ae92cacce3b6c220a7ec789e8e7f5b5894b9056032f23f07f4d61"
+    "sha256": "566e6c79d9ecc118e690802249c2ecc470b3c7402b7dd51d6970e624d3a3d27e"
   },
   "size_exception": null,
-  "git_readback": "pending_until_all_six_steps_completed_and_merged",
+  "git_readback": "passed",
   "limitations": [
     "EXP-050 original pre-run storage_record was omitted; created in PR after successful first numeric run and documented as audit-driven backfill.",
-    "This run remains in progress with one remaining distinct Pareto topology step not started.",
+    "This run remains in progress with no remaining original Pareto topology steps not started.",
     "At this stage the first three checkpoints, independent MNA overlay and method records exist in the branch; full experiment finalization has not occurred.",
-    "Actions artifact ZIP and raw JSON SHA256 are recorded in the curated checkpoint, preserving raw-to-curated provenance."
+    "Actions artifact ZIP and raw JSON SHA256 are recorded in the curated checkpoint, preserving raw-to-curated provenance.",
+    "Git source/evidence readback and manifest digest verification performed on PR branch before merge; numerical pilot complete, physical modeling and robust tolerance work outstanding.",
+    "Original 50KB curated-size estimate predated later code and verification overlays; actual size must pass Git-only policy soft threshold."
   ]
 }

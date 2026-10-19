@@ -1,28 +1,27 @@
 {
   "experiment_id": "EXP-050",
-  "stage": "running",
+  "stage": "completed_six_topology_adaptations_phase2",
   "phase": "Phase 2",
   "constraint_id": "RF-T007",
   "purpose": "Six RF-T005 Pareto topology adaptations in area-ascending order",
   "attempts": {
-    "planned": 16,
-    "attempted": 12,
-    "converged": 8,
-    "nonconverged": 4,
+    "planned": 19,
+    "attempted": 19,
+    "converged": 12,
+    "nonconverged": 7,
     "failed": 0,
-    "not_started": 4
+    "not_started": 0
   },
-  "selected_candidate_count": 5,
+  "selected_candidate_count": 6,
   "completed_steps": [
     "1_of_6_area3",
     "2_of_6_area3p667",
     "3_of_6_area4p333",
     "4_of_6_area4p667",
-    "5_of_6_area5p333"
+    "5_of_6_area5p333",
+    "6_of_6_area6_initial_and_nearmiss_refinement"
   ],
-  "steps_pending": [
-    "6_area6"
-  ],
+  "steps_pending": [],
   "best_by_completed_area": [
     {
       "chip_area": 3,
@@ -67,15 +66,29 @@
       "independent_MNA_84_probe_pass": true,
       "solver_converged": true,
       "pareto_dominated_by": "EXP050-T007-A4P333-3L-001"
+    },
+    {
+      "chip_area": 6,
+      "candidate_id": "EXP050-T007-A6-4L-001",
+      "worst_IL_db": 1.233552323466932,
+      "min_H2_db": 30.019999999999058,
+      "min_H3_db": 30.019999999999474,
+      "independent_MNA_84_probe_pass": true,
+      "solver_converged": true,
+      "pareto_dominated_by": "EXP050-T007-A4P333-3L-001",
+      "initial_strict_candidate_IL_db": 4.205431961005406,
+      "initial_noncompliant_nearmiss_IL_db": 1.238320696359824
     }
   ],
   "no_candidate_reason": null,
   "limitations": [
-    "1/6 topology step not started",
+    "All six originally archived RF-T005 Pareto topology points locally adapted; no extra topologies or global minimax proof",
     "Numerical finite-grid only",
     "No continuous extrema/Q(f)/SRF/EM/physical tolerance verification",
     "Initial EXP-050 manifest post-run backfill disclosed in manifest",
     "Fourth topology optimized candidate meets strict finite-grid 30dB and MNA, but its selected local SLSQP run did NOT converge; should not be called an optimized solution bound.",
-    "Area5p333 4-start local search: 2 converged, 2 nonconverged; selected T007 candidate 1.054412 dB is Pareto dominated by area4p333 3L. Not proof of topology limit."
+    "Area5p333 4-start local search: 2 converged, 2 nonconverged; selected T007 candidate 1.054412 dB is Pareto dominated by area4p333 3L. Not proof of topology limit.",
+    "Final area6 refined from a noncompliant near-miss seed: 3/3 refinement starts converged; selected 1.233552dB candidate passes H2/H3 strict finite grid and independent MNA.",
+    "RF-T007 nondominated among six locally found candidates: areas 3, 3+2/3, 4+1/3; larger-area 4L points dominated. Frontier is only a sampled/local finding."
   ]
 }

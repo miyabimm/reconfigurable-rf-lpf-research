@@ -1,0 +1,18 @@
+{
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A6-4L-001",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "source_actions_run_id": 39268341205,
+  "probe_points": 84,
+  "model": "9x9 independent coupled-inductor branch-current MNA with two separate 0.5pF/Q40 grounded DTC C branches",
+  "max_IL_difference_db": 1.5631940186722204e-13,
+  "max_power_balance_residual_W": 5.204170427930421e-18,
+  "min_L_matrix_eigenvalue_nH": 1.9832121012225845,
+  "pass": true,
+  "limitations": [
+    "Only 3 probes per each of 28 frequency intervals for independent MNA",
+    "Finite-grid pass is not actual EM or component measurement validation"
+  ]
+}
