@@ -41,6 +41,12 @@
       "reason": "Specialized area3 Phase2 RF-T007 numerical optimizer and separately assembled 7x7 branch-current MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
       "sha256": "4a321963d2b8cd1a742c1bde2e1c71095996b3594bafd992129d893e41d7301c"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Step2 dedicated RF-T007 area3p667 GJM Q80 plus separate Q40 shunt parasitic optimizer and independent 7x7 MNA source",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3p667_rft007.py",
+      "sha256": "fbd11b8388676fc4844409a14aad2f85b499ec92e30e50a48e9ec3bfe23d8c9a"
     }
   ],
   "summary": {
