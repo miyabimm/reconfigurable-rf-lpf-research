@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-055",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Preserve up to three H2/H3>=30dB strict independent 9x9 MNA-verified area5p333 four-L vectors across different DTC graphs; preserve a representative non-compliant or nonconverged trial with explicit status.",
+    "estimated_curated_bytes": 85000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Preregistered RF-T007 scope, inherited historical F003 checkpoint, control and limitations",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/README.md",
+      "sha256": "476885d2e9607c9776515f3c8fa43ee52c2a9af526c6f4bf390f1212ba0eba4d"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Complete EXP-055 4L two/three-DTC circuit equations and independent branch-current MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/adapt_f003_4l.py",
+      "sha256": "f9859d25ea77e5e30060eb8553a9abaec31310fd4117313c745728428380cc99"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "No optimizer or MNA has yet executed for EXP-055; this is a source-only preflight.",
+    "Raw frequency traces remain temporary until selected and independently checked."
+  ]
+}
