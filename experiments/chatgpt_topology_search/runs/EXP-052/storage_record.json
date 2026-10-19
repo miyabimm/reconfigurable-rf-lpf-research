@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-052",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "30db_boundary"
+    ],
+    "rule": "Keep at most three numerically strict RF-T007 H2/H3>=30dB 4L topology candidates selected by lowest worst IL and topology novelty; each must have complete 29-param fixed vector, all 6 Cv settings, explicit Cpar node, and independent 84-probe 9x9 coupled L MNA.",
+    "estimated_curated_bytes": 85000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "source_snapshot",
+      "reason": "Systematic RF-T007 4L DTC electrical-edge topology explorer and independent 9x9 nodal/MNA crosscheck",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_connections.py",
+      "sha256": "9f4c278a6f516d404d50fe79c772dfbc172ea3fa35f6dddf1afd68a9d27dbf53"
+    },
+    {
+      "role": "method_note",
+      "reason": "Pre-registered nine distinct 4L DTC electrical connections, explicit user scope and mandatory RF-T007 conditions",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
+      "sha256": "d0d87b2041b79ba9e66b3e569b04d52c7cd28fd8ad89d094e2cbd630c5740a4b"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "Only source and study plan pre-registered: no EXP-052 numerical result yet.",
+    "GitHub Actions will generate numerical outputs; retain best evidence after validation without changing EXP-051 baseline."
+  ]
+}
