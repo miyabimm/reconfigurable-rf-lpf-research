@@ -1,0 +1,23 @@
+{
+  "experiment_id": "EXP-051",
+  "candidate_id": "EXP051-T007-4L-PLAIN-001",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "matrix_size": "9x9",
+  "node_count": 5,
+  "inductor_branch_count": 4,
+  "one_separate_0p5pf_Q40_ground_parasitic": true,
+  "source_actions_run_id": 39273237407,
+  "source_artifact_id": 12196760628,
+  "probes": 84,
+  "max_IL_difference_db": 3.339550858072471e-13,
+  "max_power_balance_residual_W": 6.938893903907228e-18,
+  "min_component_dissipation_W": 0,
+  "min_L_eigenvalue_nH": 1.688872164200656,
+  "pass": true,
+  "limitations": [
+    "Independent sampled 84 points; not continuous-band guarantee",
+    "Does not test SRF, Q(f), EM, DTC tolerances or physical mutual k realization"
+  ]
+}
