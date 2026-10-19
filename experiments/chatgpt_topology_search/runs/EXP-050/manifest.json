@@ -437,6 +437,10 @@
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area4p333_independent_mna.json",
       "sha256": "91fd282426b6fdd98ba0b58eca132cf730ad58baaec962afe2fb7200377cb6f6"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area4p667_rft007.py",
+      "sha256": "de4370da55cda3a7e7b9f3f7c5c92d0a82f56e0ee99588322d82354410831827"
     }
   ],
   "limitations": [
