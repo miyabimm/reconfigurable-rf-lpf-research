@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A3-3L-001",
+  "constraint_id": "RF-T007",
+  "effective_constraint_sha256": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+  "method": "independent_7x7_explicit_branch_current_MNA",
+  "model": "Independent matrix assembly with Cp and 0.5pF/Q40 parasitic as distinct grounded C branches",
+  "frequency_probe_points": 84,
+  "points_per_csv_segment": 3,
+  "segments": 28,
+  "max_IL_error_db": 1.4210854715202004e-13,
+  "max_power_balance_residual_W": 7.806255641895632e-18,
+  "min_component_dissipation_W": 5.325303892199475e-8,
+  "min_coupled_L_eigenvalue_nH": 3.24210869438487,
+  "passed": true,
+  "source_github_actions_run_id": 39256882711,
+  "source_artifact_id": 12186859455,
+  "limitations": [
+    "84 sample probes are not 28x1001 full independent MNA points",
+    "Numerical constant-Q fixed-S2P circuit, not physical/EM/tolerance validation"
+  ]
+}
