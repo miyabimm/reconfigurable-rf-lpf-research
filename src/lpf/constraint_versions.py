@@ -78,6 +78,9 @@ def validate_registry(*, root=ROOT):
                 if "study_additional_stopband" in payload:
                     _validate_trial_additional_stopband(
                         payload["study_additional_stopband"], base_payload)
+                if "study_shunt_dtc_parasitic" in payload:
+                    _validate_trial_shunt_dtc_parasitic(
+                        payload["study_shunt_dtc_parasitic"], resolved)
                 layout = payload.get("study_variable_c_layout")
                 spec = resolved["components"]["IC_VARIABLE_C"]
                 if not isinstance(layout, dict):
@@ -141,6 +144,46 @@ def _validate_trial_additional_stopband(spec, base):
             or spec["reference_planes"] != parasitics["system_evaluation"]["metrics_reference_planes"]):
         raise ValueError("Trial additional stopband exceeds fixed external model range")
 
+
+
+def _validate_trial_shunt_dtc_parasitic(spec, resolved):
+    """Validate explicit nominal per-ground-shunt DTC fixed branch rules.
+
+    This metadata is trial-specific; do not mutate the formal RF-F003 snapshot.
+    """
+    keys = {"applies_to", "fixed_capacitance_pf", "q", "q_model",
+            "variable_capacitance_pf_range", "present_at_variable_C_zero",
+            "not_applicable_to_non_ground_variable_C", "frequency_invariant",
+            "setting_invariant", "pcb_pattern_C_count_increment",
+            "additional_chip_area_units", "tolerance_status"}
+    if not isinstance(spec, dict) or set(spec) != keys:
+        raise ValueError("Invalid trial shunt-DTC parasitic schema")
+    cap = spec["fixed_capacitance_pf"]
+    q = spec["q"]
+    if (type(cap) not in (float, int) or not math.isfinite(cap) or cap <= 0
+            or type(q) not in (float, int) or not math.isfinite(q) or q <= 0
+            or q != resolved["components"]["PCB_PATTERN_C"]["q"]):
+        raise ValueError("Invalid fixed shunt-DTC C or PCB-C Q")
+    var = resolved["components"]["IC_VARIABLE_C"]
+    if (var["max_branches_principle"] != 3 or var["q"] != 35
+            or spec["variable_capacitance_pf_range"] != [
+                var["min_total_variable_pf_per_branch"],
+                var["max_total_variable_pf_per_branch"]]):
+        raise ValueError("Trial must retain RF-T005 variable C limits")
+    expected = {
+        "applies_to": "each_shunt_to_ground_IC_VARIABLE_C_branch",
+        "q_model": "omega_C_over_1_over_Q_minus_j",
+        "present_at_variable_C_zero": True,
+        "not_applicable_to_non_ground_variable_C": True,
+        "frequency_invariant": True,
+        "setting_invariant": True,
+        "pcb_pattern_C_count_increment": 0,
+        "additional_chip_area_units": 0,
+        "tolerance_status": "nominal_only_not_evaluated",
+    }
+    if any(type(spec[key]) is not type(value) or spec[key] != value
+           for key, value in expected.items()):
+        raise ValueError("Invalid scope or accounting of shunt-DTC parasitic")
 
 def _same_kind(existing, replacement):
     """Require type-compatible trial values, including nested list members."""
@@ -207,6 +250,8 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     result["trial_variable_c_layout"] = copy.deepcopy(trial["study_variable_c_layout"])
     if "study_additional_stopband" in trial:
         result["trial_additional_stopband"] = copy.deepcopy(trial["study_additional_stopband"])
+    if "study_shunt_dtc_parasitic" in trial:
+        result["trial_shunt_dtc_parasitic"] = copy.deepcopy(trial["study_shunt_dtc_parasitic"])
     return result
 
 
