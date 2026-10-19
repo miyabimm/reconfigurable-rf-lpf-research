@@ -1,0 +1,52 @@
+name: EXP-053 RF-T007 four-L inductor graph search
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-053/**'
+      - 'tests/test_exp053_fourl_graphs.py'
+      - '.github/workflows/exp053_rft007_4l_inductor_graphs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exp053-fourl-inductor-graphs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check EXP-053 main ledger reservation and git-only evidence audit
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-053 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+      - name: Validate 12 connected unique L graphs and source
+        run: uv run --frozen python -m unittest discover -s tests -p 'test_exp053_fourl_graphs.py' -v
+      - name: Explore 4L inductor electrical graphs under RF-T007
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-053/sweep_4l_inductor_graphs.py \
+            --starts 2 --maxiter 160 --coarse 7 --fine 17 --dense 1001 \
+            --mna 3 --target 30.005 --out results/EXP-053/inductor_graph_sweep.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp053-rft007-fourl-inductor-graph
+          path: results/EXP-053/inductor_graph_sweep.json
+          if-no-files-found: warn
+          retention-days: 30
