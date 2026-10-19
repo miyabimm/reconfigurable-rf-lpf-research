@@ -1,0 +1,63 @@
+{
+  "experiment_id": "EXP-054",
+  "candidate_id": "EXP054-T007-4L-CF1-CENTER-CV1-MID-001",
+  "variant": "cf1_center_output__cv1_input_mid",
+  "method": "independent 9x9 coupled-L branch-current KCL/KVL",
+  "status": "passed",
+  "source_run_id": 39291751571,
+  "source_artifact_id": 12206715575,
+  "explicit_cap_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      4,
+      -1
+    ],
+    [
+      4,
+      -1
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      4,
+      -1
+    ]
+  ],
+  "L_edges": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "probes": 84,
+  "max_IL_difference_db": 1.9895196601282805e-13,
+  "max_power_balance_residual_W": 6.071532165918825e-18,
+  "min_dissipative_term_W": 3.2587862202004523e-22,
+  "min_L_matrix_eigenvalue_nH": 0.5510076783265125,
+  "PASS": true
+}
