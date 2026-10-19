@@ -19,19 +19,19 @@
       "candidate_id": "EXP053-T007-4L-SPLIT-INPUT-SHUNT-CENTER-001",
       "selection_reason": "best",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/split_input_shunt_center_best.json",
-      "sha256": "aae82f0b3e75bc9e6717a9809a1d5a0d9172b3963971d9afdffc88e42a0093fb"
+      "sha256": "000000000000000000000000000000008bca7de196ed11e40c5f20474c9b9d8f"
     },
     {
       "candidate_id": "EXP053-T007-4L-REFERENCE-001",
       "selection_reason": "30db_boundary",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/reference_best.json",
-      "sha256": "041a384890235fab90620cf4054732991843ce5c2f3e5a61da194aa268df5c9c"
+      "sha256": "000000000000000000000000000000008078ce22011f5aefc78e334b333a251a"
     },
     {
       "candidate_id": "EXP053-T007-4L-SHUNT-MID-TAP-001",
       "selection_reason": "topology_diversity",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/shunt_mid_tap_after_output_best.json",
-      "sha256": "8eca2434f7f12d4a3d6f9af4b14498cdb8267c63bf07017e2a5b74cfe5c07e45"
+      "sha256": "0000000000000000000000000000000071bfb39a5d8defd64aae557ec284ff8e"
     }
   ],
   "validation_overlays": [
@@ -76,7 +76,7 @@
   ],
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-053/run_summary.json",
-    "sha256": "fb1e2fbfdb77effd555e6b2b1f5d8a7cfd6c12450b9249baa05dcd3acf33d3e9"
+    "sha256": "00000000000000000000000000000000cff6f4bd84ff34ff499ca00ee4775230"
   },
   "size_exception": null,
   "git_readback": "passed",
