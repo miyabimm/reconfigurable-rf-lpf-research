@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-051",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 2,
     "retain": [
@@ -13,28 +13,57 @@
     "rule": "Retain per-variant strict RF-T007 H2/H3≥30dB lowest-worst-IL complete 29-parameter 4L design with all 6 Cv settings and independently verified 9x9 coupled-L MNA; keep any failed topology only as marked diagnostic.",
     "estimated_curated_bytes": 50000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP051-T007-4L-PLAIN-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/checkpoints/one_shunt_4l_plain_best.json",
+      "sha256": "7f0358b9187fa4d665e48b2cc7234c8ef51a9043696f3f820bcc4ed9fcd67848"
+    },
+    {
+      "candidate_id": "EXP051-T007-4L-TRAP-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/checkpoints/one_shunt_4l_trap_best.json",
+      "sha256": "062d2e792925124d173ab4e552cc9fc00fbf40341709c5c5544e9cfbdabaf0a2"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/validation/plain_independent_9x9_mna.json",
+      "sha256": "05153d72a98fa07be562a1189a95cf85db00f5adae917a3e53fccf8b96d2cfb8"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/validation/trap_independent_9x9_mna.json",
+      "sha256": "ffe59f5e6800cca266c12a78f38346194945070df734ffbf45620faf49f3959e"
+    }
+  ],
   "supporting_evidence": [
     {
       "role": "method_note",
-      "reason": "Explicit Phase2 RF-T007 4L one-shunt topology, split-L exact source, optional PCB-C trap and limitations",
+      "reason": "Executed Phase2 RF-T007 one-shunt 4L topology, split-L exact baseline, trap placement and numerical constraints",
       "path": "experiments/chatgpt_topology_search/runs/EXP-051/README.md",
-      "sha256": "a8ae6ae8a65de8edc95cc47cf735de0bbeaa582633314d8ce2a3bf743aabff4c"
+      "sha256": "93a871a087dcd4954467b21d5769a0b9bd33129cf38951f3f675f41b759eabe6"
     },
     {
       "role": "source_snapshot",
-      "reason": "Executable 4L split-shunt/trap optimizer and independent 9x9 coupled-L branch-current MNA",
+      "reason": "Actual EXP-051 4L solver and explicit independent 9x9 MNA including corrected 4L eigenmetric",
       "path": "experiments/chatgpt_topology_search/runs/EXP-051/optimize_one_shunt_4l.py",
       "sha256": "c4395c9f830e2f1526a96e93838201f0c66be11e4661d599a149d5e560a9c7ec"
     }
   ],
-  "summary": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-051/run_summary.json",
+    "sha256": "74b7d2f84c559cab28f1c16a2c5a416ecc1fd8a376406cca5e80c34fcc358e1b"
+  },
   "size_exception": null,
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
-    "Pre-run evidence inventory only: no candidate, no independent numerical result.",
-    "Storage will be finalized only after CI run, curated full vector(s), independent MNA, and Git SHA readback.",
-    "Original T007 3L baseline verified in run prior to any 4L optimization."
+    "EXP-051 original raw JSON sha21e5c4533bf9f0709cbe065b7a185f23c5dfb030cf714239759a13c410e5365d from Actions run39273237407; selected two 29-element candidate vectors and MNA details in Git.",
+    "Physical Q(f), SRF, mutual coupling realizability, EM, tolerance, continuous extrema and Phase3 unverified.",
+    "Git-only source/hash readback on branch after curation; recheck final PR CI before merge."
   ]
 }
