@@ -1,0 +1,18 @@
+{
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A5P333-4L-001",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "source_actions_run_id": 39266499539,
+  "probe_points": 84,
+  "model": "independent explicit 9x9 coupled L MNA; two physically independent fixed 0.5pF/Q40 parasitic-to-GND branches",
+  "max_IL_difference_db": 8.455458555545192e-13,
+  "max_power_balance_residual_W": 1.3010426069826053e-17,
+  "min_L_matrix_eigenvalue_nH": 2.637739254084709,
+  "pass": true,
+  "limitations": [
+    "28 intervals x 3 samples only for independent MNA",
+    "Does not validate global optimum or RF hardware"
+  ]
+}
