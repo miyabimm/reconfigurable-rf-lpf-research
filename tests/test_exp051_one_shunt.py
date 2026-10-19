@@ -8,6 +8,7 @@ import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
 DIR=ROOT/"experiments/chatgpt_topology_search/runs/EXP-051"
+sys.path.insert(0,str(ROOT/"src"))
 sys.path.insert(0,str(DIR))
 from lpf.constraint_versions import load_constraint
 import optimize_one_shunt_4l as e
