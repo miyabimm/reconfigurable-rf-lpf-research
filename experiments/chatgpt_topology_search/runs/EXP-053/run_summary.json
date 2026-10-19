@@ -16,8 +16,8 @@
     "attempted": 24,
     "converged": 19,
     "nonconverged": 5,
-    "failed_runtime": 0,
-    "not_started": 0
+    "not_started": 0,
+    "failed": 0
   },
   "graph_count": 12,
   "graph_count_with_strict_H2H3_30dB_candidate": 12,
@@ -216,5 +216,6 @@
     "Five starts were nonconverged, including some strict grid pass points. No claim of global best or continuous-frequency guarantee.",
     "No additional H2/H3 margin optimization or physical coupling feasibility studies by owner instruction.",
     "No SRF, Q(f), PCB EM, tolerances, Phase3."
-  ]
+  ],
+  "selected_candidate_count": 3
 }
