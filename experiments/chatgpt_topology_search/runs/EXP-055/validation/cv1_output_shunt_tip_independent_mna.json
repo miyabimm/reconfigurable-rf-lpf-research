@@ -1,0 +1,13 @@
+{
+  "experiment_id": "EXP-055",
+  "candidate_id": "EXP055-T007-4L-CV1-OUTPUT-SHUNT-TIP-001",
+  "source_actions_run": 39341678211,
+  "source_raw_json_sha256": "2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64",
+  "method": "Independent explicitly assembled 9×9 coupled-inductor KCL/KVL MNA, all input/output frozen model S2Ps",
+  "probes": 84,
+  "max_IL_difference_db": 3.552713678800501e-13,
+  "max_power_balance_W": 9.540979117872439e-18,
+  "minimum_passive_W": 1.800960129049682e-21,
+  "min_L_eigenvalue_nH": 2.768670206237692,
+  "pass": true
+}
