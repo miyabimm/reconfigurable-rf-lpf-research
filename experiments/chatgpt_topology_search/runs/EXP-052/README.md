@@ -35,3 +35,25 @@ The nine variants keep all passive branch loss Q values independently and do not
 **Baseline:** EXP-051 4L area5⅓ worst IL0.888992894804dB; old EXP-050 best 3L area4⅓ worst IL0.891827010963dB. Improved 4L designs must be compared at equal RF-T007 conditions, not against historical RF-T005 results.
 
 **Unperformed at writing:** EXP-052 optimizer CI, numerical grid check and independent MNA. Physical coupling realizability and additional H2/H3 margin improvement are intentionally not studied in this experiment. Phase 3 is not authorized.
+
+
+## Second topology sweep: moving physical fixed C connections (pre-run)
+
+The first 9-topology DTC-edge sweep was executed in Actions run [39276693843](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39276693843). All nine had at least one mandatory-30dB compliant 4L point and independent MNA PASS; the best **alternative** was moving grounded Cv0 and Cpar to shunt-mid (IL0.889513621dB), while the unchanged DTC electrical graph reoptimized to IL0.888790901dB under an internal numerical 30.005dB guard (compared with EXP-051 IL0.888992895dB under 30.02dB internal guard). No novel DTC electrical-connection variant beat the unchanged graph at the *same* guard. This does not justify a general no-better-topology claim.
+
+A second controlled set uses 4L/one-grounded-Cv0 baseline DTC wiring but **moves exactly one of the three fixed capacitor connections**, preserving two GJM01/Q80 and one PCB-pattern/Q40 and chip area5⅓. Ten graphs:
+
+| Variant | GJM Cf0 (Q80) | PCB Cf1 (Q40) | GJM Cp (Q80) |
+|---|---|---|---|
+| reference | (0,1) | (1,2) | (4,GND) |
+| cf0_input_output | (0,2) | (1,2) | (4,GND) |
+| cf0_input_tip | (0,4) | (1,2) | (4,GND) |
+| cf0_shunt_bottom | (3,4) | (1,2) | (4,GND) |
+| cf0_output_tip | (2,4) | (1,2) | (4,GND) |
+| cf1_input_output | (0,1) | (0,2) | (4,GND) |
+| cf1_shunt_bottom | (0,1) | (3,4) | (4,GND) |
+| cp_shunt_mid | (0,1) | (1,2) | (3,GND) |
+| cp_junction_ground | (0,1) | (1,2) | (1,GND) |
+| cp_output_ground | (0,1) | (1,2) | (2,GND) |
+
+**Pre-run status for second set:** systematic fixed-edge optimizer has been committed but not yet executed. It uses the *same* minimum H2/H3≥30dB and 30.005dB numerical guard, two SLSQP starts per variant, 28×1001 dense checks for selected strict compliant points, and independent 84-point 9×9 MNA. No improvement of harmonic rejection margin or physical coupling studies are included.
