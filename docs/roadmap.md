@@ -1,3 +1,15 @@
+## 2026-10-20：EXP-055（RF-F003由来4LをRF-T007へ再合成・新局所IL最良）
+
+**Phase 2／RF-T007実行済み。** EXP-047のRF-F003・4L・面積5⅓・2可変C保存ベクトルを出発点とし、RF-T007の接地Cv0(3,GND)へOFFでも常在する**別固定0.5pF/Q40**を加え、接地DTC数は1を維持したまま第3非GND可変Cの配置5案と2DTC基準型の計6トポロジーを探索。mainでEXP-055を事前予約、出典完全ベクトルと新スクリプトをPR #135へ追加。初回CIは新規予約行の日時形式ミスにより数値計算前に停止、日時形式修正後の同一Actions run [39341678211](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39341678211) 再実行が**SUCCESS**。
+
+固定入出力原S2P、50Ω源、60−j40Ω負荷、6設定、28区間×1001点の外部端子IL/UL H2/H3≥30dB、4×LQP02HV/Q25、2×GJM/Q80、2×PCB-C/Q40、3可変C/Q35、隣接signed |k|≤0.10を維持。**18局所SLSQP試行（収束13／未収束5／失敗0）**。6構成すべての選別した必須30dB適合候補が84点の独立9×9結合L枝電流MNA・受動電力収支PASS。旧F003保存ベクトルは寄生なしでIL0.843652332dBを再現したが、T007寄生を無調整で加えるとIL1.160642294dB・H2/H3 13.74/18.48dBで不適合。F003実績をT007適合結果として扱わない。
+
+**新観測最良（収束済み）：4L／面積5⅓／第3非GND Cv1(0,3)／worst IL0.817365590dB、最小H2 30.005000dB、最小H3 30.004810dB。** 以前のEXP-053の同面積4L・IL0.875794664dBより**0.058429074dB改善**。独立84点9×9 MNA最大IL差4.55e−13dB、電力差7.81e−18W。別案Cv1(2,4)はIL0.849084dB、Cv1(0,1)はIL0.857269dBだが**選択SLSQP未収束**（有限格子/MNA適合とは区別）。2DTC基準はIL0.881136dB。
+
+根拠：[EXP-055 README](../experiments/chatgpt_topology_search/runs/EXP-055/README.md)、[6構成結果・収束台帳](../experiments/chatgpt_topology_search/runs/EXP-055/run_summary.json)、[新最良29値・6設定DTC完全ベクトル](../experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json)、[独立MNA](../experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_input_tip_independent_mna.json)、[RF-T007観測局所パレート](../data/pareto_snapshots/rf_t007_exp055_4l_20261020.json)。実行ソースSHA e0b824c1、原Actions ZIP SHA256 995b86ad76a1530bb36820d89b51e5e9fefd8559b64c39c681934b3905058564、JSON SHA256 2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64。
+
+**留保：** 最小H2/H3マージン約0.00481dBしかなく、正式IL≤0.30dB・公称35dB未達。隣接k2箇所が±0.10上限、PCB-Cが0.02/0.2pF境界。連続周波数極値・物理的同時k実現・Q(f)/SRF・EM・公差・実測は未実施（今回のオーナー指示では物理kと余剰減衰最適化はスコープ外）。局所有限格子の結果であり大域最適の証明ではない。**正式RF-F003不変更、Phase2継続、Phase3は明示承認まで停止。**
+
 ## 2026-10-19：EXP-054（RF-T007／4L固定Cと非接地DTCの複合トポロジー探索）
 
 EXP-053で確認した4L・面積5⅓・最悪IL0.875794664dBの`split_input_shunt_center` L接続を保持し、GJM Q80×2、PCB固定C Q40×1、可変C Q35×3の接続変更を組み合わせた19新案と基準1案の計20構成を探索した。mainでEXP-054を数値実行前に予約・pre-run Git-only保存台帳を設定。RF-T007の対GNDシャントDTCはCv0(4,GND)の1枝とし、OFFでも存在する**別固定0.5pF/Q40**を常に保持。正式RF-F003不変更、Phase2のみ。
