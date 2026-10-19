@@ -19,4 +19,25 @@ Physical single-row chip order: **L0–LsA–LsB–L1**. Adjacent mutuals are on
 
 Fixed and variable values reoptimized together, 3 SLSQP starts/variant, coarse 7 points, fine 17 points, dense **28×1001** finite-band evaluation, target H2/H3≥30.02dB internally, hard H2/H3≥30dB. Each selected compliant variant checked by independently assembled **9×9 branch-current coupled-inductor MNA** (28×3 probes), non-negative element losses and power balance. Full fixed input/output port S2P and 50Ω source/60−j40Ω load. S2P sha, resolved constraint fingerprint and EXP id are maintained in the manifest. Ctrap in plain case is **absent**, not a physically zero-valued PCB component.
 
-**Pre-run status:** source and audit metadata prepared; no EXP-051 RF numerical result yet. Old EXP-050 results are reference only, not EXP-051 outputs. Model remains constant-Q; component-specific Q(f), SRF, EM, DTC parasitic variation, multi-inductor realizability and continuous-frequency extrema are all unverified. Avoid global-optimum/Phase3 claims.
+## Executed numerical results (2026-10-19)
+
+[Actions run 39273237407](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39273237407) **SUCCESS**, including 2 split-control unit tests, two 3-start SLSQP searches and independent coupled-inductor MNA for both selected outputs. Original full raw JSON artifact `exp051-rft007-one-shunt-4l`, ID `12196760628`, raw JSON SHA256 `21e5c4533bf9f0709cbe065b7a185f23c5dfb030cf714239759a13c410e5365d`, artifact ZIP SHA256 `e31395f600334826ac9b1e1d0933bbdc184507f4c065fb5c4bdbe21caa409fbb`, source execution commit `c50cd56ca222b5b5dd25dd835beff437a8e6977d`.
+
+**Exact model split seed:** the baseline three-inductor area4⅓ RF-T007 original worst IL0.891827010963dB reproduced by area5⅓ four-inductor plain model to a maximum pointwise difference of `6.39488462184e−14dB` across 28×1001 samples (no extra PCB trap). This does not improve chip-area Pareto because it adds a chip L. It supplies a fully feasible starting point.
+
+| 4L candidate | Chip area | PCB-C pieces | Shunt fixed parasitics | Worst IL dB | Min H2 dB | Min H3 dB | SLSQP (3 starts) | Independent MNA |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| **plain (best)** | **5⅓** | 1 | 1×0.5pF/Q40 | **0.888992895** | 30.020000 | 30.020000 | 3/3 converged | 9×9, 84 samples PASS |
+| trap PCB (3,4) | 5⅓ | 2 | 1×0.5pF/Q40 | 0.889175564 | 30.020000 | 30.020000 | 3/3 converged | 9×9, 84 samples PASS |
+
+Full 29-element vectors plus all 6 programmed Cv triples:
+[plain checkpoint](checkpoints/one_shunt_4l_plain_best.json) and [trap checkpoint](checkpoints/one_shunt_4l_trap_best.json). Independent explicit [plain MNA](validation/plain_independent_9x9_mna.json) and [trap MNA](validation/trap_independent_9x9_mna.json).
+
+- Plain: max independent-vs-fast IL discrepancy `3.340e−13dB`, max power-balance residual `6.939e−18W`, actual 4×4 L matrix min eigenvalue **1.688872nH**.
+- Trap: max discrepancy `1.634e−13dB`, power residual `6.072e−18W`, min eigenvalue **1.585781nH**. Optimized trap C converges to its lower bound **0.020pF**. This placement gave no IL advantage over the plain circuit in the tested local starts.
+- The plain 4L at area5⅓ improved over EXP-050's best **historical two-shunt 4L at the same area** from IL1.054412 to IL0.888993, a 0.165419dB reduction. Compared with EXP-050's area4⅓ 3L (IL0.891827), the plain new 4L improves IL by **0.002834dB**, but at chip cost +1. This is a marginal nominal trade-off rather than a tolerance-robust dominance claim.
+- The constrained coupling `k(LsA,LsB)=+0.10` is at the approved magnitude limit; simultaneous physical magnetic coupling realizability, SRF and Q(f) remain unverified.
+- Required harmonic attenuation is achieved on a finite 28×1001 mesh, with just ~0.02dB margin. Global extrema, source S2P physical measurements, DTC fixed-C tolerance and PCB EM were not performed. Phase2 trial only; formal RF-F003 and Phase3 unchanged.
+
+The **prior first-run artifact** (run 39272748894) reported an incorrect `L_matrix_min_eig_nH` because a 3L inherited summary function was invoked; optimization IL/H2/H3 were unaffected. After adding an explicit 4L eigensolver override and regression test, run 39273237407 fully succeeded with correct values above. Retain this diagnostic history to avoid treating the prior invalid eigenvalue as evidence.
+
