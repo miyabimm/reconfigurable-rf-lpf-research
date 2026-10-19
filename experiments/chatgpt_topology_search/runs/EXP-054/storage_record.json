@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-054",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "30db_boundary"
+    ],
+    "rule": "Keep at most three top strict H2/H3>=30dB independently verified 4L electrical topology candidates, each full 29-parameter vector and all 6 DTC Cv triples, with independent 84-probe 9x9 MNA.",
+    "estimated_curated_bytes": 90000
+  },
+  "checkpoints": [
+    {
+      "candidate_id": "EXP054-T007-4L-REFERENCE-001",
+      "selection_reason": "30db_boundary",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/reference_best.json",
+      "sha256": "ad6ab60fc5ddf58ade367c5221b218c16c729d0e82e39b1ede47e9babaf2a2e8"
+    },
+    {
+      "candidate_id": "EXP054-T007-4L-CF1-CENTER-CV1-MID-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/cf1_center_output__cv1_input_mid_best.json",
+      "sha256": "6ef9379efdfa2724a611e90db0f9946ce05141b3853c844380f806f591a4d38a"
+    },
+    {
+      "candidate_id": "EXP054-T007-4L-CF1-MIDOUT-CV1-MID-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/checkpoints/cf1_mid_output__cv1_input_mid_best.json",
+      "sha256": "76169341c2c4fc3ad21195e4214ed15fe7a94da54aa242d65fd813630576d19b"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/reference_independent_mna.json",
+      "sha256": "0add1336dc7d0520da98a8ad4a01ad73b9e4f15a641242ea09803c66ca8d9447"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/cf1_center_output__cv1_input_mid_independent_mna.json",
+      "sha256": "eb2ccd41e95538aab764b0e3e5cac5742a701e3968caa2e57679c1780a40a881"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/validation/cf1_mid_output__cv1_input_mid_independent_mna.json",
+      "sha256": "9582d7871f91b87046abe15fdf31b5831e234fc436bbb2bdadb915a5406310f3"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Executed EXP-054 20 4L combined Q80/Q40 C and Q35 DTC graph variants, no new best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/README.md",
+      "sha256": "118ff70a346cdc39bae8ba1d2ce45e80209971727d6ece30e8073831420c3349"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-054 solver with RF-T007 Q40 always-on ground shunt parasite and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-054/sweep_4l_combined_c_dtc.py",
+      "sha256": "25dbe9e01ac2ca4f09751879acd4bfaa41189ee5665fa3cddb33cb609581d22f"
+    }
+  ],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-054/run_summary.json",
+    "sha256": "a69b3ed41946aca76d3b58eba2476405dc7fd4841554291f73c34713791cc0f0"
+  },
+  "size_exception": null,
+  "git_readback": "passed",
+  "limitations": [
+    "Curation saves three complete 29-parameter vectors and MNA; full 40 starts original Actions raw artifact SHA256 28cfe12add525cacdf674ac94e75a7f1637089239db119722ef5606ce28f1853 retained by GitHub Actions per retention period.",
+    "Observed local 20-graph sweep did not improve EXP-053; do not infer global optimality.",
+    "Scope excludes extra H2/H3 margin and physical mutual-k realizability assessment."
+  ]
+}
