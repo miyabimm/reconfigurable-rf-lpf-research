@@ -1,0 +1,68 @@
+{
+  "experiment_id": "EXP-051",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "stage": "completed_first_two_variants",
+  "attempts": {
+    "planned": 6,
+    "attempted": 6,
+    "converged": 6,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 2,
+  "no_candidate_reason": null,
+  "exact_split_source": {
+    "reference_experiment": "EXP-050",
+    "reference_candidate": "EXP050-T007-A4P333-3L-001",
+    "reference_area": 4.333333333333333,
+    "reference_worst_IL_db": 0.8918270109628332,
+    "split_4L_area": 5.333333333333333,
+    "split_4L_no_trap_worst_IL_db": 0.8918270109628348,
+    "max_IL_mismatch_db": 6.394884621840902e-14
+  },
+  "variants": [
+    {
+      "id": "EXP051-T007-4L-PLAIN-001",
+      "name": "plain",
+      "area": 5.333333333333333,
+      "shunt_fixed_parasitic_count": 1,
+      "PCB_C_count": 1,
+      "worst_IL_db": 0.8889928948043828,
+      "min_H2_db": 30.019999999982325,
+      "min_H3_db": 30.019999999990077,
+      "strict_finite_30db": true,
+      "independent_9x9_MNA_84_pass": true,
+      "solver_converged": true
+    },
+    {
+      "id": "EXP051-T007-4L-TRAP-001",
+      "name": "trap",
+      "area": 5.333333333333333,
+      "shunt_fixed_parasitic_count": 1,
+      "PCB_C_count": 2,
+      "worst_IL_db": 0.8891755641225783,
+      "min_H2_db": 30.019999999951427,
+      "min_H3_db": 30.01999999993979,
+      "strict_finite_30db": true,
+      "independent_9x9_MNA_84_pass": true,
+      "solver_converged": true
+    }
+  ],
+  "best_within_experiment": "EXP051-T007-4L-PLAIN-001",
+  "comparison": {
+    "historical_EXP050_4L_area5p333_IL_db": 1.0544119306327224,
+    "improvement_to_new_4L_plain_db": 0.1654190358283396,
+    "historical_EXP050_3L_area4p333_IL_db": 0.8918270109628332,
+    "new_4L_plain_IL_advantage_db": 0.002834116158450417,
+    "sampled_pareto_note": "At area5⅓ plain 4L improves worst IL by approximately 0.002834dB compared with the best smaller-area 3L point; effect is very small and not validated with tolerances."
+  },
+  "limitations": [
+    "All six starts converged under constant-Q local SLSQP; no proof of global optimum.",
+    "RF-T007 H2/H3≥30dB on only 28x1001 discrete points; nominal margin ~0.02dB.",
+    "Independent 84-point MNA verifies circuit equations but not continuous-band extrema, SRF, component Q(f), EM, variations.",
+    "Two adjacent chip coupling coefficients near +0.10; full physical simultaneous realization not validated.",
+    "T007 results are trial-only; RF-F003 formal remains unchanged; Phase3 not authorized."
+  ]
+}
