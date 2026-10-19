@@ -27,7 +27,13 @@
       "role": "method_note",
       "reason": "Pre-registered nine distinct 4L DTC electrical connections, explicit user scope and mandatory RF-T007 conditions",
       "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
-      "sha256": "d0d87b2041b79ba9e66b3e569b04d52c7cd28fd8ad89d094e2cbd630c5740a4b"
+      "sha256": "c5439144b8a778c5b3d3b6b1b5ab91eb560979b30189a3cfab4cd12337e59252"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Secondary ten-topology 4L RF-T007 fixed GJM/PCB capacitor relocation systematic optimizer and independent explicit 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_fixed_c.py",
+      "sha256": "6f56e14fd3eab014ad3a695c2e0f63185a7f12cf9dedbfcbd2c9920fa43b033d"
     }
   ],
   "summary": null,
@@ -35,6 +41,7 @@
   "git_readback": "not_run",
   "limitations": [
     "Only source and study plan pre-registered: no EXP-052 numerical result yet.",
-    "GitHub Actions will generate numerical outputs; retain best evidence after validation without changing EXP-051 baseline."
+    "GitHub Actions will generate numerical outputs; retain best evidence after validation without changing EXP-051 baseline.",
+    "Second ten fixed-C topology sweep was registered before numerical execution; first nine-DTC sweep outputs retain their original source execution SHA."
   ]
 }
