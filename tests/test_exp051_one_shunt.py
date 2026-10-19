@@ -40,6 +40,8 @@ class TestExp051OneShunt(unittest.TestCase):
         m=four.summary(new)
         self.assertGreater(m["min_H2_db"],30)
         self.assertGreater(m["min_H3_db"],30)
+        actual_eigen=float(np.linalg.eigvalsh(e.circuit_matrix(new)[1])[0])
+        self.assertAlmostEqual(m["L_matrix_min_eig_nH"],actual_eigen,places=12)
 
 if __name__=="__main__":
     unittest.main()
