@@ -261,5 +261,6 @@
     "Nominal constant-Q 28x1001, no global or continuous-frequency proof.",
     "Owner excluded extra harmonic rejection margin study and physical magnetic coupling feasibility.",
     "Phase 2 RF-T007 trial only; formal RF-F003 unchanged."
-  ]
+  ],
+  "selected_candidate_count": 3
 }
