@@ -95,6 +95,12 @@
       "reason": "Step4 4L RF-T007 independent two-shunt 0.5pF/Q40 numeric optimizer and independent explicit 9x9 coupled-L MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area4p667_rft007.py",
       "sha256": "de4370da55cda3a7e7b9f3f7c5c92d0a82f56e0ee99588322d82354410831827"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-050 step5 4L RF-T007 GJM Cf0/Cf2 Q80, PCB Cf1/Cp Q40, two fixed DTC shunt C Q40, four-start minimax and 9x9 independent MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py",
+      "sha256": "f1fedf3cd2dc3d187ac29a9132e0e462595611f0af446a80791e11b6c8146bca"
     }
   ],
   "summary": {
