@@ -1,0 +1,53 @@
+name: EXP-052 RF-T007 4L fixed C connectivity sweep
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-052/**'
+      - 'tests/test_exp052_4l_fixed_c.py'
+      - '.github/workflows/exp052_rft007_4l_fixed_c.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exp052-4l-fixed-C:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check main reservation and Git-only provenance audit
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-052 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+      - name: Validate ten fixed-cap topology variants
+        run: uv run --frozen python -m unittest discover -s tests -p 'test_exp052_4l_fixed_c.py' -v
+      - name: Search fixed GJM and PCB branch positions at RF-T007
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_fixed_c.py \
+            --starts 2 --maxiter 160 --coarse 7 --fine 17 --dense 1001 \
+            --mna 3 --target 30.005 \
+            --out results/EXP-052/fixed_C_edge_sweep.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp052-rft007-fixed-c-connectivity
+          path: results/EXP-052/fixed_C_edge_sweep.json
+          if-no-files-found: warn
+          retention-days: 30
