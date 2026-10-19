@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-051",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 2,
+    "retain": [
+      "best",
+      "30db_boundary"
+    ],
+    "rule": "Retain per-variant strict RF-T007 H2/H3≥30dB lowest-worst-IL complete 29-parameter 4L design with all 6 Cv settings and independently verified 9x9 coupled-L MNA; keep any failed topology only as marked diagnostic.",
+    "estimated_curated_bytes": 50000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Explicit Phase2 RF-T007 4L one-shunt topology, split-L exact source, optional PCB-C trap and limitations",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/README.md",
+      "sha256": "a8ae6ae8a65de8edc95cc47cf735de0bbeaa582633314d8ce2a3bf743aabff4c"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Executable 4L split-shunt/trap optimizer and independent 9x9 coupled-L branch-current MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-051/optimize_one_shunt_4l.py",
+      "sha256": "4d8e24894f19c731888911c21fd0e3d32a3def0100550f944f136bf8a0143545"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "Pre-run evidence inventory only: no candidate, no independent numerical result.",
+    "Storage will be finalized only after CI run, curated full vector(s), independent MNA, and Git SHA readback.",
+    "Original T007 3L baseline verified in run prior to any 4L optimization."
+  ]
+}
