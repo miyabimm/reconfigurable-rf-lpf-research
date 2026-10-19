@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T007_EXP055_F003_DERIVED_4L_20261020",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "formal_RF_F003_unchanged": true,
+  "previous_snapshot": "data/pareto_snapshots/rf_t007_exp053_4l_20261019.json",
+  "new_experiment": "EXP-055",
+  "new_observed_best_from": "EXP-047_F003_4L_area5p333_two_DTC",
+  "method": "Derived index, not new numerical execution beyond EXP-055 source Actions run39341678211",
+  "scope": "Finite-grid H2/H3>=30dB eligible locally searched candidates; objective chip area vs worst externally loaded six-setting UL/DL IL, non-dominated only within retained observed points; not global Pareto proof",
+  "corrected_from_prior": "EXP-054 surveyed combined cap/DTC links with no improvement vs EXP-053; EXP-055 best supersedes EXP-053 4L observed best at same area",
+  "source_run": 39341678211,
+  "source_raw_artifact_sha256": "2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64",
+  "chip_area_formula": "N_LQP02 + (2/3)*N_GJM01, PCB-C chip cost0 but physical area unverified",
+  "nondominated_observed_candidates": [
+    {
+      "candidate_id": "EXP050-T007-A3-3L-001",
+      "chip_area_units": 3,
+      "L_count": 3,
+      "worst_IL_db": 0.9383091975941134,
+      "checkpoint": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area3_rft007_best.json",
+      "status": "prior independently verified"
+    },
+    {
+      "candidate_id": "EXP050-T007-A3P667-3L-001",
+      "chip_area_units": 3.6666666666666665,
+      "L_count": 3,
+      "worst_IL_db": 0.9097289666440556,
+      "checkpoint": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area3p667_rft007_best.json",
+      "status": "prior independently verified"
+    },
+    {
+      "candidate_id": "EXP050-T007-A4P333-3L-001",
+      "chip_area_units": 4.333333333333333,
+      "L_count": 3,
+      "worst_IL_db": 0.8918270109628332,
+      "checkpoint": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area4p333_rft007_best.json",
+      "status": "prior independently verified"
+    },
+    {
+      "candidate_id": "EXP055-T007-4L-CV1-INPUT-TIP-001",
+      "chip_area_units": 5.333333333333333,
+      "L_count": 4,
+      "worst_IL_db": 0.8173655897607699,
+      "min_H2_db": 30.004999998908573,
+      "min_H3_db": 30.004810049409663,
+      "checkpoint": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json",
+      "independent_MNA": "passed 84 probes",
+      "selected_SLSQP": "converged",
+      "status": "new observed best among saved candidate sets"
+    }
+  ],
+  "same_area_comparison": {
+    "previous_4L_EX053_worst_IL_db": 0.8757946642355757,
+    "new_EX055_4L_worst_IL_db": 0.8173655897607699,
+    "improvement_db": 0.05842907447480583
+  },
+  "limitations": [
+    "Six RF settings and 28x1001 finite mesh, independent 84-point 9x9 MNA; continuous maxima not proven",
+    "H2/H3 only ~0.00481dB margin for new 4L; 35dB nominal FAIL and 0.3dB IL nominal FAIL",
+    "EXP055 three alternative 4L topology candidates are same-area dominated, but remain archived for topology diversity",
+    "Models use constant Q and model-origin fixed S2P, not physical SRF/Q(f)/EM/tolerances/hardware",
+    "Phase2 only. RF-F003 formal unchanged. Phase3 not approved."
+  ]
+}
