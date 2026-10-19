@@ -27,7 +27,7 @@
       "role": "method_note",
       "reason": "EXP-053 Phase 2 numerical and user-specified research scope",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/README.md",
-      "sha256": "edc06993358a5e2d0b7367d5a73b2b58d2ea34f8c091c5bc72ccec4ec04233a6"
+      "sha256": "dabc5466a8eb167b2f8545100410f0a30e06a645d28cbbd1e135e868c791d3a6"
     },
     {
       "role": "source_snapshot",
