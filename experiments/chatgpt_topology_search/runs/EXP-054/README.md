@@ -30,4 +30,24 @@ No added fixed C or variable C branch is allowed; GJM and PCB limits retained. T
 - Explicitly assemble and independently solve a **9×9 coupled-inductor branch-current MNA** at 84 points for each accepted topology, verify IL agreement, nonnegative dissipated power and 5mW available-source power balance.
 - Record local optimizer convergence or nonconvergence for each start; a compliant but nonconverged solution must not be marked converged. Curate complete 29-parameter vectors (L/C/k plus 6×3 DTC settings) and independent-MNA results into Git only after execution.
 
-**Status:** pre-run source/preflight only; no EXP-054 numerical results yet. Constant-Q, finite grid, no universal optimality or EM/SRF/Q(f)/tolerance analysis, no Phase3.
+**Original pre-run status (superseded by completed results below):** pre-run source/preflight only; no EXP-054 numerical results at the time of preregistration. Constant-Q, finite grid, no universal optimality or EM/SRF/Q(f)/tolerance analysis, no Phase3.
+
+## Executed results — 2026-10-19 (Phase 2 RF-T007)
+
+Source [GitHub Actions run 39291751571](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39291751571) **SUCCESS** including main EXP-054 number gate, Git-only source audit, 2 topology/source regression unit tests, 20×2 SLSQP and 28×1001 finite-band dense numerical checks. **40 attempts: 33 converged, 7 nonconverged, none execution-failed.** All 20 variants yielded at least one strictly H2/H3≥30dB compliant finite-grid candidate. Every selected graph passed explicit **independent 9×9 branch-current coupled-inductor MNA at 84 points**, plus passive power balance. Original Actions JSON SHA256 `28cfe12add525cacdf674ac94e75a7f1637089239db119722ef5606ce28f1853`, ZIP SHA256 `e75075a77dff9f2dae8ba36252840aa2a457d18180b53326c27e9a0f86c663a0`, actual code execution SHA `e4eedad22c5f57a912b5b7d95b7f9b62d8054979` (not to be confused with final documentation commit).
+
+**Result: no improvement** over EXP-053 best. The unchanged reference on the 30.005dB internal guard reoptimized to 0.875794664233dB vs previous source checkpoint 0.875794664236dB, a negligible numerical difference. The best *novel* joint fixed-C/DTC topology is 0.884150780247dB, worse by 0.008356116dB.
+
+| 4L graph | Worst IL (dB) | Chip area | Selected solver | 30dB strict | independent 84-probe MNA |
+|---|---:|---:|---|---|---|
+| EXP-053 reference, no new edge | **0.875794664** | 5⅓ | converged | PASS | PASS |
+| PCB Cf1 (1,2) + Cv1 (0,3) | 0.884150780 | 5⅓ | converged | PASS | PASS |
+| PCB Cf1 (3,2) + Cv1 (0,3) | 0.884194125 | 5⅓ | converged | PASS | PASS |
+| GJM Cf0 (3,1) + Cv1 (0,3) | 0.886469558 | 5⅓ | converged | PASS | PASS |
+| Other combined changes (16 variants) | 0.889969–6.641186 | 5⅓ | mixed, 7/40 starts overall nonconverged | PASS | PASS |
+
+All 20 measured best local points and per-topology nonconverged counts are in [run_summary.json](run_summary.json). Complete 29-component L/C/k and 6-setting Cv vectors preserved for [reference](checkpoints/reference_best.json), [best novel variant](checkpoints/cf1_center_output__cv1_input_mid_best.json) and [second novel variant](checkpoints/cf1_mid_output__cv1_input_mid_best.json), each with separately assembled 9×9 independent MNA overlays under [validation/](validation/). Full 40-start raw vectors are preserved in the original Actions artifact for its 30-day retention period, not all copied to Git. **A 30dB eligible but nonconverged point remains explicitly nonconverged** (e.g. `cf0_mid_center__cp_mid_ground__cv2_mid_output` both starts).
+
+**Interpretation:** Combining isolated fixed-C and non-ground DTC electrical edge changes around EXP-053's split-input-shunt-center L graph did not reduce worst nominal IL in the explored 19 alternatives. The observed best stays **EXP-053 area5⅓ IL0.875794664dB**, not a global optimum. H2/H3 *minimum* was enforced; no extra margin optimization or physical mutual-k realizability work was undertaken. Formal RF-F003 and Phase3 remain unchanged.
+
+**Next Phase2 direction within requested scope:** explore a different L electrical graph and combined C/DTC connections together, or broader simultaneous graph rewrites. Do not infer impossibility from these 20 local variants.
