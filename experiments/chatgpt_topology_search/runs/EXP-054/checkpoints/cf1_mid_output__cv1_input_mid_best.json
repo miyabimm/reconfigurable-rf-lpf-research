@@ -170,5 +170,190 @@
     "Finite 28x1001 model only, no continuous extremum/global optimum",
     "No additional H2/H3 margin optimization or physical k feasibility study per owner direction",
     "Nominal Q constant, physical SRF/EM/tolerance not studied"
-  ]
+  ],
+  "components": [
+    {
+      "name": "L0",
+      "kind": "LQP02HV",
+      "nodes": [
+        0,
+        3
+      ],
+      "L_nH": 2.019557917940395,
+      "Q": 25
+    },
+    {
+      "name": "L1",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 7.311122117714478,
+      "Q": 25
+    },
+    {
+      "name": "LsA",
+      "kind": "LQP02HV",
+      "nodes": [
+        3,
+        1
+      ],
+      "L_nH": 0.4,
+      "Q": 25
+    },
+    {
+      "name": "LsB",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 3.820584711048278,
+      "Q": 25
+    },
+    {
+      "name": "Cf0",
+      "kind": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 3.382516375279382,
+      "Q": 80
+    },
+    {
+      "name": "Cf1",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        2
+      ],
+      "C_pF": 0.1488790812842065,
+      "Q": 40
+    },
+    {
+      "name": "Cp",
+      "kind": "GJM01",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.7767599388366184,
+      "Q": 80
+    },
+    {
+      "name": "Cv0",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv1",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv2",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv0_fixed_Cpar",
+      "kind": "DTC_SHUNT_PARASITIC_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.5,
+      "Q": 40,
+      "always_present": true
+    }
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "LsA"
+      ],
+      "k": 0.09999999999989322,
+      "physical_neighbor": true
+    },
+    {
+      "pair": [
+        "LsA",
+        "LsB"
+      ],
+      "k": -0.05775065611645414,
+      "physical_neighbor": true
+    },
+    {
+      "pair": [
+        "LsB",
+        "L1"
+      ],
+      "k": -0.006714664239979867,
+      "physical_neighbor": true
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "LsA",
+    "LsB",
+    "L1"
+  ],
+  "fixed_values": {
+    "L_nH": [
+      2.019557917940395,
+      7.311122117714478,
+      0.4,
+      3.820584711048278
+    ],
+    "fixed_C_pF": [
+      3.382516375279382,
+      0.1488790812842065,
+      0.7767599388366184
+    ],
+    "fixed_C_Q": [
+      80,
+      40,
+      80
+    ],
+    "GJM01_count": 2,
+    "PCB_C_count": 1,
+    "DTC_count": 3,
+    "parasitic_fixed_C_pF": 0.5,
+    "parasitic_Q": 40,
+    "L_Q": 25,
+    "L_series": "LQP02HV",
+    "DTC_Q": 35,
+    "k_adjacent": [
+      0.09999999999989322,
+      -0.05775065611645414,
+      -0.006714664239979867
+    ]
+  }
 }
