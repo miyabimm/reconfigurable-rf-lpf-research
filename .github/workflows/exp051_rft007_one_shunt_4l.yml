@@ -1,0 +1,53 @@
+name: EXP-051 RF-T007 one-shunt 4L redesign
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-051/**'
+      - 'tests/test_exp051_one_shunt.py'
+      - '.github/workflows/exp051_rft007_one_shunt_4l.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  one-shunt-fourL:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Validate main reservation, manifest, and pre-run storage gate
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-051 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+      - name: Check exact 3L to 4L split equivalence
+        run: uv run --frozen python -m unittest discover -s tests -p 'test_exp051_one_shunt.py' -v
+      - name: Optimize one-shunt 4L plain and resonant trap
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-051/optimize_one_shunt_4l.py \
+            --starts 3 --maxiter 150 --coarse 7 --fine 17 \
+            --dense 1001 --mna 3 --target 30.02 \
+            --out results/EXP-051/one_shunt_4L.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp051-rft007-one-shunt-4l
+          path: results/EXP-051/one_shunt_4L.json
+          if-no-files-found: warn
+          retention-days: 30
