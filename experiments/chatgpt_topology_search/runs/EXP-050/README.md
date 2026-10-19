@@ -12,7 +12,7 @@
 | 2 | EXP-045 `checkpoints/t3l_extra_pcb_out_0p2_prelim.json` | 3⅔ | 3 | 0.895180009 | **Executed: 0.909728967dB, H2/H3≥30.02dB, independent MNA PASS** |
 | 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | **Executed: 0.891827011dB, H2/H3≥30.02dB; MNA PASS** |
 | 4 | EXP-042 `checkpoints/pcb_both.json` | 4⅔ | 4 | 0.819564515 | **Executed: 1.744672799dB, H2/H3 ≥30dB; MNA PASS; SLSQP nonconverged / dominated** |
-| 5 | EXP-042 `checkpoints/pcb_cf1.json` | 5⅓ | 4 | 0.811306586 | Pending |
+| 5 | EXP-042 `checkpoints/pcb_cf1.json` | 5⅓ | 4 | 0.811306586 | **Executed: 1.054411931dB; H2/H3≥30.02dB, converged, MNA PASS, dominated** |
 | 6 | EXP-042 `selected_checkpoints_rft005.json` (EXP042-30m005) | 6 | 4 | 0.805148668 | Pending |
 
 Reference: `data/pareto_snapshots/rf_t005_rf_f003_20261017.json`. A numerical comparison of T005 and T007 is not a same-constraint improvement claim.
@@ -45,7 +45,7 @@ SLSQP coarse/refined stages reported success for both attempted starts; source g
 
 **Provenance correction:** The first numeric job ran after main EXP-050 reservation, but the required `manifest.json` was inadvertently omitted in the first PR head, causing an unrelated smoke audit to fail. The complete manifest and derived experiment index were then added as an explicit post-run provenance backfill; source execution commit and artifact hashes are retained. This is not falsely represented as a pre-run manifest. The audit must pass before the PR can be merged.
 
-**Unperformed:** Next two Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
+**Unperformed:** Next one Pareto step, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
 
 
 ## Local reproducibility
@@ -94,4 +94,17 @@ Area unchanged: 3 LQP02HV (Q25), 2 GJM Cf0/Cp (Q80), 1 PCB Cf1 (Q40), 3 DTC (Q35
 | T007 heuristic both-shunt-C compensation | 1.336290dB | 7.025834dB | 7.977956dB | FAIL |
 | **T007 first local search candidate** | **1.744673dB** | **30.005880dB** | **30.014461dB** | PASS |
 
-Only Cv0 and Cv1 are grounded and each receives permanently fixed 0.5pF/Q40; non-ground bridge Cv2 receives no such parasitic. Four LQP02HV Q25, one GJM Cf0 Q80, three PCB-C Q40 remain unchanged in count/area. Important solver distinction: **selected first-start SLSQP was nonconverged (coarse/fine iteration caps hit)**, although its frozen output meets H2/H3 30dB across 28×1001 finite samples. An alternate start did not improve IL. Independent explicit 9×9 MNA verified 84 frequencies, max IL difference 2.274×10⁻¹³ dB, power residual 7.806×10⁻¹⁸W and minimum L-matrix eigenvalue 3.61448nH. This is a provisional screened candidate, not proof of optimum or a robust design; it is Pareto-dominated in area/IL by the T007 area4⅓ 3L candidate. Further multi-start and/or topology changes may improve it. Steps 5/6 remain pending, Phase 2 only.
+Only Cv0 and Cv1 are grounded and each receives permanently fixed 0.5pF/Q40; non-ground bridge Cv2 receives no such parasitic. Four LQP02HV Q25, one GJM Cf0 Q80, three PCB-C Q40 remain unchanged in count/area. Important solver distinction: **selected first-start SLSQP was nonconverged (coarse/fine iteration caps hit)**, although its frozen output meets H2/H3 30dB across 28×1001 finite samples. An alternate start did not improve IL. Independent explicit 9×9 MNA verified 84 frequencies, max IL difference 2.274×10⁻¹³ dB, power residual 7.806×10⁻¹⁸W and minimum L-matrix eigenvalue 3.61448nH. This is a provisional screened candidate, not proof of optimum or a robust design; it is Pareto-dominated in area/IL by the T007 area4⅓ 3L candidate. Further multi-start and/or topology changes may improve it. Step 6 remains pending, Phase 2 only.
+
+## Fifth step: area 5⅓, EXP-042 4L 2 GJM / 2 PCB (2026-10-19)
+
+[GitHub Actions 39266499539](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39266499539) SUCCESS. Raw JSON SHA256 `6684a22a0a246c1224c8f058200f9b59b7522b48026cf95f1cd8550e46026f3d`; artifact ZIP SHA256 `bc84206ba90dec2d5f15780213b877b2c6cb501f7a5c41128cc8c729b35d426e`. Complete candidate [checkpoint](checkpoints/area5p333_rft007_best.json); [independent MNA](validation/area5p333_independent_mna.json).
+
+| State | Worst IL dB | Minimum H2 dB | Minimum H3 dB | Strict finite 30dB |
+|---|---:|---:|---:|---|
+| Historical T005 saved | 0.811306586 | 30.020000 | 30.020000 | T005 PASS |
+| T007 unchanged source vector | 1.920216749 | 7.900110 | 7.065674 | FAIL |
+| T007 two-shunt Cv compensation | 1.353438308 | 7.288567 | 7.931260 | FAIL |
+| **T007 SLSQP reoptimized** | **1.054411931** | **30.020000** | **30.020000** | **PASS** |
+
+4 starts x max180 local SLSQP: two converged, two nonconverged; selected start=1 converged coarse/refined. Four LQP02HV Q25, fixed Cf0/Cf2 GJM Q80, Cf1/Cp PCB Q40, with two independent fixed shunt parasitics (Cv0 and Cv1, 0.5pF/Q40 each). Bridge Cv2 has none. The 28×1001 frequency-mesh candidate passed H2/H3≥30dB; independent 9×9 coupled-L MNA passed 84 samples, maximum IL difference 8.455×10⁻¹³dB, power residual 1.301×10⁻¹⁷W, minimum L eig 2.63774nH. This locally converged design is nonetheless chip-area/IL Pareto-dominated by the area4⅓ 3L T007 candidate. Physical/Q(f)/SRF/EM/tolerance and continuous frequency extrema are not verified. Only step6 area6 remains unperformed.
