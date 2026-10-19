@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-056",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain best numerically H2/H3>=30dB and independently MNA-verified from both refinement graphs, with explicit SLSQP status and full 29-element vector + all six DTC states; preserve one failed/nonconverged representative if relevant",
+    "estimated_curated_bytes": 55000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "EXP055 160/80 iteration limit diagnosis and EXP056 500/280 targeted warmstart plan",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/README.md",
+      "sha256": "cdf1e0938699f0101aba7d34b581f89a99d84efc1f6a70261d09b6ad6a8bb172"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Actual numerical SLSQP increased iteration script and independent 9x9 MNA reference",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/refine_nonconverged.py",
+      "sha256": "e3f90fb2a5101976ec3a02fd7893759527a3d2b29a72d19c76610a9bd0f3ffd3"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "No new EXP056 numerical findings until workflow executes",
+    "Source EXP055 archived evidence stays immutable"
+  ]
+}
