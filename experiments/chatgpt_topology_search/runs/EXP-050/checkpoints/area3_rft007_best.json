@@ -168,5 +168,207 @@
     "Finite-frequency-grid best found, not continuous-frequency or global optimum.",
     "Additional shunt Q40 parasitic ideal constant-Q model; real tolerance/EM/SRF not verified.",
     "Only first 3L area3 step completed; remaining 5 Pareto steps unexecuted."
-  ]
+  ],
+  "candidate_id": "EXP050-T007-A3-3L-001",
+  "components": [
+    {
+      "type": "LQP02HV",
+      "name": "L0",
+      "endpoints": [
+        0,
+        1
+      ],
+      "inductance_nH": 3.315472606228032,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "LQP02HV",
+      "name": "L1",
+      "endpoints": [
+        1,
+        2
+      ],
+      "inductance_nH": 7.7415761759770945,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "LQP02HV",
+      "name": "Ls",
+      "endpoints": [
+        1,
+        3
+      ],
+      "inductance_nH": 4.620958222049609,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cf0",
+      "endpoints": [
+        0,
+        1
+      ],
+      "capacitance_pf": 0.19999999999988813,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cf1",
+      "endpoints": [
+        1,
+        2
+      ],
+      "capacitance_pf": 0.19999999999982693,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cp",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "capacitance_pf": 0.19999999999957607,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv0",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv1",
+      "endpoints": [
+        0,
+        1
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv2",
+      "endpoints": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "DTC_SHUNT_PARASITIC_C",
+      "name": "Cv0_to_GND_parasitic",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "capacitance_pf": 0.5,
+      "Q": 40,
+      "chip_area": 0,
+      "setting_invariant": true
+    }
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "Ls"
+      ],
+      "k": 0.07978935713408028,
+      "physical_neighbors": true
+    },
+    {
+      "pair": [
+        "Ls",
+        "L1"
+      ],
+      "k": -0.07879291907441001,
+      "physical_neighbors": true
+    },
+    {
+      "pair": [
+        "L0",
+        "L1"
+      ],
+      "k": 0,
+      "physical_neighbors": false
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "Ls",
+    "L1"
+  ],
+  "fixed_values": {
+    "LQP02HV_nH": [
+      3.315472606228032,
+      7.7415761759770945,
+      4.620958222049609
+    ],
+    "PCB_C_pf": [
+      0.19999999999988813,
+      0.19999999999982693,
+      0.19999999999957607
+    ],
+    "inductor_k_adjacent": [
+      0.07978935713408028,
+      -0.07879291907441001
+    ],
+    "shunt_parasitic_pf": 0.5,
+    "shunt_parasitic_Q": 40,
+    "capacitor_variable_Q": 35
+  },
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.9586787839909534,
+      2.935766042025851,
+      1.2949228026768753
+    ],
+    "B12": [
+      0.9637207971585973,
+      2.616212778046084,
+      0.9613522011128308
+    ],
+    "B28": [
+      0.8001993202055675,
+      3,
+      0.9111661302192607
+    ],
+    "B13+B14": [
+      0.7363846519685032,
+      2.4295498063991676,
+      0.7263528120795031
+    ],
+    "B26": [
+      0.6708662668497453,
+      1.804849790981294,
+      0.497361512183625
+    ],
+    "B8": [
+      0.5177670120756978,
+      1.5358353875207889,
+      0.2538367354982044
+    ]
+  }
 }
