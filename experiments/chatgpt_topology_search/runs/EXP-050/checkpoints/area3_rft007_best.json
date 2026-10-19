@@ -1,0 +1,374 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-050",
+  "constraint_id": "RF-T007",
+  "effective_constraint_sha256": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+  "phase": "Phase 2",
+  "step": "1_of_6",
+  "type": "finite_grid_local_SLSQP_best_found_numerically_verified",
+  "original_experiment": "EXP-043",
+  "original_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json",
+  "original_condition": "RF-T005",
+  "parameters": "L0,L1,Ls,Cf0,Cf1,Cp,k(L0-Ls),k(Ls-L1),then 6*(Cv0,Cv1,Cv2) for B71/B12/B28/B13+B14/B26/B8",
+  "best_vector": [
+    3.315472606228032,
+    7.7415761759770945,
+    4.620958222049609,
+    0.19999999999988813,
+    0.19999999999982693,
+    0.19999999999957607,
+    0.07978935713408028,
+    -0.07879291907441001,
+    0.9586787839909534,
+    2.935766042025851,
+    1.2949228026768753,
+    0.9637207971585973,
+    2.616212778046084,
+    0.9613522011128308,
+    0.8001993202055675,
+    3,
+    0.9111661302192607,
+    0.7363846519685032,
+    2.4295498063991676,
+    0.7263528120795031,
+    0.6708662668497453,
+    1.804849790981294,
+    0.497361512183625,
+    0.5177670120756978,
+    1.5358353875207889,
+    0.2538367354982044
+  ],
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "fixed_capacitor_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_L_order": [
+      "L0",
+      "Ls",
+      "L1"
+    ],
+    "Q_L": 25,
+    "Q_PCB_C": 40,
+    "Q_DTC_C": 35,
+    "Q_fixed_parasitic": 40,
+    "parasitic_branches": [
+      {
+        "parallel_with": "Cv0",
+        "node": 3,
+        "ground": -1,
+        "capacitance_pf": 0.5
+      }
+    ],
+    "non_ground_DTC_with_no_parasitic": [
+      "Cv1",
+      "Cv2"
+    ],
+    "chip_area_units": 3,
+    "PCB_C_count": 3,
+    "GJM01_count": 0
+  },
+  "t005_saved": {
+    "worst_IL_db": 0.9442683633443218,
+    "min_H2_db": 30.019999999989203,
+    "min_H3_db": 30.0199230206908
+  },
+  "t007_unmodified_old_vector": {
+    "worst_IL_db": 1.1607485793447476,
+    "min_H2_db": 22.435890357218042,
+    "min_H3_db": 21.298500273320574,
+    "strict_H2H3_pass": false
+  },
+  "t007_precompensated_seed": {
+    "worst_IL_db": 0.9416542116047689,
+    "min_H2_db": 30.07313405999706,
+    "min_H3_db": 30.02173175071837,
+    "strict_H2H3_pass": true
+  },
+  "t007_selected": {
+    "worst_IL_db": 0.9383091975941134,
+    "min_H2_db": 30.019999999827085,
+    "min_H3_db": 30.01996879600245,
+    "worst_IL_at": {
+      "case": "B8",
+      "frequency_mhz": 960
+    },
+    "min_H2_at": {
+      "case": "B8",
+      "frequency_mhz": 1830
+    },
+    "min_H3_at": {
+      "case": "B8",
+      "frequency_mhz": 2693.34
+    },
+    "mandatory_H2H3_30dB_pass": true,
+    "analysis_segments": 28,
+    "dense_points_per_segment": 1001,
+    "SLSQP_coarse_success": true,
+    "SLSQP_refined_success": true,
+    "independent_7x7_MNA": {
+      "points": 84,
+      "max_IL_disagreement_db": 1.4210854715202004e-13,
+      "max_power_balance_residual_W": 7.806255641895632e-18,
+      "min_partial_dissipation_W": 5.325303892199475e-8,
+      "min_coupled_L_eigenvalue_nH": 3.24210869438487,
+      "PASS": true
+    }
+  },
+  "source": {
+    "github_actions_run_id": 39256882711,
+    "actions_artifact_id": 12186859455,
+    "artifact_name": "exp050-rft007-area3-run",
+    "artifact_zip_sha256": "698c128206d67f9fe7707d810933687b4d644f653592287b0337b021bb2081eb",
+    "artifact_json_sha256": "51b93ca5e130f3d4aa45fe4dbca93a659b953cfa4dc1e89bf7a821195909df3a",
+    "execution_git_sha": "6c1033853a4282ea2996a89ae13a32191e0381ce",
+    "python_script": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
+    "environment": "GitHub Actions Ubuntu 24.04 / Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1"
+  },
+  "limitations": [
+    "Saved T005 numerics and new T007 numerics are different policy classes.",
+    "Finite-frequency-grid best found, not continuous-frequency or global optimum.",
+    "Additional shunt Q40 parasitic ideal constant-Q model; real tolerance/EM/SRF not verified.",
+    "Only first 3L area3 step completed; remaining 5 Pareto steps unexecuted."
+  ],
+  "candidate_id": "EXP050-T007-A3-3L-001",
+  "components": [
+    {
+      "type": "LQP02HV",
+      "name": "L0",
+      "endpoints": [
+        0,
+        1
+      ],
+      "inductance_nH": 3.315472606228032,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "LQP02HV",
+      "name": "L1",
+      "endpoints": [
+        1,
+        2
+      ],
+      "inductance_nH": 7.7415761759770945,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "LQP02HV",
+      "name": "Ls",
+      "endpoints": [
+        1,
+        3
+      ],
+      "inductance_nH": 4.620958222049609,
+      "Q": 25,
+      "area": 1
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cf0",
+      "endpoints": [
+        0,
+        1
+      ],
+      "capacitance_pf": 0.19999999999988813,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cf1",
+      "endpoints": [
+        1,
+        2
+      ],
+      "capacitance_pf": 0.19999999999982693,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "PCB_PATTERN_C",
+      "name": "Cp",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "capacitance_pf": 0.19999999999957607,
+      "Q": 40,
+      "chip_area": 0
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv0",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv1",
+      "endpoints": [
+        0,
+        1
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "IC_VARIABLE_C",
+      "name": "Cv2",
+      "endpoints": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "range_pf": [
+        0,
+        3
+      ]
+    },
+    {
+      "type": "DTC_SHUNT_PARASITIC_C",
+      "name": "Cv0_to_GND_parasitic",
+      "endpoints": [
+        3,
+        -1
+      ],
+      "capacitance_pf": 0.5,
+      "Q": 40,
+      "chip_area": 0,
+      "setting_invariant": true
+    }
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "Ls"
+      ],
+      "k": 0.07978935713408028,
+      "physical_neighbors": true
+    },
+    {
+      "pair": [
+        "Ls",
+        "L1"
+      ],
+      "k": -0.07879291907441001,
+      "physical_neighbors": true
+    },
+    {
+      "pair": [
+        "L0",
+        "L1"
+      ],
+      "k": 0,
+      "physical_neighbors": false
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "Ls",
+    "L1"
+  ],
+  "fixed_values": {
+    "LQP02HV_nH": [
+      3.315472606228032,
+      7.7415761759770945,
+      4.620958222049609
+    ],
+    "PCB_C_pf": [
+      0.19999999999988813,
+      0.19999999999982693,
+      0.19999999999957607
+    ],
+    "inductor_k_adjacent": [
+      0.07978935713408028,
+      -0.07879291907441001
+    ],
+    "shunt_parasitic_pf": 0.5,
+    "shunt_parasitic_Q": 40,
+    "capacitor_variable_Q": 35
+  },
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.9586787839909534,
+      2.935766042025851,
+      1.2949228026768753
+    ],
+    "B12": [
+      0.9637207971585973,
+      2.616212778046084,
+      0.9613522011128308
+    ],
+    "B28": [
+      0.8001993202055675,
+      3,
+      0.9111661302192607
+    ],
+    "B13+B14": [
+      0.7363846519685032,
+      2.4295498063991676,
+      0.7263528120795031
+    ],
+    "B26": [
+      0.6708662668497453,
+      1.804849790981294,
+      0.497361512183625
+    ],
+    "B8": [
+      0.5177670120756978,
+      1.5358353875207889,
+      0.2538367354982044
+    ]
+  }
+}

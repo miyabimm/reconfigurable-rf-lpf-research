@@ -1,0 +1,43 @@
+{
+  "experiment_id": "EXP-050",
+  "stage": "running",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "purpose": "Six RF-T005 Pareto topology adaptations in area-ascending order",
+  "attempts": {
+    "planned": 12,
+    "attempted": 2,
+    "converged": 2,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 10
+  },
+  "selected_candidate_count": 1,
+  "completed_steps": [
+    "1_of_6_area3"
+  ],
+  "steps_pending": [
+    "2_area3p667",
+    "3_area4p333",
+    "4_area4p667",
+    "5_area5p333",
+    "6_area6"
+  ],
+  "best_by_completed_area": [
+    {
+      "chip_area": 3,
+      "candidate_id": "EXP050-T007-A3-3L-001",
+      "worst_IL_db": 0.9383091975941134,
+      "min_H2_db": 30.019999999827085,
+      "min_H3_db": 30.01996879600245,
+      "independent_MNA_84_probe_pass": true
+    }
+  ],
+  "no_candidate_reason": null,
+  "limitations": [
+    "5/6 topology steps not started",
+    "Numerical finite-grid only",
+    "No continuous extrema/Q(f)/SRF/EM/physical tolerance verification",
+    "Initial EXP-050 manifest post-run backfill disclosed in manifest"
+  ]
+}
