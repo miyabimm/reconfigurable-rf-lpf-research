@@ -3,7 +3,7 @@ name: EXP-050 RF-T007 area3 sequential rebaseline
 on:
   pull_request:
     paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-050/**'
+      - 'experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py'
       - '.github/workflows/exp050_rft007_area3.yml'
   workflow_dispatch:
 
