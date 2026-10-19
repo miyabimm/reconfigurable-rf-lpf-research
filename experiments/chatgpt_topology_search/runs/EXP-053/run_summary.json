@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-053",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "status": "completed_twelve_4L_spanning_tree_graphs",
+  "source_reference": "EXP052-T007-4L-CF1-INPUT-OUTPUT-001",
+  "source_IL_db": 0.8851893258498528,
+  "original_actions_run_id": 39284039531,
+  "original_actions_artifact_id": 12202397886,
+  "original_actions_artifact_zip_sha256": "499452c354f4dffc5e07e8f1d3fcbb8f0a5d526b5d6074f406bb338874a341fe",
+  "original_actions_raw_json_sha256": "b684316bd98141ffce2f36ad5f33be256e443ca86116dce251d69db52c775338",
+  "original_executing_commit_sha": "e15fc8276737344eee8eb195cc000e98b45dd99b",
+  "attempts": {
+    "planned": 24,
+    "attempted": 24,
+    "converged": 19,
+    "nonconverged": 5,
+    "failed_runtime": 0,
+    "not_started": 0
+  },
+  "graph_count": 12,
+  "graph_count_with_strict_H2H3_30dB_candidate": 12,
+  "independent_9x9_MNA_graph_count_pass": 12,
+  "model": {
+    "chip_area_units": 5.333333333333333,
+    "chip_inductors": "4xLQP02HV/Q25 each 0.4..27nH",
+    "GJM": "2 Q80",
+    "PCB": "1 Q40",
+    "DTC": "3 independently 0..3pF Q35",
+    "grounded_DTC_count": 1,
+    "always_present_shunt_Cpar": "0.5pF Q40 independent branch even when Cv0=0",
+    "fixed_C_graph": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        4,
+        -1
+      ]
+    ],
+    "variable_C_graph": [
+      [
+        4,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_input_output_s2p": true,
+    "source_load": "50 ohm, 60-j40 ohm"
+  },
+  "objective": "minimum six-setting worst IL subject to H2/H3>=30dB mandatory; internal numerical guard 30.005dB same as EXP-052; no extra attenuation margin objective",
+  "validation": {
+    "segments": 28,
+    "points_per_segment": 1001,
+    "independent_9x9_MNA_probes_per_graph": 84,
+    "all_twelve_selected_strict_pass": true,
+    "all_twelve_independent_MNA_pass": true
+  },
+  "ranked_graphs": [
+    {
+      "graph": "split_input_shunt_center",
+      "worst_IL_db": 0.8757946642355757,
+      "min_H2_db": 30.00499999980047,
+      "min_H3_db": 30.004999999809264,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "reference",
+      "worst_IL_db": 0.8851893258498528,
+      "min_H2_db": 30.00499999994096,
+      "min_H3_db": 30.004999999728476,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "shunt_mid_tap_after_output",
+      "worst_IL_db": 0.8858508206727822,
+      "min_H2_db": 30.004999999896253,
+      "min_H3_db": 30.004999999963754,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "split_output_shunt_center",
+      "worst_IL_db": 0.88597335628742,
+      "min_H2_db": 30.00499999868286,
+      "min_H3_db": 30.00499999999984,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "output_branch_input_tap",
+      "worst_IL_db": 0.8995213537745748,
+      "min_H2_db": 30.004999999505646,
+      "min_H3_db": 30.004999999859898,
+      "selected_slsqp_converged": true,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "line_to_shunt_via_output",
+      "worst_IL_db": 0.9822079901298566,
+      "min_H2_db": 30.0049999996509,
+      "min_H3_db": 30.004999999690916,
+      "selected_slsqp_converged": true,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "reordered_chain_output",
+      "worst_IL_db": 1.08128706053932,
+      "min_H2_db": 30.004999999441033,
+      "min_H3_db": 30.00499999997647,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "shunt_from_input",
+      "worst_IL_db": 1.1839411665128665,
+      "min_H2_db": 30.004999999713196,
+      "min_H3_db": 30.004999999739994,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "split_output_shunt_output",
+      "worst_IL_db": 1.9864953151095603,
+      "min_H2_db": 30.004999999918223,
+      "min_H3_db": 30.004999999995228,
+      "selected_slsqp_converged": false,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "shunt_from_output",
+      "worst_IL_db": 2.0856952464562863,
+      "min_H2_db": 30.00499999991561,
+      "min_H3_db": 30.004975307759768,
+      "selected_slsqp_converged": true,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "split_input_shunt_output",
+      "worst_IL_db": 2.200820827143582,
+      "min_H2_db": 30.00499999991243,
+      "min_H3_db": 30.004999998572146,
+      "selected_slsqp_converged": true,
+      "converged_starts": 1,
+      "nonconverged_starts": 1,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    },
+    {
+      "graph": "line_through_shunt_node",
+      "worst_IL_db": 4.0211604292672805,
+      "min_H2_db": 30.00499999999621,
+      "min_H3_db": 30.004980030350477,
+      "selected_slsqp_converged": true,
+      "converged_starts": 2,
+      "nonconverged_starts": 0,
+      "strict_pass": true,
+      "independent_MNA_pass": true
+    }
+  ],
+  "best_id": "EXP053-T007-4L-SPLIT-INPUT-SHUNT-CENTER-001",
+  "selected_candidate_ids": [
+    "EXP053-T007-4L-SPLIT-INPUT-SHUNT-CENTER-001",
+    "EXP053-T007-4L-REFERENCE-001",
+    "EXP053-T007-4L-SHUNT-MID-TAP-001"
+  ],
+  "improvement_vs_reference_db": 0.009394661614277044,
+  "limitations": [
+    "All 24 start-level complete vectors and numerical evaluations retained only in original GitHub Actions artifact; three curated selected vectors retained permanently in Git.",
+    "The selected split_output_shunt_output local minimum IL1.986495dB passed finite H2/H3 and independent MNA but selected SLSQP start was marked nonconverged; do not promote to converged.",
+    "Five starts were nonconverged, including some strict grid pass points. No claim of global best or continuous-frequency guarantee.",
+    "No additional H2/H3 margin optimization or physical coupling feasibility studies by owner instruction.",
+    "No SRF, Q(f), PCB EM, tolerances, Phase3."
+  ]
+}
