@@ -117,6 +117,25 @@ class Evaluator(src3.Evaluator):
         self.cache_il=result
         return result
 
+
+    def summary(self,x):
+        """4L metrics: never reuse the inherited 3L eigenvalue calculation."""
+        values=self.il(x)
+        ids=[]
+        for category in range(3):
+            indices=np.flatnonzero(self.role==category)
+            ids.append(int(indices[np.argmax(values[indices]) if category==0
+                                  else np.argmin(values[indices])]))
+        actual_M=circuit_matrix(np.asarray(x,float))[1]
+        return {"worst_IL_db":float(values[ids[0]]),
+                "min_H2_db":float(values[ids[1]]),
+                "min_H3_db":float(values[ids[2]]),
+                "locations":[{"case":CASES[self.setting[i]],
+                              "MHz":float(self.f[i]),
+                              "segment":int(self.segment[i])} for i in ids],
+                "L_matrix_min_eig_nH":float(np.linalg.eigvalsh(actual_M)[0])}
+
+
 def from_threeL(x,trap=False):
     """Series split with SAME effective L, winding loss and port mutual flux."""
     x=np.asarray(x,float)
