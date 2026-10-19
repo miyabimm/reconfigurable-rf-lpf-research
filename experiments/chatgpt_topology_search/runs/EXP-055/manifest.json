@@ -342,7 +342,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "76ea117eb6ea2df65e2517b366640fa2ba1673d2",
+    "execution_sha": "e0b824c1b3160b7280026f481fafcf7c5ed27b95",
     "archive_sha": null,
     "working_tree_dirty": false
   },
@@ -375,30 +375,68 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": null
+    "evaluation_count": 18
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": "six topology variants each selected 28 frequency segments ×1001 samples, 6 settings, mandatory H2/H3 >=30dB",
+    "independent_grid": "six selected eligible topology variants each 84 9x9 coupled-inductor MNA probes"
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-055/README.md",
-      "sha256": "476885d2e9607c9776515f3c8fa43ee52c2a9af526c6f4bf390f1212ba0eba4d"
+      "sha256": "84858c4d63cec3093dbe06bf62430bb1f3b6b9339f2dc2004f9f52fe27e690b3"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-055/adapt_f003_4l.py",
       "sha256": "f9859d25ea77e5e30060eb8553a9abaec31310fd4117313c745728428380cc99"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/run_summary.json",
+      "sha256": "747d341cc5ab4c804232ce6ba20cdba630d865680fe4d34492fd8adc0b2e2730"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json",
+      "sha256": "65d0d637e8a233c97e6a76b39dca2a15aaf90e46b2380ffaae1b6ea1689361cb"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_input_tip_independent_mna.json",
+      "sha256": "dbb1d4e885990292d2f96262f3afafc65dca808fc2822821321e8ac46a7a10eb"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_output_shunt_tip_best.json",
+      "sha256": "9d1c396c5200a1a387b65b0703821a7578a9da40b256ab46b26e545d67a54efe"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_output_shunt_tip_independent_mna.json",
+      "sha256": "bbae2e2ea86520425d8df1a6cac01e3b3e1dca3d78a60524fd2a8dbcd47bc9c5"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_parallel_L0_best.json",
+      "sha256": "13d24cbe0ed67fe5c84acb3af8c0b0483de68676446c9d7f9052834f7a269196"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_input_parallel_L0_independent_mna.json",
+      "sha256": "b0d2a7bc4fb0e4812161816f889037b7645a6b8246d6773261a7c292593916d5"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/two_dtc_best.json",
+      "sha256": "86d8ce841a0e10e5f7206437512da7e112df5f72efe6bb161193c85ed040d66f"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/two_dtc_independent_mna.json",
+      "sha256": "559dd56d8a5343f58701a303c6560c7eeb700d301d391f58cbd4fef9c8bca530"
     }
   ],
   "limitations": [
-    "Preregistered only: no EXP-055 optimizer execution or independent result yet",
-    "Finite-grid Phase 2, no continuous extrema or global optimality",
-    "No physical coupling feasibility, Q(f), SRF, EM, tolerance, measurement, or Phase 3"
+    "EXP-055 six 4L RF-T007 variants searched; 18 local SLSQP starts, 13 converged/5 nonconverged, 0 failures; all selected variants finite-grid H2/H3 >=30dB and independent 84-point MNA PASS.",
+    "New local best worst IL0.8173655897607699dB, H2 min30.0049999989dB, H3 min30.0048100494dB, chip area5⅓, 3 DTC including one grounded; historical RF-F003 reference is not T007.",
+    "The two next-lowest IL selected alternative candidates 0.849084 and 0.857269dB have SLSQP nonconvergence; mandatory 30dB finite-grid and MNA pass despite this.",
+    "Original full raw output ZIP sha256 995b86ad76a1530bb36820d89b51e5e9fefd8559b64c39c681934b3905058564 and unpacked JSON sha256 2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64.",
+    "Nominal constant-Q 28x1001 finite-grid best-found; no continuous extrema, global optimum, physical coupling, Q(f), SRF, EM, tolerance, measured S2Ps or Phase3."
   ]
 }
