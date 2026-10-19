@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-053",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 3,
     "retain": [
@@ -14,33 +14,75 @@
     "rule": "Keep up to three best eligible 4L topology designs with all 29 L/C/k and 6 Cv triples plus 84-point independent MNA, RF-T007 one fixed grounded 0.5pF/Q40 parasitic.",
     "estimated_curated_bytes": 70000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP053-T007-4L-SPLIT-INPUT-SHUNT-CENTER-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/split_input_shunt_center_best.json",
+      "sha256": "aae82f0b3e75bc9e6717a9809a1d5a0d9172b3963971d9afdffc88e42a0093fb"
+    },
+    {
+      "candidate_id": "EXP053-T007-4L-REFERENCE-001",
+      "selection_reason": "30db_boundary",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/reference_best.json",
+      "sha256": "041a384890235fab90620cf4054732991843ce5c2f3e5a61da194aa268df5c9c"
+    },
+    {
+      "candidate_id": "EXP053-T007-4L-SHUNT-MID-TAP-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/checkpoints/shunt_mid_tap_after_output_best.json",
+      "sha256": "8eca2434f7f12d4a3d6f9af4b14498cdb8267c63bf07017e2a5b74cfe5c07e45"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/validation/split_input_shunt_center_independent_mna.json",
+      "sha256": "62ccecf2639a6ec338f7a1c5e6b474e9693ac2801cdda79b26e6e4e3a446451a"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/validation/reference_independent_mna.json",
+      "sha256": "554d31ecb0f5d06b261bff15d81c204691e08bac6c772328becf647dcb78ca02"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/validation/shunt_mid_tap_after_output_independent_mna.json",
+      "sha256": "f17d6dc72fe6cdad9f504c1a5c89f18eb20c08f5481d7675a4e89df8ea78b4bc"
+    }
+  ],
   "supporting_evidence": [
     {
+      "role": "method_note",
+      "reason": "Executed graph search, results and limits",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/README.md",
+      "sha256": "e20e710336e0c730eeec11059670c505637b505ca1c365bcc75a9600fb5f70f6"
+    },
+    {
       "role": "source_snapshot",
-      "reason": "12 four-inductor electrical graphs and independent explicit 9x9 MNA source",
+      "reason": "Executed 4L topology optimizer, 9x9 MNA and all numerical constraints",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/sweep_4l_inductor_graphs.py",
       "sha256": "3a86063505bbbd078e018b00646c46b7fc4ee56d93f682f19d23a595ee477376"
     },
     {
-      "role": "method_note",
-      "reason": "EXP-053 Phase 2 numerical and user-specified research scope",
-      "path": "experiments/chatgpt_topology_search/runs/EXP-053/README.md",
-      "sha256": "dabc5466a8eb167b2f8545100410f0a30e06a645d28cbbd1e135e868c791d3a6"
-    },
-    {
       "role": "source_snapshot",
-      "reason": "EXP-052 best verified 4L PCB bridge candidate, frozen while PR131 unmerged",
+      "reason": "Frozen EXP-052 best PCB bridge checkpoint",
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/reference_exp052_cf1_bridge.json",
       "sha256": "b3330adb9168f58a9dda36253dd9f4024ea8c7250ad24e3c434c287a7cec3970"
     }
   ],
-  "summary": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-053/run_summary.json",
+    "sha256": "fb1e2fbfdb77effd555e6b2b1f5d8a7cfd6c12450b9249baa05dcd3acf33d3e9"
+  },
   "size_exception": null,
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
-    "Pre-run source and provenance only; no EXP-053 results yet.",
-    "Artifacts and complete MNA overlays to be stored after actual Actions run."
+    "The original Actions ZIP/JSON SHA256 hashes and actual source git SHA are in run_summary.json. Only three curated complete candidates retained permanently in Git.",
+    "No extra H2/H3 margin study or physical k realism assessment, per owner's instruction.",
+    "Constant Q, discrete-grid nominal model; no global optimum or Phase3 claims."
   ]
 }
