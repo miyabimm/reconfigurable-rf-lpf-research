@@ -166,13 +166,15 @@ def main():
     spec = policy["trial_shunt_dtc_parasitic"]
     if spec["fixed_capacitance_pf"] != 0.5 or spec["q"] != 40:
         raise ValueError("Unexpected RF-T007 parasitic")
+    # API ground=0; EXP-043 source ground=-1 and signal node 0..3.
+    # Shift each signal-node label by +1 before applying the policy helper.
     branch_labels = [
-        {"a": 3, "b": 0, "role": "shunt_to_ground"},
-        {"a": 1, "b": 2, "role": "bridge"},
-        {"a": 2, "b": 1, "role": "bridge"},
+        {"a": 4, "b": 0, "role": "shunt_to_ground"}, # Cv0: source node3-GND
+        {"a": 1, "b": 2, "role": "bridge"},         # Cv1: source node0-node1
+        {"a": 2, "b": 3, "role": "bridge"},         # Cv2: source node1-node2
     ]
     fixed = shunt_dtc_parasitic_branches(policy,branch_labels)
-    if len(fixed) != 1 or fixed[0]["node"] != 3:
+    if len(fixed) != 1 or fixed[0]["node"] != 4:
         raise ValueError("Area3 must get exactly one shunt parasitic")
     old_vec = np.asarray(json.loads(SNAPSHOT.read_text())["vector"], float)
     if len(old_vec) != 26:
