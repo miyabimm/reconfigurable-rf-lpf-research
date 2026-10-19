@@ -444,7 +444,7 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/README.md",
-      "sha256": "edc06993358a5e2d0b7367d5a73b2b58d2ea34f8c091c5bc72ccec4ec04233a6"
+      "sha256": "dabc5466a8eb167b2f8545100410f0a30e06a645d28cbbd1e135e868c791d3a6"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-053/reference_exp052_cf1_bridge.json",
@@ -453,7 +453,7 @@
   ],
   "limitations": [
     "Pre-run, no EXP-053 numerical search result claimed.",
-    "EXP-052 source copied from PR #131 prior to merge; original provenance retained.",
+    "Source copied from EXP-052 PR #131 and byte-matched with merged main after PR #131 integration.",
     "Finite-grid local topology search only, no global optimum.",
     "H2/H3 additional margin and physical mutual coupling feasibility excluded by owner.",
     "No Q(f), SRF, EM or Phase 3."
