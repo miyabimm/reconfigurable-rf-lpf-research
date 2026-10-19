@@ -26,7 +26,7 @@
       "role": "source_snapshot",
       "reason": "Executable 4L split-shunt/trap optimizer and independent 9x9 coupled-L branch-current MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-051/optimize_one_shunt_4l.py",
-      "sha256": "4d8e24894f19c731888911c21fd0e3d32a3def0100550f944f136bf8a0143545"
+      "sha256": "c4395c9f830e2f1526a96e93838201f0c66be11e4661d599a149d5e560a9c7ec"
     }
   ],
   "summary": null,
