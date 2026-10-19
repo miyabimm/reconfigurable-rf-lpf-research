@@ -154,7 +154,7 @@ def independent_mna(policy,x,points=3):
         min_loss=min(min_loss,reflected,input_loss,output_loss,inductor_loss,cap_loss,load_p,*[float(t) for t in C_losses])
     return {
       "probes":int(len(ev.f)),
-      "independent_method":"7x7 branch-current MNA with GJM Cp Q80, extra PCB Q40 and DTC parasitic Q40 independently stamped",
+      "independent_method":"7x7 branch-current MNA: GJM Cf0/Cp Q80, PCB Cf1 Q40, separate DTC shunt parasitic Q40",
       "max_IL_difference_dB":float(max_diff),
       "max_power_balance_residual_W":float(max_residual),
       "min_component_loss_W":float(min_loss),
