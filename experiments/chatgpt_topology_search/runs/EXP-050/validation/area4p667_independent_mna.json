@@ -1,0 +1,20 @@
+{
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A4P667-4L-001",
+  "method": "independent_mna",
+  "status": "passed",
+  "constraint_id": "RF-T007",
+  "numerical_grid": "28 segments x 1001 for main evaluator",
+  "MNA_probe_count": 84,
+  "model": "9x9 explicit branch-current MNA with two separate 0.5pF/Q40 shunt DTC parasitic branches",
+  "max_IL_difference_db": 2.2737367544323206e-13,
+  "max_power_balance_residual_W": 7.806255641895632e-18,
+  "min_component_dissipation_W": 1.1837526790106495e-16,
+  "min_L_eigenvalue_nH": 3.6144751101874575,
+  "source_actions_run_id": 39265210817,
+  "pass": true,
+  "limitations": [
+    "Original candidate source optimizer did not converge; this overlay independently verifies the frozen new vector only",
+    "Physical RF validation unperformed"
+  ]
+}
