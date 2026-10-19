@@ -1,3 +1,11 @@
+## 2026-10-19：EXP-050 RF-T007／T005保存パレート6構成の逐次対応（数値実行済み）
+
+ユーザー指示によりRF-T007追加の[PR #123](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/123)をmainへマージし、EXP-050をmain台帳へ事前予約。旧RF-T005の面積3、3⅔、4⅓、4⅔、5⅓、6の**6保存トポロジーを順番に**固定0.5pF/Q40のシャントDTC寄生込みで局所再最適化した。旧T005保存ベクトルは不変更。寄生は3L候補には1枝、EXP-042由来4L候補には2枝（Cv0,Cv1）で、非接地Cvには追加しない。
+
+**実行済み公称RF-T007 best-found IL (dB)：** 面積3→0.938309、3⅔→0.909729、4⅓→0.891827、4⅔→1.744673（SLSQP未収束）、5⅓→1.054412、6→1.233552（近傍H2未達を追加3-startで修復）。すべて全6設定・28区間×1001点でH2/H3≥30dB、個別の84点明示7×7／9×9結合L枝電流MNAによるIL一致・受動電力収支PASS。6トポロジー・合計19局所初期値（収束12／未収束7）。**非支配は面積3、3⅔、4⅓の3L候補のみ**（観測済み6点に限る）。面積4⅔以上の今回の4L局所点は4⅓の3Lに面積/ILで支配されるが、4L一般の最適性能限界ではない。
+
+証拠正本は[EXP-050 README](../experiments/chatgpt_topology_search/runs/EXP-050/README.md)（全6設定容量・完全L/C/kの6 JSON／独立MNA 6結果／失敗反例をSHA付きでmanifest保管）および[T007ローカルパレート](../data/pareto_snapshots/rf_t007_exp050_20261019.json)。スクリプトは[GitHub Actions各PR](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/129)で実行し、source run IDと原artifact SHAを保持した。**結果はconstant-Q/S2P基準の有限格子局所探索**であり、真の大域/連続区間の最適性・製品SRF/Q(f)・EM/公差/実測による実装保証ではない。今後の再最適化は特に2枝固定寄生による4Lの減衰/IL低下を解析する必要がある。正式RF-F003と旧試験RF-T005/T006は変更せず、Phase 2継続／Phase 3は承認待ち。
+
 ## 2026-10-19：RF-T007シャントDTC固定寄生（実行予定と保全ゲート）
 
 所有者確認済みの新Phase 2試験RF-T007はRF-T005相当の最大3枝DTC（0～3pF/Q35）を継承し、**接地シャントDTCごとに固定0.5pF/Q40**を常時並列に追加する。EXP-042ではCv0とCv1に追加、ブリッジCv2にはなし。0.5pFのばらつきは当面評価せず公称固定値のみ。正式RF-F003および旧RF-T005/別試験T006は履歴として変更しない。
