@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-053",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "30db_boundary"
+    ],
+    "rule": "Keep up to three best eligible 4L topology designs with all 29 L/C/k and 6 Cv triples plus 84-point independent MNA, RF-T007 one fixed grounded 0.5pF/Q40 parasitic.",
+    "estimated_curated_bytes": 70000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "source_snapshot",
+      "reason": "12 four-inductor electrical graphs and independent explicit 9x9 MNA source",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/sweep_4l_inductor_graphs.py",
+      "sha256": "3a86063505bbbd078e018b00646c46b7fc4ee56d93f682f19d23a595ee477376"
+    },
+    {
+      "role": "method_note",
+      "reason": "EXP-053 Phase 2 numerical and user-specified research scope",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/README.md",
+      "sha256": "edc06993358a5e2d0b7367d5a73b2b58d2ea34f8c091c5bc72ccec4ec04233a6"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP-052 best verified 4L PCB bridge candidate, frozen while PR131 unmerged",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-053/reference_exp052_cf1_bridge.json",
+      "sha256": "b3330adb9168f58a9dda36253dd9f4024ea8c7250ad24e3c434c287a7cec3970"
+    }
+  ],
+  "summary": null,
+  "size_exception": null,
+  "git_readback": "not_run",
+  "limitations": [
+    "Pre-run source and provenance only; no EXP-053 results yet.",
+    "Artifacts and complete MNA overlays to be stored after actual Actions run."
+  ]
+}
