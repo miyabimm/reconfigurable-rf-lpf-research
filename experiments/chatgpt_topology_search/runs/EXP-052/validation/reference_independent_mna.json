@@ -1,0 +1,50 @@
+{
+  "experiment_id": "EXP-052",
+  "candidate_id": "EXP052-T007-4L-REF-REOPT-001",
+  "variant": "reference",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "source_actions_run_id": 39277687593,
+  "source_artifact_id": 12199285125,
+  "source_raw_json_sha256": "15ff02edb5fe7d6edff1b23da82b207050d01182b53b20ffb9677928ea954542",
+  "probes": 84,
+  "model": "independent explicit 9x9 coupled-L branch-current MNA with one 0.5pF/Q40 separate grounded DTC parasitic",
+  "fixed_C_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      4,
+      -1
+    ]
+  ],
+  "variable_C_edges": [
+    [
+      4,
+      -1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "max_IL_delta_dB": 1.8474111129762605e-13,
+  "max_power_balance_error_W": 6.938893903907228e-18,
+  "min_passive_dissipation_W": 0,
+  "min_L_eigenvalue_nH": 1.690821678365194,
+  "pass": true,
+  "limitations": [
+    "3 probes x 28 bands, independent of reduced nodal two-port evaluator",
+    "No continuous frequency extremes, extra margin, physical coupling feasibility or tolerance study"
+  ]
+}
