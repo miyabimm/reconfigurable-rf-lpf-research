@@ -25,6 +25,12 @@
       "selection_reason": "best",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area3p667_rft007_best.json",
       "sha256": "370ff3bf9f545f5183f687a7705bfcf4b31b3b330cb1051d4cf6abd3bbd2d5b2"
+    },
+    {
+      "candidate_id": "EXP050-T007-A4P333-3L-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area4p333_rft007_best.json",
+      "sha256": "06ce375e36fef09518b75e601f3c1346a7fd1239beaeb37e569186339976b53f"
     }
   ],
   "validation_overlays": [
@@ -39,6 +45,12 @@
       "status": "passed",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area3p667_independent_mna.json",
       "sha256": "3b2caa8e189538248c5cf157b20deafb93a7137ae0574a163b597e8d0d9f8eaa"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area4p333_independent_mna.json",
+      "sha256": "91fd282426b6fdd98ba0b58eca132cf730ad58baaec962afe2fb7200377cb6f6"
     }
   ],
   "supporting_evidence": [
@@ -46,7 +58,7 @@
       "role": "method_note",
       "reason": "Phase 2 interpretation, topology, T005/T007 separation, execution state and physical limitations",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "b2c0c553da4dda6323ab00284a3cb2ad22fc6e59e3fa281710390c25641a218b"
+      "sha256": "2ae0e615427e57b55953edd66db2d00e96787aaecab4fe782a7c763ded48a666"
     },
     {
       "role": "source_snapshot",
@@ -59,18 +71,24 @@
       "reason": "Step2 dedicated RF-T007 area3p667 GJM Q80 plus separate Q40 shunt parasitic optimizer and independent 7x7 MNA source",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3p667_rft007.py",
       "sha256": "fbd11b8388676fc4844409a14aad2f85b499ec92e30e50a48e9ec3bfe23d8c9a"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Step3 dedicated 3L 2-GJM RF-T007 optimizer stamps Q80 fixed GJM separately from Q40 grounded shunt-DTC parasitic and performs independent 7x7 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area4p333_rft007.py",
+      "sha256": "049d2c388567a8eb2600101e77b723a7a79ef8f48996a059134c626f8a8c2cc7"
     }
   ],
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-    "sha256": "e4767121ab54334a434ccf21bce1412846bdcc692929d24738718cb5953d5baa"
+    "sha256": "817b4dd0b22fbe79a4acb899053b9de01a8aac36cd3fc3ff0f3879c882565867"
   },
   "size_exception": null,
   "git_readback": "pending_until_all_six_steps_completed_and_merged",
   "limitations": [
     "EXP-050 original pre-run storage_record was omitted; created in PR after successful first numeric run and documented as audit-driven backfill.",
-    "This run remains in progress with four remaining distinct Pareto topology steps not started.",
-    "At this stage the first two checkpoints, independent MNA overlay and method records exist in the branch; full experiment finalization has not occurred.",
+    "This run remains in progress with three remaining distinct Pareto topology steps not started.",
+    "At this stage the first three checkpoints, independent MNA overlay and method records exist in the branch; full experiment finalization has not occurred.",
     "Actions artifact ZIP and raw JSON SHA256 are recorded in the curated checkpoint, preserving raw-to-curated provenance."
   ]
 }

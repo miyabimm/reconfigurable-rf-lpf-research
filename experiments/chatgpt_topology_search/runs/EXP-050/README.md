@@ -10,7 +10,7 @@
 |---|---|---:|---:|---:|---|
 | 1 | EXP-043 `checkpoints/zero_gjm_double.json` | 3 | 3 | 0.944268363 | **Executed: 0.938309198dB / H2≥30.020 / H3≥30.019969, independent MNA PASS** |
 | 2 | EXP-045 `checkpoints/t3l_extra_pcb_out_0p2_prelim.json` | 3⅔ | 3 | 0.895180009 | **Executed: 0.909728967dB, H2/H3≥30.02dB, independent MNA PASS** |
-| 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | Pending |
+| 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | **Executed: 0.891827011dB, H2/H3≥30.02dB; MNA PASS** |
 | 4 | EXP-042 `checkpoints/pcb_both.json` | 4⅔ | 4 | 0.819564515 | Pending |
 | 5 | EXP-042 `checkpoints/pcb_cf1.json` | 5⅓ | 4 | 0.811306586 | Pending |
 | 6 | EXP-042 `selected_checkpoints_rft005.json` (EXP042-30m005) | 6 | 4 | 0.805148668 | Pending |
@@ -45,7 +45,7 @@ SLSQP coarse/refined stages reported success for both attempted starts; source g
 
 **Provenance correction:** The first numeric job ran after main EXP-050 reservation, but the required `manifest.json` was inadvertently omitted in the first PR head, causing an unrelated smoke audit to fail. The complete manifest and derived experiment index were then added as an explicit post-run provenance backfill; source execution commit and artifact hashes are retained. This is not falsely represented as a pre-run manifest. The audit must pass before the PR can be merged.
 
-**Unperformed:** Next four Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
+**Unperformed:** Next three Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
 
 
 ## Local reproducibility
@@ -68,4 +68,17 @@ OPENBLAS_NUM_THREADS=1 uv run --frozen python experiments/chatgpt_topology_searc
 | RF-T007 Cv0-compensated only | 1.076529383 | 20.534928 | 23.167561 | FAIL |
 | **RF-T007 local reoptimized** | **0.909728967** | **30.020000** | **30.020000** | **PASS**, finite 28×1001 grid |
 
-The electrical model separately stamps shunt GJM Cp (Q80) and the 0.5pF DTC fixed parasitic (Q40). Only shunt DTC Cv0 receives the parasitic; Cv1/Cv2 are not grounded. The full 7×7 independent coupled-L MNA passed 84 boundary/midpoint probes: IL difference ≤1.5632×10⁻¹³dB, power residual ≤5.2042×10⁻¹⁸W, minimum L matrix eigenvalue 3.21549nH. The result is a numerical Phase 2 best-found local point; H2/H3 30dB margin only ~0.02dB, and physical/tolerance/continuous-band feasibility is not established. Steps 3–6 are not yet executed.
+The electrical model separately stamps shunt GJM Cp (Q80) and the 0.5pF DTC fixed parasitic (Q40). Only shunt DTC Cv0 receives the parasitic; Cv1/Cv2 are not grounded. The full 7×7 independent coupled-L MNA passed 84 boundary/midpoint probes: IL difference ≤1.5632×10⁻¹³dB, power residual ≤5.2042×10⁻¹⁸W, minimum L matrix eigenvalue 3.21549nH. The result is a numerical Phase 2 best-found local point; H2/H3 30dB margin only ~0.02dB, and physical/tolerance/continuous-band feasibility is not established. Steps 4–6 are not yet executed.
+
+## Third step: area 4⅓, EXP-043 2-GJM/1-PCB (2026-10-19)
+
+[GitHub Actions 39263830869](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39263830869) numerical success; raw JSON SHA256 `34577596653c875cc730358aa68c7f2d3d5a62b82c01b4ae92a5974cf8ee5c1d`, artifact ZIP SHA256 `6a6ddef6467d8c5e8832681c45511bb7c513ff4550bb3866af8b1b90938e9e21`. Full candidate: [checkpoint](checkpoints/area4p333_rft007_best.json); independent [7×7 MNA](validation/area4p333_independent_mna.json).
+
+| Candidate | Worst IL dB | Minimum H2 dB | Minimum H3 dB | H2/H3 30dB |
+|---|---:|---:|---:|---|
+| RF-T005 original | 0.879244690 | 30.020000 | 30.020000 | historical T005 PASS |
+| RF-T007 original vector unchanged | 1.120636486 | 24.573618 | 16.517922 | FAIL |
+| RF-T007 Cv0 compensation heuristic only | 1.120636486 | 24.573618 | 16.749606 | FAIL |
+| **RF-T007 local reoptimized** | **0.891827011** | **30.020000** | **30.020000** | **PASS finite-grid 28×1001** |
+
+Area unchanged: 3 LQP02HV (Q25), 2 GJM Cf0/Cp (Q80), 1 PCB Cf1 (Q40), 3 DTC (Q35). The **only grounded DTC Cv0** receives fixed 0.5pF/Q40. Fixed GJM and parasitic remain independent lossy branches; Cv1/Cv2 are non-ground. The independent 84-probe 7×7 branch-current MNA passed, maximum worst-IL difference 1.7053×10⁻¹³dB, power balance residual 7.8063×10⁻¹⁸W, minimum L matrix eigenvalue 2.61961nH. Minimum H2/H3 margins are only ~0.02dB; continuous-frequency extrema and physical tolerance are not verified. Still Phase 2. Remaining area 4⅔, 5⅓, 6 checkpoints are pending.
