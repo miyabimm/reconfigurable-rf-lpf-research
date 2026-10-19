@@ -1,0 +1,13 @@
+{
+  "experiment_id": "EXP-056",
+  "candidate_id": "EXP056-T007-4L-CV1-OUTPUT-SHUNT-TIP-001",
+  "method": "Independent 9x9 five-node KCL and four mutually coupled L branch-current KVL MNA",
+  "probes": 84,
+  "pass": true,
+  "max_IL_difference_db": 1.1795009413617663e-12,
+  "max_power_balance_W": 1.0408340855860843e-17,
+  "minimum_passive_W": 0,
+  "min_L_eigenvalue_nH": 2.7686397640038383,
+  "source_actions_run": 39344219070,
+  "source_artifact_sha256_inner_json": "35a38af9b9f1a0599252c9351a69e2032ab6e37ac40dd1410d652a2242f02ac2"
+}
