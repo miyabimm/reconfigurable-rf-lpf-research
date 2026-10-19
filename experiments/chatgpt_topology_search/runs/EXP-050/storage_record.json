@@ -113,6 +113,12 @@
       "reason": "EXP-050 step5 4L RF-T007 GJM Cf0/Cf2 Q80, PCB Cf1/Cp Q40, two fixed DTC shunt C Q40, four-start minimax and 9x9 independent MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area5p333_rft007.py",
       "sha256": "f1fedf3cd2dc3d187ac29a9132e0e462595611f0af446a80791e11b6c8146bca"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Final EXP-050 step6 area6 RF-T007 4L with three fixed GJM Q80, one PCB Q40, two fixed 0.5pF/Q40 DTC shunts and independent 9x9 MNA",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area6_rft007.py",
+      "sha256": "e38105403285d78c01750bcd5d3fb1d9d58fd882504b74bd67e3dd861be42604"
     }
   ],
   "summary": {
