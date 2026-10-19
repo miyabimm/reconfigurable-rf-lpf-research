@@ -8,7 +8,7 @@
 
 | Step | Source | Area | L | Original T005 IL dB | T007 adaption status |
 |---|---|---:|---:|---:|---|
-| 1 | EXP-043 `checkpoints/zero_gjm_double.json` | 3 | 3 | 0.944268363 | **Implementation prepared; numeric run pending** |
+| 1 | EXP-043 `checkpoints/zero_gjm_double.json` | 3 | 3 | 0.944268363 | **Executed: 0.938309198dB / H2≥30.020 / H3≥30.019969, independent MNA PASS** |
 | 2 | EXP-045 `checkpoints/t3l_extra_pcb_out_0p2_prelim.json` | 3⅔ | 3 | 0.895180009 | Pending |
 | 3 | EXP-043 `checkpoints/gjm_cf0_cp.json` | 4⅓ | 3 | 0.879244690 | Pending |
 | 4 | EXP-042 `checkpoints/pcb_both.json` | 4⅔ | 4 | 0.819564515 | Pending |
@@ -28,7 +28,25 @@ Electrical EXP-043 nodes IN=0, junction=1, OUT=2, shunt tip=3, GND=-1. L0(0,1), 
 5. For the best finite-grid compliant candidate, independent 7×7 MNA and power/positive-passivity checks on 28×3 probes.
 6. Write full metadata, frozen/reoptimized vectors, constraint hash, SHA, solver convergence and failed runs to `results/EXP-050/area3_rft007.json`. These runtime results must be checked and curated into Git before being claimed as retained numeric evidence.
 
-**Status:** Workflow/script registered, numerical RF-T007 results unexecuted until CI run concludes. Finite grid is not continuous-band proof. No part-specific Q(f)/SRF/PCB EM/production tolerance or Phase 3 implementation.
+## Executed result — first step only (2026-10-19)
+
+[GitHub Actions 39256882711](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39256882711) **completed with SUCCESS** for the code and finite-grid evaluation. Numerical source: artifact `exp050-rft007-area3-run`, ID 12186859455; artifact ZIP SHA256 `698c128206d67f9fe7707d810933687b4d644f653592287b0337b021bb2081eb`, raw JSON member SHA256 `51b93ca5e130f3d4aa45fe4dbca93a659b953cfa4dc1e89bf7a821195909df3a`. Complete selected 26-element vector and independent checks were curated to [checkpoints/area3_rft007_best.json](checkpoints/area3_rft007_best.json), with hash recorded in the manifest.
+
+| State | worst IL dB | minimum H2 dB | minimum H3 dB | 30dB finite-grid |
+|---|---:|---:|---:|---|
+| Historical saved RF-T005 candidate (no extra parasitic) | 0.944268363 | 30.020000 | 30.019923 | PASS under **T005** |
+| SAME vector evaluated under T007 with 0.5pF/Q40 | **1.160748579** | **22.435890** | **21.298500** | FAIL |
+| T007 Cv0 compensated heuristic, no parameter optimization | 0.941654212 | 30.073134 | 30.021732 | PASS |
+| T007 SLSQP retuned, numerical best-found | **0.938309198** | **30.020000** | **30.019969** | PASS |
+
+SLSQP coarse/refined stages reported success for both attempted starts; source goal H2/H3≥30.02dB during coarse/fine search. Final best worst-IL location B8 960 MHz; min H2 B8 1830MHz; min H3 B8 2693.34MHz. Frequency check: 28 disjoint intervals ×1,001 samples. Independent **7×7 branch-current MNA 84 probes PASS**, max discrepancy **1.421e−13dB** and power residual **7.806e−18W**, non-negative constituent dissipations, L matrix min eigenvalue **3.2421nH**. Additional Q40 parasitic is modeled as a physically distinct branch in the independent MNA.
+
+**Interpretation:** Simply appending the physical parasitic makes the old T005 settings numerically noncompliant. Retuning all fixed/variable parameters produces a new T007-compliant local candidate. The T005-to-T007 worst-IL comparison across different constraints is **not** evidence that parasitics improve IL.
+
+**Provenance correction:** The first numeric job ran after main EXP-050 reservation, but the required `manifest.json` was inadvertently omitted in the first PR head, causing an unrelated smoke audit to fail. The complete manifest and derived experiment index were then added as an explicit post-run provenance backfill; source execution commit and artifact hashes are retained. This is not falsely represented as a pre-run manifest. The audit must pass before the PR can be merged.
+
+**Unperformed:** Next five Pareto steps, continuous-frequency extrema, real Q(f)/SRF, RF layout/EM, tolerance distributions, physical simultaneous coupling or hardware characterization. Phase 2 continues. No Phase 3 approval.
+
 
 ## Local reproducibility
 
