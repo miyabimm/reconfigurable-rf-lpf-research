@@ -4,7 +4,7 @@
 
 ## Reference and topology dimension
 
-Freeze the complete [EXP-052 best PCB-C bridge candidate](../EXP-052/checkpoints/cf1_input_output_best.json), also copied byte-for-byte to [reference_exp052_cf1_bridge.json](reference_exp052_cf1_bridge.json) so EXP-053 has an immutable source even while EXP-052 PR #131 remains unmerged. EXP-052 reported 4L, area **5⅓**, worst IL **0.88518932585dB**; the source is **different** from prior EXP-051 0.88899289dB.
+Freeze the complete [EXP-052 best PCB-C bridge candidate](../EXP-052/checkpoints/cf1_input_output_best.json), also copied byte-for-byte to [reference_exp052_cf1_bridge.json](reference_exp052_cf1_bridge.json) so EXP-053 has an immutable source. PR #131 has since merged into main; the byte content has been cross-checked with the main checkpoint. EXP-052 reported 4L, area **5⅓**, worst IL **0.88518932585dB**; the source is **different** from prior EXP-051 0.88899289dB.
 
 Constant electrical C/DTC graph for all trials:
 
