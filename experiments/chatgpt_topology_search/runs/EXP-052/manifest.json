@@ -342,7 +342,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "ce5f2a6fe1618d9f9356599d167dac3d26f562e3",
+    "execution_sha": "2b285f303b25f4f3c299f2096ee5ca0b11deead1",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -382,43 +382,88 @@
     "fine_points": 17,
     "dense_points": 1001,
     "mna_points": 3,
-    "second_suite": "ten_fixed_C_edge_variants_two_starts_each",
-    "second_stage": "planned_or_running",
+    "second_suite": {
+      "graph_variants": 10,
+      "initializations": 20,
+      "converged": 19,
+      "source_actions_run": 39277687593
+    },
+    "second_stage": "completed",
     "cumulative_planned_attempts": 38,
-    "second_internal_numerical_guard_db": 30.005
+    "second_internal_numerical_guard_db": 30.005,
+    "completed_two_suites": true,
+    "first_suite": {
+      "graph_variants": 9,
+      "initializations": 18,
+      "converged": 18,
+      "source_actions_run": 39276693843
+    },
+    "total_unique_electrical_graphs": 18,
+    "total_starts": 38,
+    "minimum_H2H3_required_dB": 30
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": "planned 28x1001 per feasible variant",
-    "independent_grid": "planned 84 sample independent 9x9 MNA per feasible variant"
+    "analysis_grid": "28 segments x 1001 samples for each of 19 selected strict numerically compliant graph points",
+    "independent_grid": "28 segments x 3 explicit 9x9 MNA samples for each of 19 selected graph points"
   },
   "evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
+      "sha256": "a4232e26fe80c1e8263b8bcb8a7f80cb28c1adce59ec8e3e79c9ec8723aceedd"
+    },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_connections.py",
       "sha256": "9f4c278a6f516d404d50fe79c772dfbc172ea3fa35f6dddf1afd68a9d27dbf53"
     },
     {
-      "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
-      "sha256": "c5439144b8a778c5b3d3b6b1b5ab91eb560979b30189a3cfab4cd12337e59252"
-    },
-    {
       "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_fixed_c.py",
       "sha256": "6f56e14fd3eab014ad3a695c2e0f63185a7f12cf9dedbfcbd2c9920fa43b033d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/cf1_input_output_best.json",
+      "sha256": "b3330adb9168f58a9dda36253dd9f4024ea8c7250ad24e3c434c287a7cec3970"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/reference_best.json",
+      "sha256": "fcf0a9151550a05577067e3bad9573deab7dd6a7dcc427a02b7ecf89ffe76d48"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/cv0_at_shunt_mid_best.json",
+      "sha256": "c0e2378ef72167569004dd9860e134fabdee830718d6313a3a69b9c072135dda"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/cf1_input_output_independent_mna.json",
+      "sha256": "79856841f90cb5ff05905a9049694f3063ee4ccb1574c9274eb44773534ee91e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/reference_independent_mna.json",
+      "sha256": "eb4b59d33ff1b1bfeda95a16301bcc542c2cd22e1f9c0fbbdfea88d23919153c"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/cv0_at_shunt_mid_independent_mna.json",
+      "sha256": "58474e2a0a97a2d49623f9e157b6cce78ef72850a5d25102474d9fd6258e556e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/run_summary.json",
+      "sha256": "91f89b5084623b2a8a85ef0687191323069226bafb79229016228a09002cd311"
     }
   ],
   "limitations": [
-    "EXP-052 numerical topology sweep not yet executed; design/manifest only.",
     "No additional H2/H3 margin optimization beyond mandatory 30dB; 30.005 is numerical guard.",
     "No physical coupling realism or tolerance study requested.",
     "Finite-grid local candidate results only; no global best or Phase3 claims.",
-    "A second controlled fixed-C connection family within the same EXP-052 scope was added after initial nine-DTC-edge study, before second numeric run."
+    "A second controlled fixed-C connection family within the same EXP-052 scope was added after initial nine-DTC-edge study, before second numeric run.",
+    "Both sweep suites executed, all 19 selected strict numerical points passed independent 84-probe MNA, 37/38 starts converged.",
+    "One SLSQP run for cf0_output_tip did not converge, yet selected compliant first-start for that graph did converge.",
+    "No H2/H3 margin improvement research or physical k realization study (explicitly excluded by owner)."
   ]
 }
