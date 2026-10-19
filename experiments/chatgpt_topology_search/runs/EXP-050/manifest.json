@@ -365,7 +365,7 @@
       5.333333333333333,
       6
     ],
-    "completed_step": "1_of_6_EXP043_zero_gjm_double",
+    "completed_step": "2_of_6_EXP045_area3p667",
     "baseline_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json",
     "fixed_shunt_parasitic_pf": 0.5,
     "fixed_shunt_parasitic_q": 40,
@@ -376,7 +376,8 @@
     "independent_mna_points_per_interval": 3,
     "mandatory_harmonic_attenuation_db": 30,
     "internal_optimization_target_db": 30.02,
-    "stage_2_to_6": "pending"
+    "stage_2_to_6": "pending",
+    "stage_3_to_6": "pending"
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
@@ -388,8 +389,8 @@
     "numerical": "passed",
     "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": "28 disjoint intervals x 1001 points for area3 in step1",
-    "independent_grid": "28 disjoint intervals x 3 points explicit 7x7 MNA for area3 step1"
+    "analysis_grid": "28 intervals x 1001 for first two steps",
+    "independent_grid": "28 intervals x 3 explicit MNA probes for first two steps"
   },
   "evidence": [
     {
@@ -402,20 +403,32 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/run_summary.json",
-      "sha256": "f84a09205367912a33e28d8be3b97d52e0c643bc1edb3f9d664c643431ac0213"
+      "sha256": "e4767121ab54334a434ccf21bce1412846bdcc692929d24738718cb5953d5baa"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/README.md",
-      "sha256": "bc956177c53a35c6e7841866ae676e659c41821da28e5d704b40860c7850b8a7"
+      "sha256": "b2c0c553da4dda6323ab00284a3cb2ad22fc6e59e3fa281710390c25641a218b"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3_rft007.py",
       "sha256": "4a321963d2b8cd1a742c1bde2e1c71095996b3594bafd992129d893e41d7301c"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/area3p667_rft007.py",
+      "sha256": "fbd11b8388676fc4844409a14aad2f85b499ec92e30e50a48e9ec3bfe23d8c9a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/checkpoints/area3p667_rft007_best.json",
+      "sha256": "370ff3bf9f545f5183f687a7705bfcf4b31b3b330cb1051d4cf6abd3bbd2d5b2"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-050/validation/area3p667_independent_mna.json",
+      "sha256": "3b2caa8e189538248c5cf157b20deafb93a7137ae0574a163b597e8d0d9f8eaa"
     }
   ],
   "limitations": [
     "Manifest was completed after first successful Actions execution and is explicitly a provenance backfill; EXP-050 main reservation existed before the run.",
-    "EXP-050 has 6 ordered topology checkpoints; only area3 step1 is numerically analyzed.",
+    "EXP-050 has 6 ordered topology checkpoints; area3 and area3p667 steps completed; four steps pending.",
     "Finite-grid 30dB verification and 84 independent 7x7 MNA points; no continuous-frequency proof.",
     "Constant-Q ideal component models and fixed port S2Ps are not actual PCB EM or product Q(f)/SRF measurements.",
     "Source Actions artifact may expire; curated best complete vector and original artifact SHA256 are permanently tracked in Git.",
