@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-052",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 3,
     "retain": [
@@ -14,34 +14,75 @@
     "rule": "Keep at most three numerically strict RF-T007 H2/H3>=30dB 4L topology candidates selected by lowest worst IL and topology novelty; each must have complete 29-param fixed vector, all 6 Cv settings, explicit Cpar node, and independent 84-probe 9x9 coupled L MNA.",
     "estimated_curated_bytes": 85000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP052-T007-4L-CF1-INPUT-OUTPUT-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/cf1_input_output_best.json",
+      "sha256": "b3330adb9168f58a9dda36253dd9f4024ea8c7250ad24e3c434c287a7cec3970"
+    },
+    {
+      "candidate_id": "EXP052-T007-4L-REF-REOPT-001",
+      "selection_reason": "30db_boundary",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/reference_best.json",
+      "sha256": "fcf0a9151550a05577067e3bad9573deab7dd6a7dcc427a02b7ecf89ffe76d48"
+    },
+    {
+      "candidate_id": "EXP052-T007-4L-CV0-MID-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/checkpoints/cv0_at_shunt_mid_best.json",
+      "sha256": "c0e2378ef72167569004dd9860e134fabdee830718d6313a3a69b9c072135dda"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/cf1_input_output_independent_mna.json",
+      "sha256": "79856841f90cb5ff05905a9049694f3063ee4ccb1574c9274eb44773534ee91e"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/reference_independent_mna.json",
+      "sha256": "eb4b59d33ff1b1bfeda95a16301bcc542c2cd22e1f9c0fbbdfea88d23919153c"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/validation/cv0_at_shunt_mid_independent_mna.json",
+      "sha256": "58474e2a0a97a2d49623f9e157b6cce78ef72850a5d25102474d9fd6258e556e"
+    }
+  ],
   "supporting_evidence": [
     {
+      "role": "method_note",
+      "reason": "Executed EXP-052 RF-T007 18 distinct 4L electrical topology definitions, cross-suite IL comparisons and mandatory 30dB rule",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
+      "sha256": "a4232e26fe80c1e8263b8bcb8a7f80cb28c1adce59ec8e3e79c9ec8723aceedd"
+    },
+    {
       "role": "source_snapshot",
-      "reason": "Systematic RF-T007 4L DTC electrical-edge topology explorer and independent 9x9 nodal/MNA crosscheck",
+      "reason": "Executed first suite solver for nine variable-DTC connection graphs and 84-point independent 9x9 MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_connections.py",
       "sha256": "9f4c278a6f516d404d50fe79c772dfbc172ea3fa35f6dddf1afd68a9d27dbf53"
     },
     {
-      "role": "method_note",
-      "reason": "Pre-registered nine distinct 4L DTC electrical connections, explicit user scope and mandatory RF-T007 conditions",
-      "path": "experiments/chatgpt_topology_search/runs/EXP-052/README.md",
-      "sha256": "c5439144b8a778c5b3d3b6b1b5ab91eb560979b30189a3cfab4cd12337e59252"
-    },
-    {
       "role": "source_snapshot",
-      "reason": "Secondary ten-topology 4L RF-T007 fixed GJM/PCB capacitor relocation systematic optimizer and independent explicit 9x9 MNA",
+      "reason": "Executed second suite solver for ten fixed-GJM/PCB-C connection graphs and separate 84-point independent 9x9 MNA",
       "path": "experiments/chatgpt_topology_search/runs/EXP-052/sweep_4l_fixed_c.py",
       "sha256": "6f56e14fd3eab014ad3a695c2e0f63185a7f12cf9dedbfcbd2c9920fa43b033d"
     }
   ],
-  "summary": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-052/run_summary.json",
+    "sha256": "91f89b5084623b2a8a85ef0687191323069226bafb79229016228a09002cd311"
+  },
   "size_exception": null,
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
-    "Only source and study plan pre-registered: no EXP-052 numerical result yet.",
-    "GitHub Actions will generate numerical outputs; retain best evidence after validation without changing EXP-051 baseline.",
-    "Second ten fixed-C topology sweep was registered before numerical execution; first nine-DTC sweep outputs retain their original source execution SHA."
+    "Curated 3 selected complete 29-parameter vectors among 19 numeric graph points; unselected full local vectors remain in original GitHub Actions artifacts until retention expires; per-variant IL/H2/H3 and solver outcomes permanently in run_summary.json.",
+    "Both source Actions raw JSON SHA256 hashes and exact 40hex execution commits retained in run_summary.json; scope intentionally excludes k physical realization and extra H2/H3 margin work.",
+    "Constant Q model and finite bands only; no global optimum or Phase3 qualification."
   ]
 }
