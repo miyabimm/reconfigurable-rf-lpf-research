@@ -1,0 +1,18 @@
+{
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A3P667-3L-001",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "probes": 84,
+  "independent_matrix": "7x7 coupled-L branch-current MNA",
+  "GJM_Q80_and_parasitic_Q40_separately_stamped": true,
+  "max_IL_difference_dB": 1.5631940186722204e-13,
+  "max_power_balance_residual_W": 5.204170427930421e-18,
+  "minimum_L_eigenvalue_nH": 3.2154907553953995,
+  "source_run_id": 39260000528,
+  "limitations": [
+    "Finite independent 84-point check only",
+    "No real hardware validation"
+  ]
+}
