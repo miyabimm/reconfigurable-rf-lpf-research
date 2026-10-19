@@ -1,0 +1,19 @@
+{
+  "experiment_id": "EXP-050",
+  "candidate_id": "EXP050-T007-A4P333-3L-001",
+  "constraint_id": "RF-T007",
+  "method": "independent_mna",
+  "status": "passed",
+  "matrix": "7x7 explicit branch-current coupled-L MNA",
+  "capacitor_branches": 7,
+  "physical_Q": "2 fixed GJM Q80, 1 PCB Q40, 3 variable C Q35, 1 fixed DTC parasitic Q40",
+  "probe_count": 84,
+  "max_IL_difference_db": 1.7053025658242404e-13,
+  "max_power_balance_residual_W": 7.806255641895632e-18,
+  "min_L_matrix_eigenvalue_nH": 2.6196138016971164,
+  "source_actions_run_id": 39263830869,
+  "limitations": [
+    "84 frequency probes, not full independent 28x1001 grid",
+    "No real RF implementation verification"
+  ]
+}
