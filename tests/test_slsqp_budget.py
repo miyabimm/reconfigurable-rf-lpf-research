@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from lpf.slsqp_budget import (
     POLICY_ID, IterationBudget, STANDARD_SLSQP_BUDGET,
     reached_iteration_limit, run_staged_slsqp,
+    TERMINATION_AWARE_POLICY_ID, run_termination_aware_slsqp,
 )
 
 
@@ -95,6 +96,103 @@ class TestSLSQPIterationBudget(unittest.TestCase):
         self.assertEqual(len(got["attempts"]), 2)
         self.assertFalse(got["attempts"][1]["converged"])
 
+
+
+class TestTerminationAwareSLSQPv2(unittest.TestCase):
+    def _status(self, code):
+        msg = {
+            0: "Optimization terminated successfully",
+            4: "Inequality constraints incompatible",
+            8: "Positive directional derivative for linesearch",
+            9: "Iteration limit reached",
+        }[code]
+        return {"status": code, "success": code == 0, "message": msg}
+
+    def test_same_budget_warm_restart_after_coarse_nonlimit(self):
+        calls=[]
+        # EXP-060 common: primary coarse 4 + fine 0.
+        outcomes=[4,0,0,0]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter,x))
+            return x+1,self._status(outcomes[len(calls)-1])
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual([(v[0],v[1]) for v in calls],
+                         [("coarse",240),("fine",120),
+                          ("coarse",240),("fine",120)])
+        self.assertEqual([q["converged"] for q in got["attempts"]],
+                         [False,True])
+        self.assertEqual(got["recovery_cause"],"nonlimit_feasible_restart")
+        self.assertEqual(got["attempts"][1]["warm_start_source"],
+                         "primary_fine_vector")
+        self.assertEqual(got["iteration_policy"]["policy_id"],
+                         TERMINATION_AWARE_POLICY_ID)
+
+    def test_coarse_failed_fine_iteration_no_illusory_rescue(self):
+        calls=[]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter))
+            return x,self._status(4 if ev=="coarse" else 9)
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(calls,[("coarse",240),("fine",120)])
+        self.assertFalse(got["recovery_invoked"])
+        self.assertFalse(got["attempts"][0]["converged"])
+
+    def test_both_noniter_failures_not_retried(self):
+        calls=[]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter))
+            return x,self._status(8)
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(len(got["attempts"]),1)
+        self.assertEqual(len(calls),2)
+
+    def test_coarse_iteration_exhaustion_exactly_one_bounded_rescue(self):
+        calls=[]
+        outcomes=[9,0,0,0]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter))
+            return x+1,self._status(outcomes[len(calls)-1])
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(calls,[("coarse",240),("fine",120),
+                                ("coarse",500),("fine",280)])
+        self.assertEqual(got["recovery_cause"],"iteration_rescue_both")
+        self.assertTrue(got["attempts"][1]["converged"])
+
+    def test_fine_iteration_exhaustion_coarse_success(self):
+        calls=[]
+        outcomes=[0,9,0]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter))
+            return x+1,self._status(outcomes[len(calls)-1])
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(calls,[("coarse",240),("fine",120),("fine",280)])
+        self.assertEqual(got["recovery_cause"],"iteration_rescue_fine")
+        self.assertTrue(got["attempts"][1]["converged"])
+
+    def test_failed_recovery_preserves_nonconvergence_and_limits(self):
+        calls=[]
+        def opt(ev,x,maxiter,target):
+            calls.append((ev,maxiter))
+            if len(calls)==2:return x+1,self._status(0)
+            return x+1,self._status(8)
+        got=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(len(calls),4)
+        self.assertEqual(len(got["attempts"]),2)
+        self.assertFalse(got["attempts"][0]["converged"])
+        self.assertFalse(got["attempts"][1]["converged"])
+
+    def test_optional_success_field_and_true_cap_error(self):
+        with self.assertRaises(TypeError):
+            run_termination_aware_slsqp(None,None,0,30.0,
+                                        lambda *args:None,budget=object())
+        calls=[]
+        def opt(ev,x,maxiter,target):
+            calls.append(1)
+            return x,{"converged":True,"message":"success"}
+        out=run_termination_aware_slsqp("coarse","fine",10,30.005,opt)
+        self.assertEqual(len(calls),2)
+        self.assertTrue(out["attempts"][0]["converged"])
+        self.assertFalse(out["recovery_invoked"])
 
 if __name__ == "__main__":
     unittest.main()
