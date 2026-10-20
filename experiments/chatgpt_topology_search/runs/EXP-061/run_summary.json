@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-061",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "trial_revision": 3,
+  "execution_status": "completed",
+  "purpose": "Find SLSQP nonconvergence root causes and test paired warm-start vs maxiter increase on the 20 EXP060 coarse-failed/fine-success starts",
+  "source_immutable": {
+    "run_id": 39434590336,
+    "termination_audit_run_id": 39437882717,
+    "benchmark_run_id": 39439246405,
+    "aggregate_artifact_id": 12273925427,
+    "origin_experiment_id": "EXP-060"
+  },
+  "baseline": {
+    "variants": 63,
+    "attempts": 126,
+    "fully_converged": 62,
+    "nonconverged": 64,
+    "root_causes": {
+      "status4_constraints_incompatible": 31,
+      "status8_positive_directional_derivative": 29,
+      "status9_fine_iteration_limit": 4
+    },
+    "coarse_status9_count": 0,
+    "fine_status9_count": 4,
+    "all_four_fine_iteration_limit_had_coarse_status4": true,
+    "automatic_fine_rescues_from_status9": 4,
+    "fully_converged_after_rescue": 0,
+    "primary_max_coarse_iterations": 229,
+    "primary_median_coarse_iterations": 57,
+    "primary_max_fine_iterations": 120,
+    "primary_median_fine_iterations": 12,
+    "coarse_noniter_failed_but_fine_success": 20
+  },
+  "paired_comparison": {
+    "source_case_count": 20,
+    "independent_optimization_arms": 2,
+    "new_attempts": 40,
+    "identical_input_final_vector_for_each_pair": true,
+    "caps": {
+      "standard": {
+        "coarse": 240,
+        "fine": 120
+      },
+      "raised": {
+        "coarse": 500,
+        "fine": 280
+      }
+    },
+    "results": {
+      "standard": {
+        "both_stages_converged": 20,
+        "finite_H2H3_30db_pass": 20,
+        "independent_9x9_MNA_pass": 20,
+        "max_coarse_iterations_used": 19,
+        "max_fine_iterations_used": 18,
+        "total_function_calls": 2854
+      },
+      "raised": {
+        "both_stages_converged": 20,
+        "finite_H2H3_30db_pass": 20,
+        "independent_9x9_MNA_pass": 20,
+        "max_coarse_iterations_used": 19,
+        "max_fine_iterations_used": 18,
+        "total_function_calls": 2854
+      }
+    },
+    "max_absolute_paired_IL_difference_db": 0,
+    "improved_global_EXP059_IL": false,
+    "all_20_restarts_solved_to_same_numerical_values": true
+  },
+  "adopted_recommendation": {
+    "policy_id": "slsqp-staged-v2",
+    "normal_caps": [
+      240,
+      120
+    ],
+    "iteration_exhaustion_rescue_caps": [
+      500,
+      280
+    ],
+    "warm_restart_from_converged_fine_output_on_coarse_noniteration_failure": true,
+    "warm_restart_uses_normal_caps": true,
+    "max_restarts_per_initial_trajectory": 1,
+    "do_not_extend_fine_if_coarse_failed_noniteration": true,
+    "max_stage_calls_per_original_start": 4,
+    "independent_validations_required": true
+  },
+  "scope_notes": [
+    "Only 20 matched candidates with coarse failure and fine convergence, not all 64 original nonconverged trajectories.",
+    "Global Pareto best remains EXP059 area4p667 0.8371337486dB; this is convergence diagnostics, not a lower-IL claim.",
+    "EXP060 historical nonconverged flags remain unchanged.",
+    "Detailed 20 paired vectors and status traces are in GitHub Actions artifact with finite retention; summary is Git curated evidence."
+  ],
+  "limitations": [
+    "Stopping status4 does not prove mathematical infeasibility.",
+    "Numerical constant-Q nominal circuit model, finite 28×1001 grid only; SRF/Q(f), layout k and tolerance not evaluated.",
+    "Phase3 not begun; RF-F003 and RF-T008 electrical constraints unchanged."
+  ],
+  "attempts": {
+    "planned": 40,
+    "attempted": 40,
+    "converged": 40,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 0,
+  "no_candidate_reason": "Convergence recovery diagnostic only, without new lower-IL Pareto candidate; EXP-059 source topology remains the verified best and raw paired vectors remain in Actions artifact."
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-061",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain aggregated paired benchmark results, exit status and iteration counts for all 20 matched starts; full candidate and 9x9 MNA for any improved feasible model.",
+    "estimated_curated_bytes": 50000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
+      "sha256": "044ed4308ac0fda614e5e0f695bea65f7fadb9b7bd8ba8e5ba90a3c542f103e3",
+      "reason": "Controlled restart benchmark code from EXP060 raw saved vectors"
+    }
+  ],
+  "limitations": [
+    "Raw 40 complete vectors and statuses in finite-retention Actions artifact 12273925427; summary and full reproducible benchmark source preserved in Git.",
+    "Study compares same final source vector, not a proof that all original 64 failures are feasible.",
+    "EXP059 and EXP060 feature PR dependencies remain unmerged."
+  ],
+  "size_exception": null,
+  "validation_summary": {
+    "source_actions_run": 39439246405,
+    "aggregate_artifact_id": 12273925427,
+    "matched_warm_starts": 20,
+    "standard_budget_full_pass": 20,
+    "raised_budget_full_pass": 20,
+    "independent_9x9_MNA_pass": 40,
+    "source_pr": 146
+  },
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-061/run_summary.json",
+    "sha256": "2c059f0f715d10e6d7ea20dc35cbbccb50445b527775ebeca8ebb746030782cd"
+  },
+  "git_readback": "passed"
+}
