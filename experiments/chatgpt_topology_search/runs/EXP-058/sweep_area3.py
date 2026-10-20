@@ -260,7 +260,7 @@ def main():
         br=[{"a":norm_edge(edge)["a"],"b":norm_edge(edge)["b"],
              "role":"shunt_to_ground" if -1 in edge else "bridge"}
             for edge in dense.variable_edges]
-        fixed=list(np.asarray(best["vector"])[8:10])
+        fixed=[float(v) for v in np.asarray(best["vector"])[8:10]]
         var=np.asarray(best["vector"])[10:].reshape((6,2))
         validate_ic_fixed_c_settings(policy,br,fixed,dict(zip(old.CASES,var.tolist())))
     record={
