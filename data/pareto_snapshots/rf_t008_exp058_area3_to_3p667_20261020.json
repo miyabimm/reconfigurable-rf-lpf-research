@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T008_EXP058_ASCENDING_AREA3_AREA3P667_INITIAL_20261020",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "phase": "Phase 2",
+  "experiment_id": "EXP-058",
+  "status": "actual_Actions_local_numerical_results_and_independent_MNA; not global Pareto",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "common_model": {
+    "source_ohm": 50,
+    "load_real_ohm": 60,
+    "load_imag_ohm": -40,
+    "external_fixed_s2p": true,
+    "settings": [
+      "B71",
+      "B12",
+      "B28",
+      "B13+B14",
+      "B26",
+      "B8"
+    ],
+    "frequency_intervals": 28,
+    "per_interval_dense_points": 1001,
+    "independent_MNA_points": 84,
+    "LQP02HV_Q": 25,
+    "chip_row": [
+      "L0",
+      "Ls",
+      "L1"
+    ],
+    "coupled_L_pairs": [
+      [
+        "L0",
+        "Ls"
+      ],
+      [
+        "Ls",
+        "L1"
+      ]
+    ],
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "IC_variable_C_Q": 35,
+    "IC_fixed_C_Q": 60,
+    "ground_PCB_C_Q": 60,
+    "non_ground_PCB_C_Q": 40,
+    "old_RF_T007_0p5pF_Q40_parasitic_included": false
+  },
+  "cost_cell_results": [
+    {
+      "chip_area_units": 3,
+      "topology_variant_IL_db": {
+        "shunt_input": 1.045969218021339,
+        "shunt_output": 1.0103502552079047,
+        "dual_series": 1.153076855848454
+      },
+      "source_run_id": 39422318183,
+      "all_three_Actions_jobs_success": true
+    },
+    {
+      "chip_area_units": 3.666666666666667,
+      "topology_variant_IL_db": {
+        "cf0_shunt_input": 1.0454976136891398,
+        "cf0_shunt_output": 0.9340275796118456,
+        "cf0_dual_series": 1.144834707628061,
+        "cf1_shunt_input": 0.970606720291697,
+        "cf1_shunt_output": 1.009009793754307,
+        "cf1_dual_series": 1.260688359845211,
+        "cp_shunt_input": 1.0288280997669461,
+        "cp_shunt_output": 0.9955403909109196,
+        "cp_dual_series": 5.9665183053287665
+      },
+      "source_run_id": 39422852920,
+      "all_nine_Actions_jobs_success": true
+    }
+  ],
+  "observed_nondominated": [
+    {
+      "candidate_id": "EXP058-T008-A3-3L-0GJM-SHUNT-OUTPUT",
+      "chip_area_units": 3,
+      "L_count": 3,
+      "GJM_count": 0,
+      "PCB_C_count": 3,
+      "IC_DTC_branch_count": 2,
+      "source_run_id": 39422318183,
+      "Actions_artifact_id": 12264575874,
+      "source_execution_sha": "bd9833268d9a83d0e58e212986284827559588aa",
+      "vector_order": [
+        "L0_nH",
+        "L1_nH",
+        "Ls_nH",
+        "Cf0_pF",
+        "Cf1_pF",
+        "Cp_pF",
+        "k_L0_Ls",
+        "k_Ls_L1",
+        "IC_fix_Cv0_pF",
+        "IC_fix_Cv2_pF",
+        "six_setting_Cv0_Cv2"
+      ],
+      "vector": [
+        5.690791090645508,
+        9.453268959465325,
+        3.427807825572402,
+        0.19999999999995258,
+        0.020000000000050682,
+        0.47860620069127,
+        0.1,
+        -0.08092264934540656,
+        1.2736540783220613,
+        0.26672619656502,
+        0.8680570227799679,
+        0.6826821854051104,
+        0.7733487574712141,
+        0.46040460774819303,
+        0.4676123134830531,
+        0.6310189352069402,
+        0.4606532659871805,
+        0.14112451787532332,
+        0.24938308009132953,
+        0.12275724527166615,
+        5.49366050943598e-13,
+        1.7004995864751535e-13
+      ],
+      "fixed_C_types": [
+        "PCB_PATTERN_C",
+        "PCB_PATTERN_C",
+        "PCB_PATTERN_C"
+      ],
+      "fixed_C_Q": [
+        40,
+        40,
+        60
+      ],
+      "IC_fixed_C_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "metrics": {
+        "worst_IL_db": 1.0103502552079047,
+        "min_H2_db": 30.00499999996618,
+        "min_H3_db": 30.005000000007374
+      },
+      "SLSQP_selected": {
+        "start": 1,
+        "coarse_success": true,
+        "fine_success": true,
+        "coarse_iterations": 30,
+        "fine_iterations": 1
+      },
+      "verification": {
+        "finite_30dB_pass": true,
+        "MNA_pass": true,
+        "MNA_explicit_dimension": 7,
+        "MNA_points": 84,
+        "max_IL_discrepancy_db": 1.4921397450962104e-13,
+        "max_power_balance_residual_W": 6.071532165918825e-18,
+        "inductance_eigenvalue_min_nH": 3.3112805047167577
+      }
+    },
+    {
+      "candidate_id": "EXP058-T008-A3P667-3L-GJM-CF0-SHUNT-OUTPUT",
+      "chip_area_units": 3.666666666666667,
+      "L_count": 3,
+      "GJM_count": 1,
+      "PCB_C_count": 2,
+      "IC_DTC_branch_count": 2,
+      "source_run_id": 39422852920,
+      "Actions_artifact_id": 12263877879,
+      "source_execution_sha": "0766d0c7b5213d9db0c27548275f62ec173ccc20",
+      "vector_order": [
+        "L0_nH",
+        "L1_nH",
+        "Ls_nH",
+        "Cf0_pF",
+        "Cf1_pF",
+        "Cp_pF",
+        "k_L0_Ls",
+        "k_Ls_L1",
+        "IC_fix_Cv0_pF",
+        "IC_fix_Cv2_pF",
+        "six_setting_Cv0_Cv2"
+      ],
+      "vector": [
+        3.6582112816793804,
+        7.543157071117117,
+        5.214356897650447,
+        1.8138215189670186,
+        0.020000000000090373,
+        0.3945736491448968,
+        0.07304927254845463,
+        -0.04475873343715332,
+        0.6945685765845567,
+        0.43484637876384535,
+        0.7927815442723359,
+        1.0915755940831322,
+        0.6956885673534379,
+        0.9389465471871177,
+        0.44368791138265384,
+        1.0036941329209617,
+        0.46362304185513015,
+        0.18541338981580152,
+        0.28648670414882327,
+        0.1341334166948601,
+        0,
+        1.7255974686496537e-13
+      ],
+      "fixed_C_types": [
+        "GJM01",
+        "PCB_PATTERN_C",
+        "PCB_PATTERN_C"
+      ],
+      "fixed_C_Q": [
+        80,
+        40,
+        60
+      ],
+      "IC_fixed_C_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "metrics": {
+        "worst_IL_db": 0.9340275796118456,
+        "min_H2_db": 30.004999999293464,
+        "min_H3_db": 30.004999999980427
+      },
+      "SLSQP_selected": {
+        "start": 0,
+        "coarse_success": true,
+        "fine_success": true,
+        "coarse_iterations": 54,
+        "fine_iterations": 1
+      },
+      "verification": {
+        "finite_30dB_pass": true,
+        "MNA_pass": true,
+        "MNA_explicit_dimension": 7,
+        "MNA_points": 84,
+        "max_IL_discrepancy_db": 1.6342482922482304e-13,
+        "max_power_balance_residual_W": 7.806255641895632e-18,
+        "inductance_eigenvalue_min_nH": 3.5945857429725367
+      }
+    }
+  ],
+  "observed_pareto_scope": "Observed non-dominated only among 12 locally searched 3L topology/cost configurations in two cost cells; no higher areas assessed in this snapshot",
+  "limitations": [
+    "30dB stopband margin ~0.005dB; not robust",
+    "35dB nominal target unmet",
+    "IL<=0.30dB target unmet",
+    "Numerical SLSQP is nonconvex; local multi-start only, no global performance limit",
+    "Frequency intervals finite 1001 samples; no continuous extrema proof",
+    "No Q(f), SRF, physical geometry/mutual coupling, PCB EM, tolerance, measured external S2P or Phase3"
+  ],
+  "git_source": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py"
+}
