@@ -1,0 +1,40 @@
+name: RF-T008 connection-aware PCB-C trial regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'data/constraints/**'
+      - 'src/lpf/constraint_versions.py'
+      - 'src/lpf/trial_pcb_pattern_c.py'
+      - 'src/lpf/trial_shunt_dtc.py'
+      - 'tests/test_trial_pcb_pattern_c_t008.py'
+      - 'tests/test_trial_shunt_dtc.py'
+      - '.github/workflows/rf_t008_trial_regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/constraints/**'
+      - 'src/lpf/constraint_versions.py'
+      - 'src/lpf/trial_pcb_pattern_c.py'
+      - 'src/lpf/trial_shunt_dtc.py'
+      - 'tests/test_trial_pcb_pattern_c_t008.py'
+      - 'tests/test_trial_shunt_dtc.py'
+      - '.github/workflows/rf_t008_trial_regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  rf-t008-trial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check RF-T008 trial and positional capacitor policy
+        run: python -m unittest discover -s tests -p test_trial_pcb_pattern_c_t008.py -v
+      - name: Preserve prior RF-T007 grounded-DTC model
+        run: python -m unittest discover -s tests -p test_trial_shunt_dtc.py -v
