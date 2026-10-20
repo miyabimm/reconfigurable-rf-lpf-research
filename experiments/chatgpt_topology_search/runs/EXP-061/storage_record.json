@@ -21,7 +21,7 @@
     {
       "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
-      "sha256": "093ae3a3e3888e0329aa5026cf994d72e4609624efa989c69726b486947f47c6",
+      "sha256": "044ed4308ac0fda614e5e0f695bea65f7fadb9b7bd8ba8e5ba90a3c542f103e3",
       "reason": "Controlled restart benchmark code from EXP060 raw saved vectors"
     }
   ],
