@@ -1,0 +1,94 @@
+name: EXP-064 RF-T008 4L zero GJM PCB shunt cost4
+on:
+  push:
+    branches:
+      - exp064-rft008-fourL-zeroGJM-grounded-20261020
+    paths:
+      - '.github/workflows/exp064_rft008_4l0gjm.yml'
+      - 'experiments/chatgpt_topology_search/runs/EXP-064/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        layout: [control, g4g3_b01, g4g3_b12, g4g3_g1, g4g3_g2, g4g3_b03, g4g3_b02, g4g3_b34, g3_b01_b12, g4_b01_b03, g3g1_b12, g3g2_b01]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify main experiment registration and evidence gate
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-064 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-064
+          uv run --frozen python -m py_compile experiments/chatgpt_topology_search/runs/EXP-064/sweep_4l_zero_gjm_pcb.py
+      - name: Optimize and independently validate 4L/0GJM
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-064/sweep_4l_zero_gjm_pcb.py \
+            --layout "${{ matrix.layout }}" --starts 2 --coarse 7 --fine 17 \
+            --dense 1001 --target 30.005 \
+            --out "results/EXP-064/${{ matrix.layout }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp064-${{ matrix.layout }}
+          path: results/EXP-064/${{ matrix.layout }}.json
+          if-no-files-found: warn
+          retention-days: 30
+  aggregate:
+    needs: [sweep]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp064-*
+          merge-multiple: true
+          path: results/EXP-064/collected
+      - name: Aggregate Pareto eligibility against area3p667
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files=sorted(Path("results/EXP-064/collected").glob("*.json"))
+          rows=[]
+          for file in files:
+              z=json.loads(file.read_text())
+              c=z["best_converged_30db"]
+              rows.append({
+                  "layout":z["layout"],"IL_db":c["dense"]["worst_IL_db"] if c else None,
+                  "H2_db":c["dense"]["min_H2_db"] if c else None,
+                  "H3_db":c["dense"]["min_H3_db"] if c else None,
+                  "MNA_pass":z["independent_MNA"]["pass"] if c else None})
+          ranked=sorted(rows,key=lambda x:x["IL_db"] if x["IL_db"] is not None else 10000)
+          for item in ranked:print("RESULT",item)
+          print("BEATS_AREA3P667",bool(ranked and ranked[0]["IL_db"] is not None
+                   and ranked[0]["IL_db"]<0.9340275796118456))
+          out=Path("results/EXP-064/summary.json")
+          out.write_text(json.dumps({"experiment_id":"EXP-064","count":len(files),"ranking":ranked},indent=2)+"\n")
+          if len(files)!=12:raise SystemExit("Incomplete scoped run")
+          if any(q["IL_db"] is not None and q["MNA_pass"] is not True for q in rows):
+              raise SystemExit("Independent MNA failed")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp064-aggregate-summary
+          path: results/EXP-064/summary.json
+          if-no-files-found: warn
+          retention-days: 30
