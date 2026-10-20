@@ -30,11 +30,10 @@
   "attempts": {
     "planned": 20,
     "attempted": 20,
-    "solver_converged": 19,
-    "solver_nonconverged": 1,
-    "execution_failed": 0,
-    "recovery_invoked": 0,
-    "initial_primary_attempts": 20
+    "converged": 19,
+    "nonconverged": 1,
+    "failed": 0,
+    "not_started": 0
   },
   "finite_H2H3_30dB_eligible_graphs": 10,
   "independent_mna": {
@@ -324,6 +323,14 @@
     }
   ],
   "caveats": [
+    "Selected minimum IL graph is old EXP055 topology; 9 novel graphs all have higher IL",
+    "One of 20 trials stopped with directional-derivative line-search failure, not iteration-limit; no retry under standard policy and must remain nonconverged",
+    "Some other trial points were above 30dB but IL as high as 22.64dB; these are poor local solutions and do not imply infeasible circuit",
+    "Original complete 20 trial vectors held in 30-day Actions artifact, curated checkpoint(s) retained in Git",
+    "No continuous-band extrema guarantee, global optimality, extra harmonic margin, physical k realization, SRF/Q(f), PCB EM, tolerance or measurement; Phase 2 only"
+  ],
+  "selected_candidate_count": 3,
+  "limitations": [
     "Selected minimum IL graph is old EXP055 topology; 9 novel graphs all have higher IL",
     "One of 20 trials stopped with directional-derivative line-search failure, not iteration-limit; no retry under standard policy and must remain nonconverged",
     "Some other trial points were above 30dB but IL as high as 22.64dB; these are poor local solutions and do not imply infeasible circuit",
