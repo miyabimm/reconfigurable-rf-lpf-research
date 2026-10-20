@@ -177,6 +177,25 @@ def main():
                   "cost6 source mismatch")
         pts.append(x)
     pts.sort(key=lambda x:x["area"])
+    integrated=read("data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json")
+    check(integrated["effective_constraint_sha256"]==FP and
+          integrated["sampled_starts"]==264 and
+          integrated["converged_starts"]==249 and
+          integrated["nonconverged_starts"]==15 and
+          integrated["failed_starts"]==0 and
+          integrated["independent_checkpoint_evidence_reviewed"]==10,
+          "integrated cross-PR snapshot provenance/total mismatch")
+    saved=integrated["observed_nondominated"]
+    check(len(saved)==7, "integrated snapshot must have 7 nondominated points")
+    for lhs,rhs in zip(pts,saved):
+        check(eq(lhs["area"],rhs["area_chip_units"]) and
+              eq(lhs["IL_db"],rhs["worst_IL_db"],1e-10) and
+              lhs["source"]==rhs["source"],
+              "integrated snapshot diverges from recomputed observed Pareto")
+    check(len(integrated["dominated"])==1 and
+          eq(integrated["dominated"][0]["best_found_IL_db"],
+             previous["dominated_cells"][0]["best_found_IL_db"],1e-10),
+          "integrated dominated cell changed")
     check(len(pts)==7 and
           all(pts[i]["IL_db"]>pts[i+1]["IL_db"]+1e-7
               for i in range(len(pts)-1)),
