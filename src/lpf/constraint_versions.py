@@ -81,6 +81,9 @@ def validate_registry(*, root=ROOT):
                 if "study_shunt_dtc_parasitic" in payload:
                     _validate_trial_shunt_dtc_parasitic(
                         payload["study_shunt_dtc_parasitic"], resolved)
+                if "study_pcb_pattern_c_by_connection" in payload:
+                    _validate_trial_pcb_pattern_c_by_connection(
+                        payload["study_pcb_pattern_c_by_connection"], resolved)
                 layout = payload.get("study_variable_c_layout")
                 spec = resolved["components"]["IC_VARIABLE_C"]
                 if not isinstance(layout, dict):
@@ -185,6 +188,42 @@ def _validate_trial_shunt_dtc_parasitic(spec, resolved):
            for key, value in expected.items()):
         raise ValueError("Invalid scope or accounting of shunt-DTC parasitic")
 
+def _validate_trial_pcb_pattern_c_by_connection(spec, resolved):
+    """Validate RF-T008's connection-selective PCB-C size/Q, not a global Q override.
+
+    The immutable formal PCB_PATTERN_C record remains 0.02..0.2pF/Q40.
+    Special permanent shunt DTC 0.5pF/Q40 is outside the PCB_PATTERN_C count.
+    """
+    keys = {"ground_node", "grounded", "non_ground", "max_count", "q_model",
+            "fixed_components_only", "setting_invariant", "nominal_only"}
+    if not isinstance(spec, dict) or set(spec) != keys:
+        raise ValueError("Invalid location-specific PCB-C trial schema")
+    formal = resolved["components"]["PCB_PATTERN_C"]
+    reference = {"min_pf_per_component": formal["min_pf_per_component"],
+                 "max_pf_per_component": formal["max_pf_per_component"],
+                 "q": formal["q"]}
+    if (type(spec["ground_node"]) is not int or spec["ground_node"] != 0
+            or type(spec["max_count"]) is not int
+            or spec["max_count"] != formal["max_count"]
+            or spec["q_model"] != "omega_C_over_1_over_Q_minus_j"
+            or spec["fixed_components_only"] is not True
+            or spec["setting_invariant"] is not True
+            or spec["nominal_only"] is not True):
+        raise ValueError("Invalid PCB-C ground convention or trial accounting")
+    expected_ground = {"min_pf_per_component": formal["min_pf_per_component"],
+                       "max_pf_per_component": 1.0, "q": 60}
+    if spec["non_ground"] != reference or spec["grounded"] != expected_ground:
+        raise ValueError("PCB-C trial must change only grounded fixed PCB-C")
+    for rule in (spec["grounded"], spec["non_ground"]):
+        if (not isinstance(rule, dict)
+                or any(type(rule[k]) not in (int, float) or not math.isfinite(rule[k])
+                       for k in ("min_pf_per_component", "max_pf_per_component", "q"))
+                or rule["min_pf_per_component"] <= 0
+                or rule["min_pf_per_component"] > rule["max_pf_per_component"]
+                or rule["q"] <= 0):
+            raise ValueError("Invalid grounded/non-grounded PCB-C numerical limits")
+
+
 def _same_kind(existing, replacement):
     """Require type-compatible trial values, including nested list members."""
     if isinstance(existing, bool):
@@ -252,6 +291,9 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
         result["trial_additional_stopband"] = copy.deepcopy(trial["study_additional_stopband"])
     if "study_shunt_dtc_parasitic" in trial:
         result["trial_shunt_dtc_parasitic"] = copy.deepcopy(trial["study_shunt_dtc_parasitic"])
+    if "study_pcb_pattern_c_by_connection" in trial:
+        result["trial_pcb_pattern_c_by_connection"] = copy.deepcopy(
+            trial["study_pcb_pattern_c_by_connection"])
     return result
 
 
