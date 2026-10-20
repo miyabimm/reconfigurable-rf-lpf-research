@@ -1,0 +1,51 @@
+name: EXP-065 Git-only RF-T008 verified topology curation
+on:
+  push:
+    branches:
+      - exp065-rft008-wide-4l2gjm-20261020
+    paths:
+      - '.github/workflows/exp065_curate_results.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  curate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify current main EXP-065 reservation and unfinished manifest
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-065 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-065
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39453297733
+          github-token: ${{ github.token }}
+          pattern: exp065-*-*-*
+          merge-multiple: true
+          path: results/EXP-065/collected
+      - name: Curate 96 circuit outcomes, 192 statuses and 4 validated full checkpoints
+        run: |
+          uv run --frozen python scripts/curate_exp065.py --input results/EXP-065/collected
+          git diff --stat
+      - name: Commit curated evidence and audit before branch push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-065/ \
+                  data/experiment_index.csv \
+                  data/pareto_snapshots/rf_t008_exp065_4l2gjm_wide_20261020.json
+          git commit -m "EXP-065: curate 96 topology cases and new 4L2GJM validated IL [skip ci]"
+          uv run --frozen python scripts/audit_new_experiment_storage.py finalize EXP-065
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+          git push origin HEAD:exp065-rft008-wide-4l2gjm-20261020
