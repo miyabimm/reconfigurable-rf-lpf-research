@@ -1,0 +1,43 @@
+{
+  "experiment_id": "EXP-065",
+  "candidate_id": "EXP065-best_exp062-two_bridges-original",
+  "source_actions_run_id": 39453297733,
+  "source_execution_sha": "07db24f827c1d68e3eabbb6c9efd18376f5c356b",
+  "grid": {
+    "intervals": 28,
+    "dense_points": 1001
+  },
+  "metrics": {
+    "worst_IL_db": 0.8335054302993898,
+    "min_H2_db": 30.004999999513252,
+    "min_H3_db": 30.004999999933084,
+    "locations": [
+      {
+        "setting": "B8",
+        "mhz": 960.0,
+        "segment": 25
+      },
+      {
+        "setting": "B28",
+        "mhz": 1406.0,
+        "segment": 10
+      },
+      {
+        "setting": "B71",
+        "mhz": 1989.0,
+        "segment": 3
+      }
+    ],
+    "L_eig_min_nH": 2.4353280834833098
+  },
+  "independent_9x9_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 9.237055564881302e-13,
+    "max_power_residual_W": 6.938893903907228e-18,
+    "min_component_dissipation_W": -0.0,
+    "L_matrix_min_eigenvalue_nH": 2.4353280834833098,
+    "pass": true
+  },
+  "pass": true,
+  "finite_grid_not_continuous_proof": true
+}

@@ -1,0 +1,103 @@
+name: EXP-065 RF-T008 wide 4L2GJM topology exploration
+on:
+  push:
+    branches:
+      - exp065-rft008-wide-4l2gjm-20261020
+    paths:
+      - '.github/workflows/exp065_rft008_wide_4l2gjm.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  wide_search:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        layout: [best_exp062, two_ground_pcb, gjm_n3, bridge_out, gjm_bridge_in, gjm_n3_bridge, pcb_out_ground, gjm_no_input]
+        dtc: [two_bridges, tip_and_output, tip_and_input, dual_tip_shunts]
+        graph: [original, tip3_from_input, output_via_tip4]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Main EXP-065 registration and Git evidence preflight
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-065 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-065
+          uv run --frozen python -m py_compile experiments/chatgpt_topology_search/runs/EXP-065/wide_search_4l2gjm.py
+      - name: Run v2 staged local optimization and independent 9x9 coupled MNA
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-065/wide_search_4l2gjm.py \
+            --layout "${{ matrix.layout }}" --dtc "${{ matrix.dtc }}" --graph "${{ matrix.graph }}" \
+            --starts 2 --coarse 7 --fine 17 --dense 1001 --target 30.005 \
+            --out "results/EXP-065/${{ matrix.layout }}_${{ matrix.dtc }}_${{ matrix.graph }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp065-${{ matrix.layout }}-${{ matrix.dtc }}-${{ matrix.graph }}
+          path: results/EXP-065/${{ matrix.layout }}_${{ matrix.dtc }}_${{ matrix.graph }}.json
+          if-no-files-found: warn
+          retention-days: 30
+  aggregate:
+    needs: [wide_search]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp065-*
+          merge-multiple: true
+          path: results/EXP-065/collected
+      - name: Rank 96 joint topologies, preserve nonconverged and gate MNA
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files=sorted(Path("results/EXP-065/collected").glob("*.json"))
+          rows=[]
+          for f in files:
+              data=json.loads(f.read_text())
+              b=data["best_converged_30db"]
+              rows.append({
+                "layout":data["layout"],"dtc":data["dtc"],"graph":data["graph"],
+                "IL_db":b["dense"]["worst_IL_db"] if b else None,
+                "H2_db":b["dense"]["min_H2_db"] if b else None,
+                "H3_db":b["dense"]["min_H3_db"] if b else None,
+                "MNA_pass":data["independent_MNA"]["pass"] if b else None,
+                "converged_valid_starts":sum(any(t["eligible"] for t in s["attempts"]) for s in data["starts"]),
+                "numerical_fail_starts":sum(bool(s["exception"]) for s in data["starts"]),
+                "execution_sha":data["code_execution_sha"],
+              })
+          rank=sorted(rows,key=lambda x:x["IL_db"] if x["IL_db"] is not None else 1e9)
+          for r in rank[:20]:print("RANK",r,flush=True)
+          output={"experiment_id":"EXP-065","planned_cases":96,"completed_cases":len(files),
+                  "planned_initial_starts":192,"ranked":rank,
+                  "comparison_EXP062_best_IL_db":0.8335054302993898,
+                  "eligible_variants":sum(r["IL_db"] is not None for r in rows)}
+          dest=Path("results/EXP-065/summary.json")
+          dest.write_text(json.dumps(output,indent=2,allow_nan=False)+"\n")
+          if len(files)!=96:raise SystemExit("Partial sweep; do not promote missing trials")
+          if any(r["IL_db"] is not None and r["MNA_pass"] is not True for r in rank):
+              raise SystemExit("Independent 9x9 MNA failed: no Pareto promotion")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp065-aggregate-summary
+          path: results/EXP-065/summary.json
+          if-no-files-found: warn
+          retention-days: 30

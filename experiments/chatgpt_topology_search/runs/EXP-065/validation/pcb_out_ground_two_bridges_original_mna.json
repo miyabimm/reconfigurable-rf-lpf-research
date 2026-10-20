@@ -1,0 +1,43 @@
+{
+  "experiment_id": "EXP-065",
+  "candidate_id": "EXP065-pcb_out_ground-two_bridges-original",
+  "source_actions_run_id": 39453297733,
+  "source_execution_sha": "07db24f827c1d68e3eabbb6c9efd18376f5c356b",
+  "grid": {
+    "intervals": 28,
+    "dense_points": 1001
+  },
+  "metrics": {
+    "worst_IL_db": 0.8297115403501256,
+    "min_H2_db": 30.00499999924675,
+    "min_H3_db": 30.00484679604194,
+    "locations": [
+      {
+        "setting": "B8",
+        "mhz": 960.0,
+        "segment": 25
+      },
+      {
+        "setting": "B12",
+        "mhz": 1398.0,
+        "segment": 6
+      },
+      {
+        "setting": "B71",
+        "mhz": 2086.65,
+        "segment": 3
+      }
+    ],
+    "L_eig_min_nH": 2.273362966558851
+  },
+  "independent_9x9_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 4.618527782440651e-13,
+    "max_power_residual_W": 1.1275702593849246e-17,
+    "min_component_dissipation_W": -0.0,
+    "L_matrix_min_eigenvalue_nH": 2.273362966558851,
+    "pass": true
+  },
+  "pass": true,
+  "finite_grid_not_continuous_proof": true
+}

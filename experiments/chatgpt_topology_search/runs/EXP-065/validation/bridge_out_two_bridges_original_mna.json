@@ -1,0 +1,43 @@
+{
+  "experiment_id": "EXP-065",
+  "candidate_id": "EXP065-bridge_out-two_bridges-original",
+  "source_actions_run_id": 39453297733,
+  "source_execution_sha": "07db24f827c1d68e3eabbb6c9efd18376f5c356b",
+  "grid": {
+    "intervals": 28,
+    "dense_points": 1001
+  },
+  "metrics": {
+    "worst_IL_db": 0.8341902564272808,
+    "min_H2_db": 30.004999997634304,
+    "min_H3_db": 30.002876630956116,
+    "locations": [
+      {
+        "setting": "B26",
+        "mhz": 894.0,
+        "segment": 21
+      },
+      {
+        "setting": "B28",
+        "mhz": 1406.0,
+        "segment": 10
+      },
+      {
+        "setting": "B71",
+        "mhz": 2083.71,
+        "segment": 3
+      }
+    ],
+    "L_eig_min_nH": 2.421504278796348
+  },
+  "independent_9x9_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 3.254285729781259e-12,
+    "max_power_residual_W": 7.806255641895632e-18,
+    "min_component_dissipation_W": -0.0,
+    "L_matrix_min_eigenvalue_nH": 2.421504278796348,
+    "pass": true
+  },
+  "pass": true,
+  "finite_grid_not_continuous_proof": true
+}
