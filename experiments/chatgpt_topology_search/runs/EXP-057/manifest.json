@@ -401,7 +401,7 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/run_summary.json",
-      "sha256": "df4062b767c8dad33ca19c43ee0a2e02c6da5c454f7a4ed8a99fc086b8826fb8"
+      "sha256": "4c0c14d2c2ab15d4a045d8996addd80fd8d88eb485e7d070e88c400aae1988c9"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/control_exp055_best.json",
