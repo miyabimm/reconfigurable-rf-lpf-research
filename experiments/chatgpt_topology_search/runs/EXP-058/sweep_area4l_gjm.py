@@ -184,7 +184,7 @@ def independent_mna(policy,variant,gjm_names,x):
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--variant",choices=tuple(DTC),required=True)
-    ap.add_argument("--gjm",required=True,help="1..3 underscores-separated GJM positions: cf0_cf1 etc")
+    ap.add_argument("--gjm",required=True,help="1..4 underscores-separated GJM positions: cf0_cf1 etc")
     ap.add_argument("--starts",type=int,default=2)
     ap.add_argument("--coarse",type=int,default=7)
     ap.add_argument("--fine",type=int,default=17)
@@ -199,8 +199,8 @@ def main():
     oldseed=np.array(src["vector"],float)
     if oldseed.shape!=(29,):raise ValueError("Invalid four-L EXP047 checkpoint")
     gjms=tuple(a.gjm.split("_"))
-    if not (1<=len(gjms)<=3 and len(set(gjms))==len(gjms) and all(j in GJM_POS for j in gjms)):
-        raise ValueError("GJM positions must be 1..3 distinct fixed-C sites")
+    if not (1<=len(gjms)<=4 and len(set(gjms))==len(gjms) and all(j in GJM_POS for j in gjms)):
+        raise ValueError("GJM positions must be 1..4 distinct fixed-C sites")
     ec=Evaluator(policy,a.variant,gjms,a.dense)
     coarse=Evaluator(policy,a.variant,gjms,a.coarse)
     fine=Evaluator(policy,a.variant,gjms,a.fine)
