@@ -1,4 +1,8 @@
-## 2026-10-20：RF-T008試験条件の登録（探索は未実施）
+## 2026-10-20：RF-T008改訂v2（IC内固定C/Q60への置換・Phase2、性能探索未実施）
+
+ユーザー承認により、ICのOFF残留寄生という見方を**設計時に選定するIC内固定C**へ拡張。可変C最大3枝／枝0～3pF/Q35は不変。**IC固定Cは各設置DTCと同一端子間に1枝、Hot-Hot 0.2～3pF/Q60、Hot-GND 0.5～3pF/Q60**、全6バンド共通、OFF時も存続。枝合計上限は6pF、損失付きYをCfix/Q60とCvar/Q35で別々に計算。RF-T008初版のシャント0.5pF/Q40枝は**置換済み、二重stamp禁止**。RF-T007従来Q40モデルは不変更。**通常PCB-Cは対GND 0.02～1pF/Q60（既にQ60であり継続）、Hot-Hot 0.02～0.2pF/Q40、最大3個で不変更。** 固定IC-CはPCB-C個数へ算入しない。IC物理面積/Q(f)/SRF未評価。新制約、レジストリ、`src/lpf/constraint_versions.py`および専用検査`src/lpf/trial_ic_fixed_c.py`、回帰テストを改訂。正式RF-F003と他のtrialは不変更。**v2仕様での新EXP探索・28区間評価・独立MNAは未実施**。旧IL0.831046dBなどは旧条件下の予備結果でありv2の実績ではない。新EXPのmain事前予約・公式外部S2P使用・再最適化必須。Phase2継続、Phase3未承認。
+
+## 2026-10-20：RF-T008初版・履歴（改訂v2でICモデル置換）
 
 **ユーザー承認済みのPhase 2試験条件登録。** RF-F003を固定基準とし、RF-T007の最大3DTC（各0～3pF/Q35）およびシャントDTC各枝の常設寄生0.5pF/Q40を保持したうえで、通常の固定PCB-Cを**対GNDなら0.02～1.0pF/Q60、hot-hotなら0.02～0.2pF/Q40**として明示的に区別する。固定PCB-Cは両配置合計最大3個。追加0.5pFのDTC寄生は別枠・Q40固定。条件正本：`data/constraints/trial/RF-T008.json`、台帳、接続別検査器`src/lpf/trial_pcb_pattern_c.py`、回帰テスト`tests/test_trial_pcb_pattern_c_t008.py`。正式RF-F003と既存trial不変更。ユーザーのPCB実現性・Q60見込みは仮定であって物理検証完了ではない。**RF-T008での新最適化、1MHz格子に基づく確証、独立MNA、実部品・SRF/EM・公差評価は未実施**。前回の0.831046dB（接地PCB-C Q40）はRF-T008成果に流用禁止。新EXP番号のmain事前予約後に実験を開始する。Phase2継続、Phase3停止。
 
