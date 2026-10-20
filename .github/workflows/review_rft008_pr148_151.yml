@@ -19,6 +19,10 @@ jobs:
       OMP_NUM_THREADS: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch current main to establish independent storage audit baseline
+        run: git fetch origin main:refs/remotes/origin/main
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
