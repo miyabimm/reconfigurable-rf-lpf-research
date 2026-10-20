@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-064",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 3,
     "retain": [
@@ -15,14 +15,44 @@
     "rule": "Retain best fully converged 30dB and independent 9x9 MNA compliant area4 candidate; preserve any numerical counterexample and control reoptimization, all 24 initial starts in summary, complete six tuning values, source SHA.",
     "estimated_curated_bytes": 105000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
+  "checkpoints": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/checkpoints/g4g3_b34.json",
+      "sha256": "5aa69ee817ab51ada25bb24bf5ded5278f9fa34f52379c48a1613dfa0fdef5e7",
+      "candidate_id": "EXP064-area4-g4g3_b34",
+      "selection_reason": "pareto"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/validation/g4g3_b34_mna.json",
+      "sha256": "3621337f36e73da69050641c7c5faad28754ed1326a7b61e8988f74802bb0bff",
+      "method": "independent_mna",
+      "status": "passed"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/sweep_4l_zero_gjm_pcb.py",
+      "sha256": "b3adb1416caf35a00f5a926a6f6bde2a7c749da74814b4b369a37e09b1430894",
+      "role": "source_snapshot",
+      "reason": "Executed full RF-T008 model and independent 9x9 MNA code"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/README.md",
+      "sha256": "a891f565b49d36f95e74478088dd742da4789068a8f8c0e429cf6e86f0da3e35",
+      "role": "method_note",
+      "reason": "Pre-run purpose, experiment gate and frozen nominal constraints"
+    }
+  ],
   "limitations": [
-    "Pre-run no numerical finding",
-    "Never treat converged finite sample as global optimum"
+    "Selected evidence only; 12 per-layout raw outcomes remain in 30-day Actions artifacts",
+    "No global optimality or physical component validation."
   ],
   "size_exception": null,
-  "git_readback": "not_run",
-  "summary": null
+  "git_readback": "passed",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-064/run_summary.json",
+    "sha256": "5f631696ea9d0e7534f4b70352744e2d4291dc3586017402778b0fde791fccef"
+  }
 }

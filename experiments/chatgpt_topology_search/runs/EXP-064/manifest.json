@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "34fcc1dedaa1c5b7aa71c79df86cf67c30cd5015",
+    "execution_sha": "e11ae62b8bfe7996751e7e9afabb8b6bf9d0d6be",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -412,21 +412,51 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "intervals": 28,
+      "points_per_interval": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "intervals": 28,
+      "points_per_interval": 3,
+      "total": 84,
+      "method": "9x9 coupled inductor branch-current MNA"
+    }
   },
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/checkpoints/g4g3_b34.json",
+      "sha256": "5aa69ee817ab51ada25bb24bf5ded5278f9fa34f52379c48a1613dfa0fdef5e7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/validation/g4g3_b34_mna.json",
+      "sha256": "3621337f36e73da69050641c7c5faad28754ed1326a7b61e8988f74802bb0bff"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/run_summary.json",
+      "sha256": "5f631696ea9d0e7534f4b70352744e2d4291dc3586017402778b0fde791fccef"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/sweep_4l_zero_gjm_pcb.py",
+      "sha256": "b3adb1416caf35a00f5a926a6f6bde2a7c749da74814b4b369a37e09b1430894"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-064/README.md",
+      "sha256": "a891f565b49d36f95e74478088dd742da4789068a8f8c0e429cf6e86f0da3e35"
+    }
+  ],
   "limitations": [
-    "Pre-run only: numerical optimization not yet executed",
-    "External S2P, constant Q, finite 28x1001 and independent MNA planned",
-    "Phase 3 not approved; Q(f), SRF, EM, physical signed k and tolerance unverified."
+    "Local 4L/0GJM 12 PCB layouts and 24 starts",
+    "Nominal constant-Q model; H2/H3 30dB finite-grid, not 35dB proof",
+    "No continuous extreme, SRF, physical k, Q(f), EM, tolerances or Phase3"
   ]
 }
