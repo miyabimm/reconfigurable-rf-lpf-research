@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-061",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -23,10 +23,27 @@
       "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
       "sha256": "044ed4308ac0fda614e5e0f695bea65f7fadb9b7bd8ba8e5ba90a3c542f103e3",
       "reason": "Controlled restart benchmark code from EXP060 raw saved vectors"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-061/run_summary.json",
+      "sha256": "f9cd5fd6c58c0dfe722e72c767488ec04a9bfcd6253464517a76cee72558fdbe",
+      "reason": "Executed source run 39439246405 paired budget summary and 126-start root termination census; code retained in Git."
     }
   ],
   "limitations": [
-    "Preflight only; numerical result remains pending."
+    "Raw 40 complete vectors and statuses in finite-retention Actions artifact 12273925427; summary and full reproducible benchmark source preserved in Git.",
+    "Study compares same final source vector, not a proof that all original 64 failures are feasible.",
+    "EXP059 and EXP060 feature PR dependencies remain unmerged."
   ],
-  "size_exception": null
+  "size_exception": null,
+  "validation_summary": {
+    "source_actions_run": 39439246405,
+    "aggregate_artifact_id": 12273925427,
+    "matched_warm_starts": 20,
+    "standard_budget_full_pass": 20,
+    "raised_budget_full_pass": 20,
+    "independent_9x9_MNA_pass": 40,
+    "source_pr": 146
+  }
 }
