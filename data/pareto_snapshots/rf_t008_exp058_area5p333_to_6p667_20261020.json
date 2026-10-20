@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T008_EXP058_4L_AREA5P333_6_6P667_20261020",
+  "experiment_id": "EXP-058",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "execution_status": "completed_GitHub_Actions_selected_candidates",
+  "pareto_status": "non_dominated_among_observed_area3_through_6p667_not_global",
+  "model": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_ic_parallel_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_inductor_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "inductor_model": "4xLQP02HV Q25; adjacent signed |k|<=0.10",
+    "Q_C": "GJM/Q80; PCB grounded/Q60 and hot-hot/Q40; two IC fixed/Q60 and variable/Q35 as separate lossy branches",
+    "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,ICfixed0,ICfixed1,6x(Cvar0,Cvar1) in B71,B12,B28,B13+B14,B26,B8 order"
+  },
+  "verification_grid": {
+    "setting_count": 6,
+    "segments": 28,
+    "samples_per_segment": 1001,
+    "independent_probe_count": 84,
+    "minimum_H2_H3_required_db": 30
+  },
+  "selected_candidates": [
+    {
+      "candidate_id": "EXP058-T008-A5P333-4L-2GJM-CF0-CF1-INPUT-OUTPUT",
+      "variable_C_variant": "input_output",
+      "area": 5.333333333333333,
+      "GJM_positions": [
+        "cf0",
+        "cf1"
+      ],
+      "GJM_count": 2,
+      "PCB_count": 2,
+      "job_graph_count": 18,
+      "source_run_id": 39425540634,
+      "source_artifact_id": 12266195448,
+      "source_artifact_zip_sha256": "5a1ad1700209d9c2e5b124c4fbbc325f05c39bef55e8f2450a152fe4e762ae4b",
+      "source_json_sha256": "bccf278a0d8163a82030f5d6d19ff01552230ad0d138cfac497eb1c46e9792c2",
+      "source_execution_sha": "6dcc1f2e91156bea4d6e053f2e11a5e4e06c6fb9",
+      "vector": [
+        2.217758617393675,
+        16.161384001281274,
+        6.4191720564543875,
+        7.591102089789684,
+        2.9945833920543814,
+        1.046983877764973,
+        0.02,
+        0.020000000000000035,
+        0.09999999999999998,
+        0.029284535955423758,
+        -0.023760723242242533,
+        0.3132635647242393,
+        0.351519104778151,
+        0.341140391744976,
+        1.2272974655704554,
+        0.32702478474788105,
+        1.1237115577845516,
+        0.2538593461472139,
+        0.9699405024322632,
+        0.09175415527722788,
+        0.6119948402256118,
+        0.03926325565585301,
+        0.2923608734198344,
+        0,
+        3.46944695205932e-16
+      ],
+      "metrics": {
+        "worst_IL_db": 0.8414441226475076,
+        "min_H2_db": 30.004999998368245,
+        "min_H3_db": 30.00499999999867,
+        "worst_IL_case": "B8",
+        "worst_IL_mhz": 960
+      },
+      "solver": {
+        "start": 1,
+        "coarse_success": true,
+        "fine_success": true,
+        "iterations": [
+          124,
+          1
+        ]
+      },
+      "independent_MNA": {
+        "pass": true,
+        "probes": 84,
+        "max_IL_difference_db": 4.405364961712621e-13,
+        "max_power_residual_W": 1.1275702593849246e-17,
+        "min_L_eigenvalue_nH": 2.1920650398479724
+      }
+    },
+    {
+      "candidate_id": "EXP058-T008-A6-4L-3GJM-CF0-CF1-CP-INPUT-OUTPUT",
+      "variable_C_variant": "input_output",
+      "area": 6,
+      "GJM_positions": [
+        "cf0",
+        "cf1",
+        "cp"
+      ],
+      "GJM_count": 3,
+      "PCB_count": 1,
+      "job_graph_count": 12,
+      "source_run_id": 39425540634,
+      "source_artifact_id": 12266305273,
+      "source_artifact_zip_sha256": "fec9915354d274a5d5b0f85a9e4ea001e978605388d635b9bb262c5ae823584b",
+      "source_json_sha256": "744d9cd68d0a049bde1858b5d8b6d91b7dc1acb8377df137bae394a0f671e29d",
+      "source_execution_sha": "6dcc1f2e91156bea4d6e053f2e11a5e4e06c6fb9",
+      "vector": [
+        2.203350591805678,
+        16.07015776110697,
+        6.461480787735681,
+        7.590768548967923,
+        3.027424111354491,
+        1.0407767900579739,
+        0.020000000000000153,
+        0.13335098736084713,
+        0.09999999999999999,
+        0.029155574183568532,
+        -0.024052511435163168,
+        0.20000000000000007,
+        0.35323321315961687,
+        0.3438627166560841,
+        1.2245902403580566,
+        0.2751926620883896,
+        1.0201078437955644,
+        0.2558406795290442,
+        0.9667438292572968,
+        0.10714782925627732,
+        0.6726724279143135,
+        0.039526027714765086,
+        0.2861336634099325,
+        8.155238966950515e-17,
+        3.5397875205646287e-16
+      ],
+      "metrics": {
+        "worst_IL_db": 0.8403713118395123,
+        "min_H2_db": 30.004999999545795,
+        "min_H3_db": 30.004999999903745,
+        "worst_IL_case": "B8",
+        "worst_IL_mhz": 960
+      },
+      "solver": {
+        "start": 1,
+        "coarse_success": true,
+        "fine_success": true,
+        "iterations": [
+          131,
+          1
+        ]
+      },
+      "independent_MNA": {
+        "pass": true,
+        "probes": 84,
+        "max_IL_difference_db": 7.247535904753022e-13,
+        "max_power_residual_W": 1.734723475976807e-17,
+        "min_L_eigenvalue_nH": 2.1778277714461747
+      }
+    },
+    {
+      "candidate_id": "EXP058-T008-A6P667-4L-4GJM-INPUT-OUTPUT",
+      "variable_C_variant": "input_output",
+      "area": 6.666666666666666,
+      "GJM_positions": [
+        "cf0",
+        "cf1",
+        "cf2",
+        "cp"
+      ],
+      "GJM_count": 4,
+      "PCB_count": 0,
+      "job_graph_count": 3,
+      "source_run_id": 39426351877,
+      "source_artifact_id": 12266770362,
+      "source_artifact_zip_sha256": "2ac32041758fd709c59639adcd65e46f00947718784bcf9c963fcb350d48d85b",
+      "source_json_sha256": "d93a382b31f58a9c738078e9808426d2255c4588c2ab54d356e704c42c1d4233",
+      "source_execution_sha": "7273b9ec4be416048f4375cdb4ff7a07585557d0",
+      "vector": [
+        1.7982693517921151,
+        8.166932765975364,
+        6.689992915340624,
+        7.68253940606992,
+        4.252238296475044,
+        1.0426907349679442,
+        0.237433879110769,
+        0.02,
+        0.07960315049693822,
+        0.1,
+        0.03467744479711594,
+        0.2,
+        0.2,
+        1.040673289074859,
+        1.1019341152725406,
+        0.8559794766334742,
+        0.8864693100267093,
+        0.8534268411555204,
+        0.8444687732170425,
+        0.5436006788681381,
+        0.4530655253546351,
+        0.39350962953241725,
+        0.24361392375907504,
+        0,
+        0
+      ],
+      "metrics": {
+        "worst_IL_db": 0.8377954489797989,
+        "min_H2_db": 30.004999999883424,
+        "min_H3_db": 30.00499999997967,
+        "worst_IL_case": "B28",
+        "worst_IL_mhz": 803
+      },
+      "solver": {
+        "start": 0,
+        "coarse_success": true,
+        "fine_success": true,
+        "iterations": [
+          98,
+          1
+        ]
+      },
+      "independent_MNA": {
+        "pass": true,
+        "probes": 84,
+        "max_IL_difference_db": 1.7337242752546445e-12,
+        "max_power_residual_W": 1.0408340855860843e-17,
+        "min_L_eigenvalue_nH": 1.783443184774706
+      }
+    }
+  ],
+  "comparison": {
+    "area4p667_prior_best_IL_db": 0.8543674592970051,
+    "area5p333_best_IL_db": 0.8414441226475076,
+    "area6_best_IL_db": 0.8403713118395123,
+    "area6p667_best_IL_db": 0.8377954489797989
+  },
+  "limitations": [
+    "All RF values are constant-Q and finite grid; no continuous extrema guarantee, global optimum proof, physical simultaneous k, PCB/IC real area, SRF/Q(f), tolerance, EM or actual measurements.",
+    "30dB mandatory met but 35dB nominal and IL<=0.30dB not met.",
+    "RF-T008 trial only; formal RF-F003 unchanged; Phase3 not approved."
+  ]
+}
