@@ -30,6 +30,12 @@
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
       "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b",
       "reason": "Multi-basin K01 fixed sweep experimental method and Phase2 limits"
+    },
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py",
+      "sha256": "011069b03de04f7b2d4ef7070b75f2dbcba8127427e0e456d96ab11a41d7d5dd",
+      "reason": "Second-stage pinned parent Actions artifact fixed K01 positive-basin transition and negative minimum fine-mesh continuation"
     }
   ],
   "limitations": [
