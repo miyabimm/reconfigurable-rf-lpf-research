@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-062",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 5,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain the best fully converged H2/H3>=30dB and independent-MNA-passed candidate in each chip-area cell; keep cross-area diversity and representative failures with 6-setting full vectors, source SHA, raw attempt status and complete accounting.",
+    "estimated_curated_bytes": 115000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "limitations": [
+    "Pre-run storage policy only; no numerical result or physical performance claim",
+    "Raw job artifacts have time-limited retention and are not yet curated into Git."
+  ],
+  "size_exception": null,
+  "git_readback": "not_run",
+  "summary": null
+}
