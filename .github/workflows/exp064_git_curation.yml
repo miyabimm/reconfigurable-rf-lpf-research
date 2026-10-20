@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/exp064_git_curation.yml'
       - 'scripts/curate_exp064.py'
+      - 'data/experiment_index.csv'
   workflow_dispatch:
 permissions:
   contents: write
