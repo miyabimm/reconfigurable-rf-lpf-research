@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "0c23dae75c2862acdee0292012dc1b221b568aef",
+    "execution_sha": "3d0d63a96a94547bc73f2b7564ec97f74971c115",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -406,7 +406,6 @@
       280
     ],
     "planned_followup_areas": [
-      4.666666666666667,
       5.333333333333333,
       6
     ],
@@ -441,6 +440,18 @@
       "shunt_input",
       "shunt_output",
       "dual_series"
+    ],
+    "fifth_area": 4.666666666666667,
+    "fifth_area_4L_oneGJM_positions": [
+      "cf0",
+      "cf1",
+      "cf2",
+      "cp"
+    ],
+    "fifth_area_DTC_variants": [
+      "shunt_output",
+      "shunt_input",
+      "input_output"
     ]
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
@@ -472,6 +483,14 @@
     {
       "path": "data/pareto_snapshots/rf_t008_exp058_area4_20261020.json",
       "sha256": "c15ffc08d08f4f179d891680e0d55f57919ec80f13b7ab11824d7bf5e4b04209"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area4l_gjm.py",
+      "sha256": "6f569e482cdd4a81a3b1f2c8b6fb296cc489a28bd8ff471f9582b8bce4955fbc"
+    },
+    {
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4p333_20261020.json",
+      "sha256": "5309e04c98b5eccae4a77e8f7425c1adde0de7bba10184acfa92bbee4aa6a7c4"
     }
   ],
   "limitations": [
