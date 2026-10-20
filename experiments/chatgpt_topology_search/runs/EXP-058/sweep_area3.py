@@ -45,25 +45,26 @@ class Evaluator(old.Evaluator):
     def __init__(self, policy, variant, points, gjm_position=None):
         self.variant = variant
         self.gjm_position = gjm_position
+        self.gjm_positions = (() if gjm_position is None else ((gjm_position,) if isinstance(gjm_position,int) else tuple(gjm_position)))
         self.ids = VARIANTS[variant]
         self.variable_edges = tuple(ALL_VAR_EDGES[j] for j in self.ids)
         self.fixed_ic_edges = self.variable_edges
         super().__init__(policy, "zero_gjm_double", points)
         self.cap_edges = PCB_EDGES + self.variable_edges + self.fixed_ic_edges
         self.BC = old.incidence(self.cap_edges)
-        self.Q_C = np.array([80. if gjm_position==j else (60. if -1 in edge else 40.) for j,edge in enumerate(PCB_EDGES)] + [35.,35.,60.,60.], float)
+        self.Q_C = np.array([80. if j in self.gjm_positions else (60. if -1 in edge else 40.) for j,edge in enumerate(PCB_EDGES)] + [35.,35.,60.,60.], float)
         # Vector: L3, PCB C3, chip neighboring k2, IC fixed C2, six x IC variable C2.
         self.bounds = np.array(
             [(0.4, 27.)] * 3
-            + [(0.02, 100.) if gjm_position==j else ((0.02, 1.) if -1 in edge else (0.02, 0.2)) for j,edge in enumerate(PCB_EDGES)]
+            + [(0.02, 100.) if j in self.gjm_positions else ((0.02, 1.) if -1 in edge else (0.02, 0.2)) for j,edge in enumerate(PCB_EDGES)]
             + [(-0.1, 0.1)] * 2
             + [(0.5, 3.) if -1 in edge else (0.2, 3.)
                for edge in self.variable_edges]
             + [(0., 3.)] * 12, float)
-        self.area = 3. + (2./3. if gjm_position is not None else 0.)
+        self.area = 3. + (2./3.) * len(self.gjm_positions)
         pcb = [dict(norm_edge(edge), capacitance_pf=0.1,
                     q=60 if -1 in edge else 40)
-               for j,edge in enumerate(PCB_EDGES) if j != gjm_position]
+               for j,edge in enumerate(PCB_EDGES) if j not in self.gjm_positions]
         validate_trial_pcb_pattern_c_branches(policy, pcb)
         self.policy = policy
 
@@ -223,7 +224,7 @@ def independent_mna(ev, vector, policy, variant):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--variant",choices=tuple(VARIANTS),required=True)
-    parser.add_argument("--gjm-position",choices=("none","cf0","cf1","cp"),default="none")
+    parser.add_argument("--gjm-position",choices=("none","cf0","cf1","cp","cf0_cf1","cf0_cp","cf1_cp"),default="none")
     parser.add_argument("--starts",type=int,default=2)
     parser.add_argument("--coarse",type=int,default=7)
     parser.add_argument("--fine",type=int,default=17)
@@ -239,7 +240,7 @@ def main():
     orig=np.asarray(json.loads(ORIGINAL.read_text())["vector"],float)
     if len(orig)!=26:
         raise ValueError("Historical 3L seed corrupt")
-    gjm = {"none":None,"cf0":0,"cf1":1,"cp":2}[arg.gjm_position]
+    gjm = {"none":None,"cf0":0,"cf1":1,"cp":2,"cf0_cf1":(0,1),"cf0_cp":(0,2),"cf1_cp":(1,2)}[arg.gjm_position]
     dense=Evaluator(policy,arg.variant,arg.dense,gjm)
     coarse=Evaluator(policy,arg.variant,arg.coarse,gjm)
     fine=Evaluator(policy,arg.variant,arg.fine,gjm)
