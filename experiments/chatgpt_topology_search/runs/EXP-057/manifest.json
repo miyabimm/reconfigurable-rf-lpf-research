@@ -342,7 +342,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "46cfd3ef53a2de15eb355b24cd57319fb2b1609f",
+    "execution_sha": "5c1e7a59afd1edcb9ee581a14a4872f340b510a1",
     "archive_sha": null,
     "working_tree_dirty": false
   },
@@ -379,31 +379,60 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": null
+    "evaluation_count": 20
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": "10 RF-T007 4L L graphs, 20 primary SLSQP starts, all selected graphs 6 settings ×28 regions×1001 samples H2/H3>=30dB",
+    "independent_grid": "10 selected strict-eligible 4L graphs each 84 explicit coupled-L 9x9 MNA probes and power conservation"
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/README.md",
-      "sha256": "a2a1f1dce9605291385e08c539c94874d6b5be13bbda152208d4848376d64558"
+      "sha256": "4c58664bb6945d50bb835bc431213309fd5cb93133a73a28fea227c2312ecfa9"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/sweep_from_exp055.py",
       "sha256": "4687c08833d0ecabf35ee49b9dff66c6c6fd8365487692109d98f61f8a459055"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/run_summary.json",
+      "sha256": "df4062b767c8dad33ca19c43ee0a2e02c6da5c454f7a4ed8a99fc086b8826fb8"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/control_exp055_best.json",
+      "sha256": "b11290501976fe333cd58379fa7b691cca1a33f8cdcdd61e680c7b5ee2e0d305"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/control_exp055_independent_mna.json",
+      "sha256": "21a22e0975050306de5a6b3d0d298ecec7610ff676176180c72ad693abd790ed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/shunt_tip_from_input_best.json",
+      "sha256": "4c2e09050861ae5c4da97cff5f73ac5a184e5d65297ee8a319f4077a05fe4e8f"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/shunt_tip_from_input_independent_mna.json",
+      "sha256": "9509bc962c9c4f9a81a714b46821c1b316e4d0bb7894035466a0d31a793c16ab"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/ground_pendant_from_input_best.json",
+      "sha256": "2e259336603a2dd31916c215c1e9901040ad73696e6c35aec97a03e8cb4285ad"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/ground_pendant_from_input_independent_mna.json",
+      "sha256": "25c30094798894d749150a66f317b008280535adb8ed48efb3704567a1d96571"
     }
   ],
   "limitations": [
-    "Pre-run: no EXP-057 numerical optimization executed yet",
-    "RF-T007 fixed external S2Ps and one shunt DTC always-on parasitic unchanged; RF-F003 formal and prior trial data untouched",
-    "Future finite 28×1001 region, 84 independent MNA, nominal constant-Q local search, not physical demonstration or global optimality",
-    "New 2-stage SLSQP budget applies only to these new jobs. Earlier EXP-055/056 historical iteration limit and results immutable."
+    "EXP-057 Actions run39371574312 SUCCESS, 10 graphs including 9 new + control, 20 two-stage SLSQP trials; 19 success, one line-search failure/nonconvergence, no maxiter recovery, no execution exceptions.",
+    "Nine new 4L graph electrical topologies did NOT beat EXP055 source IL0.8173655897607699; control reoptimized IL0.8173655896742016 (8.66e-11dB numerical difference only).",
+    "All selected 10 graphs satisfy mandatory finite 28×1001 H2/H3>=30dB and 84-point independent explicit 9x9 coupled-L MNA PASS.",
+    "Original 20 raw trial histories saved Actions artifact12241866186 ZIP SHA256 791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd; full inner JSON SHA256 6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17.",
+    "Nominal constant-Q/finite-band-local best; not a global optimum or proof of physical k realization, continuous frequency extremes, SRF/Q(f), PCB EM, tolerance or measured S2Ps. Phase2 only; RF-F003 unchanged."
   ]
 }
