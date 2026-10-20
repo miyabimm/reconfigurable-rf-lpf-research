@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-058",
+  "phase": "Phase 2",
+  "stage": "running",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Per chip area retain numerically 30dB-eligible lowest worst IL (independent MNA pass), structural alternatives and representative noncompliant failures; retain full six-setting vectors.",
+    "estimated_curated_bytes": 72000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
+      "sha256": "8f4351d109e35b22a2ba6f0ae14368e3ece50ddf04cfe0c5e0cb2c49b279aa3e",
+      "reason": "Full source script for explicit RF-T008 two-Q composite capacitor stamping, optimizer and independent MNA."
+    },
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area4.py",
+      "sha256": "5b4eebaf11aaf08d0cd406dacc1d788033965f131960407c977273c340eb7cce",
+      "reason": "Four-L zero-GJM RF-T008 v3 solver with 9x9 coupled-L MNA and 12 variants"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json",
+      "sha256": "21dc10094dab9687e2c0e0877a37a6f595fe00199a929d750321fbe25a90aaf5",
+      "reason": "Git checkpoint records executed area3 and area3p667 two observed Pareto full vectors and verification"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4_20261020.json",
+      "sha256": "c15ffc08d08f4f179d891680e0d55f57919ec80f13b7ab11824d7bf5e4b04209",
+      "reason": "Area 4 RF-T008 four-L zero-GJM local search, dominated best vector, independent 9x9 MNA"
+    },
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area4l_gjm.py",
+      "sha256": "8efdf41a7ab5880d5b6e54ae131198ae6c49bceb5e8c831517d813edaa0ec57c",
+      "reason": "General four-fixed-C 4L RF-T008 v3 study for GJM count 1 to 3 with independent 9x9 MNA"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4p333_20261020.json",
+      "sha256": "5309e04c98b5eccae4a77e8f7425c1adde0de7bba10184acfa92bbee4aa6a7c4",
+      "reason": "Third non-dominated area4p333 3L/2GJM full vector and verified run"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json",
+      "sha256": "f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9",
+      "reason": "Verified area4p667 non-dominated full network parameter vector and distinct coupled-L MNA"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area5p333_to_6p667_20261020.json",
+      "sha256": "30a96103cc020f2c5c74e394b90c60bc20d481a140b3bb78bf194e427c192a49",
+      "reason": "Verified T008 area5p333, area6 and area6p667 numerical Pareto complete 4L vectors from GitHub Actions and 84 point independent MNA"
+    }
+  ],
+  "limitations": [
+    "Assembled numerical snapshots and readback available; project-wide final retention audit and finalization still pending."
+  ],
+  "size_exception": null
+}

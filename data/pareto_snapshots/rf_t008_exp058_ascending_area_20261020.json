@@ -1,0 +1,514 @@
+{
+  "schema_version": 1,
+  "title": "RF-T008 revision3 ascending chip-area Pareto, EXP-058 2026-10-20",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "phase": "Phase 2",
+  "experiment_id": "EXP-058",
+  "status": "actual_GitHub_Actions_numerical_best_found; finite-grid and independent MNA, not global optimum",
+  "analysis": {
+    "chip_area_cells": [
+      3,
+      3.666666666666667,
+      4,
+      4.333333333333333,
+      4.666666666666667,
+      5.333333333333333,
+      6,
+      6.666666666666667
+    ],
+    "graph_variants_executed": 78,
+    "SLSQP_initial_starts_per_graph": 2,
+    "total_local_starts": 156,
+    "observed_cost_cells_with_feasible_local_point": 8,
+    "frequency_intervals": 28,
+    "points_per_interval": 1001,
+    "independent_MNA_selected_points_per_candidate": 84,
+    "IC_DTC_max_branches": 2,
+    "IC_fixed_Q": 60,
+    "IC_variable_Q": 35,
+    "IC_fixed_hot_GND_pF": [
+      0.5,
+      3
+    ],
+    "IC_fixed_hot_hot_pF": [
+      0.2,
+      3
+    ],
+    "IC_var_pF": [
+      0,
+      3
+    ],
+    "PCB_C_grounded_Q": 60,
+    "PCB_C_grounded_pF": [
+      0.02,
+      1
+    ],
+    "PCB_C_hot_hot_Q": 40,
+    "PCB_C_hot_hot_pF": [
+      0.02,
+      0.2
+    ],
+    "chip_L_family": "LQP02HV Q25",
+    "source_ohms": 50,
+    "load_ohms": "60-j40",
+    "fixed_input_output_s2p_included": true,
+    "high_frequency_stopband_minimum_db": 30,
+    "optimizer_internal_guard_db": 30.005
+  },
+  "observed_nondominated": [
+    {
+      "area": 3,
+      "L": 3,
+      "GJM": 0,
+      "topology": "shunt_output",
+      "IL_db": 1.0103502552079047,
+      "H2_min_db": 30.00499999996618,
+      "H3_min_db": 30.005000000007374,
+      "run_id": 39422318183,
+      "vector_source": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json"
+    },
+    {
+      "area": 3.666666666666667,
+      "L": 3,
+      "GJM": 1,
+      "topology": "Cf0_shunt_output",
+      "IL_db": 0.9340275796118456,
+      "H2_min_db": 30.004999999293464,
+      "H3_min_db": 30.004999999980427,
+      "run_id": 39422852920,
+      "vector_source": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json"
+    },
+    {
+      "area": 4.333333333333333,
+      "L": 3,
+      "GJM": 2,
+      "topology": "Cf0_Cp_shunt_output",
+      "IL_db": 0.9281187612899361,
+      "H2_min_db": 30.004999999999917,
+      "H3_min_db": 30.00499999999993,
+      "run_id": 39424506944,
+      "vector_source": "data/pareto_snapshots/rf_t008_exp058_area4p333_20261020.json"
+    },
+    {
+      "area": 4.666666666666667,
+      "L": 4,
+      "GJM": 1,
+      "topology": "Cf0_input_output_two_hot_hot_DTC",
+      "IL_db": 0.8543674592970051,
+      "H2_min_db": 30.004999999561043,
+      "H3_min_db": 30.004999999144566,
+      "run_id": 39424927704,
+      "vector_source": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json"
+    },
+    {
+      "area": 5.333333333333333,
+      "L": 4,
+      "GJM": 2,
+      "topology": "Cf0_Cf1_input_output",
+      "IL_db": 0.8414441226475076,
+      "H2_min_db": 30.004999998368245,
+      "H3_min_db": 30.00499999999867,
+      "run_id": 39425540634,
+      "source_artifact_id": 12266195448,
+      "vector_in_this_file": true
+    },
+    {
+      "area": 6,
+      "L": 4,
+      "GJM": 3,
+      "topology": "Cf0_Cf1_Cf2_input_output",
+      "IL_db": 0.837987815043902,
+      "H2_min_db": 30.004999999673323,
+      "H3_min_db": 30.004999999722635,
+      "run_id": 39425540634,
+      "source_artifact_id": 12266215341,
+      "vector_in_this_file": true
+    },
+    {
+      "area": 6.666666666666667,
+      "L": 4,
+      "GJM": 4,
+      "topology": "Cf0_Cf1_Cf2_Cp_input_output",
+      "IL_db": 0.8377954489797989,
+      "H2_min_db": 30.004999999883424,
+      "H3_min_db": 30.00499999997967,
+      "run_id": 39426351877,
+      "source_artifact_id": 12266770362,
+      "vector_in_this_file": true
+    }
+  ],
+  "dominated_cost_cell": {
+    "area": 4,
+    "L": 4,
+    "GJM": 0,
+    "best_IL_db": 0.9486501590658404,
+    "dominated_by_area": 3.666666666666667,
+    "dominated_by_IL_db": 0.9340275796118456,
+    "run_id": 39423762500,
+    "complete_vector": "data/pareto_snapshots/rf_t008_exp058_area4_20261020.json"
+  },
+  "new_full_parameter_vectors": [
+    {
+      "area": 5.333333333333333,
+      "chip_row": [
+        "L0",
+        "L1",
+        "L3",
+        "L2"
+      ],
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "PCB_C_edges": [
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "IC_DTC_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "IC_parallel_fixed_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "fixed_C_Q": [
+        80,
+        80,
+        40,
+        40
+      ],
+      "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,IC_fixed_C_0,IC_fixed_C_1,then 6 pairs of variable C for B71,B12,B28,B13+B14,B26,B8",
+      "vector": [
+        2.217758617393675,
+        16.161384001281274,
+        6.4191720564543875,
+        7.591102089789684,
+        2.9945833920543814,
+        1.046983877764973,
+        0.02,
+        0.020000000000000035,
+        0.09999999999999998,
+        0.029284535955423758,
+        -0.023760723242242533,
+        0.3132635647242393,
+        0.351519104778151,
+        0.341140391744976,
+        1.2272974655704554,
+        0.32702478474788105,
+        1.1237115577845516,
+        0.2538593461472139,
+        0.9699405024322632,
+        0.09175415527722788,
+        0.6119948402256118,
+        0.03926325565585301,
+        0.2923608734198344,
+        0,
+        3.46944695205932e-16
+      ],
+      "metrics": {
+        "worst_IL_db": 0.8414441226475076,
+        "H2_min_db": 30.004999998368245,
+        "H3_min_db": 30.00499999999867
+      },
+      "selected_SLSQP": {
+        "start": 1,
+        "coarse_converged": true,
+        "fine_converged": true
+      },
+      "MNA": {
+        "pass": true,
+        "points": 84,
+        "max_IL_difference_db": 4.405364961712621e-13,
+        "max_power_balance_residual_W": 1.1275702593849246e-17,
+        "min_L_eigenvalue_nH": 2.1920650398479724
+      }
+    },
+    {
+      "area": 6,
+      "chip_row": [
+        "L0",
+        "L1",
+        "L3",
+        "L2"
+      ],
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_C_edges": [
+        [
+          0,
+          3
+        ]
+      ],
+      "IC_DTC_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "IC_parallel_fixed_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "fixed_C_Q": [
+        80,
+        80,
+        80,
+        40
+      ],
+      "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,IC_fixed_C_0,IC_fixed_C_1,then 6 pairs of variable C for B71,B12,B28,B13+B14,B26,B8",
+      "vector": [
+        1.7979212413645058,
+        8.098437635514607,
+        6.6892506738899895,
+        7.682081570238401,
+        4.253829667613228,
+        1.0432833272577926,
+        0.23750991860281562,
+        0.02,
+        0.07785742240128188,
+        0.1,
+        0.03441007912377639,
+        0.2,
+        0.2,
+        1.0509524628544007,
+        1.1017727775732893,
+        0.992908216494726,
+        0.9706654769138678,
+        0.8622908436732108,
+        0.8444266085408186,
+        0.5529932875436553,
+        0.43871291839531357,
+        0.39842264106713854,
+        0.24325264764423915,
+        0,
+        0
+      ],
+      "metrics": {
+        "worst_IL_db": 0.837987815043902,
+        "H2_min_db": 30.004999999673323,
+        "H3_min_db": 30.004999999722635
+      },
+      "selected_SLSQP": {
+        "start": 0,
+        "coarse_converged": true,
+        "fine_converged": true
+      },
+      "MNA": {
+        "pass": true,
+        "points": 84,
+        "max_IL_difference_db": 5.968558980384842e-13,
+        "max_power_balance_residual_W": 1.5612511283791264e-17,
+        "min_L_eigenvalue_nH": 1.7837062084710824
+      }
+    },
+    {
+      "area": 6.666666666666667,
+      "chip_row": [
+        "L0",
+        "L1",
+        "L3",
+        "L2"
+      ],
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "PCB_C_edges": [],
+      "IC_DTC_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "IC_parallel_fixed_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "fixed_C_Q": [
+        80,
+        80,
+        80,
+        80
+      ],
+      "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,IC_fixed_C_0,IC_fixed_C_1,then 6 pairs of variable C for B71,B12,B28,B13+B14,B26,B8",
+      "vector": [
+        1.7982693517921151,
+        8.166932765975364,
+        6.689992915340624,
+        7.68253940606992,
+        4.252238296475044,
+        1.0426907349679442,
+        0.237433879110769,
+        0.02,
+        0.07960315049693822,
+        0.1,
+        0.03467744479711594,
+        0.2,
+        0.2,
+        1.040673289074859,
+        1.1019341152725406,
+        0.8559794766334742,
+        0.8864693100267093,
+        0.8534268411555204,
+        0.8444687732170425,
+        0.5436006788681381,
+        0.4530655253546351,
+        0.39350962953241725,
+        0.24361392375907504,
+        0,
+        0
+      ],
+      "metrics": {
+        "worst_IL_db": 0.8377954489797989,
+        "H2_min_db": 30.004999999883424,
+        "H3_min_db": 30.00499999997967
+      },
+      "selected_SLSQP": {
+        "start": 0,
+        "coarse_converged": true,
+        "fine_converged": true
+      },
+      "MNA": {
+        "pass": true,
+        "points": 84,
+        "max_IL_difference_db": 1.7337242752546445e-12,
+        "max_power_balance_residual_W": 1.0408340855860843e-17,
+        "min_L_eigenvalue_nH": 1.783443184774706
+      }
+    }
+  ],
+  "limitations": [
+    "Local two-start minimax and finite frequency grid only; no global Pareto/continuous extrema proof",
+    "All observed best points have ~0.005dB H2/H3 margin, no nominal 35dB",
+    "None meets IL<=0.30dB",
+    "L and C constant-Q surrogate; manufacturer Q(f)/SRF, PCB EM, tolerance, coupled-inductor same-layout realizability, IC fixed-C silicon area unknown",
+    "Git snapshots preserve selected full vectors; original full 156 trial Actions ZIPs not declared permanently preserved",
+    "Formal RF-F003 and earlier RF-T005/T007 remain unchanged, Phase3 not approved"
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-058",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "phase": "Phase 2",
+  "study": "4L area4p667 exactly one GJM, two composite DTC branches, no RF-T007 parasitic",
+  "source_run_id": 39424927704,
+  "source_head_sha": "3d0d63a96a94547bc73f2b7564ec97f74971c115",
+  "source_actions_artifact_id": 12265710705,
+  "verification": "28x1001 all intervals; 84 independent 9x9 coupled inductor MNA points; 12 starts/graph variations with 2 starts each",
+  "results": {
+    "cf0_shunt_input": 1.1854734352661798,
+    "cf1_shunt_output": 0.9393893033457156,
+    "cf0_shunt_output": 0.8664553361300487,
+    "cf2_shunt_input": 10.868842791723933,
+    "cf2_shunt_output": 0.9486974311778498,
+    "cf2_input_output": 1.5140762792325433,
+    "cp_shunt_input": 1.2293156717004092,
+    "cf1_shunt_input": 1.188859715373117,
+    "cf1_input_output": 0.8924964740887348,
+    "cp_shunt_output": 0.9497549516401894,
+    "cp_input_output": 1.777164865080777,
+    "cf0_input_output": 0.8543674592970051
+  },
+  "best": {
+    "candidate_id": "EXP058-T008-A4P667-4L-1GJM-CF0-INPUT-OUTPUT",
+    "area_units": 4.666666666666667,
+    "GJM_count": 1,
+    "PCB_C_count": 3,
+    "L_count": 4,
+    "component_Q": [
+      80,
+      60,
+      40,
+      40,
+      35,
+      35,
+      60,
+      60
+    ],
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "IC_fix_parallel_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,IC_fixed_bridge1,IC_fixed_bridge2, six pairs variable C across B71,B12,B28,B13+B14,B26,B8",
+    "vector": [
+      1.9701836623078255,
+      9.949563399672822,
+      6.942372304973888,
+      7.840171450730746,
+      3.8871354891472767,
+      0.9999999999999999,
+      0.020000000000000493,
+      0.02,
+      0.1,
+      0.1,
+      0.0429158553492677,
+      0.20819510312211928,
+      0.40945336073532856,
+      0.8137152775208926,
+      1.0858278236686276,
+      0.7534126605179583,
+      0.9629824941650845,
+      0.6549037076213858,
+      0.8305193374651432,
+      0.4020776950758617,
+      0.42783913344965663,
+      0.2748222613068705,
+      0.23488149290937965,
+      0,
+      3.1679676486585453e-16
+    ],
+    "metrics": {
+      "worst_IL_db": 0.8543674592970051,
+      "min_H2_db": 30.004999999561043,
+      "min_H3_db": 30.004999999144566
+    },
+    "solver": {
+      "start": 1,
+      "coarse_success": true,
+      "fine_success": true,
+      "iterations": [
+        91,
+        1
+      ]
+    },
+    "independent_MNA": {
+      "pass": true,
+      "probes": 84,
+      "max_IL_difference_db": 6.679101716144942e-13,
+      "max_power_balance_residual_W": 1.6479873021779667e-17,
+      "min_coupled_L_eigenvalue_nH": 1.9452805797066541
+    }
+  },
+  "observed_nondominated": true,
+  "limitations": [
+    "only local SLSQP finite mesh, no global proof",
+    "H2/H3 margin only .005 dB",
+    "35dB and IL 0.3dB targets not achieved",
+    "SRF/Q(f)/EM/physical coupling/tolerance/continuous extremum/Phase3 unverified"
+  ]
+}
