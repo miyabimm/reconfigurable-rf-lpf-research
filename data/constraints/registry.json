@@ -73,6 +73,13 @@
       "base_constraint_id": "RF-F003",
       "approved_at": "2026-10-19",
       "description": "Phase 2 trial based on RF-F003, RF-T005-equivalent max 3 DTC Q35 0..3pF plus non-removable fixed 0.5pF/Q40 per ground-shunt DTC. Bridge/series DTC unchanged; fixed S2Ps and all other RF-F003 conditions retained."
+    },
+    "RF-T008": {
+      "file": "data/constraints/trial/RF-T008.json",
+      "state": "study_authorized",
+      "base_constraint_id": "RF-F003",
+      "approved_at": "2026-10-20",
+      "description": "Phase 2 RF-T007-equivalent DTC/shunt-DTC-parasitic trial plus location-specific fixed PCB pattern C: grounded 0.02..1pF Q60; non-ground 0.02..0.2pF Q40; maximum three total."
     }
   },
   "historical": {

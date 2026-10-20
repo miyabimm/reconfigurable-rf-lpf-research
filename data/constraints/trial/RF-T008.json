@@ -1,0 +1,57 @@
+{
+  "constraint_id": "RF-T008",
+  "status": "trial",
+  "base_constraint_id": "RF-F003",
+  "study_authorized": true,
+  "approved_at": "2026-10-20",
+  "approved_scope": "Owner-authorized Phase 2 trial only; RF-F003, RF-T005, RF-T006, RF-T007 unchanged. Phase 3 not approved.",
+  "description": "RF-T007-equivalent max three variable C branches and each grounded DTC's separate permanent 0.5pF/Q40 parasitic, plus connection-dependent PCB_PATTERN_C: grounded fixed PCB-C 0.02..1.0pF/Q60; non-ground/hot-hot fixed PCB-C 0.02..0.2pF/Q40; up to 3 fixed PCB-C total.",
+  "study_variable_c_layout": {
+    "branch_count": 3,
+    "count_policy": "up_to",
+    "connection_policy": "any_allowed"
+  },
+  "overrides": {
+    "components": {
+      "IC_VARIABLE_C": {
+        "max_branches_principle": 3
+      }
+    }
+  },
+  "study_shunt_dtc_parasitic": {
+    "applies_to": "each_shunt_to_ground_IC_VARIABLE_C_branch",
+    "fixed_capacitance_pf": 0.5,
+    "q": 40,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "variable_capacitance_pf_range": [
+      0,
+      3
+    ],
+    "present_at_variable_C_zero": true,
+    "not_applicable_to_non_ground_variable_C": true,
+    "frequency_invariant": true,
+    "setting_invariant": true,
+    "pcb_pattern_C_count_increment": 0,
+    "additional_chip_area_units": 0,
+    "tolerance_status": "nominal_only_not_evaluated"
+  },
+  "study_pcb_pattern_c_by_connection": {
+    "ground_node": 0,
+    "grounded": {
+      "min_pf_per_component": 0.02,
+      "max_pf_per_component": 1,
+      "q": 60
+    },
+    "non_ground": {
+      "min_pf_per_component": 0.02,
+      "max_pf_per_component": 0.2,
+      "q": 40
+    },
+    "max_count": 3,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "fixed_components_only": true,
+    "setting_invariant": true,
+    "nominal_only": true
+  },
+  "validation_notes": "Ground node=0 in shared validation API (remap circuit-local -1 to 0). Each fixed PCB_PATTERN_C attached to ground uses Q60 and C in [0.02,1.0]pF; every non-ground/hot-hot fixed PCB_PATTERN_C uses Q40 and C in [0.02,0.2]pF. Maximum total fixed PCB-C remains 3; physical PCB area not charged as chip area, not claimed zero footprint. The special per-grounded-DTC 0.5pF/Q40 branch from RF-T007 is separate, remains Q40, is NOT PCB_PATTERN_C, and does NOT consume the PCB_PATTERN_C count or its per-connection limits. DTC Q35, 0..3pF and max three branches unchanged. Frozen external source/output S2P, six bands, k, 30dB mandatory H2/H3, 35dB nominal target and 0.3dB IL target unchanged; RF-T006 3-6GHz extra condition NOT inherited. Connection-specific validator/admittance must be used explicitly; merely loading metadata does not restamp a legacy solver. A 0.831046dB result obtained using Q40 for ground Cg is an OLD trial result and is NOT an RF-T008 performance verification. Owner's 1pF manufacturability and Q60 are provisional engineering assumptions pending layout, EM and Q(f)/tolerance validation. Only Phase 2."
+}
