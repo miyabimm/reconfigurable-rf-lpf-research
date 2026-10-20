@@ -1,0 +1,227 @@
+{
+  "status": "unregistered_local_Phase2_preliminary_only_not_official_EXP",
+  "source_conditions": "RF-T007 with user-requested single trial exception for added ground PCB-C 0.02..1.0pF/Q40",
+  "date_jst": "2026-10-20",
+  "source_prior_Cv1_Cv2_IL_db": 0.8497272635469568,
+  "difference_from_base": "Additional third fixed PCB_PATTERN_C Cg node3-GND 0.02-1.00pF Q40 ONLY; original Cf2(1,2),Cp(0,3) unchanged 0.02-0.20pF Q40 limits",
+  "configuration": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "fixed_C_types": [
+      "GJM01",
+      "GJM01",
+      "PCB_PATTERN_C",
+      "PCB_PATTERN_C",
+      "PCB_PATTERN_C"
+    ],
+    "fixed_C_Q": [
+      80,
+      80,
+      40,
+      40,
+      40
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "variable_C_Q": 35,
+    "physical_chip_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "L_type": "LQP02HV",
+    "L_Q": 25,
+    "shunt_DTC_absent": true,
+    "shunt_DTC_permanent_0p5pF_absent": true,
+    "chip_area_units": 5.333333333333333
+  },
+  "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k(L0-L1),k(L1-L3),k(L3-L2), then 6*(Cv0=0,Cv1,Cv2), last new fixed Cg(3,GND)",
+  "full_precision_vector": [
+    2.3214753184281522,
+    10.093384309414038,
+    12.683711135351153,
+    7.602528565554669,
+    2.973123536096817,
+    0.5920162032695191,
+    0.1999999999999992,
+    0.02,
+    0.04803037031638732,
+    0.037440577694462976,
+    -0.08555976113893447,
+    0,
+    0.7466977724851817,
+    1.2538105662071155,
+    0,
+    0.5983973083889226,
+    1.1696970435682423,
+    0,
+    0.5971795968196382,
+    0.9994081947587842,
+    0,
+    0.38887769771131303,
+    0.5326612500722977,
+    0,
+    0.2592636694423319,
+    0.39211098191581173,
+    0,
+    0,
+    0.12746127311389624,
+    0.37701981046731264
+  ],
+  "metrics": {
+    "worst_IL_db": 0.8310463563827374,
+    "min_H2_db": 30.004999999383507,
+    "min_H3_db": 30.00499999969219,
+    "critical": [
+      {
+        "setting": "B8",
+        "frequency_MHz": 960
+      },
+      {
+        "setting": "B28",
+        "frequency_MHz": 1406
+      },
+      {
+        "setting": "B8",
+        "frequency_MHz": 2640
+      }
+    ]
+  },
+  "per_setting": [
+    {
+      "setting": "B71",
+      "Cv1_pF": 0.7466977724851817,
+      "Cv2_pF": 1.2538105662071155,
+      "worst_IL_db": 0.761313882112785,
+      "min_H2_db": 30.00499999981605,
+      "min_H3_db": 30.00499999989045
+    },
+    {
+      "setting": "B12",
+      "Cv1_pF": 0.5983973083889226,
+      "Cv2_pF": 1.1696970435682423,
+      "worst_IL_db": 0.7878505023411165,
+      "min_H2_db": 30.993582190660188,
+      "min_H3_db": 31.105333058578573
+    },
+    {
+      "setting": "B28",
+      "Cv1_pF": 0.5971795968196382,
+      "Cv2_pF": 0.9994081947587842,
+      "worst_IL_db": 0.8299036640705436,
+      "min_H2_db": 30.004999999383507,
+      "min_H3_db": 30.005000000352865
+    },
+    {
+      "setting": "B13+B14",
+      "Cv1_pF": 0.38887769771131303,
+      "Cv2_pF": 0.5326612500722977,
+      "worst_IL_db": 0.7711296024589775,
+      "min_H2_db": 30.00499999957284,
+      "min_H3_db": 30.005000000219045
+    },
+    {
+      "setting": "B26",
+      "Cv1_pF": 0.2592636694423319,
+      "Cv2_pF": 0.39211098191581173,
+      "worst_IL_db": 0.82321922477294,
+      "min_H2_db": 30.009603033313724,
+      "min_H3_db": 30.006062025750026
+    },
+    {
+      "setting": "B8",
+      "Cv1_pF": 0,
+      "Cv2_pF": 0.12746127311389624,
+      "worst_IL_db": 0.8310463563827374,
+      "min_H2_db": 32.99416036708032,
+      "min_H3_db": 30.00499999969219
+    }
+  ],
+  "coupled_L_matrix_min_eigenvalue_nH": 2.314507964128495,
+  "independent_9x9_84pt_MNA": {
+    "pass": true,
+    "max_IL_discrepancy_db": 4.334310688136611e-13,
+    "max_power_balance_W": 1.3877787807814457e-17,
+    "min_passive_W": 0
+  },
+  "local_numerical_scope": {
+    "initial_unconstrained_Cg_starts": 8,
+    "fixed_Cg_values": [
+      0.02,
+      0.05,
+      0.1,
+      0.2,
+      0.35,
+      0.5,
+      0.75,
+      1
+    ],
+    "starts_per_Cg": 3,
+    "additional_Cg_free_multistarts": 20,
+    "total_attempts": 52,
+    "optimization": "SLSQP staged 240/120; recovery 500/280 only on iteration-limit",
+    "grid": "28 discrete RF intervals, 1001 points each",
+    "model": "Known RLC source external S2P regenerated then 1MHz complex RI interpolation; 800MHz samples and earlier checkpoints reproduced, original Touchstone files not hash-verified here"
+  },
+  "comparison": {
+    "old_two_C_worst_IL_db": 0.8497272635469568,
+    "improvement_db": 0.01868090716421944,
+    "original_three_C_EXP055_worst_IL_db": 0.8173655897607699,
+    "worse_than_original_three_C_by_db": 0.013680766621967488
+  },
+  "limitations": [
+    "NOT officially reserved EXP",
+    "not verified with original Git canonical s2p bytes in runtime",
+    "nominal 35dB target not met",
+    "0.3 dB IL target not met",
+    "harmonic margin approximately 0.005 dB",
+    "continuous extrema, SRF, Q(f), PCB geometry, EM, manufacturing tolerance, actual physical mutual k and Phase3 unverified"
+  ]
+}
