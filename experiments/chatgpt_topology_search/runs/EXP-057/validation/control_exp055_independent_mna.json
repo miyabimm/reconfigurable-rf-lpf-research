@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-057",
+  "candidate_id": "EXP057-T007-4L-CONTROL-EXP055-001",
+  "source_actions_run": 39371574312,
+  "source_inner_json_sha256": "6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17",
+  "method": "Independent explicit 5-node KCL plus 4 coupled-L branch-current KVL 9x9 MNA; 84 probes and passive power balance",
+  "probes": 84,
+  "pass": true,
+  "max_IL_difference_db": 5.186961971048731e-13,
+  "max_power_balance_W": 8.673617379884035e-18,
+  "minimum_passive_W": 0,
+  "min_L_eigenvalue_nH": 2.134996503886273
+}
