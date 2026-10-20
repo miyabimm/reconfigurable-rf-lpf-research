@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-065",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "30db_boundary",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Per topology retain original/continuation statuses and initial/final vectors, then archive best converged and finite>=30dB fully MNA-passed candidates including all six tunings, best distinct topology and representative unsuccessful starts. Never label nonconverged as Pareto.",
+    "estimated_curated_bytes": 220000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "limitations": [
+    "Not executed; 96 planned joint topology cases and 192 initial starts",
+    "Raw Actions artifacts have finite retention; Git curation must occur after validated runs",
+    "Nominal constant-Q and fixed S2P; physical footprint PCB/IC and EM not modeled."
+  ],
+  "size_exception": null,
+  "git_readback": "not_run",
+  "summary": null
+}
