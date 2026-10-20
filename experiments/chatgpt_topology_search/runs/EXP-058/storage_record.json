@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-058",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Per chip area retain numerically 30dB-eligible lowest worst IL (independent MNA pass), structural alternatives and representative noncompliant failures; retain full six-setting vectors.",
+    "estimated_curated_bytes": 72000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
+      "sha256": "631755b7325ca6aa983003b0fdde43b475a6fd64ef765c075e1ca96fa959f336",
+      "reason": "Full source script for explicit RF-T008 two-Q composite capacitor stamping, optimizer and independent MNA."
+    }
+  ],
+  "limitations": [
+    "Plan-only stage; numerical results pending actual Actions run; future evidence must be committed and SHA checked."
+  ],
+  "size_exception": null
+}
