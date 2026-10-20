@@ -45,5 +45,9 @@
     "raised_budget_full_pass": 20,
     "independent_9x9_MNA_pass": 40,
     "source_pr": 146
+  },
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-061/run_summary.json",
+    "sha256": "f9cd5fd6c58c0dfe722e72c767488ec04a9bfcd6253464517a76cee72558fdbe"
   }
 }
