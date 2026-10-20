@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "status": "unregistered_local_preliminary_not_official_exp",
+  "date_jst": "2026-10-20",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "source": "EXP-055/cv1_input_tip_best.json",
+  "source_confirmed_full_external_S2P_CV3_IL_db": 0.8173655897607699,
+  "L_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "physical_chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "fixed_C_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      4,
+      -1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "fixed_C_families": [
+    "GJM01",
+    "GJM01",
+    "PCB_PATTERN_C",
+    "PCB_PATTERN_C"
+  ],
+  "variable_C_edges": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "Cv0_grounded_deleted": true,
+  "Cpar_0p5pF_Q40_present": false,
+  "chip_area_units": 5.333333333333333,
+  "LQP02HV_Q25_L_nH": [
+    1.8100953632169063,
+    8.29185761748289,
+    6.316996198078227,
+    7.802771363933333
+  ],
+  "fixed_C_pF": [
+    4.464316470470934,
+    1.0990056143209674,
+    0.19999999999999932,
+    0.02
+  ],
+  "fixed_C_Q": [
+    80,
+    80,
+    40,
+    40
+  ],
+  "k_L0L1_L1L3_L3L2": [
+    0.0999999999999999,
+    0.1,
+    0.03927599048640916
+  ],
+  "variable_C_Q": 35,
+  "variable_C_by_setting_pF": {
+    "B71": [
+      1.194061352150797,
+      1.3151561152051856
+    ],
+    "B12": [
+      1.0986289904331714,
+      1.1566346987098362
+    ],
+    "B28": [
+      0.9797748728089445,
+      1.0456395816002781
+    ],
+    "B13+B14": [
+      0.6698376952453269,
+      0.6379524813956489
+    ],
+    "B26": [
+      0.5163018592126941,
+      0.43459462444560326
+    ],
+    "B8": [
+      6.910630632508507e-17,
+      0.21024406828105943
+    ]
+  },
+  "vector_order": "4L,4fixedC,3adj_k,6*(Cv0=0_placeholder,Cv1,Cv2)",
+  "vector": [
+    1.8100953632169063,
+    8.29185761748289,
+    6.316996198078227,
+    7.802771363933333,
+    4.464316470470934,
+    1.0990056143209674,
+    0.19999999999999932,
+    0.02,
+    0.0999999999999999,
+    0.1,
+    0.03927599048640916,
+    0,
+    1.194061352150797,
+    1.3151561152051856,
+    0,
+    1.0986289904331714,
+    1.1566346987098362,
+    0,
+    0.9797748728089445,
+    1.0456395816002781,
+    0,
+    0.6698376952453269,
+    0.6379524813956489,
+    0,
+    0.5163018592126941,
+    0.43459462444560326,
+    0,
+    6.910630632508507e-17,
+    0.21024406828105943
+  ],
+  "results": {
+    "worst_six_setting_IL_dB": 0.8497272635469568,
+    "min_H2_dB": 30.004999999625532,
+    "min_H3_dB": 30.004999999996656,
+    "analysis_segments": 28,
+    "grid_pts_per_segment": 1001,
+    "local_solver": "SLSQP 7 then 17 points/segment maxiter 240/120",
+    "selected_starts": "local extra8",
+    "solver_coarse_converged": true,
+    "solver_fine_converged": true
+  },
+  "independent_84pt_9x9_MNA": {
+    "PASS": true,
+    "max_IL_discrepancy_db": 3.268496584496461e-13,
+    "max_power_balance_W": 1.5612511283791264e-17,
+    "min_L_eigenvalue_nH": 1.7866341113721076
+  },
+  "provenance": {
+    "external_S2P": "reconstructed from canonical RLC source circuit and 1MHz S RI interpolation, not original s2p byte-for-byte",
+    "ported_800mhz_S_complex_error_in": 4.7416564796257215e-15,
+    "ported_800mhz_S_complex_error_out": 4.554029426029163e-15,
+    "source_EXP055_3C_IL_error_dB": 8.104628079763643e-15,
+    "source_EXP055_2C_IL_error_dB": -1.9539925233402755e-14
+  },
+  "limitations": [
+    "unregistered local run not official",
+    "3DTC EXP055 remains better by 0.032361674 dB",
+    "nominal 35dB stopband and IL<=0.30dB not met",
+    "near-zero H2H3 margin",
+    "physical k simultaneous realizability and Q(f) SRF EM tolerance not tested",
+    "no continuous extrema guarantee, no global optimum proof",
+    "no Phase3 work"
+  ]
+}
