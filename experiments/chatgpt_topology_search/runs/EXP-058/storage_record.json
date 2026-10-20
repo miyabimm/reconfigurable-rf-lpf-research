@@ -53,6 +53,12 @@
       "path": "data/pareto_snapshots/rf_t008_exp058_area4p333_20261020.json",
       "sha256": "5309e04c98b5eccae4a77e8f7425c1adde0de7bba10184acfa92bbee4aa6a7c4",
       "reason": "Third non-dominated area4p333 3L/2GJM full vector and verified run"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json",
+      "sha256": "f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9",
+      "reason": "Verified area4p667 non-dominated full network parameter vector and distinct coupled-L MNA"
     }
   ],
   "limitations": [
