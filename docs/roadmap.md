@@ -1,3 +1,15 @@
+## 2026-10-20：EXP-057（EXP-055最優4Lの周辺インダクタ接続探索）
+
+**Phase2／RF-T007、実行済み。** EXP-055の独立検証済み4L／面積5⅓／3DTC／IL0.8173655897607699dBを出発点とし、固定GJM01 Q80×2、PCB-C Q40×2、Cv0(3,GND)／Cv1(0,3)／Cv2(1,2) 0–3pF/Q35、**接地Cv0のみにOFFでも常在する別0.5pF/Q40**、物理L列 L0-L1-L3-L2と|k|≤0.10、固定外部S2P、6設定H2/H3≥30dBを保持。L電気接続のみ変更した**新規9種類＋元構成1種類の計10種類**の接続グラフを比較した。EXP-057は実行前にmainの中央台帳で予約済み。
+
+**GitHub Actions [39371574312](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39371574312) SUCCESS。** 10接続×2初期値＝20試行、標準`slsqp-staged-v1`通常240/120反復、反復限界時だけ救済500/280。**19試行が正常収束、1試行は方向微分に起因する線探索停止（非収束；反復限界到達ではない）、実行例外0、救済再試行0**。選択した10構成は全6設定・28区間×1001点の必須30dB H2/H3を満たし、各84点独立9×9結合L枝電流MNA／受動電力収支PASS。
+
+**最優はEXP-055の元Lトポロジー再最適化：最悪IL0.817365589674dB**。EXP-055記録からの差 −8.66×10⁻¹¹dBは数値誤差レベルであり改善実績と解釈しない。**新規9構成はすべて悪化**。新規最良はNode3シャント端Lを入力へ付替えた構成IL0.914280717727dB、次点はNode4接地C端Lを入力側へ付替えた構成IL0.915934801091dB（いずれも同面積）。変更Lグラフ集合での有限・局所結果であり全構成の下界や大域最良の証明ではない。
+
+[EXP-057実験説明](../experiments/chatgpt_topology_search/runs/EXP-057/README.md)、[10構成数値結果](../experiments/chatgpt_topology_search/runs/EXP-057/run_summary.json)、[3つの完全設計ベクトル](../experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/)、[独立MNA3件](../experiments/chatgpt_topology_search/runs/EXP-057/validation/)をGitへキュレーション。元20試行の完全raw JSONはActions artifact ID12241866186（30日保持）。ZIP SHA256 791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd、元JSON SHA256 6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17。
+
+次の仮説（EXP-057では**未実行**）：EXP-055の優位な4L電気接続を維持し、固定Cまたは非接地DTC橋絡枝の配置を周辺再探索。今回は余剰H2/H3マージンや結合kの物理的同時実現性研究を行わず、35dB/IL≤0.3dB未達、連続極値／Q(f)／SRF／EM／公差未検証。正式RF-F003不変更、Phase2継続・Phase3未承認。
+
 ## 2026-10-20：今後のPhase2 SLSQP反復上限標準化（ポリシー変更、RF条件不変更）
 
 オーナーの指示「適切な上限を設定して、今後の標準にしましょう」に基づき、**新規2段階SLSQP探索**に通常「粗240／精密120」、`Iteration limit reached`時のみ1回「粗500／精密280」（精密単独なら精密のみ）でウォームスタート救済する`slsqp-staged-v1`を設定。詳細は[`docs/slsqp_iteration_policy.md`](slsqp_iteration_policy.md)、実装は[`src/lpf/slsqp_budget.py`](../src/lpf/slsqp_budget.py)。新規探索は共有関数を利用し、適用／例外理由／停止メッセージ／反復数／前後ベクトル／収束状態／dense H2/H3・独立MNA結果を個別保存する。
