@@ -64,7 +64,8 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--input",type=Path,required=True)
     a=p.parse_args()
-    raw=[json.loads(x.read_text()) for x in sorted(a.input.glob("*.json"))]
+    raw=[json.loads(x.read_text()) for x in sorted(a.input.glob("*.json"))
+         if x.name!="summary.json"]
     require(len(raw)==12 and len({x["layout"] for x in raw})==12,"not exactly 12 unique layouts")
     require(all(x["experiment_id"]=="EXP-064" and x["revision"]==3 and
            x["effective_constraint_sha256"]==FP and len(x["starts"])==2
