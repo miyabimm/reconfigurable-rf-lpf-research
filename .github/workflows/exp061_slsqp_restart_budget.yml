@@ -1,9 +1,5 @@
 name: EXP-061 RF-T008 restart budget diagnosis
 on:
-  pull_request:
-    paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-061/**'
-      - '.github/workflows/exp061_slsqp_restart_budget.yml'
   workflow_dispatch:
 permissions:
   contents: read
