@@ -59,10 +59,16 @@
       "path": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json",
       "sha256": "f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9",
       "reason": "Verified area4p667 non-dominated full network parameter vector and distinct coupled-L MNA"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area5p333_to_6p667_20261020.json",
+      "sha256": "30a96103cc020f2c5c74e394b90c60bc20d481a140b3bb78bf194e427c192a49",
+      "reason": "Verified T008 area5p333, area6 and area6p667 numerical Pareto complete 4L vectors from GitHub Actions and 84 point independent MNA"
     }
   ],
   "limitations": [
-    "Plan-only stage; numerical results pending actual Actions run; future evidence must be committed and SHA checked."
+    "Assembled numerical snapshots and readback available; project-wide final retention audit and finalization still pending."
   ],
   "size_exception": null
 }
