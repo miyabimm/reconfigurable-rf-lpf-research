@@ -20,19 +20,19 @@
       "candidate_id": "EXP057-T007-4L-CONTROL-EXP055-001",
       "selection_reason": "best",
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/control_exp055_best.json",
-      "sha256": "b11290501976fe333cd58379fa7b691cca1a33f8cdcdd61e680c7b5ee2e0d305"
+      "sha256": "ef86feb1e71fca798841f2f15d1f2444fd2a3784978fce5afa1b727a55a2c74c"
     },
     {
       "candidate_id": "EXP057-T007-4L-SHUNT-TIP-FROM-INPUT-001",
       "selection_reason": "pareto",
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/shunt_tip_from_input_best.json",
-      "sha256": "4c2e09050861ae5c4da97cff5f73ac5a184e5d65297ee8a319f4077a05fe4e8f"
+      "sha256": "e5b0a3f6db4a3f77e3a4b3163ebf13fbfea398b089d101534bfbe85c4b446705"
     },
     {
       "candidate_id": "EXP057-T007-4L-GROUND-PENDANT-FROM-INPUT-001",
       "selection_reason": "topology_diversity",
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/ground_pendant_from_input_best.json",
-      "sha256": "2e259336603a2dd31916c215c1e9901040ad73696e6c35aec97a03e8cb4285ad"
+      "sha256": "9761d085591611b758a47d9a2a7821cfe625245c87ebeb4454e9d440a956cee7"
     }
   ],
   "validation_overlays": [
