@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "7d13211f229abef081b07a3d2949c146c90c7c11",
+    "execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -431,21 +431,59 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "intervals": 28,
+      "points_per_interval": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "intervals": 28,
+      "points_per_interval": 3,
+      "total": 84,
+      "method": "independent 9x9 coupled inductor MNA"
+    }
   },
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a5p333_best.json",
+      "sha256": "729e1e248983ecfb256b57a079ed08a5b7a87cb30492140d74a97b6ce9baea57"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json",
+      "sha256": "4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/validation/a5p333_best_mna.json",
+      "sha256": "6e1016ce8a487236305ad8f4d972a4c063889787c3e65ad87289cef0485655b7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/validation/a6_best_mna.json",
+      "sha256": "65a0e12fb8da7b36586c70c0b7dccb2cf58cddcf6b8d2b368c6873ef77a96889"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/run_summary.json",
+      "sha256": "ebff83dbad1048bcc2cbc4c305c2345c7c556a698f7353227bd50ccd1868bf15"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/search_grounded_transfer_4l.py",
+      "sha256": "1addf335c992e202ef05559eaf586a054ba5698a3e5e476b9a935d5c9e62014e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/README.md",
+      "sha256": "352940d5ecc44f5f3f963bcafa94336b93903a7f56aa0424ea1487e8995ce8b4"
+    }
+  ],
   "limitations": [
-    "Planned (not executed) EXP-062 first-wave search; no new IL or Pareto result yet",
-    "EXP-058/059 independent solver used as parent; exact source revision to be recorded after numerical run",
-    "Only nominal constant-Q and fixed S2P model; no physical Q(f)/SRF/EM/tolerance or Phase3 validation"
+    "12-layout 24-start local search at three 4L cost cells; finite-grid no global optimum",
+    "New observed Pareto points at 5⅓ and 6 only; 6⅔ unchanged/dominated",
+    "35dB nominal/IL≤0.30dB goals unmet; no Q(f)/SRF/EM/coupling realization/tolerances/Phase3"
   ]
 }

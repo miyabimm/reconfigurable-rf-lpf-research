@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T008_EXP062_AREAS5P333_6_6P667_20261020",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "run_id": 39447892051,
+  "constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "existing_smaller_costs_unchanged": true,
+  "all_observed_cost_best": [
+    {
+      "area": 3,
+      "IL_db": 1.0103502552079047,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 3.6666666666666665,
+      "IL_db": 0.9340275796118456,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 4,
+      "IL_db": 0.948650159,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 4.333333333333333,
+      "IL_db": 0.928118761,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 4.666666666666667,
+      "IL_db": 0.8371337485828259,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 5.333333333333333,
+      "IL_db": 0.8335054302993898,
+      "origin": "EXP-062",
+      "layout": "a533_ground_one"
+    },
+    {
+      "area": 6.0,
+      "IL_db": 0.8278411484628513,
+      "origin": "EXP-062",
+      "layout": "a6_grounded"
+    },
+    {
+      "area": 6.666666666666666,
+      "IL_db": 0.8377954490288592,
+      "origin": "EXP-062",
+      "layout": "a667_control"
+    }
+  ],
+  "nondominated_among_observed": [
+    {
+      "area": 3,
+      "IL_db": 1.0103502552079047,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 3.6666666666666665,
+      "IL_db": 0.9340275796118456,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 4.333333333333333,
+      "IL_db": 0.928118761,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 4.666666666666667,
+      "IL_db": 0.8371337485828259,
+      "origin": "EXP-058/059 historical preserved"
+    },
+    {
+      "area": 5.333333333333333,
+      "IL_db": 0.8335054302993898,
+      "origin": "EXP-062",
+      "layout": "a533_ground_one"
+    },
+    {
+      "area": 6.0,
+      "IL_db": 0.8278411484628513,
+      "origin": "EXP-062",
+      "layout": "a6_grounded"
+    }
+  ],
+  "conclusions": [
+    "Cost 5⅓ and 6 recovered as nondominated new observed points",
+    "Cost 6⅔ remains dominated by lower area under this local search",
+    "No global Pareto or physical realization claim"
+  ]
+}
