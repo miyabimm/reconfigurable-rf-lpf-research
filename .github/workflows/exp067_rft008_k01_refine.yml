@@ -1,0 +1,110 @@
+name: EXP-067 K01 cross-basin continuation audit
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/exp067_rft008_k01_refine.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  refine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        index: [0,1,2,3,4,5,6,7,8,9]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - name: Confirm reservation and Git-only EXP067 policy
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-067 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-067
+          uv run --frozen python -m py_compile experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39517715488
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: exp067-aggregate-curve
+          path: source
+      - name: Optimize from both neighboring and remote fixed-k basins
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py \
+             --index ${{ matrix.index }} --parent source/exp067_summary.json \
+             --out results/EXP-067/refine_${{ matrix.index }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp067-refine-${{ matrix.index }}
+          path: results/EXP-067/refine_${{ matrix.index }}.json
+          retention-days: 30
+          if-no-files-found: warn
+  aggregate:
+    needs: [refine]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp067-refine-*
+          merge-multiple: true
+          path: refined
+      - name: Summarize basin-crossing IL and independent MNA results
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files=sorted(Path("refined").glob("refine_*.json"))
+          rows=[]
+          for f in files:
+              data=json.loads(f.read_text())
+              valid=data["best_converged_30db"]
+              if len(data["starts"])<4:
+                  raise SystemExit("Too few distinct cross-basin initial seeds "+str(f))
+              if valid and not data["independent_MNA"]["pass"]:
+                  raise SystemExit("Independent MNA failed "+str(f))
+              rows.append({
+                  "k01":data["k01_target"],"source_k01":data["source_nearest_k01"],
+                  "best_IL_db":valid["dense"]["worst_IL_db"] if valid else None,
+                  "min_H2_db":valid["dense"]["min_H2_db"] if valid else None,
+                  "min_H3_db":valid["dense"]["min_H3_db"] if valid else None,
+                  "best_seed":valid["initial_seed_family"] if valid else None,
+                  "k13":valid["vector"][9] if valid else None,
+                  "k32":valid["vector"][10] if valid else None,
+                  "vector":valid["vector"] if valid else None,
+                  "mna":data["independent_MNA"],
+                  "starting_families":len(data["starts"]),
+                  "eligible_family_count":sum(any(t["eligible_converged"] for t in s["attempts"])
+                                               for s in data["starts"]),
+              })
+          rows.sort(key=lambda x:x["k01"])
+          out={"experiment_id":"EXP-067","source_run":39517715488,
+               "refined_points":len(rows),"rows":rows,"total_refine_initial_starts":
+               sum(x["starting_families"] for x in rows)}
+          Path("exp067_refined_curve.json").write_text(json.dumps(out,indent=2,allow_nan=False)+"\n")
+          if len(rows)!=10:raise SystemExit("Need 10 refinement results")
+          for q in rows:print("REFINE",q["k01"],q["best_IL_db"],q["best_seed"],
+                              "starts",q["starting_families"],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp067-refined-curve
+          path: exp067_refined_curve.json
+          if-no-files-found: warn
+          retention-days: 30
