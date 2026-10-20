@@ -7,8 +7,10 @@ on:
       - 'data/constraints/**'
       - 'src/lpf/constraint_versions.py'
       - 'src/lpf/trial_pcb_pattern_c.py'
+      - 'src/lpf/trial_ic_fixed_c.py'
       - 'src/lpf/trial_shunt_dtc.py'
       - 'tests/test_trial_pcb_pattern_c_t008.py'
+      - 'tests/test_trial_ic_fixed_c_t008.py'
       - 'tests/test_trial_shunt_dtc.py'
       - '.github/workflows/rf_t008_trial_regression.yml'
   push:
@@ -17,8 +19,10 @@ on:
       - 'data/constraints/**'
       - 'src/lpf/constraint_versions.py'
       - 'src/lpf/trial_pcb_pattern_c.py'
+      - 'src/lpf/trial_ic_fixed_c.py'
       - 'src/lpf/trial_shunt_dtc.py'
       - 'tests/test_trial_pcb_pattern_c_t008.py'
+      - 'tests/test_trial_ic_fixed_c_t008.py'
       - 'tests/test_trial_shunt_dtc.py'
       - '.github/workflows/rf_t008_trial_regression.yml'
 
@@ -36,5 +40,7 @@ jobs:
           python-version: '3.12'
       - name: Check RF-T008 trial and positional capacitor policy
         run: python -m unittest discover -s tests -p test_trial_pcb_pattern_c_t008.py -v
+      - name: Check RF-T008 IC fixed Q60 and DTC Q35 composite branches
+        run: python -m unittest discover -s tests -p test_trial_ic_fixed_c_t008.py -v
       - name: Preserve prior RF-T007 grounded-DTC model
         run: python -m unittest discover -s tests -p test_trial_shunt_dtc.py -v

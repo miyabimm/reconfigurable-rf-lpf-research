@@ -16,9 +16,10 @@ from lpf.trial_pcb_pattern_c import (
     validate_trial_pcb_pattern_c_branches,
     pcb_pattern_c_branch_admittance,
 )
-from lpf.trial_shunt_dtc import (
-    shunt_dtc_parasitic_branches,
-    single_parasitic_admittance,
+from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
+from lpf.trial_ic_fixed_c import (
+    ic_fixed_c_branches,
+    ic_c_pair_admittances,
 )
 
 
@@ -83,20 +84,22 @@ class RFT008Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_trial_pcb_pattern_c_branches(self.t007, [branch])
 
-    def test_shunt_dtc_parasitic_is_still_separate_q40(self):
+    def test_q60_ic_fixed_replaces_old_q40_shunt_parasitic(self):
         branches = [
             {"a": 4, "b": 0, "role": "shunt_to_ground"},
             {"a": 2, "b": 3, "role": "bridge"},
         ]
-        result = shunt_dtc_parasitic_branches(self.trial, branches)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["capacitance_pf"], 0.5)
-        self.assertEqual(result[0]["q"], 40)
-        f = 800_000_000
-        self.assertAlmostEqual(
-            abs(single_parasitic_admittance(self.trial, f)
-                - 2 * math.pi * f * 0.5e-12 / (1/40 - 1j)),
-            0, places=16)
+        fixed = ic_fixed_c_branches(self.trial, branches, [0.5, 0.2])
+        self.assertEqual(len(fixed), 2)
+        self.assertEqual([p["q"] for p in fixed], [60, 60])
+        self.assertEqual([p["capacitance_pf"] for p in fixed], [0.5, 0.2])
+        self.assertNotIn("trial_shunt_dtc_parasitic", self.trial)
+        self.assertIn("trial_shunt_dtc_parasitic", self.t007)
+        with self.assertRaises(ValueError):
+            shunt_dtc_parasitic_branches(self.trial, branches)
+        off = ic_c_pair_admittances(self.trial, branches[1], 0.2, 0.0, 800_000_000)
+        self.assertEqual(off["variable"], 0)
+        self.assertNotEqual(off["fixed"], 0)
 
     def test_explicit_trial_opt_in_and_no_wide_stopband_merging(self):
         with self.assertRaises(ValueError):

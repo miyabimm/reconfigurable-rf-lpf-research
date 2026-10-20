@@ -84,6 +84,15 @@ def validate_registry(*, root=ROOT):
                 if "study_pcb_pattern_c_by_connection" in payload:
                     _validate_trial_pcb_pattern_c_by_connection(
                         payload["study_pcb_pattern_c_by_connection"], resolved)
+                if "study_ic_fixed_c_by_connection" in payload:
+                    if "study_shunt_dtc_parasitic" in payload:
+                        raise ValueError("IC fixed C model replaces, not augments, old shunt DTC parasite")
+                    _validate_trial_ic_fixed_c_by_connection(
+                        payload["study_ic_fixed_c_by_connection"], resolved)
+                if cid == "RF-T008" and (
+                        "study_ic_fixed_c_by_connection" not in payload
+                        or "study_shunt_dtc_parasitic" in payload):
+                    raise ValueError("Revised RF-T008 must use IC fixed C instead of shunt parasitic")
                 layout = payload.get("study_variable_c_layout")
                 spec = resolved["components"]["IC_VARIABLE_C"]
                 if not isinstance(layout, dict):
@@ -224,6 +233,62 @@ def _validate_trial_pcb_pattern_c_by_connection(spec, resolved):
             raise ValueError("Invalid grounded/non-grounded PCB-C numerical limits")
 
 
+def _validate_trial_ic_fixed_c_by_connection(spec, resolved):
+    """Validate IC-fixed Q60 per installed variable-C branch (RF-T008 rev2).
+
+    The RF-F003 0..3pF/Q35 variable-C limit remains independent of the
+    setting-common 0.2..3 or 0.5..3pF/Q60 fixed component.
+    """
+    keys = {"ground_node", "grounded", "non_ground", "fixed_c_q",
+            "variable_c_q", "variable_capacitance_pf_range",
+            "fixed_c_stays_at_variable_C_zero", "fixed_c_setting_invariant",
+            "fixed_c_frequency_invariant",
+            "fixed_c_only_in_parallel_with_installed_variable_C",
+            "fixed_c_count_per_installed_variable_C", "max_composite_branches",
+            "fixed_c_counts_toward_pcb_pattern_C", "additional_chip_area_units",
+            "q_model", "physical_chip_footprint_status", "tolerance_status"}
+    if not isinstance(spec, dict) or set(spec) != keys:
+        raise ValueError("Invalid RF-T008 IC fixed C trial schema")
+    var = resolved["components"]["IC_VARIABLE_C"]
+    pcb = resolved["components"]["PCB_PATTERN_C"]
+    if (type(spec["ground_node"]) is not int or spec["ground_node"] != 0
+            or type(spec["fixed_c_q"]) not in (int, float)
+            or spec["fixed_c_q"] != 60
+            or type(spec["variable_c_q"]) not in (int, float)
+            or spec["variable_c_q"] != var["q"] or var["q"] != 35
+            or spec["variable_capacitance_pf_range"] != [
+                var["min_total_variable_pf_per_branch"],
+                var["max_total_variable_pf_per_branch"]]
+            or spec["max_composite_branches"] != var["max_branches_principle"]
+            or spec["max_composite_branches"] != 3
+            or spec["fixed_c_stays_at_variable_C_zero"] is not True
+            or spec["fixed_c_setting_invariant"] is not True
+            or spec["fixed_c_frequency_invariant"] is not True
+            or spec["fixed_c_only_in_parallel_with_installed_variable_C"] is not True
+            or type(spec["fixed_c_count_per_installed_variable_C"]) is not int
+            or spec["fixed_c_count_per_installed_variable_C"] != 1
+            or type(spec["fixed_c_counts_toward_pcb_pattern_C"]) is not int
+            or spec["fixed_c_counts_toward_pcb_pattern_C"] != 0
+            or type(spec["additional_chip_area_units"]) is not int
+            or spec["additional_chip_area_units"] != 0
+            or spec["q_model"] != "omega_C_over_1_over_Q_minus_j"
+            or spec["physical_chip_footprint_status"] != "not_modeled_nominal_phase2_only"
+            or spec["tolerance_status"] != "nominal_only_not_evaluated"):
+        raise ValueError("IC fixed C Q, branch accounting or model inconsistent")
+    for position, lo in (("grounded", 0.5), ("non_ground", 0.2)):
+        rule = spec[position]
+        if (not isinstance(rule, dict)
+                or set(rule) != {"min_pf_per_branch", "max_pf_per_branch"}
+                or any(type(rule[k]) not in (int, float) or not math.isfinite(rule[k])
+                       for k in ("min_pf_per_branch", "max_pf_per_branch"))
+                or rule["min_pf_per_branch"] != lo
+                or rule["max_pf_per_branch"] != 3):
+            raise ValueError("IC fixed C capacity limits differ from approved ranges")
+    # Fixed IC capacitors are NOT counted as PCB_PATTERN_C.
+    if pcb["max_count"] != 3:
+        raise ValueError("Unexpected PCB-C count in T008")
+
+
 def _same_kind(existing, replacement):
     """Require type-compatible trial values, including nested list members."""
     if isinstance(existing, bool):
@@ -294,6 +359,9 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     if "study_pcb_pattern_c_by_connection" in trial:
         result["trial_pcb_pattern_c_by_connection"] = copy.deepcopy(
             trial["study_pcb_pattern_c_by_connection"])
+    if "study_ic_fixed_c_by_connection" in trial:
+        result["trial_ic_fixed_c_by_connection"] = copy.deepcopy(
+            trial["study_ic_fixed_c_by_connection"])
     return result
 
 

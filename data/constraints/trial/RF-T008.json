@@ -5,7 +5,7 @@
   "study_authorized": true,
   "approved_at": "2026-10-20",
   "approved_scope": "Owner-authorized Phase 2 trial only; RF-F003, RF-T005, RF-T006, RF-T007 unchanged. Phase 3 not approved.",
-  "description": "RF-T007-equivalent max three variable C branches and each grounded DTC's separate permanent 0.5pF/Q40 parasitic, plus connection-dependent PCB_PATTERN_C: grounded fixed PCB-C 0.02..1.0pF/Q60; non-ground/hot-hot fixed PCB-C 0.02..0.2pF/Q40; up to 3 fixed PCB-C total.",
+  "description": "RF-F003-based Phase 2 trial: up to 3 composite IC var-C branches with parallel setting-common high-Q IC fixed C, each IC fixed 0.2..3pF for hot-hot or 0.5..3pF for hot-GND, Q60, plus variable 0..3pF/Q35; fixed PCB C hot-GND 0.02..1pF/Q60, hot-hot 0.02..0.2pF/Q40, max 3 PCB C. T008's previous shunt DTC 0.5pF/Q40 parasite is REPLACED, not additionally stamped.",
   "study_variable_c_layout": {
     "branch_count": 3,
     "count_policy": "up_to",
@@ -17,23 +17,6 @@
         "max_branches_principle": 3
       }
     }
-  },
-  "study_shunt_dtc_parasitic": {
-    "applies_to": "each_shunt_to_ground_IC_VARIABLE_C_branch",
-    "fixed_capacitance_pf": 0.5,
-    "q": 40,
-    "q_model": "omega_C_over_1_over_Q_minus_j",
-    "variable_capacitance_pf_range": [
-      0,
-      3
-    ],
-    "present_at_variable_C_zero": true,
-    "not_applicable_to_non_ground_variable_C": true,
-    "frequency_invariant": true,
-    "setting_invariant": true,
-    "pcb_pattern_C_count_increment": 0,
-    "additional_chip_area_units": 0,
-    "tolerance_status": "nominal_only_not_evaluated"
   },
   "study_pcb_pattern_c_by_connection": {
     "ground_node": 0,
@@ -53,5 +36,40 @@
     "setting_invariant": true,
     "nominal_only": true
   },
-  "validation_notes": "Ground node=0 in shared validation API (remap circuit-local -1 to 0). Each fixed PCB_PATTERN_C attached to ground uses Q60 and C in [0.02,1.0]pF; every non-ground/hot-hot fixed PCB_PATTERN_C uses Q40 and C in [0.02,0.2]pF. Maximum total fixed PCB-C remains 3; physical PCB area not charged as chip area, not claimed zero footprint. The special per-grounded-DTC 0.5pF/Q40 branch from RF-T007 is separate, remains Q40, is NOT PCB_PATTERN_C, and does NOT consume the PCB_PATTERN_C count or its per-connection limits. DTC Q35, 0..3pF and max three branches unchanged. Frozen external source/output S2P, six bands, k, 30dB mandatory H2/H3, 35dB nominal target and 0.3dB IL target unchanged; RF-T006 3-6GHz extra condition NOT inherited. Connection-specific validator/admittance must be used explicitly; merely loading metadata does not restamp a legacy solver. A 0.831046dB result obtained using Q40 for ground Cg is an OLD trial result and is NOT an RF-T008 performance verification. Owner's 1pF manufacturability and Q60 are provisional engineering assumptions pending layout, EM and Q(f)/tolerance validation. Only Phase 2."
+  "validation_notes": "RF-T008 revision2: Model EVERY installed IC variable capacitor branch as two separate passive parallel admittances on identical terminals (a,b). Choose a single setting-invariant fixed IC capacitor per branch: hot-hot/series/bridge Cfix in [0.2,3.0]pF Q60; hot-GND/shunt Cfix in [0.5,3.0]pF Q60. Independently choose 6 setting-dependent variable capacities Cvar in [0,3.0]pF Q35. Ctot is [0.2,6.0]pF hot-hot and [0.5,6.0]pF hot-GND. Treat Cfix and Cvar losses independently Y=omega*Cfix/(1/60-j)+omega*Cvar/(1/35-j). At Cvar=0 the fixed IC capacitor still exists; never model the series branch as an open circuit. Do not ADD the former RF-T008/Q40 shunt DTC 0.5pF parasitic (replaced by chosen Cfix Q60); that old parasitic stays only in separate RF-T007. IC-fixed C is tied to one installed DTC and not independently placeable. IC fixed C is not a PCB_PATTERN_C, consumes none of 3 PCB-C positions; provisional 0 additional chip area cost is NOT zero real silicon area. Fixed PCB_PATTERN_C limits stay grounded 0.02..1pF/Q60, non-ground 0.02..0.2pF/Q40, count total<=3. Variable C max 3 branches, Q35, Cvar<=3pF, no composite 3pF upper cap; all fixed original external S2Ps, 50ohm source, 60-j40ohm load, six modes, 30dB mandatory H2/H3, 35dB nominal target, IL 0.3dB target, chip L/k, chip area objective unchanged. Do NOT merge RF-T006 3-6GHz requirement. Require explicit trial-aware stamping, pre-run EXP ID reservation, independent MNA, and new performance checks; old T008 numbers are historical, not validated for revision2. Phase 2; no Phase 3.",
+  "revision": 2,
+  "revised_at": "2026-10-20",
+  "previous_version": {
+    "main_merge_commit": "e70264726156512a0c7c9c0bf2e601799911a1cb",
+    "prior_trial_file_blob_sha": "9bcccc93d0d65e129bc569e44309f2686d59777c",
+    "meaning": "Previous Phase2 trial with fixed 0.5pF/Q40 grounded DTC-only parasitic; superseded in RF-T008, still available by Git history. RF-T007 remains unchanged."
+  },
+  "study_ic_fixed_c_by_connection": {
+    "ground_node": 0,
+    "grounded": {
+      "min_pf_per_branch": 0.5,
+      "max_pf_per_branch": 3
+    },
+    "non_ground": {
+      "min_pf_per_branch": 0.2,
+      "max_pf_per_branch": 3
+    },
+    "fixed_c_q": 60,
+    "variable_c_q": 35,
+    "variable_capacitance_pf_range": [
+      0,
+      3
+    ],
+    "fixed_c_stays_at_variable_C_zero": true,
+    "fixed_c_setting_invariant": true,
+    "fixed_c_frequency_invariant": true,
+    "fixed_c_only_in_parallel_with_installed_variable_C": true,
+    "fixed_c_count_per_installed_variable_C": 1,
+    "max_composite_branches": 3,
+    "fixed_c_counts_toward_pcb_pattern_C": 0,
+    "additional_chip_area_units": 0,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "physical_chip_footprint_status": "not_modeled_nominal_phase2_only",
+    "tolerance_status": "nominal_only_not_evaluated"
+  }
 }
