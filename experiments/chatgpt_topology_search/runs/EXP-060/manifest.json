@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "a3a77eaa8eb11922d1325ba9400d10dee73a4d67",
+    "execution_sha": "4f7b187cd5a95eb6c5b2fc6c0db5c4a2f09f73dd",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -479,26 +479,64 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "intervals": 28,
+      "points_per_interval": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "intervals": 28,
+      "points_per_interval": 3,
+      "total": 84,
+      "method": "independent 9x9 branch current MNA"
+    }
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/search_coupling_lgraphs.py",
       "sha256": "939ba766419972f858d1027997f7b5bf0d25f5b2f27cbc6d272fb137ba495763"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/run_summary.json",
+      "sha256": "60ed9b9532142369ac04ea5e1d82865e88633e6fe1beea52bb3da31730c6672a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/validation/selected_independent_mna.json",
+      "sha256": "7adfb5c10ac86ca5ef81be14dd1cc35941e6e02711bf67c2539b674270e48e36"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/unrestricted_reference.json",
+      "sha256": "11cc305c690d7e06f500007971f7639b738aeee03b07be3a0ee9e15468e380b7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/outer_input_kminus100.json",
+      "sha256": "faef82624210ebb6cc62dff30b22f8e20b5f182ba1e2b50d8bb46545a6750f27"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/center_kplus100.json",
+      "sha256": "4254da3ca9cbe796fe285ce02a63ebf2370e0024e731fec57f975c24063cfb11"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/all_baseline_sign_kmax.json",
+      "sha256": "24d9a2090c6362c92f3beb0f8d8019b8073e929127379844466199633416ab01"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/best_rewired_graph.json",
+      "sha256": "1361a9fe7af89f9b81ec959c50a3376cffe9bf5b3553943b619e8c74045fd0d0"
     }
   ],
   "limitations": [
-    "New EXP-060 numerical computations not yet run; do not claim improvements from unexecuted plan.",
-    "EXP-059 baseline is a source from open PR #144 and is not merged into main.",
-    "Global Pareto proof, actual coupled magnetic geometry, nonideal Q(f), EM and 35dB margin not studied here; no Phase3."
+    "63 scoped graph/coupling variants, 126 actual SLSQP attempts: 62 converged, 64 nonconverged; 61 mandatory 30dB eligible starts, 40 eligible variants, all 40 MNA passed.",
+    "No IL update: baseline 0.8371337485828241 dB preserved; 16 alternative L electrical tree graphs best 0.9717167011 dB.",
+    "Finite-grid 30dB mandatory with only ~0.005dB margin; 35dB nominal and IL<=0.3dB target not met.",
+    "No global topology optimum, continuum proof, Q(f), SRF, physical multi-k geometry, EM, tolerance or Phase3."
   ]
 }
