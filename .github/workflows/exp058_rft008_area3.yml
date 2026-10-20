@@ -1,4 +1,5 @@
 name: EXP-058 RF-T008 v3 area 3 Pareto first
+# Experiment ledger timestamp normalized to YYYY-MM-DDTHH:MM:SSZ on main.
 on:
   pull_request:
     paths:
