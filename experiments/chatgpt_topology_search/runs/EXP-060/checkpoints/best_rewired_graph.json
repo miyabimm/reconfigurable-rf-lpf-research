@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-060",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "study": "Physical neighbor signed k saturation, sign flips, L electrical tree rewiring; 4LQP02HV Q25 + GJM Cf0 + grounded PCB C (N4,N3) + two composite IC DTC (IN,N3) (N1,OUT) at chip area 4+2/3",
+  "external_model": "RF-F003 fixed input S2P + 50ohm source, LPF, fixed output S2P + load 60-j40ohm; six setting",
+  "settings": [
+    "B71",
+    "B12",
+    "B28",
+    "B13+B14",
+    "B26",
+    "B8"
+  ],
+  "physical_chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "L_coupling_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      3,
+      2
+    ]
+  ],
+  "C_fixed_GJM_edge": [
+    0,
+    1
+  ],
+  "PCB_C_edges": [
+    [
+      4,
+      -1
+    ],
+    [
+      3,
+      -1
+    ]
+  ],
+  "PCB_C_Q": 60,
+  "variable_IC_edges": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "IC_fixed_C_Q": 60,
+  "IC_variable_C_Q": 35,
+  "vector_order": "L0,L1,L2,L3,Cf0_Q80,PCB_C_N4_GND_Q60,PCB_C_N3_GND_Q60,uninstalled_PCB_slot_zero,k_L0_L1,k_L1_L3,k_L3_L2,IC_fixed0,IC_fixed1,6*(Cv0,Cv1)",
+  "validation": "Converged SLSQP at 28x1001 finite grid and 84-point independent explicit coupled-L 9x9 MNA and passivity/power balance.",
+  "candidate_id": "EXP060-best_rewired_graph",
+  "graph": "resonators_series_via_n3",
+  "L_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "K_mode": "free",
+  "numerical": {
+    "worst_IL_db": 0.9717167010654971,
+    "min_H2_db": 30.004999999934636,
+    "min_H3_db": 30.004999999044184,
+    "finite_30db_pass": true,
+    "solver_converged": true
+  },
+  "vector": [
+    3.0879134616618233,
+    2.233876969203744,
+    3.6047231511832836,
+    8.675184067076726,
+    2.4593026475551345,
+    1,
+    0.8233558255309293,
+    0,
+    -0.1,
+    0.1,
+    -0.07549945425888822,
+    0.2,
+    0.3803956444699933,
+    0.3923370527098375,
+    1.4190580271717983,
+    0.7247766687179112,
+    1.2396427629160451,
+    1.1245150311589909,
+    0.6358985460126102,
+    0.5993338222923784,
+    0.2219734636487118,
+    0.37001237695972955,
+    0.031903724395002046,
+    0,
+    0
+  ],
+  "independent_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 2.7711166694643907e-13,
+    "max_power_residual_W": 7.806255641895632e-18,
+    "L_matrix_min_eigenvalue_nH": 2.1315740151350866,
+    "pass": true
+  },
+  "provenance": {
+    "actions_run_id": 39434590336,
+    "artifact_id": 12269467819,
+    "source_json_sha256": "d0871d959299871325e40db60973dcd6bf49910c50172b4aabda32ee578e755f",
+    "workflow_merge_execution_sha": "4f7b187cd5a95eb6c5b2fc6c0db5c4a2f09f73dd"
+  },
+  "limitations": [
+    "Finite 28x1001 mesh, local SLSQP from 2 starts, Q(f)/SRF/EM and physical coupled k not validated",
+    "Some other variants stopped nonconverged; no global optimality/35dB proof."
+  ]
+}
