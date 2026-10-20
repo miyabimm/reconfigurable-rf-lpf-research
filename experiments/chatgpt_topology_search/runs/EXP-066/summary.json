@@ -1,0 +1,41 @@
+{
+  "experiment_id": "EXP-066",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T005",
+  "closeout": "owner_requested_stop_2026-10-21_JST",
+  "run_id": 39454953851,
+  "attempts": {
+    "planned": 24,
+    "attempted": 8,
+    "converged": 8,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 16
+  },
+  "screened_structure_counts": {
+    "A": 125,
+    "B": 1800,
+    "C": 720
+  },
+  "selected_candidate_count": 0,
+  "no_candidate_reason": "No new candidate showed improved worst-case IL relative to the preexisting independently verified EXP-042 baseline; dense-grid and independent MNA were not run on newly proposed circuits.",
+  "benchmark": {
+    "reference": "EXP-042/checkpoints/pcb_both.json",
+    "worst_il_db": 0.8195645153820337,
+    "min_h2_db": 30.01999999998539,
+    "min_h3_db": 30.019999999982396,
+    "independent_verification": "EXP-042 prior evidence, not new EXP-066 validation"
+  },
+  "new_topology_lowest_coarse_il_db": 1.0451778280850799,
+  "numerical_validation": "screened_only_5_9_31_points_per_28_segment",
+  "independent_validation": "not_run",
+  "promotion": "none",
+  "limitations": [
+    "8 of 24 screened finalists were optimized; this is not comprehensive enumeration of all numeric configurations.",
+    "Finite 5/9/31-point grids do not prove global six-band H2/H3 compliance or continuous frequency limits.",
+    "Dense 28x7001, independent coupled-L branch-current MNA, and power-balance checks were not performed on new EXP-066 candidates.",
+    "Serialized optimization outputs lost fine-stage SLSQP status object due to an overwritten JSON key; source fixed after the recorded run without retroactive claims.",
+    "No physical Q(f), SRF, EM, PCB trace/parasitic tolerance or Phase 3 assessment.",
+    "RF-F003 formal specification and Phase3 authorization are unchanged."
+  ]
+}
