@@ -1,0 +1,1320 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-062",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "execution_status": "completed_actions_and_selected_Git_validation",
+  "action_run_id": 39447892051,
+  "code_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "attempts": {
+    "planned": 24,
+    "attempted": 24,
+    "converged": 23,
+    "nonconverged": 1,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 2,
+  "cost_best_IL_db": {
+    "16": 0.8335054302993898,
+    "20": 0.8377954490288592,
+    "18": 0.8278411484628513
+  },
+  "layout_results": [
+    {
+      "layout": "a533_ground_one",
+      "chip_area": 5.333333333333333,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "IL_db": 0.8335054302993898,
+      "min_H2_db": 30.004999999513252,
+      "min_H3_db": 30.004999999933084,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a533_ground2",
+      "chip_area": 5.333333333333333,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "IL_db": 0.8525768899801455,
+      "min_H2_db": 30.004999999910865,
+      "min_H3_db": 30.00499999993675,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a533_control",
+      "chip_area": 5.333333333333333,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "IL_db": 1.0185410685503136,
+      "min_H2_db": 30.004999999871096,
+      "min_H3_db": 30.004999999999878,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a533_ground_alt",
+      "chip_area": 5.333333333333333,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "IL_db": 1.8295140898721973,
+      "min_H2_db": 30.004999999516798,
+      "min_H3_db": 30.00499999856451,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a6_grounded",
+      "chip_area": 6.0,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ]
+      ],
+      "IL_db": 0.8278411484628513,
+      "min_H2_db": 30.004999999866506,
+      "min_H3_db": 30.004736913098185,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a6_ground_swap2",
+      "chip_area": 6.0,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ]
+      ],
+      "IL_db": 0.8297397515959348,
+      "min_H2_db": 30.00499999962713,
+      "min_H3_db": 30.00308041601734,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a6_control",
+      "chip_area": 6.0,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_edges": [
+        [
+          0,
+          3
+        ]
+      ],
+      "IL_db": 0.8566579911194796,
+      "min_H2_db": 30.00499999928038,
+      "min_H3_db": 30.004999999991412,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a6_ground_swap",
+      "chip_area": 6.0,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ]
+      ],
+      "IL_db": 1.5112855276540005,
+      "min_H2_db": 30.004999999428993,
+      "min_H3_db": 30.00499999989009,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a667_control",
+      "chip_area": 6.666666666666666,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "PCB_edges": [],
+      "IL_db": 0.8377954490288592,
+      "min_H2_db": 30.004999998277544,
+      "min_H3_db": 30.004999999526987,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a667_ground3",
+      "chip_area": 6.666666666666666,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [],
+      "IL_db": 0.8614636544443406,
+      "min_H2_db": 30.00352380736644,
+      "min_H3_db": 30.00499999954911,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a667_ground_alt",
+      "chip_area": 6.666666666666666,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [],
+      "IL_db": 0.8745263760506352,
+      "min_H2_db": 30.004999999167072,
+      "min_H3_db": 30.00499999998917,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    },
+    {
+      "layout": "a667_ground_swap",
+      "chip_area": 6.666666666666666,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [],
+      "IL_db": 4.003830386209167,
+      "min_H2_db": 30.004999999999367,
+      "min_H3_db": 30.004999999999633,
+      "independent_MNA_pass": true,
+      "starts": 2,
+      "source_execution_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+    }
+  ],
+  "attempt_termination_diagnostics": [
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 120,
+        "nfev": 3191,
+        "minimum_sample_slack_db": -1.2890311040791858e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -1.2890311040791858e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 1.0185410685503136,
+          "H2_db": 30.004999999871096,
+          "H3_db": 30.004999999999878
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 163,
+        "nfev": 4367,
+        "minimum_sample_slack_db": -5.148734771864838e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -5.148734771864838e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 1.1899267683490158,
+          "H2_db": 30.004999999485126,
+          "H3_db": 30.004999999940498
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": false,
+        "status": 4,
+        "message": "Inequality constraints incompatible",
+        "nit": 13,
+        "nfev": 403,
+        "minimum_sample_slack_db": -14.58579651111616,
+        "iteration_limit": false,
+        "converged": false,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": false,
+        "status": 8,
+        "message": "Positive directional derivative for linesearch",
+        "nit": 27,
+        "nfev": 724,
+        "minimum_sample_slack_db": -14.15648251221865,
+        "iteration_limit": false,
+        "converged": false,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": false,
+          "status_coarse": 4,
+          "status_fine": 8,
+          "IL_db": 9.997315209919332,
+          "H2_db": 22.201914524684145,
+          "H3_db": 15.848517487781349
+        }
+      ],
+      "ever_converged": false
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 128,
+        "nfev": 3487,
+        "minimum_sample_slack_db": -8.913403348742577e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -8.913403348742577e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8525768899801455,
+          "H2_db": 30.004999999910865,
+          "H3_db": 30.00499999993675
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 95,
+        "nfev": 2556,
+        "minimum_sample_slack_db": -1.4354881727740576e-09,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -1.4354881727740576e-09,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 1.8295140898721973,
+          "H2_db": 30.004999999516798,
+          "H3_db": 30.00499999856451
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": false,
+        "status": 8,
+        "message": "Positive directional derivative for linesearch",
+        "nit": 78,
+        "nfev": 2156,
+        "minimum_sample_slack_db": -0.271809106081939,
+        "iteration_limit": false,
+        "converged": false,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 53,
+        "nfev": 1427,
+        "minimum_sample_slack_db": -7.710099225732847e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": "nonlimit_feasible_restart",
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": false,
+          "status_coarse": 8,
+          "status_fine": 0,
+          "IL_db": 7.17898798536287,
+          "H2_db": 30.003256099437372,
+          "H3_db": 30.004917588212177
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 7.178987985373876,
+          "H2_db": 30.003294915452763,
+          "H3_db": 30.00491758658321
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 135,
+        "nfev": 3694,
+        "minimum_sample_slack_db": -4.867466429914202e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -4.867466429914202e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8335054302993898,
+          "H2_db": 30.004999999513252,
+          "H3_db": 30.004999999933084
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 82,
+        "nfev": 2200,
+        "minimum_sample_slack_db": -2.843876245606225e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -2.843876245606225e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8827467946063067,
+          "H2_db": 30.00499999971561,
+          "H3_db": 30.004999999914155
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 167,
+        "nfev": 4514,
+        "minimum_sample_slack_db": -4.341060844126332e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -4.341060844126332e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 1.0412285127465486,
+          "H2_db": 30.00499999995659,
+          "H3_db": 30.00499999997181
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 47,
+        "nfev": 1280,
+        "minimum_sample_slack_db": -1.7224550674654893e-09,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -1.7224550674654893e-09,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8377954490288592,
+          "H2_db": 30.004999998277544,
+          "H3_db": 30.004999999526987
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 155,
+        "nfev": 4190,
+        "minimum_sample_slack_db": -1.2216538891607343e-09,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 9,
+        "nfev": 246,
+        "minimum_sample_slack_db": -2.390763143012009e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 5.348409937658242,
+          "H2_db": 30.004884359865763,
+          "H3_db": 30.00499999998601
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 112,
+        "nfev": 3036,
+        "minimum_sample_slack_db": -1.9104717807749694e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 12,
+        "nfev": 326,
+        "minimum_sample_slack_db": -6.08558536896453e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8614636544443406,
+          "H2_db": 30.00352380736644,
+          "H3_db": 30.00499999954911
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 201,
+        "nfev": 5447,
+        "minimum_sample_slack_db": -4.9322324002787354e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 14,
+        "nfev": 379,
+        "minimum_sample_slack_db": -2.2721025061400724e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.913130669801326,
+          "H2_db": 30.00499999977279,
+          "H3_db": 30.00482646041933
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 47,
+        "nfev": 1265,
+        "minimum_sample_slack_db": -8.329266165674198e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -8.329266165674198e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8745263760506352,
+          "H2_db": 30.004999999167072,
+          "H3_db": 30.00499999998917
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 67,
+        "nfev": 1752,
+        "minimum_sample_slack_db": -6.323830348264892e-13,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -6.323830348264892e-13,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 4.003830386209167,
+          "H2_db": 30.004999999999367,
+          "H3_db": 30.004999999999633
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 110,
+        "nfev": 2974,
+        "minimum_sample_slack_db": -3.4294345141461235e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -3.4294345141461235e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 6.879811542274522,
+          "H2_db": 30.00499999998658,
+          "H3_db": 30.004999999965705
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 66,
+        "nfev": 1788,
+        "minimum_sample_slack_db": -4.234834705130197e-12,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 20,
+        "nfev": 541,
+        "minimum_sample_slack_db": -9.326228678219195e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.9308136805851843,
+          "H2_db": 30.003722677762834,
+          "H3_db": 30.004999999906737
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 131,
+        "nfev": 3582,
+        "minimum_sample_slack_db": -7.196199192094355e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -7.196199192094355e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8566579911194796,
+          "H2_db": 30.00499999928038,
+          "H3_db": 30.004999999991412
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 63,
+        "nfev": 1657,
+        "minimum_sample_slack_db": -1.5504753037021146e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -1.5504753037021146e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 4.163308333165061,
+          "H2_db": 30.004999999898303,
+          "H3_db": 30.00499999984495
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 81,
+        "nfev": 2240,
+        "minimum_sample_slack_db": -5.710063533115317e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -5.710063533115317e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 1.5112855276540005,
+          "H2_db": 30.004999999428993,
+          "H3_db": 30.00499999989009
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 235,
+        "nfev": 6393,
+        "minimum_sample_slack_db": -1.923083914334711e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 10,
+        "nfev": 272,
+        "minimum_sample_slack_db": -7.60604024208078e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8297397515959348,
+          "H2_db": 30.00499999962713,
+          "H3_db": 30.00308041601734
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 179,
+        "nfev": 4950,
+        "minimum_sample_slack_db": -1.510720437636337e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 10,
+        "nfev": 274,
+        "minimum_sample_slack_db": -8.58140225545867e-10,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.9215228279756115,
+          "H2_db": 30.004244053876782,
+          "H3_db": 30.005000000042216
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 0,
+      "primary_coarse": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 93,
+        "nfev": 2484,
+        "minimum_sample_slack_db": -2.460964765305107e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": true,
+        "status": 0,
+        "message": "Optimization terminated successfully",
+        "nit": 1,
+        "nfev": 27,
+        "minimum_sample_slack_db": -2.460964765305107e-11,
+        "iteration_limit": false,
+        "converged": true,
+        "maxiter": 120
+      },
+      "continuation": null,
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8852733578927546,
+          "H2_db": 30.00499999997539,
+          "H3_db": 30.004999999999914
+        }
+      ],
+      "ever_converged": true
+    },
+    {
+      "initial_start": 1,
+      "primary_coarse": {
+        "success": false,
+        "status": 9,
+        "message": "Iteration limit reached",
+        "nit": 240,
+        "nfev": 6772,
+        "minimum_sample_slack_db": -0.00024404999420468698,
+        "iteration_limit": true,
+        "converged": false,
+        "maxiter": 240
+      },
+      "primary_fine": {
+        "success": false,
+        "status": 9,
+        "message": "Iteration limit reached",
+        "nit": 120,
+        "nfev": 3491,
+        "minimum_sample_slack_db": -0.0005111486191644588,
+        "iteration_limit": true,
+        "converged": false,
+        "maxiter": 120
+      },
+      "continuation": "iteration_rescue_both",
+      "all_stages": [
+        {
+          "tier": "primary",
+          "converged": false,
+          "status_coarse": 9,
+          "status_fine": 9,
+          "IL_db": 0.8298239332744213,
+          "H2_db": 30.004689263056928,
+          "H3_db": 30.004488851380835
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "converged": true,
+          "status_coarse": 0,
+          "status_fine": 0,
+          "IL_db": 0.8278411484628513,
+          "H2_db": 30.004999999866506,
+          "H3_db": 30.004736913098185
+        }
+      ],
+      "ever_converged": true
+    }
+  ],
+  "limitations": [
+    "12 layouts; two initial starts each; local finite-grid results only.",
+    "H2/H3 ~30.005 dB, not 35 dB nominal target; 0.30dB IL not reached.",
+    "No Q(f), SRF, EM, physical coupling or tolerance validation."
+  ]
+}
