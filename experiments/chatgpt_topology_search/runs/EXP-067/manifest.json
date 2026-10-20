@@ -436,7 +436,26 @@
     },
     "mandatory_min_H2_H3_db": 30,
     "solver_target_db": 30.005,
-    "formal_RF_F003_unchanged": true
+    "formal_RF_F003_unchanged": true,
+    "refinement": {
+      "source_actions_run_id": 39517715488,
+      "source_aggregate_SHA256": "63250aa110ed76105f54dd74131b924bc54a5fcabb1f56f818161ace3fb46d05",
+      "targets": [
+        -0.095,
+        -0.093,
+        -0.091,
+        0.04,
+        0.045,
+        0.05,
+        0.055,
+        0.06,
+        0.065,
+        0.07
+      ],
+      "method": "bidirectional nearest-neighbor restart, remote opposite-sign and opposite-basin choices plus geometric cross-basin blend",
+      "seed_count_per_target": "up to 7 deduplicated",
+      "source_deterministic": true
+    }
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
@@ -459,6 +478,10 @@
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
       "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py",
+      "sha256": "011069b03de04f7b2d4ef7070b75f2dbcba8127427e0e456d96ab11a41d7d5dd"
     }
   ],
   "limitations": [
