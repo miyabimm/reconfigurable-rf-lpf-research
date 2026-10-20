@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-059",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Select converged all-six-setting 30dB-compliant lowest-loss 4L1GJM designs with explicit 84-point independent 9x9 MNA, preserve full 25-dimensional component/Cvar setting vectors and diverse PCB graph structures; un-converged or failing cases remain classified separately.",
+    "estimated_curated_bytes": 75000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/search_pcb_edges.py",
+      "sha256": "be6a9d772f17cc7da0a3c56b67dc362b06ecc85773dbd0ae351a88c6c795e696",
+      "reason": "Source code for new RF-T008 4L1GJM PCB connection finite-grid optimization and independent MNA."
+    }
+  ],
+  "limitations": [
+    "Planning and preflight only until Actions completed; raw artifacts will be selected for curated Git evidence."
+  ],
+  "size_exception": null
+}
