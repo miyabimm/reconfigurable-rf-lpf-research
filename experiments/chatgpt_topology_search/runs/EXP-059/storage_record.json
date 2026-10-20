@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-059",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -15,18 +15,68 @@
     "rule": "Select converged all-six-setting 30dB-compliant lowest-loss 4L1GJM designs with explicit 84-point independent 9x9 MNA, preserve full 25-dimensional component/Cvar setting vectors and diverse PCB graph structures; un-converged or failing cases remain classified separately.",
     "estimated_curated_bytes": 75000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP059-best_n4g_n3g_2pcb",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/best_n4g_n3g_2pcb.json",
+      "sha256": "085987f1fe1dd319bef57caf07eee0a7469ab6566f0db450f30abf10a28014cc"
+    },
+    {
+      "candidate_id": "EXP059-alternate_n3g_for_b03",
+      "selection_reason": "pareto",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/alternate_n3g_for_b03.json",
+      "sha256": "f8673849a2ec5c4b1405f9fee5eb484472968f15335086946371ed695d371a0b"
+    },
+    {
+      "candidate_id": "EXP059-alternate_n3g_and_n4out",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/alternate_n3g_and_n4out.json",
+      "sha256": "8d717e2574f50e401944070f8d420f2d8aad34d59f77757e17274b736807e21f"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/validation/best_n4g_n3g_2pcb_independent_mna.json",
+      "sha256": "6d0bff590456aaed8046a89671ab24c14493071e13dd1b4641f05866eda050c4"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/validation/alternate_n3g_for_b03_independent_mna.json",
+      "sha256": "3a4dc7df85ea0d008b7e20af571ba816cf189e428d7d3f8e8f24523455f45c91"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/validation/alternate_n3g_and_n4out_independent_mna.json",
+      "sha256": "14255ffb496077c8986a3ff58f3c87de3248f2caa200bbda4c08633536cff13c"
+    }
+  ],
   "supporting_evidence": [
     {
       "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-059/search_pcb_edges.py",
       "sha256": "be6a9d772f17cc7da0a3c56b67dc362b06ecc85773dbd0ae351a88c6c795e696",
-      "reason": "Source code for new RF-T008 4L1GJM PCB connection finite-grid optimization and independent MNA."
+      "reason": "Executed source code for PCB relocation local search and 9x9 independent MNA."
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp059_4l1gjm_pcb_relocation_20261020.json",
+      "sha256": "189ebcf5a590a834b9bcb15ca8296eb894087139f1c8ba13b1e97dcfee430d9e",
+      "reason": "Complete top three EXP-059 candidate vectors and execution summary, original workflow run and artifact identifiers."
     }
   ],
   "limitations": [
-    "Planning and preflight only until Actions completed; raw artifacts will be selected for curated Git evidence."
+    "Git curated 3 complete vectors and 3 independent MNA overlays, selected from the 30-day raw Actions artifacts; complete 46-layout raw trace not in Git.",
+    "Global exhaustive PCB graph search and physical RF verification were not performed."
   ],
-  "size_exception": null
+  "size_exception": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-059/run_summary.json",
+    "sha256": "c95b7fa61596bcdf30b38d5471b75350232906a7622c9839eb6ff72d2096f5ae"
+  },
+  "git_readback": "passed"
 }
