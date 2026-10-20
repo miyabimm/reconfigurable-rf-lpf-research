@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-057",
+  "candidate_id": "EXP057-T007-4L-SHUNT-TIP-FROM-INPUT-001",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "constraint_sha256": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+  "source_EXP055": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json",
+  "source_actions_run": 39371574312,
+  "source_raw_actions_artifact_id": 12241866186,
+  "source_raw_actions_zip_sha256": "791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd",
+  "source_inner_json_sha256": "6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17",
+  "execution_sha": "5c1e7a59afd1edcb9ee581a14a4872f340b510a1",
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "Cpar_edge": [
+      3,
+      -1
+    ],
+    "physical_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ]
+  },
+  "components": [
+    {
+      "name": "L0",
+      "kind": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 5.303996526265154,
+      "Q": 25
+    },
+    {
+      "name": "L1",
+      "kind": "LQP02HV",
+      "nodes": [
+        0,
+        3
+      ],
+      "L_nH": 11.847600455105594,
+      "Q": 25
+    },
+    {
+      "name": "L2",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 6.720355061656682,
+      "Q": 25
+    },
+    {
+      "name": "L3",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 6.2603702628306195,
+      "Q": 25
+    },
+    {
+      "name": "Cf0",
+      "kind": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 0.7864149674622626,
+      "Q": 80
+    },
+    {
+      "name": "Cf1",
+      "kind": "GJM01",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 1.1260718728455452,
+      "Q": 80
+    },
+    {
+      "name": "Cf2",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.020000000000000087,
+      "Q": 40
+    },
+    {
+      "name": "Cp",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.020000000000009968,
+      "Q": 40
+    },
+    {
+      "name": "Cv0",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv1",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv2",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv0_permanent_Cpar",
+      "kind": "RF-T007_fixed_shunt_parasitic",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 0.5,
+      "Q": 40
+    }
+  ],
+  "couplings": [
+    {
+      "members": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.09999999999999962
+    },
+    {
+      "members": [
+        "L1",
+        "L3"
+      ],
+      "k": -0.0030181730989563963
+    },
+    {
+      "members": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.1
+    }
+  ],
+  "area_units": 5.333333333333333,
+  "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,then six (Cv0,Cv1,Cv2) triples in order B71 B12 B28 B13+B14 B26 B8",
+  "vector": [
+    5.303996526265154,
+    11.847600455105594,
+    6.720355061656682,
+    6.2603702628306195,
+    0.7864149674622626,
+    1.1260718728455452,
+    0.020000000000000087,
+    0.020000000000009968,
+    -0.09999999999999962,
+    -0.0030181730989563963,
+    -0.1,
+    0.4480770418245962,
+    0.14762025033089085,
+    1.8835551667251937,
+    0.048860141528252035,
+    0.5040626141943679,
+    1.6187998993263988,
+    0.1305836893229176,
+    0.34729483204302236,
+    1.5526317207877638,
+    0.07903847853759369,
+    0.41736765693441175,
+    1.123507887474779,
+    0.0596241395602676,
+    0.14895438680897263,
+    0.317976185332752,
+    4.0122951666210676e-16,
+    0,
+    0
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.4480770418245962,
+      0.14762025033089085,
+      1.8835551667251937
+    ],
+    "B12": [
+      0.048860141528252035,
+      0.5040626141943679,
+      1.6187998993263988
+    ],
+    "B28": [
+      0.1305836893229176,
+      0.34729483204302236,
+      1.5526317207877638
+    ],
+    "B13+B14": [
+      0.07903847853759369,
+      0.41736765693441175,
+      1.123507887474779
+    ],
+    "B26": [
+      0.0596241395602676,
+      0.14895438680897263,
+      0.317976185332752
+    ],
+    "B8": [
+      4.0122951666210676e-16,
+      0,
+      0
+    ]
+  },
+  "metrics": {
+    "worst_IL_db": 0.9142807177268966,
+    "min_H2_db": 30.00499999912168,
+    "min_H3_db": 30.005000000019756,
+    "min_L_eigenvalue_nH": 5.209321518656968,
+    "finite_H2H3_30dB_pass": true
+  },
+  "optimization": {
+    "iteration_policy": "slsqp-staged-v1",
+    "selected_coarse_nit": 206,
+    "selected_fine_nit": 1,
+    "selected_stages_converged": true,
+    "recovery_invoked": false
+  },
+  "limitations": [
+    "All numerical results nominal constant-Q and local finite-grid H2/H3 28x1001, not global optimum or hardware",
+    "Selected 84 points independent MNA PASS, not proof of continuous frequency extremes",
+    "No extra H2/H3 margin or physical mutual-k implementation investigated, SRF/Q(f), EM and tolerance untested",
+    "RF-F003 formal unchanged, Phase 2 only"
+  ]
+}
