@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-066",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "30db_boundary",
+      "35db_boundary",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "After independent high-density verification retain at most 8 selected unique compliant full vectors across best IL / topology diversity / near 30dB and 35dB harmonic constraints / representative failure. Screening-only and nonconverged remain labeled. No best-IL claim on unvalidated screening.",
+    "estimated_curated_bytes": 120000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-066/wide_search.py",
+      "sha256": "6ae289e5bc5a6388267e54f5006df63509bc7f76a2a116c6a9497a6b5b3e349c",
+      "reason": "Executable EXP-066 graph census, nominal RF-T005 S2P-based screening and termination-aware SLSQP source."
+    }
+  ],
+  "limitations": [
+    "Structural census 125 labeled trees (local); RF grid screening, SLSQP and final independent MNA not run in this artifact state.",
+    "No candidate may be promoted from 5/31 point grids; final 28x7001, independent coupled-L MNA and power balance remain required.",
+    "Git-only evidence policy: curated checkpoint vectors and validation overlays must be added after completed actual run."
+  ],
+  "size_exception": null,
+  "git_readback": "pending",
+  "summary": null
+}
