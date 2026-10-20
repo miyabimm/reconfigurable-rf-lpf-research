@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-057",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "execution_status": "completed",
+  "action_run": 39371574312,
+  "action_execution_sha": "5c1e7a59afd1edcb9ee581a14a4872f340b510a1",
+  "action_artifact_id": 12241866186,
+  "action_artifact_zip_sha256": "791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd",
+  "action_inner_json_sha256": "6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17",
+  "referenced_exp055_candidate": "EXP055-T007-4L-CV1-INPUT-TIP-001",
+  "reference_IL_db": 0.8173655897607699,
+  "internal_guard_db": 30.005,
+  "mandatory_H2H3_db": 30,
+  "component_and_parasitic_model": "four LQP02HV Q25, two GJM01 Q80, two PCB Q40, Cv0(3,GND)/Cv1(0,3)/Cv2(1,2) 0-3pF Q35, one separate grounded always-on Cpar0.5pF/Q40, 50ohm source/load60-j40ohm, frozen model-origin external S2Ps, signed neighboring k<=0.10",
+  "chip_area_units": 5.333333333333333,
+  "policy": "slsqp-staged-v1",
+  "iterations": {
+    "primary_coarse": 240,
+    "primary_fine": 120,
+    "retry_coarse": 500,
+    "retry_fine": 280
+  },
+  "graph_counts": {
+    "total": 10,
+    "new": 9,
+    "control": 1
+  },
+  "attempts": {
+    "planned": 20,
+    "attempted": 20,
+    "solver_converged": 19,
+    "solver_nonconverged": 1,
+    "execution_failed": 0,
+    "recovery_invoked": 0,
+    "initial_primary_attempts": 20
+  },
+  "finite_H2H3_30dB_eligible_graphs": 10,
+  "independent_mna": {
+    "passed_selected_graphs": 10,
+    "probe_frequency_count_per_graph": 84,
+    "matrix": "explicit 9x9 coupled-L branch-current KCL/KVL",
+    "power_conservation_checked": true
+  },
+  "dense_grid": {
+    "disjoint_regions": 28,
+    "samples_per_region": 1001
+  },
+  "observed_IL_record_updated": false,
+  "reference_reproduced": true,
+  "apparent_gain_vs_EXP055_reference_db": 8.656830807751703e-11,
+  "interpreted_gain": "Numerical jitter only, not a meaningful record",
+  "ranked": [
+    {
+      "graph": "control_exp055",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.8173655896742016,
+      "min_H2_db": 30.00499999868133,
+      "min_H3_db": 30.004809736930103,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "shunt_tip_from_input",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9142807177268966,
+      "min_H2_db": 30.00499999912168,
+      "min_H3_db": 30.005000000019756,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "ground_pendant_from_input",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9159348010906704,
+      "min_H2_db": 30.004999999989348,
+      "min_H3_db": 30.004999999999352,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "output_series_through_pendant",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9253193753980703,
+      "min_H2_db": 30.00499999969358,
+      "min_H3_db": 30.004960790702405,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "input_series_through_tip",
+      "L_edges": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9264343268024327,
+      "min_H2_db": 30.004999999962028,
+      "min_H3_db": 30.00500000000027,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "ground_pendant_from_output",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9364017897244569,
+      "min_H2_db": 30.00499999979645,
+      "min_H3_db": 30.004999999606852,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "output_series_through_tip",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "worst_IL_db": 0.9733247016163382,
+      "min_H2_db": 30.004999999996063,
+      "min_H3_db": 30.004999999999697,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "shunt_tip_from_output",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 1.0001583507542797,
+      "min_H2_db": 30.00494195662645,
+      "min_H3_db": 30.004999999981884,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "input_series_through_pendant",
+      "L_edges": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 1.4989537416817957,
+      "min_H2_db": 30.004999999986023,
+      "min_H3_db": 30.004999999949284,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    },
+    {
+      "graph": "shunt_pendant_from_tip",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "worst_IL_db": 7.438404641287906,
+      "min_H2_db": 30.003478009340554,
+      "min_H3_db": 30.004999999998226,
+      "selected_converged": true,
+      "selected_independent_MNA_pass": true,
+      "finite_30dB_pass": true
+    }
+  ],
+  "caveats": [
+    "Selected minimum IL graph is old EXP055 topology; 9 novel graphs all have higher IL",
+    "One of 20 trials stopped with directional-derivative line-search failure, not iteration-limit; no retry under standard policy and must remain nonconverged",
+    "Some other trial points were above 30dB but IL as high as 22.64dB; these are poor local solutions and do not imply infeasible circuit",
+    "Original complete 20 trial vectors held in 30-day Actions artifact, curated checkpoint(s) retained in Git",
+    "No continuous-band extrema guarantee, global optimality, extra harmonic margin, physical k realization, SRF/Q(f), PCB EM, tolerance or measurement; Phase 2 only"
+  ]
+}
