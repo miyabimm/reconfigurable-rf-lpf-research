@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-064",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain best fully converged 30dB and independent 9x9 MNA compliant area4 candidate; preserve any numerical counterexample and control reoptimization, all 24 initial starts in summary, complete six tuning values, source SHA.",
+    "estimated_curated_bytes": 105000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "limitations": [
+    "Pre-run no numerical finding",
+    "Never treat converged finite sample as global optimum"
+  ],
+  "size_exception": null,
+  "git_readback": "not_run",
+  "summary": null
+}
