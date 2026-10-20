@@ -43,5 +43,6 @@
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-061/run_summary.json",
     "sha256": "2c059f0f715d10e6d7ea20dc35cbbccb50445b527775ebeca8ebb746030782cd"
-  }
+  },
+  "git_readback": "passed"
 }
