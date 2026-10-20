@@ -1,0 +1,49 @@
+name: EXP-062 Git evidence and Pareto curation
+on:
+  push:
+    branches:
+      - exp062-rft008-grounded-pcb-higher-cost-20261020
+    paths:
+      - '.github/workflows/exp062_git_curation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  curate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check EXP-062 main reservation and manifest before evidence ingestion
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-062 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-062
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39447892051
+          github-token: ${{ github.token }}
+          pattern: exp062-a*
+          merge-multiple: true
+          path: results/EXP-062/collected
+      - name: Materialize selected vectors and independent-MNA evidence
+        run: |
+          uv run --frozen python scripts/curate_exp062.py --input results/EXP-062/collected
+          git diff --stat
+      - name: Commit evidence to this PR branch, never overwrite past experiments
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-062/ data/experiment_index.csv data/pareto_snapshots/rf_t008_exp062_high_cost_20261020.json
+          git commit -m "EXP-062: curate 12-layout 24-start validated Phase2 Pareto results [skip ci]"
+          uv run --frozen python scripts/audit_new_experiment_storage.py finalize EXP-062
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+          git push origin HEAD:exp062-rft008-grounded-pcb-higher-cost-20261020
