@@ -1,0 +1,5971 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-065",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "execution_status": "completed",
+  "source_actions_run_id": 39453297733,
+  "code_execution_sha": "07db24f827c1d68e3eabbb6c9efd18376f5c356b",
+  "constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "scope": {
+    "fixed_C_layouts": 8,
+    "two_DTC_layouts": 4,
+    "four_L_graphs": 3,
+    "joint_topology_cases": 96,
+    "initial_starts": 192
+  },
+  "attempts": {
+    "planned": 192,
+    "attempted": 192,
+    "converged": 178,
+    "nonconverged": 14,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 4,
+  "eligible_layout_count": 93,
+  "prior_EXP062_best_IL_db": 0.8335054302993898,
+  "best_found_IL_db": 0.8297115403501256,
+  "new_global_within_observed_area5p333": true,
+  "best_topology": {
+    "layout": "pcb_out_ground",
+    "dtc": "two_bridges",
+    "graph": "original"
+  },
+  "all_joint_topology_results": [
+    {
+      "layout": "best_exp062",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.052842593318066,
+      "min_H2_db": 30.00438182483046,
+      "min_H3_db": 30.004999999959807,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1865778626759853,
+      "min_H2_db": 30.004999999727108,
+      "min_H3_db": 30.60593450992991,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 2.9748828635666684,
+      "min_H2_db": 30.00499999958776,
+      "min_H3_db": 30.004999998572067,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.1109273280408025,
+      "min_H2_db": 30.004999999543237,
+      "min_H3_db": 30.005000000271846,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1784873939278093,
+      "min_H2_db": 30.004999999986524,
+      "min_H3_db": 30.005000000021482,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.164904665333181,
+      "min_H2_db": 30.00499999940535,
+      "min_H3_db": 30.005000000002916,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8743057316470657,
+      "min_H2_db": 30.00499999956274,
+      "min_H3_db": 30.001952324612667,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": null,
+      "min_H2_db": null,
+      "min_H3_db": null,
+      "MNA_pass": null,
+      "eligible_starts": 0,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0153916345562293,
+      "min_H2_db": 30.004999998163132,
+      "min_H3_db": 30.004999999959256,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8335054302993898,
+      "min_H2_db": 30.004999999513252,
+      "min_H3_db": 30.004999999933084,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9213398583769301,
+      "min_H2_db": 30.004999999476738,
+      "min_H3_db": 30.004999999810206,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "best_exp062",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.9437376167252054,
+      "min_H2_db": 30.00499999969209,
+      "min_H3_db": 30.004389134454378,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.0696356072948578,
+      "min_H2_db": 30.00499999805961,
+      "min_H3_db": 30.004999999854306,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.170054944664133,
+      "min_H2_db": 30.004999999536622,
+      "min_H3_db": 30.005000000000265,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0800717106196553,
+      "min_H2_db": 30.00421041644138,
+      "min_H3_db": 30.005000000009254,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.1190523355643907,
+      "min_H2_db": 30.00499999975332,
+      "min_H3_db": 30.00499999991659,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1834522089338955,
+      "min_H2_db": 30.004999998664303,
+      "min_H3_db": 30.005000000116695,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.7661997256207043,
+      "min_H2_db": 30.004999999889968,
+      "min_H3_db": 30.00500000003572,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8639047740988797,
+      "min_H2_db": 30.00434170791682,
+      "min_H3_db": 30.004559499769638,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9809770123203567,
+      "min_H2_db": 30.00499999912817,
+      "min_H3_db": 30.005000000012533,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0330325597048327,
+      "min_H2_db": 30.004999999635274,
+      "min_H3_db": 30.005000000064097,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8341902564272808,
+      "min_H2_db": 30.004999997634304,
+      "min_H3_db": 30.002876630956116,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9358859605964962,
+      "min_H2_db": 30.004999999912478,
+      "min_H3_db": 30.004999999816352,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "bridge_out",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0198259346733556,
+      "min_H2_db": 30.004845410945286,
+      "min_H3_db": 30.00499999963679,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.1138631373066823,
+      "min_H2_db": 30.00499999976661,
+      "min_H3_db": 30.00500000003698,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.200599176853402,
+      "min_H2_db": 30.004999999446564,
+      "min_H3_db": 30.00500000021973,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.091312245212728,
+      "min_H2_db": 30.004138986320427,
+      "min_H3_db": 30.004999999847893,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.18410699282978,
+      "min_H2_db": 30.00411715976885,
+      "min_H3_db": 30.00499999998805,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1827365898563724,
+      "min_H2_db": 30.004999999909447,
+      "min_H3_db": 30.00500000007795,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.3764099029693546,
+      "min_H2_db": 30.004999999999903,
+      "min_H3_db": 30.004983853191128,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8673998450642331,
+      "min_H2_db": 30.00499999984779,
+      "min_H3_db": 30.00348847024049,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.0687639411161078,
+      "min_H2_db": 30.00499999979485,
+      "min_H3_db": 30.004999999859855,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.3085066264666105,
+      "min_H2_db": 30.004999999999384,
+      "min_H3_db": 30.004999999999747,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8381767240341544,
+      "min_H2_db": 30.004999999486465,
+      "min_H3_db": 30.00499999940656,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.2560477014523124,
+      "min_H2_db": 30.00497730464147,
+      "min_H3_db": 30.004999999947692,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_bridge_in",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": null,
+      "min_H2_db": null,
+      "min_H3_db": null,
+      "MNA_pass": null,
+      "eligible_starts": 0,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.2104870457641337,
+      "min_H2_db": 30.004999999998503,
+      "min_H3_db": 30.003735447965948,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.2098597787290555,
+      "min_H2_db": 30.004999998611087,
+      "min_H3_db": 30.004995528844024,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.1599115874987396,
+      "min_H2_db": 30.00499999999999,
+      "min_H3_db": 30.004999999999782,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.2671656789561534,
+      "min_H2_db": 30.005000000587,
+      "min_H3_db": 30.004999999514183,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1590007387578312,
+      "min_H2_db": 30.004999999282397,
+      "min_H3_db": 30.00499999975645,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 5.692411612608952,
+      "min_H2_db": 30.004999997794922,
+      "min_H3_db": 30.00499999973878,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.9302733225585136,
+      "min_H2_db": 30.004999999999818,
+      "min_H3_db": 30.005000000000052,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9068128831157733,
+      "min_H2_db": 30.00499999968937,
+      "min_H3_db": 30.004999999852735,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.2769720331949277,
+      "min_H2_db": 30.00499999974767,
+      "min_H3_db": 30.00499999794834,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8513614659094046,
+      "min_H2_db": 30.004999999990464,
+      "min_H3_db": 30.004999999999885,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9952152301106393,
+      "min_H2_db": 30.004999999999495,
+      "min_H3_db": 30.005000000000102,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3_bridge",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0079265694220663,
+      "min_H2_db": 30.004999999596397,
+      "min_H3_db": 30.004999999576654,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.1262661069368283,
+      "min_H2_db": 30.004999999455165,
+      "min_H3_db": 30.00499999922551,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.2312939033909833,
+      "min_H2_db": 30.00499999991738,
+      "min_H3_db": 30.005000000000535,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.087307384598646,
+      "min_H2_db": 30.004999999927733,
+      "min_H3_db": 30.005000000003346,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.1600367768298758,
+      "min_H2_db": 30.004999999989217,
+      "min_H3_db": 30.0050000000001,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.2392017384830187,
+      "min_H2_db": 30.005000000000017,
+      "min_H3_db": 30.00500000000001,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 19.835757958680194,
+      "min_H2_db": 30.005000000073245,
+      "min_H3_db": 30.004999999980278,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8987223705484669,
+      "min_H2_db": 30.004999999811975,
+      "min_H3_db": 30.005000000000823,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.2357939634383068,
+      "min_H2_db": 30.004999999952986,
+      "min_H3_db": 30.005000000010224,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.9722326053804999,
+      "min_H2_db": 30.004999999928547,
+      "min_H3_db": 30.004999999741653,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8493652895114728,
+      "min_H2_db": 30.00499999888181,
+      "min_H3_db": 30.00499999987049,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9951312043316018,
+      "min_H2_db": 30.004999999200223,
+      "min_H3_db": 30.004999998264218,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_n3",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.1380989200671106,
+      "min_H2_db": 30.00499999991252,
+      "min_H3_db": 30.004999999943713,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.0945740367100885,
+      "min_H2_db": 30.004988177020312,
+      "min_H3_db": 30.004999999879725,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1372729769826608,
+      "min_H2_db": 30.004999999562322,
+      "min_H3_db": 30.00500000126312,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.1177329635725157,
+      "min_H2_db": 30.004999999412117,
+      "min_H3_db": 30.005000001570735,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.0793884246312282,
+      "min_H2_db": 30.00499999980771,
+      "min_H3_db": 30.004810429520006,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1173872529850475,
+      "min_H2_db": 30.004999999062587,
+      "min_H3_db": 30.00500000009925,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.1589964618285635,
+      "min_H2_db": 30.004990837762794,
+      "min_H3_db": 30.005000000069533,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.9375030163474335,
+      "min_H2_db": 30.004999999963573,
+      "min_H3_db": 30.004999999973027,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1204449308521494,
+      "min_H2_db": 30.004999999370384,
+      "min_H3_db": 30.00499999824357,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.9475562402797864,
+      "min_H2_db": 30.00499999884491,
+      "min_H3_db": 30.00499999979734,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8885115960698273,
+      "min_H2_db": 30.004999999999143,
+      "min_H3_db": 30.004999999999768,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.0590348476806752,
+      "min_H2_db": 30.004999998500104,
+      "min_H3_db": 30.00499999921771,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "gjm_no_input",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.9721139235853692,
+      "min_H2_db": 30.004999999803303,
+      "min_H3_db": 30.004999999602635,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.1352645089937055,
+      "min_H2_db": 30.004999998523104,
+      "min_H3_db": 30.005000008821945,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1510964486119544,
+      "min_H2_db": 30.004999999953334,
+      "min_H3_db": 30.005000000010927,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0789867262915482,
+      "min_H2_db": 30.004876892868356,
+      "min_H3_db": 30.00500000007684,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.1201179056338564,
+      "min_H2_db": 30.004999999998283,
+      "min_H3_db": 30.004999999999974,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1794330032252085,
+      "min_H2_db": 30.005000000000045,
+      "min_H3_db": 30.005000000000223,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.1348278573871105,
+      "min_H2_db": 30.004999998917157,
+      "min_H3_db": 30.004999999883083,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8765041876918009,
+      "min_H2_db": 30.0049999998982,
+      "min_H3_db": 30.001638658463527,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9127368813168668,
+      "min_H2_db": 30.004999999716606,
+      "min_H3_db": 30.004999999939777,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.933284262978188,
+      "min_H2_db": 30.004999999826296,
+      "min_H3_db": 30.001820699734473,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8297115403501256,
+      "min_H2_db": 30.00499999924675,
+      "min_H3_db": 30.00484679604194,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9224452233597525,
+      "min_H2_db": 30.004999999295645,
+      "min_H3_db": 30.00499999924572,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "pcb_out_ground",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 0.9537506652494854,
+      "min_H2_db": 30.004999997522702,
+      "min_H3_db": 30.004999244437023,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "dual_tip_shunts",
+      "graph": "original",
+      "worst_IL_db": 1.1295479802237558,
+      "min_H2_db": 30.00499999997562,
+      "min_H3_db": 30.003538019590298,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "dual_tip_shunts",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1067161548575744,
+      "min_H2_db": 30.00435905008294,
+      "min_H3_db": 30.004999999908534,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "dual_tip_shunts",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.058757147056284,
+      "min_H2_db": 30.004999998306403,
+      "min_H3_db": 30.004999999998038,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_input",
+      "graph": "original",
+      "worst_IL_db": 1.1246785323136352,
+      "min_H2_db": 30.0049999998416,
+      "min_H3_db": 30.004999997906495,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_input",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.1171095273981364,
+      "min_H2_db": 30.00499999987639,
+      "min_H3_db": 30.004999999976107,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_input",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.0789945875048943,
+      "min_H2_db": 30.004999999975972,
+      "min_H3_db": 30.002496189202795,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_output",
+      "graph": "original",
+      "worst_IL_db": 0.8655616493484362,
+      "min_H2_db": 30.00479193580793,
+      "min_H3_db": 30.004101429844493,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_output",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 0.9087592477774844,
+      "min_H2_db": 30.00499999984626,
+      "min_H3_db": 30.004999999746435,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "tip_and_output",
+      "graph": "tip3_from_input",
+      "worst_IL_db": 1.276463562854265,
+      "min_H2_db": 30.004999999925847,
+      "min_H3_db": 30.004999999479157,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "two_bridges",
+      "graph": "original",
+      "worst_IL_db": 0.8363253646251736,
+      "min_H2_db": 30.004999999808586,
+      "min_H3_db": 30.004999999583095,
+      "MNA_pass": true,
+      "eligible_starts": 1,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "two_bridges",
+      "graph": "output_via_tip4",
+      "worst_IL_db": 1.5137717923134344,
+      "min_H2_db": 30.004999999212572,
+      "min_H3_db": 30.00499999942518,
+      "MNA_pass": true,
+      "eligible_starts": 2,
+      "exception_starts": 0
+    },
+    {
+      "layout": "two_ground_pcb",
+      "dtc": "two_bridges",
+      "graph": "tip3_from_input",
+      "worst_IL_db": null,
+      "min_H2_db": null,
+      "min_H3_db": null,
+      "MNA_pass": null,
+      "eligible_starts": 0,
+      "exception_starts": 0
+    }
+  ],
+  "all_initial_termination_histories": [
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 59,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1432206675049186,
+          "min_H2_db": 30.0049999999983,
+          "min_H3_db": 30.00500000000018
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 91,
+          "fine_nit": 3,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.052842593318066,
+          "min_H2_db": 30.00438182483046,
+          "min_H3_db": 30.004999999959807
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 153,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1865778626759853,
+          "min_H2_db": 30.004999999727108,
+          "min_H3_db": 30.60593450992991
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 170,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.4708350219871886,
+          "min_H2_db": 30.004999999999583,
+          "min_H3_db": 36.34776308205969
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 47,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.9758362877633813,
+          "min_H2_db": 30.004999999883353,
+          "min_H3_db": 30.00499999984295
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 38,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.9748828635666684,
+          "min_H2_db": 30.00499999958776,
+          "min_H3_db": 30.004999998572067
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 44,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1112088870344614,
+          "min_H2_db": 30.004999998937777,
+          "min_H3_db": 30.00500000037203
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 86,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1109273280408025,
+          "min_H2_db": 30.004999999543237,
+          "min_H3_db": 30.005000000271846
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 102,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1784873939313443,
+          "min_H2_db": 30.00499999999905,
+          "min_H3_db": 30.005000000001004
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 86,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1784873939278093,
+          "min_H2_db": 30.004999999986524,
+          "min_H3_db": 30.005000000021482
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 95,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.8515764924680624,
+          "min_H2_db": 30.00500000002848,
+          "min_H3_db": 30.004999998225394
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 113,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.164904665333181,
+          "min_H2_db": 30.00499999940535,
+          "min_H3_db": 30.005000000002916
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 73,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8924521685915611,
+          "min_H2_db": 30.004999999836034,
+          "min_H3_db": 30.00499999861895
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 79,
+          "fine_nit": 18,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8743057316470657,
+          "min_H2_db": 30.00499999956274,
+          "min_H3_db": 30.001952324612667
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 91,
+          "fine_nit": 89,
+          "converged": true,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 1.0386621030247492,
+          "min_H2_db": 30.004999999892746,
+          "min_H3_db": 29.99751233760033
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 76,
+          "fine_nit": 26,
+          "converged": true,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 1.0386621030241932,
+          "min_H2_db": 30.004999999374107,
+          "min_H3_db": 29.997512331356937
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 69,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2073427453398882,
+          "min_H2_db": 30.00499999974651,
+          "min_H3_db": 30.004999999559256
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 70,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0153916345562293,
+          "min_H2_db": 30.004999998163132,
+          "min_H3_db": 30.004999999959256
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8335054302993898,
+          "min_H2_db": 30.004999999513252,
+          "min_H3_db": 30.004999999933084
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 102,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8827467946073618,
+          "min_H2_db": 30.004999999977045,
+          "min_H3_db": 30.00499999984756
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 131,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9574788325668806,
+          "min_H2_db": 30.004999999282088,
+          "min_H3_db": 30.004999999916528
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 105,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9213398583769301,
+          "min_H2_db": 30.004999999476738,
+          "min_H3_db": 30.004999999810206
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 9,
+          "coarse_nit": 240,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.943745520973122,
+          "min_H2_db": 30.00127331395261,
+          "min_H3_db": 30.004426173866683
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 65,
+          "fine_nit": 15,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9437376167252054,
+          "min_H2_db": 30.00499999969209,
+          "min_H3_db": 30.004389134454378
+        }
+      ]
+    },
+    {
+      "topology": [
+        "best_exp062",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 9,
+          "coarse_nit": 240,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.9163999820223956,
+          "min_H2_db": 30.00385130411366,
+          "min_H3_db": 30.00312361665443
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 9,
+          "fine_status": 0,
+          "coarse_nit": 500,
+          "fine_nit": 253,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.915896697206547,
+          "min_H2_db": 30.00499999981299,
+          "min_H3_db": 30.004552634325997
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 112,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0696356072948578,
+          "min_H2_db": 30.00499999805961,
+          "min_H3_db": 30.004999999854306
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 61,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1375412097605722,
+          "min_H2_db": 30.00499999993345,
+          "min_H3_db": 30.005000000014718
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 9,
+          "coarse_nit": 240,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.1700578669079573,
+          "min_H2_db": 30.00085583175182,
+          "min_H3_db": 30.00499750916849
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 373,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.170054944664133,
+          "min_H2_db": 30.004999999536622,
+          "min_H3_db": 30.005000000000265
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 81,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.9781436903697347,
+          "min_H2_db": 30.0045148576941,
+          "min_H3_db": 31.408372411692422
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 92,
+          "fine_nit": 10,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0800717106196553,
+          "min_H2_db": 30.00421041644138,
+          "min_H3_db": 30.005000000009254
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 118,
+          "fine_nit": 9,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0800717106332611,
+          "min_H2_db": 30.004210460511594,
+          "min_H3_db": 30.005000000019784
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 141,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.329337069197921,
+          "min_H2_db": 30.00499999772764,
+          "min_H3_db": 30.005000001082827
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 127,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1190523355643907,
+          "min_H2_db": 30.00499999975332,
+          "min_H3_db": 30.00499999991659
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 102,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1834522089338955,
+          "min_H2_db": 30.004999998664303,
+          "min_H3_db": 30.005000000116695
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 82,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1834522089824913,
+          "min_H2_db": 30.00499999909706,
+          "min_H3_db": 30.0050000000862
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 76,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 11.178228890951683,
+          "min_H2_db": 30.004999999999296,
+          "min_H3_db": 30.00500000000021
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 49,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.7661997256207043,
+          "min_H2_db": 30.004999999889968,
+          "min_H3_db": 30.00500000003572
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 138,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.7733271184626307,
+          "min_H2_db": 30.004999999845495,
+          "min_H3_db": 30.004999999951515
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 137,
+          "fine_nit": 6,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8639047740988797,
+          "min_H2_db": 30.00434170791682,
+          "min_H3_db": 30.004559499769638
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 66,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.414560142099394,
+          "min_H2_db": 30.004999999717974,
+          "min_H3_db": 30.00500000100208
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 100,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9809770123203567,
+          "min_H2_db": 30.00499999912817,
+          "min_H3_db": 30.005000000012533
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 164,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2099139903313711,
+          "min_H2_db": 30.00499999999917,
+          "min_H3_db": 30.004540970738354
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 65,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0330325597048327,
+          "min_H2_db": 30.004999999635274,
+          "min_H3_db": 30.005000000064097
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 85,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8341902564272808,
+          "min_H2_db": 30.004999997634304,
+          "min_H3_db": 30.002876630956116
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 116,
+          "fine_nit": 111,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.0430644144614474,
+          "min_H2_db": 30.00499999929903,
+          "min_H3_db": 30.005000000388314
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0430644144614474,
+          "min_H2_db": 30.00499999929903,
+          "min_H3_db": 30.005000000388314
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 159,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9375226395016407,
+          "min_H2_db": 30.0049999991614,
+          "min_H3_db": 30.004999999542893
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 142,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9358859605964962,
+          "min_H2_db": 30.004999999912478,
+          "min_H3_db": 30.004999999816352
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 188,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0198259346733556,
+          "min_H2_db": 30.004845410945286,
+          "min_H3_db": 30.00499999963679
+        }
+      ]
+    },
+    {
+      "topology": [
+        "bridge_out",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 9,
+          "coarse_nit": 240,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 0.916067096963248,
+          "min_H2_db": 29.954608521070192,
+          "min_H3_db": 30.000943704852773
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 9,
+          "fine_status": 0,
+          "coarse_nit": 500,
+          "fine_nit": 63,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.915615956473572,
+          "min_H2_db": 30.004999999061578,
+          "min_H3_db": 30.004699205133498
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 67,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.3346093398985224,
+          "min_H2_db": 30.00499999992398,
+          "min_H3_db": 30.005000000186275
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 176,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1138631373066823,
+          "min_H2_db": 30.00499999976661,
+          "min_H3_db": 30.00500000003698
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 48,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.200599176853402,
+          "min_H2_db": 30.004999999446564,
+          "min_H3_db": 30.00500000021973
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 192,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.3991330564008242,
+          "min_H2_db": 30.004999999794663,
+          "min_H3_db": 30.004999999955015
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 78,
+          "fine_nit": 15,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.091312245212728,
+          "min_H2_db": 30.004138986320427,
+          "min_H3_db": 30.004999999847893
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 100,
+          "fine_nit": 15,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.091312245217226,
+          "min_H2_db": 30.004138900905883,
+          "min_H3_db": 30.00499999972192
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 179,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.18410699282978,
+          "min_H2_db": 30.00411715976885,
+          "min_H3_db": 30.00499999998805
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 0,
+          "coarse_nit": 56,
+          "fine_nit": 52,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 6.136955652093654,
+          "min_H2_db": 30.004999999998997,
+          "min_H3_db": 30.00499999999983
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 6.136955652093654,
+          "min_H2_db": 30.004999999998997,
+          "min_H3_db": 30.00499999999983
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 87,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1827365898563724,
+          "min_H2_db": 30.004999999909447,
+          "min_H3_db": 30.00500000007795
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 58,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 19.02309320052335,
+          "min_H2_db": 30.004999999999953,
+          "min_H3_db": 30.004999999999946
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 61,
+          "fine_nit": 10,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.9546233043625483,
+          "min_H2_db": 30.00484483919176,
+          "min_H3_db": 30.004999999430918
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 143,
+          "fine_nit": 2,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.3764099029693546,
+          "min_H2_db": 30.004999999999903,
+          "min_H3_db": 30.004983853191128
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 125,
+          "fine_nit": 6,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8673998450642331,
+          "min_H2_db": 30.00499999984779,
+          "min_H3_db": 30.00348847024049
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 92,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9729117812897474,
+          "min_H2_db": 30.003079108534347,
+          "min_H3_db": 30.004999999290742
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 71,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0687639411161078,
+          "min_H2_db": 30.00499999979485,
+          "min_H3_db": 30.004999999859855
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 115,
+          "fine_nit": 15,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 4.505879566216487,
+          "min_H2_db": 30.004999999991654,
+          "min_H3_db": 30.004999999810774
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 4.505879566216487,
+          "min_H2_db": 30.004999999991654,
+          "min_H3_db": 30.004999999810774
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 75,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.4343724157927837,
+          "min_H2_db": 30.00499999994733,
+          "min_H3_db": 30.004999999952638
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 79,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.3085066264666105,
+          "min_H2_db": 30.004999999999384,
+          "min_H3_db": 30.004999999999747
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 184,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8381767240341544,
+          "min_H2_db": 30.004999999486465,
+          "min_H3_db": 30.00499999940656
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 8,
+          "coarse_nit": 18,
+          "fine_nit": 119,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 1.6632335613364977,
+          "min_H2_db": 29.906647079577226,
+          "min_H3_db": 30.024287843030617
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 72,
+          "fine_nit": 7,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2560477014523124,
+          "min_H2_db": 30.00497730464147,
+          "min_H3_db": 30.004999999947692
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 115,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.9387212574269537,
+          "min_H2_db": 30.004999999993952,
+          "min_H3_db": 30.004999999970906
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 9,
+          "coarse_nit": 159,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 4.073088016115284,
+          "min_H2_db": 30.004964061354404,
+          "min_H3_db": 30.00499525302398
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_bridge_in",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 9,
+          "coarse_nit": 47,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 6.048663056034678,
+          "min_H2_db": 30.003174814689466,
+          "min_H3_db": 30.002747277803586
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 57,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2104870457641337,
+          "min_H2_db": 30.004999999998503,
+          "min_H3_db": 30.003735447965948
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 79,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.467811428920932,
+          "min_H2_db": 30.004999999998596,
+          "min_H3_db": 30.00499999999958
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 156,
+          "fine_nit": 5,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2098597787290555,
+          "min_H2_db": 30.004999998611087,
+          "min_H3_db": 30.004995528844024
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 153,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2251066345899702,
+          "min_H2_db": 30.004999999973826,
+          "min_H3_db": 30.004999999996116
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 64,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 3.8959006796857643,
+          "min_H2_db": 30.00499999991934,
+          "min_H3_db": 30.00499999938354
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 97,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1599115874987396,
+          "min_H2_db": 30.00499999999999,
+          "min_H3_db": 30.004999999999782
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 52,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2671656789561534,
+          "min_H2_db": 30.005000000587,
+          "min_H3_db": 30.004999999514183
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 141,
+          "fine_nit": 11,
+          "converged": true,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 1.1708911635673551,
+          "min_H2_db": 30.00493455139235,
+          "min_H3_db": 29.998534730274052
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 66,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1590007387578312,
+          "min_H2_db": 30.004999999282397,
+          "min_H3_db": 30.00499999975645
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 128,
+          "fine_nit": 21,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 12.705963238612476,
+          "min_H2_db": 30.00499999947054,
+          "min_H3_db": 30.004980206834166
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 10,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 12.70594862260576,
+          "min_H2_db": 30.004999999887808,
+          "min_H3_db": 30.004980372577947
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 73,
+          "fine_nit": 37,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 5.692411612608952,
+          "min_H2_db": 30.004999997794922,
+          "min_H3_db": 30.00499999973878
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 5.692411612608952,
+          "min_H2_db": 30.004999997794922,
+          "min_H3_db": 30.00499999973878
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 65,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 7.357880318890389,
+          "min_H2_db": 30.004999999998955,
+          "min_H3_db": 29.997805636308925
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 140,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9302733225585136,
+          "min_H2_db": 30.004999999999818,
+          "min_H3_db": 30.005000000000052
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 88,
+          "fine_nit": 2,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 25.021901024888137,
+          "min_H2_db": 30.00499999999992,
+          "min_H3_db": 30.005000000000088
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 25.021901024888137,
+          "min_H2_db": 30.00499999999992,
+          "min_H3_db": 30.005000000000088
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 119,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9068128831169342,
+          "min_H2_db": 30.004999999197956,
+          "min_H3_db": 30.004999999965307
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 111,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9068128831157733,
+          "min_H2_db": 30.00499999968937,
+          "min_H3_db": 30.004999999852735
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 141,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2769720331949277,
+          "min_H2_db": 30.00499999974767,
+          "min_H3_db": 30.00499999794834
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 82,
+          "fine_nit": 56,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.5237653558524877,
+          "min_H2_db": 30.00499999999957,
+          "min_H3_db": 30.004999999982935
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.5237653558524877,
+          "min_H2_db": 30.00499999999957,
+          "min_H3_db": 30.004999999982935
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 95,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8513614659094046,
+          "min_H2_db": 30.004999999990464,
+          "min_H3_db": 30.004999999999885
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 73,
+          "fine_nit": 49,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 3.636609149268825,
+          "min_H2_db": 30.00499999919283,
+          "min_H3_db": 30.004999999333776
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 3.636609149268825,
+          "min_H2_db": 30.00499999919283,
+          "min_H3_db": 30.004999999333776
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 54,
+          "fine_nit": 46,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 4.3825888945227796,
+          "min_H2_db": 30.004999999779134,
+          "min_H3_db": 30.004999997945827
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 106,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9952152301106393,
+          "min_H2_db": 30.004999999999495,
+          "min_H3_db": 30.005000000000102
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 83,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0079265694220663,
+          "min_H2_db": 30.004999999596397,
+          "min_H3_db": 30.004999999576654
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3_bridge",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 9,
+          "coarse_nit": 127,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 1.586322794095392,
+          "min_H2_db": 29.94454950058326,
+          "min_H3_db": 30.004491797445247
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 94,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1605466605478834,
+          "min_H2_db": 30.00499999964181,
+          "min_H3_db": 30.004999998956844
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 114,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1262661069368283,
+          "min_H2_db": 30.004999999455165,
+          "min_H3_db": 30.00499999922551
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 184,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2312939033909833,
+          "min_H2_db": 30.00499999991738,
+          "min_H3_db": 30.005000000000535
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 157,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2312939034006882,
+          "min_H2_db": 30.004999999278887,
+          "min_H3_db": 30.005000000001097
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 115,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.087307384598646,
+          "min_H2_db": 30.004999999927733,
+          "min_H3_db": 30.005000000003346
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 87,
+          "fine_nit": 54,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2666005850940967,
+          "min_H2_db": 30.00488444114028,
+          "min_H3_db": 30.004999999906676
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 48,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1600367768298758,
+          "min_H2_db": 30.004999999989217,
+          "min_H3_db": 30.0050000000001
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 89,
+          "fine_nit": 94,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 3.9679908768913625,
+          "min_H2_db": 30.00499999994434,
+          "min_H3_db": 30.00498299888453
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 3.9679908768913625,
+          "min_H2_db": 30.00499999994434,
+          "min_H3_db": 30.00498299888453
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 112,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2392017384830187,
+          "min_H2_db": 30.005000000000017,
+          "min_H3_db": 30.00500000000001
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 101,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2392017387108036,
+          "min_H2_db": 30.005000000659905,
+          "min_H3_db": 30.00499999894533
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 59,
+          "fine_nit": 56,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 19.835757958680194,
+          "min_H2_db": 30.005000000073245,
+          "min_H3_db": 30.004999999980278
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 4,
+          "coarse_nit": 69,
+          "fine_nit": 50,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 2.701739144075441,
+          "min_H2_db": 30.004940506006363,
+          "min_H3_db": 30.00498864669725
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 48,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8987223705484669,
+          "min_H2_db": 30.004999999811975,
+          "min_H3_db": 30.005000000000823
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 4,
+          "coarse_nit": 102,
+          "fine_nit": 44,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 30.170736294491487,
+          "min_H2_db": 5.211470133079264,
+          "min_H3_db": 7.406500082226485
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 4,
+          "coarse_nit": 17,
+          "fine_nit": 29,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 63.184047569517496,
+          "min_H2_db": 24.349370094936802,
+          "min_H3_db": 17.609717420631583
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 88,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2357939634383068,
+          "min_H2_db": 30.004999999952986,
+          "min_H3_db": 30.005000000010224
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 165,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9722326053804999,
+          "min_H2_db": 30.004999999928547,
+          "min_H3_db": 30.004999999741653
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 8,
+          "coarse_nit": 49,
+          "fine_nit": 55,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 30.89497736257607,
+          "min_H2_db": 29.666065583668146,
+          "min_H3_db": 29.6052267482437
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 85,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8493652895114728,
+          "min_H2_db": 30.00499999888181,
+          "min_H3_db": 30.00499999987049
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 133,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.061221263015388,
+          "min_H2_db": 30.004999999980605,
+          "min_H3_db": 30.00499999998475
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 72,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9951312043316018,
+          "min_H2_db": 30.004999999200223,
+          "min_H3_db": 30.004999998264218
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 96,
+          "fine_nit": 32,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 4.226507187899168,
+          "min_H2_db": 30.00500000038876,
+          "min_H3_db": 30.00499999972884
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 94,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1380989200671106,
+          "min_H2_db": 30.00499999991252,
+          "min_H3_db": 30.004999999943713
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_n3",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 125,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.4710734818866402,
+          "min_H2_db": 30.00499999997026,
+          "min_H3_db": 30.00499999996109
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 72,
+          "fine_nit": 10,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0945740367100885,
+          "min_H2_db": 30.004988177020312,
+          "min_H3_db": 30.004999999879725
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 85,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.166714330278963,
+          "min_H2_db": 30.004999999739574,
+          "min_H3_db": 30.004999999052252
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 121,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1372729810254216,
+          "min_H2_db": 30.00499999995384,
+          "min_H3_db": 30.00500000000008
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 128,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1372729769826608,
+          "min_H2_db": 30.004999999562322,
+          "min_H3_db": 30.00500000126312
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 102,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1177329635725157,
+          "min_H2_db": 30.004999999412117,
+          "min_H3_db": 30.005000001570735
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 57,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.149133073437978,
+          "min_H2_db": 30.004999999899738,
+          "min_H3_db": 30.004999999986765
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 108,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.101856290675268,
+          "min_H2_db": 30.004999999920944,
+          "min_H3_db": 30.00499999976952
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 103,
+          "fine_nit": 11,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0793884246312282,
+          "min_H2_db": 30.00499999980771,
+          "min_H3_db": 30.004810429520006
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 104,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.117387268918481,
+          "min_H2_db": 30.0049999993732,
+          "min_H3_db": 30.004999999946342
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 109,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1173872529850475,
+          "min_H2_db": 30.004999999062587,
+          "min_H3_db": 30.00500000009925
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 80,
+          "fine_nit": 2,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1589964618285635,
+          "min_H2_db": 30.004990837762794,
+          "min_H3_db": 30.005000000069533
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 149,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.5347054738890844,
+          "min_H2_db": 30.004999999101315,
+          "min_H3_db": 30.00500000393032
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 92,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9375030163474335,
+          "min_H2_db": 30.004999999963573,
+          "min_H3_db": 30.004999999973027
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 97,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 3.8738814252624816,
+          "min_H2_db": 30.00499999997981,
+          "min_H3_db": 30.00499999999839
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 47,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 3.5574265595068653,
+          "min_H2_db": 30.00499999893989,
+          "min_H3_db": 30.00499999994212
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 108,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1204449308521494,
+          "min_H2_db": 30.004999999370384,
+          "min_H3_db": 30.00499999824357
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 97,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9475562402797864,
+          "min_H2_db": 30.00499999884491,
+          "min_H3_db": 30.00499999979734
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 158,
+          "fine_nit": 1,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.947556240295505,
+          "min_H2_db": 30.004999999924866,
+          "min_H3_db": 30.004999999998176
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.947556240295505,
+          "min_H2_db": 30.004999999924866,
+          "min_H3_db": 30.004999999998176
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 84,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8885115960698273,
+          "min_H2_db": 30.004999999999143,
+          "min_H3_db": 30.004999999999768
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 114,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8920830154546089,
+          "min_H2_db": 30.004999998906573,
+          "min_H3_db": 30.004999999999733
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 46,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.579592966038397,
+          "min_H2_db": 30.00499999996873,
+          "min_H3_db": 30.004943550960085
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 104,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0590348476806752,
+          "min_H2_db": 30.004999998500104,
+          "min_H3_db": 30.00499999921771
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 193,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9721139235853692,
+          "min_H2_db": 30.004999999803303,
+          "min_H3_db": 30.004999999602635
+        }
+      ]
+    },
+    {
+      "topology": [
+        "gjm_no_input",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 8,
+          "fine_status": 0,
+          "coarse_nit": 209,
+          "fine_nit": 84,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.0491631571019497,
+          "min_H2_db": 30.00499999868799,
+          "min_H3_db": 30.00500000005352
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0491631571019497,
+          "min_H2_db": 30.00499999868799,
+          "min_H3_db": 30.00500000005352
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 63,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1352645089937055,
+          "min_H2_db": 30.004999998523104,
+          "min_H3_db": 30.005000008821945
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 76,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 2.2063608568234714,
+          "min_H2_db": 30.004999999638237,
+          "min_H3_db": 30.00499999958884
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 142,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1510964486119544,
+          "min_H2_db": 30.004999999953334,
+          "min_H3_db": 30.005000000010927
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 186,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2025573843177866,
+          "min_H2_db": 30.00499999947088,
+          "min_H3_db": 30.005000000079423
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 117,
+          "fine_nit": 14,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0789867262915482,
+          "min_H2_db": 30.004876892868356,
+          "min_H3_db": 30.00500000007684
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 123,
+          "fine_nit": 15,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0789867262956034,
+          "min_H2_db": 30.004876911632067,
+          "min_H3_db": 30.00500000004156
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 64,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.2871745415407951,
+          "min_H2_db": 30.00499999990992,
+          "min_H3_db": 30.004999999783273
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 101,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1201179056338564,
+          "min_H2_db": 30.004999999998283,
+          "min_H3_db": 30.004999999999974
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 79,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1794330032252085,
+          "min_H2_db": 30.005000000000045,
+          "min_H3_db": 30.005000000000223
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 94,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1794330032418645,
+          "min_H2_db": 30.00499999998041,
+          "min_H3_db": 30.00500000002083
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 121,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1348278573871105,
+          "min_H2_db": 30.004999998917157,
+          "min_H3_db": 30.004999999883083
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 95,
+          "fine_nit": 10,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.6227241199454698,
+          "min_H2_db": 30.004998903285983,
+          "min_H3_db": 30.00500000084201
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 52,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8942702155221367,
+          "min_H2_db": 30.004999997928607,
+          "min_H3_db": 30.005000000052185
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 109,
+          "fine_nit": 17,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8765041876918009,
+          "min_H2_db": 30.0049999998982,
+          "min_H3_db": 30.001638658463527
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 81,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9127368813168668,
+          "min_H2_db": 30.004999999716606,
+          "min_H3_db": 30.004999999939777
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 67,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9127368813193846,
+          "min_H2_db": 30.00499999997283,
+          "min_H3_db": 30.00500000000308
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 105,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9771294773844931,
+          "min_H2_db": 30.00499999847154,
+          "min_H3_db": 30.0049999998053
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 88,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.933284262978188,
+          "min_H2_db": 30.004999999826296,
+          "min_H3_db": 30.001820699734473
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 49,
+          "fine_nit": 23,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8343876437865008,
+          "min_H2_db": 30.004999999448273,
+          "min_H3_db": 30.003252373732142
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 210,
+          "fine_nit": 22,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8297115403501256,
+          "min_H2_db": 30.00499999924675,
+          "min_H3_db": 30.00484679604194
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 146,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9378763984082941,
+          "min_H2_db": 30.004999999178274,
+          "min_H3_db": 30.00499999994851
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 106,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9224452233597525,
+          "min_H2_db": 30.004999999295645,
+          "min_H3_db": 30.00499999924572
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 0,
+          "coarse_nit": 240,
+          "fine_nit": 99,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.9537506652433474,
+          "min_H2_db": 30.004999999991178,
+          "min_H3_db": 30.004999259569782
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 9,
+          "fine_nit": 8,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9537506652494854,
+          "min_H2_db": 30.004999997522702,
+          "min_H3_db": 30.004999244437023
+        }
+      ]
+    },
+    {
+      "topology": [
+        "pcb_out_ground",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 0,
+          "coarse_nit": 240,
+          "fine_nit": 70,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.9936216225058188,
+          "min_H2_db": 30.004999999937052,
+          "min_H3_db": 30.004999999940786
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9936216225058188,
+          "min_H2_db": 30.004999999937052,
+          "min_H3_db": 30.004999999940786
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 109,
+          "fine_nit": 20,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1295479802237558,
+          "min_H2_db": 30.00499999997562,
+          "min_H3_db": 30.003538019590298
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 104,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.144615836203223,
+          "min_H2_db": 30.00499999998814,
+          "min_H3_db": 30.004999999913625
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 177,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1773955323773786,
+          "min_H2_db": 30.00499999923089,
+          "min_H3_db": 33.507096292951374
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 177,
+          "fine_nit": 23,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1067161548575744,
+          "min_H2_db": 30.00435905008294,
+          "min_H3_db": 30.004999999908534
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 89,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.058757147056284,
+          "min_H2_db": 30.004999998306403,
+          "min_H3_db": 30.004999999998038
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "dual_tip_shunts",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 51,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1261042613193286,
+          "min_H2_db": 30.004999999425404,
+          "min_H3_db": 30.005000000078027
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 138,
+          "fine_nit": 25,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 10.200400877348121,
+          "min_H2_db": 30.004999999870744,
+          "min_H3_db": 30.004991401551745
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 143,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1246785323136352,
+          "min_H2_db": 30.0049999998416,
+          "min_H3_db": 30.004999997906495
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 64,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1171095273981364,
+          "min_H2_db": 30.00499999987639,
+          "min_H3_db": 30.004999999976107
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 105,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.1171095274462333,
+          "min_H2_db": 30.004999999171492,
+          "min_H3_db": 30.004999999869135
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 122,
+          "fine_nit": 6,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.080028574299742,
+          "min_H2_db": 30.004999999779326,
+          "min_H3_db": 30.004631553025334
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_input",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 103,
+          "fine_nit": 13,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0789945875048943,
+          "min_H2_db": 30.004999999975972,
+          "min_H3_db": 30.002496189202795
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 117,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9322676112566843,
+          "min_H2_db": 30.004999999446728,
+          "min_H3_db": 30.004999999798862
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 133,
+          "fine_nit": 5,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8655616493484362,
+          "min_H2_db": 30.00479193580793,
+          "min_H3_db": 30.004101429844493
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 79,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9087592477774844,
+          "min_H2_db": 30.00499999984626,
+          "min_H3_db": 30.004999999746435
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 136,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9087592479729563,
+          "min_H2_db": 30.00499999956865,
+          "min_H3_db": 30.00500000004834
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 90,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.276463562854265,
+          "min_H2_db": 30.004999999925847,
+          "min_H3_db": 30.004999999479157
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "tip_and_output",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 8,
+          "coarse_nit": 19,
+          "fine_nit": 13,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 7.236441196093821,
+          "min_H2_db": 20.523958771640437,
+          "min_H3_db": 5.06345721623013
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "original"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 9,
+          "fine_status": 0,
+          "coarse_nit": 240,
+          "fine_nit": 59,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 0.8363253646251736,
+          "min_H2_db": 30.004999999808586,
+          "min_H3_db": 30.004999999583095
+        },
+        {
+          "tier": "iteration_rescue_both",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.8363253646251736,
+          "min_H2_db": 30.004999999808586,
+          "min_H3_db": 30.004999999583095
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "original"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 9,
+          "coarse_nit": 100,
+          "fine_nit": 120,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 0.8393617343855665,
+          "min_H2_db": 29.992356105609424,
+          "min_H3_db": 29.998428052923344
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 0,
+          "coarse_nit": 29,
+          "fine_nit": 86,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.5137717923134344,
+          "min_H2_db": 30.004999999212572,
+          "min_H3_db": 30.00499999942518
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.5137717923134344,
+          "min_H2_db": 30.004999999212572,
+          "min_H3_db": 30.00499999942518
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "output_via_tip4"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 0,
+          "coarse_nit": 58,
+          "fine_nit": 88,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": true,
+          "IL_db": 1.5137717923142642,
+          "min_H2_db": 30.004999999599484,
+          "min_H3_db": 30.00499999967536
+        },
+        {
+          "tier": "nonlimit_feasible_restart",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "coarse_nit": 1,
+          "fine_nit": 1,
+          "converged": true,
+          "eligible": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.5137717923142642,
+          "min_H2_db": 30.004999999599484,
+          "min_H3_db": 30.00499999967536
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 0,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 8,
+          "coarse_nit": 50,
+          "fine_nit": 35,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 24.326018206245436,
+          "min_H2_db": 17.84525519331001,
+          "min_H3_db": 20.520362516983774
+        }
+      ]
+    },
+    {
+      "topology": [
+        "two_ground_pcb",
+        "two_bridges",
+        "tip3_from_input"
+      ],
+      "start": 1,
+      "exception": null,
+      "tier_results": [
+        {
+          "tier": "primary",
+          "coarse_status": 4,
+          "fine_status": 4,
+          "coarse_nit": 51,
+          "fine_nit": 48,
+          "converged": false,
+          "eligible": false,
+          "finite_30db_pass": false,
+          "IL_db": 12.761573739737024,
+          "min_H2_db": 20.408970267045138,
+          "min_H3_db": 23.991755563425585
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "96 scoped circuit graphs x2 starts; not full space/global optimum",
+    "Zero improvement is meaningful only within tested 96 topologies and local basins",
+    "Finite 28x1001 mesh H2/H3 >=30dB, no continuous margin proof",
+    "35dB nominal and IL0.3dB targets do not follow from 30dB pass",
+    "No Q(f)/SRF/EM/physical simultaneous k/tolerance/Phase3"
+  ]
+}

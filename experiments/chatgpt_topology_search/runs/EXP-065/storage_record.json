@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-065",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -16,15 +16,87 @@
     "rule": "Per topology retain original/continuation statuses and initial/final vectors, then archive best converged and finite>=30dB fully MNA-passed candidates including all six tunings, best distinct topology and representative unsuccessful starts. Never label nonconverged as Pareto.",
     "estimated_curated_bytes": 220000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
+  "checkpoints": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/checkpoints/best_exp062_two_bridges_original.json",
+      "sha256": "b562e8b782b45b9ebe5fab3f6248173afefeded3827f291f805f7097d10e6198",
+      "candidate_id": "EXP065-best_exp062-two_bridges-original",
+      "selection_reason": "topology_diversity"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/checkpoints/pcb_out_ground_two_bridges_original.json",
+      "sha256": "0111dd3d60ca043b4899019781a39de58d8a92c2e7e4be55de2099b0637f9d33",
+      "candidate_id": "EXP065-pcb_out_ground-two_bridges-original",
+      "selection_reason": "pareto"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/checkpoints/bridge_out_two_bridges_original.json",
+      "sha256": "3a3e036a79addde75d77f0b41bc4c35f9c5596ae73aade3d5aea7c3c73c27b87",
+      "candidate_id": "EXP065-bridge_out-two_bridges-original",
+      "selection_reason": "topology_diversity"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/checkpoints/two_ground_pcb_two_bridges_original.json",
+      "sha256": "43497e0f5df56b8d9ec6e17053a082bc3405db7d7e12cc3f739ab18800d9d25f",
+      "candidate_id": "EXP065-two_ground_pcb-two_bridges-original",
+      "selection_reason": "topology_diversity"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/validation/best_exp062_two_bridges_original_mna.json",
+      "sha256": "18cdce7e9b1e168452c06529c9f46da9c6e5a7d07df412feedaeda2a3109cca5",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/validation/pcb_out_ground_two_bridges_original_mna.json",
+      "sha256": "d7337e8f9625194519273bac695f6477052adb089bc417d942a2738fccb2938c",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/validation/bridge_out_two_bridges_original_mna.json",
+      "sha256": "aba3e30fbced4aa6b0e42d9a92fa2dfce8d8e161fcbd202ecfb3ea81c9d265d1",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/validation/two_ground_pcb_two_bridges_original_mna.json",
+      "sha256": "d7f4db18ad4b6eda698f9a8edc36d899730294c1bf5d163275ad6597ba7af9a2",
+      "method": "independent_mna",
+      "status": "passed"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/wide_search_4l2gjm.py",
+      "sha256": "2b55aa4b6c5e0582dec6aab168ad31508d44ecab89c32c851a5bb24f2697280d",
+      "role": "source_snapshot",
+      "reason": "Executed multi-axis RF-T008 evaluator, SLSQP, independent MNA source code"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/source_exp062_area5p333_best.json",
+      "sha256": "517a310771583e9f3708b12e34d787eb4e13d2b85f353fe8007c3a56532883a2",
+      "role": "source_snapshot",
+      "reason": "Pinned complete EXP-062 baseline vector and source SHA used as warm start"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-065/README.md",
+      "sha256": "d50410731a7f9b9c7ddf2601d8c0cf4f1dc48ab46a1b8169bf7f154b9ad4f5df",
+      "role": "method_note",
+      "reason": "Pre-run scope, RF constraints, and unapproved physical work boundaries"
+    }
+  ],
   "limitations": [
-    "Not executed; 96 planned joint topology cases and 192 initial starts",
-    "Raw Actions artifacts have finite retention; Git curation must occur after validated runs",
-    "Nominal constant-Q and fixed S2P; physical footprint PCB/IC and EM not modeled."
+    "All 96 raw result files in Actions artifacts; curated 4 full representative circuit vectors",
+    "192 initial statuses and 96 topology metrics preserved in compact summary.",
+    "Not a proof of global Pareto or physical feasibility."
   ],
   "size_exception": null,
-  "git_readback": "not_run",
-  "summary": null
+  "git_readback": "passed",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-065/run_summary.json",
+    "sha256": "26d8871738ab9db129f63fad57803d9bc50d939311b4341f88b9aeb4fd80ac1e"
+  }
 }
