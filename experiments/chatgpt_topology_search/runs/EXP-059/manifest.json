@@ -420,7 +420,7 @@
   "execution": {
     "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": 92
+    "evaluation_count": null
   },
   "validation": {
     "numerical": "passed",
