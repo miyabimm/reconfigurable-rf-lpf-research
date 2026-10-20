@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-055",
+  "constraint_id": "RF-T007",
+  "phase": "Phase 2",
+  "status": "completed_actual_Actions_success",
+  "source_run": 39341678211,
+  "source_artifact_id": 12230025234,
+  "source_artifact_raw_sha256": "2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64",
+  "source_artifact_zip_sha256": "995b86ad76a1530bb36820d89b51e5e9fefd8559b64c39c681934b3905058564",
+  "execution_sha": "e0b824c1b3160b7280026f481fafcf7c5ed27b95",
+  "historical_F003_source_reproduction": {
+    "expected_worst_IL_db": 0.8436523315639586,
+    "actual_worst_IL_db": 0.843652331563959,
+    "minimum_H2_db": 30.03993865346161,
+    "minimum_H3_db": 30.03984294128475
+  },
+  "unmodified_F003_vector_with_T007_parasitic": {
+    "worst_IL_db": 1.1606422938194618,
+    "minimum_H2_db": 13.73806770524296,
+    "minimum_H3_db": 18.48179535155967,
+    "finite_pass": false
+  },
+  "attempts": {
+    "planned": 18,
+    "attempted": 18,
+    "converged": 13,
+    "nonconverged": 5,
+    "failed": 0,
+    "not_started": 0
+  },
+  "variant_count": 6,
+  "strict_30dB_eligible_variants": 6,
+  "selected_candidate_count": 4,
+  "selection_policy": "retain best IL and structure-diverse comparable 1-shunt 4L circuits; preserve explicitly unconverged despite dense-grid pass",
+  "mandatory_H2H3_db": 30,
+  "numerical_guard_db": 30.005,
+  "analysis_grid": {
+    "intervals": 28,
+    "points_each": 1001
+  },
+  "independent_MNA": {
+    "method": "explicit coupled-inductor 9x9 MNA + power-balance",
+    "points": 84,
+    "all_six_selected_variants_pass": true
+  },
+  "chip_area_units": 5.333333333333333,
+  "reference_EXP053": {
+    "worst_IL_db": 0.8757946642355757,
+    "chip_area_units": 5.333333333333333
+  },
+  "observed_improvement_db": 0.05842907447480583,
+  "ranked_results": [
+    {
+      "variant": "cv1_input_tip",
+      "worst_IL_db": 0.8173655897607699,
+      "min_H2_db": 30.004999998908573,
+      "min_H3_db": 30.004810049409663,
+      "selected_SLSQP_converged": true,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 4.547473508864641e-13,
+      "curated_vector_path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json"
+    },
+    {
+      "variant": "cv1_output_shunt_tip",
+      "worst_IL_db": 0.8490840503708262,
+      "min_H2_db": 30.004999999220686,
+      "min_H3_db": 30.00449165362301,
+      "selected_SLSQP_converged": false,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 3.552713678800501e-13,
+      "curated_vector_path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_output_shunt_tip_best.json"
+    },
+    {
+      "variant": "cv1_input_parallel_L0",
+      "worst_IL_db": 0.8572685739286905,
+      "min_H2_db": 30.004999448162714,
+      "min_H3_db": 30.004983021196683,
+      "selected_SLSQP_converged": false,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 5.684341886080801e-13,
+      "curated_vector_path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_parallel_L0_best.json"
+    },
+    {
+      "variant": "cv1_input_output",
+      "worst_IL_db": 0.8745699890056462,
+      "min_H2_db": 30.00499999997045,
+      "min_H3_db": 30.0039552704718,
+      "selected_SLSQP_converged": true,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 3.836930773104541e-13,
+      "curated_vector_path": null
+    },
+    {
+      "variant": "cv1_tip_output",
+      "worst_IL_db": 0.8793270565252527,
+      "min_H2_db": 30.004999999176967,
+      "min_H3_db": 30.003971727566487,
+      "selected_SLSQP_converged": true,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 3.552713678800501e-13,
+      "curated_vector_path": null
+    },
+    {
+      "variant": "two_dtc",
+      "worst_IL_db": 0.8811361477837389,
+      "min_H2_db": 30.004999999803943,
+      "min_H3_db": 30.00464971125414,
+      "selected_SLSQP_converged": true,
+      "finite_H2H3_30dB_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "max_independent_MNA_difference_db": 2.4158453015843406e-13,
+      "curated_vector_path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/two_dtc_best.json"
+    }
+  ],
+  "limitations": [
+    "All results are deterministic local SLSQP best-found under constant-Q numerical S2P model, not a global optimum",
+    "Only frequency mesh 28*1001 and independent 84-point MNA are checked; continuous-frequency extrema not proven",
+    "H2/H3 mandatory 30dB passes with only ~0.0048dB margin for best candidate; nominal 35dB not achieved",
+    "IL<=0.3dB not achieved",
+    "Two best-scenario alternatives have selected optimizer nonconvergence, although finite-grid and MNA pass",
+    "No physical k, Q(f), SRF, manufacturing tolerance, PCB EM, measured S2P or Phase 3"
+  ]
+}

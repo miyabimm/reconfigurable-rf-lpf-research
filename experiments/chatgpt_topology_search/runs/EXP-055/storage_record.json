@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-055",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 4,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Curate strongest strictly H2/H3>=30dB and independent 84-probe MNA-verified 4L RF-T007 design, selected alternative topology diversity with nonconvergence explicitly recorded, and exact two-DTC reference baseline; full 29 parameter and 6-state DTC vector per checkpoint.",
+    "estimated_curated_bytes": 90000
+  },
+  "checkpoints": [
+    {
+      "candidate_id": "EXP055-T007-4L-CV1-INPUT-TIP-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json",
+      "sha256": "65d0d637e8a233c97e6a76b39dca2a15aaf90e46b2380ffaae1b6ea1689361cb"
+    },
+    {
+      "candidate_id": "EXP055-T007-4L-CV1-OUTPUT-SHUNT-TIP-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_output_shunt_tip_best.json",
+      "sha256": "9d1c396c5200a1a387b65b0703821a7578a9da40b256ab46b26e545d67a54efe"
+    },
+    {
+      "candidate_id": "EXP055-T007-4L-CV1-INPUT-PARALLEL-L0-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_parallel_L0_best.json",
+      "sha256": "13d24cbe0ed67fe5c84acb3af8c0b0483de68676446c9d7f9052834f7a269196"
+    },
+    {
+      "candidate_id": "EXP055-T007-4L-TWO-DTC-001",
+      "selection_reason": "pareto",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/two_dtc_best.json",
+      "sha256": "86d8ce841a0e10e5f7206437512da7e112df5f72efe6bb161193c85ed040d66f"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_input_tip_independent_mna.json",
+      "sha256": "dbb1d4e885990292d2f96262f3afafc65dca808fc2822821321e8ac46a7a10eb"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_output_shunt_tip_independent_mna.json",
+      "sha256": "bbae2e2ea86520425d8df1a6cac01e3b3e1dca3d78a60524fd2a8dbcd47bc9c5"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/cv1_input_parallel_L0_independent_mna.json",
+      "sha256": "b0d2a7bc4fb0e4812161816f889037b7645a6b8246d6773261a7c292593916d5"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/validation/two_dtc_independent_mna.json",
+      "sha256": "559dd56d8a5343f58701a303c6560c7eeb700d301d391f58cbd4fef9c8bca530"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Actual Actions outcome, RF model, failure caveats, winning circuit and 6-setting values",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/README.md",
+      "sha256": "84858c4d63cec3093dbe06bf62430bb1f3b6b9339f2dc2004f9f52fe27e690b3"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Exact executed EXP-055 topology solver and 9x9 MNA verification code",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-055/adapt_f003_4l.py",
+      "sha256": "f9859d25ea77e5e30060eb8553a9abaec31310fd4117313c745728428380cc99"
+    }
+  ],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-055/run_summary.json",
+    "sha256": "747d341cc5ab4c804232ce6ba20cdba630d865680fe4d34492fd8adc0b2e2730"
+  },
+  "size_exception": null,
+  "git_readback": "passed",
+  "limitations": [
+    "Full 18-start raw runs held as Actions artifact ID12230025234 with 30-day retention, raw file SHA256 2d0fa0d7c1cbc8c3349f620a3fa2f20e40fd9dea8d90ff0616e9b4d4fcaf7f64; four full vectors with settings and independent MNA curated in Git.",
+    "Selected Cv1(2,4) and Cv1(0,1) alternatives are strict finite H2/H3>=30dB PASS and MNA PASS but selected SLSQP nonconverged.",
+    "Winning observed area5⅓ T007 IL0.81736558976dB is local, finite-grid and nominal; tolerance/SRF/EM/continuous extrema not verified; Phase3 prohibited."
+  ]
+}
