@@ -311,5 +311,40 @@
     "Selected 84 points independent MNA PASS, not proof of continuous frequency extremes",
     "No extra H2/H3 margin or physical mutual-k implementation investigated, SRF/Q(f), EM and tolerance untested",
     "RF-F003 formal unchanged, Phase 2 only"
-  ]
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "fixed_values": {
+    "L_nH": [
+      2.1642101266573683,
+      8.361775979653567,
+      19.385820485652044,
+      7.360394119668863
+    ],
+    "C_pF": [
+      3.2358199265241416,
+      0.39767106336307434,
+      0.2,
+      0.02
+    ],
+    "C_Q": [
+      80,
+      80,
+      40,
+      40
+    ],
+    "inductor_series": "LQP02HV",
+    "inductor_Q": 25,
+    "adjacent_k": [
+      0.09999999999999994,
+      0.05186269472617828,
+      -0.1
+    ],
+    "Cpar_fixed_pF": 0.5,
+    "Cpar_Q": 40
+  }
 }
