@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-062",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 5,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain the best fully converged H2/H3>=30dB and independent-MNA-passed candidate in each chip-area cell; keep cross-area diversity and representative failures with 6-setting full vectors, source SHA, raw attempt status and complete accounting.",
+    "estimated_curated_bytes": 115000
+  },
+  "checkpoints": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a5p333_best.json",
+      "sha256": "729e1e248983ecfb256b57a079ed08a5b7a87cb30492140d74a97b6ce9baea57",
+      "candidate_id": "EXP062-A5P333-grounded-best",
+      "selection_reason": "pareto"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json",
+      "sha256": "4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b",
+      "candidate_id": "EXP062-A6-grounded-best",
+      "selection_reason": "pareto"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/validation/a5p333_best_mna.json",
+      "sha256": "6e1016ce8a487236305ad8f4d972a4c063889787c3e65ad87289cef0485655b7",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/validation/a6_best_mna.json",
+      "sha256": "65a0e12fb8da7b36586c70c0b7dccb2cf58cddcf6b8d2b368c6873ef77a96889",
+      "method": "independent_mna",
+      "status": "passed"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/search_grounded_transfer_4l.py",
+      "sha256": "1addf335c992e202ef05559eaf586a054ba5698a3e5e476b9a935d5c9e62014e",
+      "role": "source_snapshot",
+      "reason": "Executed 12-layout numerical solver and MNA source"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-062/README.md",
+      "sha256": "352940d5ecc44f5f3f963bcafa94336b93903a7f56aa0424ea1487e8995ce8b4",
+      "role": "method_note",
+      "reason": "Pre-run hypothesis and gate record"
+    }
+  ],
+  "limitations": [
+    "Only 2 new nondominated complete checkpoints curated. All 12 variants remain in time-limited Actions artifacts.",
+    "Physical RF validation is separate and not completed."
+  ],
+  "size_exception": null,
+  "git_readback": "passed",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-062/run_summary.json",
+    "sha256": "ebff83dbad1048bcc2cbc4c305c2345c7c556a698f7353227bd50ccd1868bf15"
+  }
+}

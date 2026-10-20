@@ -1,0 +1,695 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-063",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "run_id": 39449538072,
+  "execution_status": "completed",
+  "code_execution_sha": "1dcb859c8042fa2b28b3586db585022310cbf161",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "attempts": {
+    "planned": 24,
+    "attempted": 24,
+    "converged": 24,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 3,
+  "cost_best": {
+    "9": {
+      "IL_db": 1.0103502551925716,
+      "layout": "a3_control",
+      "old_EXP058_IL_db": 1.0103502552079047,
+      "improvement_db": 1.5333068148493112e-11
+    },
+    "11": {
+      "IL_db": 0.9340275796118442,
+      "layout": "a367_control",
+      "old_EXP058_IL_db": 0.9340275796118456,
+      "improvement_db": 1.3322676295501878e-15
+    },
+    "13": {
+      "IL_db": 0.928118761289936,
+      "layout": "a433_control",
+      "old_EXP058_IL_db": 0.9281187612899361,
+      "improvement_db": 1.1102230246251565e-16
+    }
+  },
+  "layout_results": [
+    {
+      "layout": "a367_control",
+      "area": 3.6666666666666665,
+      "IL_db": 0.9340275796118442,
+      "H2_min_db": 30.004999999293464,
+      "H3_min_db": 30.004999999980427,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a367_gjm_cp",
+      "area": 3.6666666666666665,
+      "IL_db": 0.9958137675807017,
+      "H2_min_db": 30.00499999999993,
+      "H3_min_db": 30.005000000000052,
+      "GJM_edges": [
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a367_ground_n1",
+      "area": 3.6666666666666665,
+      "IL_db": 0.9345556700779661,
+      "H2_min_db": 30.004999999979468,
+      "H3_min_db": 30.005000000003466,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a367_ground_n2",
+      "area": 3.6666666666666665,
+      "IL_db": 0.9359585318392425,
+      "H2_min_db": 30.00499999972579,
+      "H3_min_db": 30.00499999997794,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a3_control",
+      "area": 3.0,
+      "IL_db": 1.0103502551925716,
+      "H2_min_db": 30.004999999999065,
+      "H3_min_db": 30.004999999991565,
+      "GJM_edges": [],
+      "PCB_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a3_ground_dual",
+      "area": 3.0,
+      "IL_db": 1.0186084043253831,
+      "H2_min_db": 30.004999999954048,
+      "H3_min_db": 30.0050000000029,
+      "GJM_edges": [],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a3_ground_n1",
+      "area": 3.0,
+      "IL_db": 1.0105517719265662,
+      "H2_min_db": 30.00499999999601,
+      "H3_min_db": 30.00500000000112,
+      "GJM_edges": [],
+      "PCB_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a3_ground_n2",
+      "area": 3.0,
+      "IL_db": 1.0184291492003164,
+      "H2_min_db": 30.004999999867273,
+      "H3_min_db": 30.00500000002402,
+      "GJM_edges": [],
+      "PCB_edges": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a433_control",
+      "area": 4.333333333333333,
+      "IL_db": 0.928118761289936,
+      "H2_min_db": 30.004999999999914,
+      "H3_min_db": 30.00499999999993,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          2
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a433_gjm_both",
+      "area": 4.333333333333333,
+      "IL_db": 0.9318983071416689,
+      "H2_min_db": 30.004999998571208,
+      "H3_min_db": 30.0049999993209,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a433_ground_n1",
+      "area": 4.333333333333333,
+      "IL_db": 0.9287022238747117,
+      "H2_min_db": 30.00499999997842,
+      "H3_min_db": 30.005000000005936,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          1,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    },
+    {
+      "layout": "a433_ground_n2",
+      "area": 4.333333333333333,
+      "IL_db": 0.930055212949002,
+      "H2_min_db": 30.004999999862967,
+      "H3_min_db": 30.004999999997256,
+      "GJM_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "PCB_edges": [
+        [
+          2,
+          -1
+        ]
+      ],
+      "MNA_pass": true
+    }
+  ],
+  "attempt_status": [
+    {
+      "layout": "a367_control",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9340275796118442
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_control",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9340275796122497
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_gjm_cp",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 15.144677511754915
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_gjm_cp",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9958137675807017
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_ground_n1",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9345556700779661
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_ground_n1",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9345556700787381
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_ground_n2",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9359585318392425
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a367_ground_n2",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9359585318396677
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_control",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0103502552079047
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_control",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0103502551925716
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_dual",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0186084043253831
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_dual",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0186084043276697
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_n1",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0105517719272337
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_n1",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0105517719265662
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_n2",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0184291494435591
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a3_ground_n2",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 1.0184291492003164
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_control",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.928118761289936
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_control",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9281187612909391
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_gjm_both",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9318983071416689
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_gjm_both",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9318983071424087
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_ground_n1",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9287022238747117
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_ground_n1",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9287022238750926
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_ground_n2",
+      "start": 0,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.9300552129693713
+        }
+      ],
+      "converged": true
+    },
+    {
+      "layout": "a433_ground_n2",
+      "start": 1,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "converged": true,
+          "finite_30db_pass": true,
+          "IL_db": 0.930055212949002
+        }
+      ],
+      "converged": true
+    }
+  ],
+  "pareto_update": "no new nondominated points in 3L areas 3, 3p667, 4p333",
+  "limitations": [
+    "Local 12-layout 24-start search; no global optimality",
+    "No improvement in tested alternative PCB-C placements",
+    "Nominal constant-Q, 28x1001 finite grid and independent 84-point 7x7 MNA",
+    "H2/H3 35dB nominal / IL 0.3dB targets not reached; no Q(f)/SRF/EM/tolerance"
+  ]
+}

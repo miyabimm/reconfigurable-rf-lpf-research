@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-063",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "run_id": 39449538072,
+  "baseline_EXP058_costs": {
+    "9": 1.0103502552079047,
+    "11": 0.9340275796118456,
+    "13": 0.9281187612899361
+  },
+  "new_best_by_cost": {
+    "9": {
+      "IL_db": 1.0103502551925716,
+      "layout": "a3_control",
+      "old_EXP058_IL_db": 1.0103502552079047,
+      "improvement_db": 1.5333068148493112e-11
+    },
+    "11": {
+      "IL_db": 0.9340275796118442,
+      "layout": "a367_control",
+      "old_EXP058_IL_db": 0.9340275796118456,
+      "improvement_db": 1.3322676295501878e-15
+    },
+    "13": {
+      "IL_db": 0.928118761289936,
+      "layout": "a433_control",
+      "old_EXP058_IL_db": 0.9281187612899361,
+      "improvement_db": 1.1102230246251565e-16
+    }
+  },
+  "non_dominated_set_change": false,
+  "note": "EXP-063 studied 3L at same RF-T008 v3 but did not update the stored 3L Pareto points; EXP-062 higher-cost snapshot is tracked separately.",
+  "limitations": [
+    "Finite 12-layout scoped local search, not proof against all 3L topologies"
+  ]
+}

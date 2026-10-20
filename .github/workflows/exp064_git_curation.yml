@@ -1,0 +1,83 @@
+name: EXP-064 Curate 4L0GJM confirmed Pareto evidence
+on:
+  push:
+    branches:
+      - exp064-rft008-fourL-zeroGJM-grounded-20261020
+    paths:
+      - '.github/workflows/exp064_git_curation.yml'
+      - 'scripts/curate_exp064.py'
+      - 'data/experiment_index.csv'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  curate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Detect existing curated EXP-064 evidence
+        id: evidence
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path("experiments/chatgpt_topology_search/runs/EXP-064")
+          p=root/"storage_record.json"
+          d=json.loads(p.read_text()) if p.exists() else {}
+          complete=d.get("stage")=="complete" and d.get("git_readback")=="passed"
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:
+              f.write("complete="+str(complete).lower()+"\n")
+          print("EXISTING_CURATED_EXP064",complete)
+          PY
+      - name: Verify main reservation and pre-run Git storage policy
+        if: steps.evidence.outputs.complete != 'true'
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-064 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-064
+      - uses: actions/download-artifact@v4
+        if: steps.evidence.outputs.complete != 'true'
+        with:
+          run-id: 39450827220
+          github-token: ${{ github.token }}
+          pattern: exp064-*
+          merge-multiple: true
+          path: results/EXP-064/collected
+      - name: Record 12-layout results and retained candidate with 9x9 MNA
+        if: steps.evidence.outputs.complete != 'true'
+        run: |
+          uv run --frozen python scripts/curate_exp064.py --input results/EXP-064/collected
+      - name: Commit curated evidence, finalize audit and push PR branch
+        if: steps.evidence.outputs.complete != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-064/ data/experiment_index.csv data/pareto_snapshots/rf_t008_exp064_area4_20261020.json
+          git commit -m "EXP-064: curate area4 4L zero GJM verified Pareto recovery [skip ci]"
+          uv run --frozen python scripts/audit_new_experiment_storage.py finalize EXP-064
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+          git push origin HEAD:exp064-rft008-fourL-zeroGJM-grounded-20261020
+      - name: Audit already-complete retained evidence on rerun
+        if: steps.evidence.outputs.complete == 'true'
+        run: |
+          python scripts/audit_new_experiment_storage.py audit
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=Path("experiments/chatgpt_topology_search/runs/EXP-064")
+          x=json.loads((r/"run_summary.json").read_text())
+          m=json.loads((r/"manifest.json").read_text())
+          assert x["attempts"]["attempted"]==24 and x["attempts"]["failed"]==0
+          assert x["best_found_IL_db"]<x["lower_cost_best_IL_db"]
+          assert m["validation"]["independent"]=="passed"
+          print("EXP064_IDEMPOTENT_GIT_REVIEW",x["best_found_IL_db"])
+          PY
