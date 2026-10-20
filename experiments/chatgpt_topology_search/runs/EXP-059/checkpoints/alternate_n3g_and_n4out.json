@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-059",
+  "candidate_id": "EXP059-alternate_n3g_and_n4out",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "area_chip_units": 4.666666666666667,
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_GJM_edge": [
+      0,
+      1
+    ],
+    "fixed_PCB_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ],
+      [
+        4,
+        2
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "IC_fixed_parallel_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "components": [
+    {
+      "id": "L0",
+      "type": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 2.337176435054343,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L1",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 6.201428079755302,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L2",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 11.783447952773004,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L3",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 7.6134989076751,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "Cf0",
+      "type": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 3.023318715229502,
+      "Q": 80,
+      "chip_area_units": 0.6666666666666666
+    },
+    {
+      "id": "PCB0",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.6176266519007709,
+      "Q": 60,
+      "chip_area_units": 0
+    },
+    {
+      "id": "PCB1",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 0.45473356694787986,
+      "Q": 60,
+      "chip_area_units": 0
+    },
+    {
+      "id": "PCB2",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        4,
+        2
+      ],
+      "C_pF": 0.020000000000000077,
+      "Q": 40,
+      "chip_area_units": 0
+    },
+    {
+      "id": "ICfix0",
+      "type": "IC_FIXED_C_Q60",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.2,
+      "Q": 60,
+      "setting_invariant": true,
+      "area_model_units": 0
+    },
+    {
+      "id": "Cv0",
+      "type": "IC_VARIABLE_C_Q35",
+      "nodes": [
+        0,
+        3
+      ],
+      "Q": 35,
+      "max_C_pF": 3,
+      "setting_dependent": true,
+      "area_model_units": 0
+    },
+    {
+      "id": "ICfix1",
+      "type": "IC_FIXED_C_Q60",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.31825729288438154,
+      "Q": 60,
+      "setting_invariant": true,
+      "area_model_units": 0
+    },
+    {
+      "id": "Cv1",
+      "type": "IC_VARIABLE_C_Q35",
+      "nodes": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "max_C_pF": 3,
+      "setting_dependent": true,
+      "area_model_units": 0
+    }
+  ],
+  "couplings": [
+    {
+      "Lpair": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.08090663762891642
+    },
+    {
+      "Lpair": [
+        "L1",
+        "L3"
+      ],
+      "k": 0.037561975721608874
+    },
+    {
+      "Lpair": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.05939186591799105
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      1.182622934297659,
+      1.139610674981209
+    ],
+    "B12": [
+      0.9188259937086882,
+      0.9548833713822041
+    ],
+    "B28": [
+      0.9356776272299031,
+      0.8835417877152066
+    ],
+    "B13+B14": [
+      0.5913089740976569,
+      0.4087238046624818
+    ],
+    "B26": [
+      0.3820501862285256,
+      0.21576304361272766
+    ],
+    "B8": [
+      1.618268235885403e-16,
+      0
+    ]
+  },
+  "fixed_values": {
+    "L_nH": [
+      2.337176435054343,
+      6.201428079755302,
+      11.783447952773004,
+      7.6134989076751
+    ],
+    "GJM_C_pf": 3.023318715229502,
+    "PCB_C_pf": [
+      0.6176266519007709,
+      0.45473356694787986,
+      0.020000000000000077
+    ],
+    "k_nearest": [
+      -0.08090663762891642,
+      0.037561975721608874,
+      -0.05939186591799105
+    ],
+    "IC_fixed_C_pf": [
+      0.2,
+      0.31825729288438154
+    ]
+  },
+  "vector": [
+    2.337176435054343,
+    6.201428079755302,
+    11.783447952773004,
+    7.6134989076751,
+    3.023318715229502,
+    0.6176266519007709,
+    0.45473356694787986,
+    0.020000000000000077,
+    -0.08090663762891642,
+    0.037561975721608874,
+    -0.05939186591799105,
+    0.2,
+    0.31825729288438154,
+    1.182622934297659,
+    1.139610674981209,
+    0.9188259937086882,
+    0.9548833713822041,
+    0.9356776272299031,
+    0.8835417877152066,
+    0.5913089740976569,
+    0.4087238046624818,
+    0.3820501862285256,
+    0.21576304361272766,
+    1.618268235885403e-16,
+    0
+  ],
+  "vector_order": "L0,L1,L2,L3,GJM_Cf0,PCB_C_slot_1,PCB_C_slot_2,PCB_C_slot_3(or zero if uninstalled),k_L0_L1,k_L1_L3,k_L3_L2,IC_fixed_0,IC_fixed_1,6x(Cv0,Cv1)",
+  "source": {
+    "actions_run_id": 39430029102,
+    "raw_artifact_id": 12267941569,
+    "selected_source": "n3g_and_n4out_input_output.json"
+  },
+  "numerical": {
+    "worst_IL_db": 0.8383478949321721,
+    "min_H2_db": 30.004999999677064,
+    "min_H3_db": 30.00499999990973,
+    "finite_all_six_settings_30db": true,
+    "solver_converged": true,
+    "grid_intervals": 28,
+    "points_per_interval": 1001
+  },
+  "limitations": [
+    "Finite grid 30dB guard only 0.005dB, no global proof",
+    "Q(f)/SRF, physical coupled-k, PCB/IC footprint, tolerance, EM and Phase3 not verified"
+  ]
+}

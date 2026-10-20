@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-059",
+  "candidate_id": "EXP059-alternate_n3g_for_b03",
+  "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/alternate_n3g_for_b03.json",
+  "method": "independent_mna",
+  "status": "passed",
+  "solver": "explicit 9x9 4L branch-current MNA distinct from reduced-2port evaluator",
+  "validation": {
+    "probes": 84,
+    "max_IL_difference_db": 2.913225216616411e-13,
+    "max_power_residual_W": 9.540979117872439e-18,
+    "min_L_eigenvalue_nH": 2.3749109699546884,
+    "pass": true
+  },
+  "grid": {
+    "segments": 28,
+    "samples_per_segment": 3,
+    "points": 84
+  },
+  "notes": [
+    "Input and output external S2P included; 50Ω input 60-j40Ω load.",
+    "Coupled L matrix SPD and passive power balance checked.",
+    "No RF-T007 shunt Q40 parasite. PCB-C Q by connection; IC fixed Q60 and variable Q35 independent."
+  ],
+  "limitations": [
+    "No continuous band proof, SRF, Q(f), EM or component tolerance testing."
+  ]
+}
