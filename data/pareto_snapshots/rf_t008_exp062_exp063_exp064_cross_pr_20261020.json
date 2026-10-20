@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T008_EXP062_EXP063_EXP064_CROSS_PR_PREVIEW_20261020",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "formal_constraint_unchanged": "RF-F003",
+  "status": "verified_across_three_draft_PR_branches_NOT_main_integrated",
+  "source_branch_links": {
+    "EXP-062": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/148",
+    "EXP-063": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/149",
+    "EXP-064": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/150"
+  },
+  "source_proof": {
+    "EXP-062": {
+      "run_id": 39447892051,
+      "audit_run_id": 39448856277,
+      "summary_git_blob_sha": "a1d1dc11292f19b2e1db61665dd29589889bb811",
+      "initial_starts": 24,
+      "converged": 23,
+      "nonconverged": 1
+    },
+    "EXP-063": {
+      "run_id": 39449538072,
+      "audit_run_id": 39450306065,
+      "summary_git_blob_sha": "b39fc68af8404a7cf98afb4ad87ca42ec67d40ed",
+      "initial_starts": 24,
+      "converged": 24,
+      "nonconverged": 0
+    },
+    "EXP-064": {
+      "run_id": 39450827220,
+      "audit_run_id": 39451449771,
+      "summary_git_blob_sha": "656fb2edc04affce97eca695c58e64db8f74daf4",
+      "initial_starts": 24,
+      "converged": 24,
+      "nonconverged": 0
+    }
+  },
+  "total_scope": {
+    "tested_layouts": 36,
+    "initial_starts": 72,
+    "converged_initial_starts": 71,
+    "initial_starts_not_converged": 1
+  },
+  "observed_nondominated": [
+    {
+      "area_chip_units": 3,
+      "L_count": 3,
+      "GJM_count": 0,
+      "worst_IL_db": 1.0103502552079047,
+      "source": "EXP-058",
+      "old_reverified_by": "EXP-063"
+    },
+    {
+      "area_chip_units": 3.6666666666666665,
+      "L_count": 3,
+      "GJM_count": 1,
+      "worst_IL_db": 0.9340275796118456,
+      "source": "EXP-058",
+      "old_reverified_by": "EXP-063"
+    },
+    {
+      "area_chip_units": 4,
+      "L_count": 4,
+      "GJM_count": 0,
+      "worst_IL_db": 0.9291267813958661,
+      "source": "EXP-064",
+      "layout": "g4g3_b34",
+      "independent_MNA_pass": true,
+      "new_Pareto": true
+    },
+    {
+      "area_chip_units": 4.333333333333333,
+      "L_count": 3,
+      "GJM_count": 2,
+      "worst_IL_db": 0.9281187612899361,
+      "source": "EXP-058",
+      "old_reverified_by": "EXP-063"
+    },
+    {
+      "area_chip_units": 4.666666666666667,
+      "L_count": 4,
+      "GJM_count": 1,
+      "worst_IL_db": 0.8371337485828259,
+      "source": "EXP-059",
+      "independent_MNA_pass": true
+    },
+    {
+      "area_chip_units": 5.333333333333333,
+      "L_count": 4,
+      "GJM_count": 2,
+      "worst_IL_db": 0.8335054302993898,
+      "source": "EXP-062",
+      "layout": "a533_ground_one",
+      "independent_MNA_pass": true,
+      "new_Pareto": true
+    },
+    {
+      "area_chip_units": 6,
+      "L_count": 4,
+      "GJM_count": 3,
+      "worst_IL_db": 0.8278411484628513,
+      "source": "EXP-062",
+      "layout": "a6_grounded",
+      "independent_MNA_pass": true,
+      "new_Pareto": true
+    }
+  ],
+  "dominated_cells": [
+    {
+      "area_chip_units": 6.666666666666667,
+      "L_count": 4,
+      "GJM_count": 4,
+      "best_found_IL_db": 0.8377954490288592,
+      "dominated_by": "area 6"
+    }
+  ],
+  "validation_summary": "All newly promoted points: nominal constant-Q, full six settings 28x1001 interval samples H2/H3>=30dB, staged SLSQP converged, 84-point independent 9x9 MNA and passive power balance pass. Do not assert continuous-frequency or physical feasibility.",
+  "pending": "All PRs draft and independently based on main; EXP-063/064 need merge-order reconciliation of derived data/experiment_index.csv after EXP-062 is merged.",
+  "limitations": [
+    "Not global Pareto, only best-found among searched topology subset.",
+    "H2/H3 ~30.005 dB guard; nominal 35dB and IL<=0.30dB not attained.",
+    "Physical Q(f), inductance SRF, PCB/IC layout area, physical simultaneous signed k, EM, tolerances and actual measured S2P not verified.",
+    "Phase 3 has NOT been approved or started."
+  ]
+}

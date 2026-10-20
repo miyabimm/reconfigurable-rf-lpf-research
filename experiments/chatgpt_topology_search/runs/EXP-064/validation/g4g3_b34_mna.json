@@ -1,0 +1,39 @@
+{
+  "experiment_id": "EXP-064",
+  "candidate_id": "EXP064-area4-g4g3_b34",
+  "source_run_id": 39450827220,
+  "source_sha": "e11ae62b8bfe7996751e7e9afabb8b6bf9d0d6be",
+  "dense": {
+    "worst_IL_db": 0.9291267813958661,
+    "min_H2_db": 30.004999999999455,
+    "min_H3_db": 30.004999999999754,
+    "locations": [
+      {
+        "setting": "B28",
+        "mhz": 803.0,
+        "segment": 9
+      },
+      {
+        "setting": "B8",
+        "mhz": 1760.0,
+        "segment": 26
+      },
+      {
+        "setting": "B71",
+        "mhz": 1989.0,
+        "segment": 3
+      }
+    ],
+    "L_eig_min_nH": 4.045330831354139
+  },
+  "independent_9x9_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 1.8260948309034575e-12,
+    "max_power_residual_W": 1.3877787807814457e-17,
+    "min_component_dissipation_W": -0.0,
+    "L_matrix_min_eigenvalue_nH": 4.045330831354139,
+    "pass": true
+  },
+  "pass": true,
+  "finite_grid_only": true
+}

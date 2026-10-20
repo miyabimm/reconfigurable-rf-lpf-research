@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-064",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "trial_revision": 3,
+  "source_run_id": 39450827220,
+  "area": 4.0,
+  "previous_best_IL_db": 0.9486501590658404,
+  "new_best_IL_db": 0.9291267813958661,
+  "candidate": "g4g3_b34",
+  "under_existing_area3p667_best_IL_db": 0.9340275796118456,
+  "observed_pareto_area4": true,
+  "conclusion": "Numerical scoped sweep; unchanged or updated as explicitly labeled",
+  "limitations": [
+    "Not exhaustive global Pareto or physical fabricability proof"
+  ]
+}
