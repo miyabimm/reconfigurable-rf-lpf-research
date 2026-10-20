@@ -1,10 +1,6 @@
 name: EXP-060 RF-T008 L coupling saturation and electrical graphs
+# EXP-060 63-job scan was executed on PR #145; explicit manual rerun only.
 on:
-  pull_request:
-    paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-060/**'
-      - '.github/workflows/exp060_rft008_coupling_graphs.yml'
-      - 'data/experiment_index.csv'
   workflow_dispatch:
 permissions:
   contents: read
