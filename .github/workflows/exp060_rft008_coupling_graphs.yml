@@ -1,0 +1,158 @@
+name: EXP-060 RF-T008 L coupling saturation and electrical graphs
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-060/**'
+      - '.github/workflows/exp060_rft008_coupling_graphs.yml'
+      - 'data/experiment_index.csv'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  k_scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        mode: [free, k01_minus100, k01_plus100, k13_plus100, k13_minus100, k32_minus100, k32_plus100, outer_minus100, all_baseline_sign_max, all_minus100, all_plus100, all_inverse_sign_max, k13_plus080to100, k13_minus080to100, outer_minus095to100]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check main EXP-060 reservation and Phase2 evidence preflight
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-060 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-060
+      - name: Constrained coupling optimizer and independent 9x9 MNA
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-060/search_coupling_lgraphs.py \
+            --graph original --mode ${{ matrix.mode }} --starts 2 --coarse 7 --fine 17 --dense 1001 --target 30.005 \
+            --out results/EXP-060/original_${{ matrix.mode }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp060-original-${{ matrix.mode }}
+          path: results/EXP-060/original_${{ matrix.mode }}.json
+          if-no-files-found: warn
+          retention-days: 30
+  graph_scan:
+    needs: [k_scan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        graph: [n3_from_in, n3_from_out, n4_from_in, n4_from_out, series_via_n4, series_via_n3, input_via_n3, input_via_n4, resonators_series_via_n4, resonators_series_via_n3, n3_from_in_n4_out, n3_from_out_n4_in, n3_from_in_output_via_n4, n3_from_out_output_via_n4, resonators_chain_in, resonators_chain_out]
+        mode: [free, all_baseline_sign_max, outer_minus100]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check main EXP-060 reservation and Phase2 evidence preflight
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-060 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-060
+      - name: Explore four-inductor spanning-tree rewiring and verify independent MNA
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-060/search_coupling_lgraphs.py \
+            --graph ${{ matrix.graph }} --mode ${{ matrix.mode }} --starts 2 --coarse 7 --fine 17 --dense 1001 --target 30.005 \
+            --out results/EXP-060/${{ matrix.graph }}_${{ matrix.mode }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp060-${{ matrix.graph }}-${{ matrix.mode }}
+          path: results/EXP-060/${{ matrix.graph }}_${{ matrix.mode }}.json
+          if-no-files-found: warn
+          retention-days: 30
+  aggregate:
+    needs: [k_scan,graph_scan]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp060-*
+          merge-multiple: true
+          path: results/EXP-060/collected
+      - name: Aggregate recorded solved candidates, explicit nonconvergence, 30 dB and MNA results
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, glob
+          from pathlib import Path
+          files=sorted(glob.glob("results/EXP-060/collected/*.json"))
+          rows=[]
+          for f in files:
+              d=json.loads(Path(f).read_text())
+              selected=d["best_converged_30db"]
+              rows.append({
+                  "file":Path(f).name,"graph":d["graph"],"mode":d["K_mode"],
+                  "L_edges":d["L_edges"],"fixed_k_bounds":d["fixed_K_bound_overrides"],
+                  "IL_db":selected["dense"]["worst_IL_db"] if selected else None,
+                  "min_H2_db":selected["dense"]["min_H2_db"] if selected else None,
+                  "min_H3_db":selected["dense"]["min_H3_db"] if selected else None,
+                  "vector":selected["vector"] if selected else None,
+                  "mna":d["independent_MNA"],
+                  "starts":len(d["attempts"]),
+                  "converged_starts":sum(x["converged"] for x in d["attempts"]),
+                  "eligible_starts":sum(x["eligible_converged"] for x in d["attempts"])
+              })
+          valid=sorted([x for x in rows if x["IL_db"] is not None],
+                       key=lambda x:x["IL_db"])
+          result={
+              "experiment_id":"EXP-060","constraint_id":"RF-T008","revision":3,
+              "baseline_il_db":0.8371337485828259,"expected_cases":63,
+              "completed_cases":len(rows),
+              "eligible_cases":len(valid),
+              "attempted_starts":sum(x["starts"] for x in rows),
+              "converged_starts":sum(x["converged_starts"] for x in rows),
+              "eligible_starts":sum(x["eligible_starts"] for x in rows),
+              "all_results":rows,"ranked_valid":valid
+          }
+          output=Path("results/EXP-060/summary.json")
+          output.parent.mkdir(parents=True,exist_ok=True)
+          output.write_text(json.dumps(result,indent=2)+"\n")
+          print("EXP060_COMPLETED",len(rows),"SOLVED",len(valid),
+                "ATTEMPTED",result["attempted_starts"],"CONVERGED",result["converged_starts"])
+          for q in valid[:12]:
+              print("RANK",q["file"],q["IL_db"],"k",q["vector"][8:11], "MNA",q["mna"]["pass"])
+          if len(rows)!=63:raise SystemExit("Missing 63 expected cases")
+          if any(q["mna"] is None or not q["mna"]["pass"] for q in valid):
+              raise SystemExit("Independent MNA failed for at least one eligible graph")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp060-aggregate-summary
+          path: results/EXP-060/summary.json
+          if-no-files-found: warn
+          retention-days: 30
