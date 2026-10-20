@@ -5,6 +5,7 @@ on:
       - exp064-rft008-fourL-zeroGJM-grounded-20261020
     paths:
       - '.github/workflows/exp064_git_curation.yml'
+      - 'scripts/curate_exp064.py'
   workflow_dispatch:
 permissions:
   contents: write
