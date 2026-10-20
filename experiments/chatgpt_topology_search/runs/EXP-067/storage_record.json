@@ -24,6 +24,12 @@
       "sha256": "8dd20a96068d9077b8791807aa5402605849cd10a7e9d2cbc7c57396c882ba50",
       "role": "method_note",
       "reason": "Executable nine-family scrambled-Sobol seeded K01 fixed sweep using RF-T008 v3 and v2 SLSQP"
+    },
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
+      "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b",
+      "reason": "Multi-basin K01 fixed sweep experimental method and Phase2 limits"
     }
   ],
   "limitations": [
