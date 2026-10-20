@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "7d9e11d0abba57fc07fe70c0815c0dde71588b84",
+    "execution_sha": "1dcb859c8042fa2b28b3586db585022310cbf161",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -426,21 +426,67 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "intervals": 28,
+      "points_per_interval": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "intervals": 28,
+      "points_per_interval": 3,
+      "total": 84,
+      "method": "independent 7x7 branch-current MNA"
+    }
   },
-  "evidence": [],
+  "evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/checkpoints/a3_ground_n1.json",
+      "sha256": "4e8df0dff39bc24e0f7dd3ac65cf3daaaafe23bdf649dabbb7445826f92ff077"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/checkpoints/a367_ground_n1.json",
+      "sha256": "686a56733520b1ad268677d66d355e59c42e50817a336652496da51de6c9dffb"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/checkpoints/a433_ground_n1.json",
+      "sha256": "149296019065017d4c1553116c6bcfea65dc4c4a4d3baab9efbffbc8e007bdef"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/validation/a3_ground_n1_mna.json",
+      "sha256": "359340d7ec0cfe2664dd667a9666b69e33a9766ef6674e71db125ffd0ea8dd84"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/validation/a367_ground_n1_mna.json",
+      "sha256": "18b1201e0bc022352328ef754a8d2a8af6f87103e1f87f5c68dddc31854b52b5"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/validation/a433_ground_n1_mna.json",
+      "sha256": "57f47a1db0c2e121fbf09838c0f07ae0d3a7d32f7d3c1e3ae3070257330d9b7a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/run_summary.json",
+      "sha256": "5bddb60fc96c888444d60ac2f43c4be540c201e5ff3282b15d2a7d24179bbe36"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/sweep_3l_grounded_pcb.py",
+      "sha256": "9f6812a2b916e5a55bdde46729b20641c7c5ae84898bbfca7dc4a490137b784e"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-063/README.md",
+      "sha256": "8931ccb09b0923e12c2de4e1f1b19762eaaf2a03c77851b7e2f750bc712d2864"
+    }
+  ],
   "limitations": [
-    "Planned EXP-063; no numerical result yet",
-    "3L fixed L tree and two composite variable C branches; only capacitor placement changed",
-    "Finite mesh nominal constant Q and external S2P; not physical feasibility"
+    "All tested 3L costs retained previous EXP-058 best-found; no 3L Pareto update",
+    "Three inferior grounded-PCB candidates archived solely for topology diversity",
+    "Local finite-grid nominal Phase2 only, no physical realization guarantee"
   ]
 }
