@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-059",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "trial_revision": 3,
+  "execution_status": "completed",
+  "code_sha": "b4a8c64fba5f2475e859fbb5b342252fa9ae87dc",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "action_run": 39430029102,
+  "action_url": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39430029102",
+  "summary_artifact_id": 12266859361,
+  "attempts": {
+    "planned": 92,
+    "attempted": 92,
+    "converged": 81,
+    "nonconverged": 11,
+    "failed": 0,
+    "not_started": 0
+  },
+  "results": {
+    "PCB_layouts": 23,
+    "DTC_layouts": 2,
+    "variants": 46,
+    "successfully_completed_jobs": 46,
+    "distinct_variants_with_converged_H2H3_30db": 41,
+    "variants_without_converged_H2H3_30db_in_2start_local_search": 5,
+    "converged_and_30db_compliant_attempts": 80,
+    "original_EXP058_best_IL_db": 0.8543674592970051,
+    "repeated_control_best_IL_db": 0.8528832749477139,
+    "best_IL_db": 0.8371337485828259,
+    "IL_reduction_db": 0.01723371071417923,
+    "selected_best_PCB_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "selected_best_PCB_count": 2,
+    "selected_best_DTC_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "independent_mna": {
+    "tested_selected_compliant_variants": 41,
+    "passed_selected_compliant_variants": 41,
+    "failed": 0,
+    "explicit_matrix_dimension": 9,
+    "probes_per_selected_variant": 84,
+    "best_vector_MNA_pass": true
+  },
+  "dense_grid": {
+    "intervals": 28,
+    "points_per_interval": 1001,
+    "settings": 6
+  },
+  "selected_candidate_count": 3,
+  "selected_candidates": [
+    "EXP059-best_n4g_n3g_2pcb",
+    "EXP059-alternate_n3g_for_b03",
+    "EXP059-alternate_n3g_and_n4out"
+  ],
+  "interpretation": [
+    "Grounded PCB-C N3-GND was beneficial compared to old hot-hot PCB bridge near-minimum branches.",
+    "N4-OUT was tested; best three-PCB variant with this bridge had its optimized C at 0.02pF lower bound.",
+    "Deleting two hot-hot PCB-Cs and retaining only grounded N4-GND plus N3-GND was best in the sampled finite local search."
+  ],
+  "limitations": [
+    "Two deterministic SLSQP starts per variant; 81/92 converged, no claim of global optimality.",
+    "Only nominal constant Q, finite 28x1001 grid and 84-point independent MNA; no physical Q(f)/SRF/EM/k realization, tolerance or continuous-frequency guarantee.",
+    "All top candidates have 30dB boundary with ~0.005dB internal guard, not nominal 35dB or IL<=0.3dB.",
+    "Formal RF-F003 unchanged; Phase 3 not approved."
+  ]
+}
