@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "candidate_id": "EXP056-T007-4L-CV1-INPUT-PARALLEL-L0-001",
+  "experiment_id": "EXP-056",
+  "source_exp": "EXP-055",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T007",
+  "constraint_sha256": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+  "source_actions_run": 39344219070,
+  "source_artifact_id": 12231005251,
+  "source_artifact_sha256_zip": "ab548ebb5a76ea680b6dbd83e4ee411ed7444f5cc4d60a088dddef68283efa38",
+  "source_artifact_sha256_inner_json": "35a38af9b9f1a0599252c9351a69e2032ab6e37ac40dd1410d652a2242f02ac2",
+  "execution_sha": "ba6fc7422115f45ef6d0be39929f37c0142a4caf",
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "parasitic_edge": [
+      3,
+      -1
+    ],
+    "chip_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ]
+  },
+  "components": [
+    {
+      "name": "L0",
+      "kind": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 3.096581983224329,
+      "Q": 25
+    },
+    {
+      "name": "L1",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 10.342297773015606,
+      "Q": 25
+    },
+    {
+      "name": "L2",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 16.239930759893,
+      "Q": 25
+    },
+    {
+      "name": "L3",
+      "kind": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 5.708326641419441,
+      "Q": 25
+    },
+    {
+      "name": "Cf0",
+      "kind": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 1.0559073046079157,
+      "Q": 80
+    },
+    {
+      "name": "Cf1",
+      "kind": "GJM01",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.3797464245348033,
+      "Q": 80
+    },
+    {
+      "name": "Cf2",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.2,
+      "Q": 40
+    },
+    {
+      "name": "Cp",
+      "kind": "PCB_PATTERN_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.19999999999999976,
+      "Q": 40
+    },
+    {
+      "name": "Cv0",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv1",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        1
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv2",
+      "kind": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "name": "Cv0_fixed_parasitic",
+      "kind": "T007_ALWAYS_ON_SHUNT_PARASITIC",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 0.5,
+      "Q": 40
+    }
+  ],
+  "couplings": [
+    {
+      "members": [
+        "L0",
+        "L1"
+      ],
+      "k": 0.1
+    },
+    {
+      "members": [
+        "L1",
+        "L3"
+      ],
+      "k": 0.02628658015407464
+    },
+    {
+      "members": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.1
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "fixed_values": {
+    "L_nH": [
+      3.096581983224329,
+      10.342297773015606,
+      16.239930759893,
+      5.708326641419441
+    ],
+    "C_pF": [
+      1.0559073046079157,
+      0.3797464245348033,
+      0.2,
+      0.19999999999999976
+    ],
+    "adjacent_signed_k": [
+      0.1,
+      0.02628658015407464,
+      -0.1
+    ],
+    "Cpar_pF": 0.5,
+    "Cpar_Q": 40
+  },
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.2961123314796991,
+      1.832011006710122,
+      2.0532535231399183
+    ],
+    "B12": [
+      0.09674009564757373,
+      1.736481364733858,
+      2.319732642801855
+    ],
+    "B28": [
+      0.050261607187922885,
+      1.307338155947983,
+      1.9576436736827236
+    ],
+    "B13+B14": [
+      0.18581740308889874,
+      0.6633335130507804,
+      1.257440655561957
+    ],
+    "B26": [
+      0.0002553237170855273,
+      0.5814324657191904,
+      1.0179673654400259
+    ],
+    "B8": [
+      0,
+      0,
+      0.6203112978861541
+    ]
+  },
+  "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32,6*(Cv0,Cv1,Cv2) ordered B71 B12 B28 B13+B14 B26 B8",
+  "vector": [
+    3.096581983224329,
+    10.342297773015606,
+    16.239930759893,
+    5.708326641419441,
+    1.0559073046079157,
+    0.3797464245348033,
+    0.2,
+    0.19999999999999976,
+    0.1,
+    0.02628658015407464,
+    -0.1,
+    0.2961123314796991,
+    1.832011006710122,
+    2.0532535231399183,
+    0.09674009564757373,
+    1.736481364733858,
+    2.319732642801855,
+    0.050261607187922885,
+    1.307338155947983,
+    1.9576436736827236,
+    0.18581740308889874,
+    0.6633335130507804,
+    1.257440655561957,
+    0.0002553237170855273,
+    0.5814324657191904,
+    1.0179673654400259,
+    0,
+    0,
+    0.6203112978861541
+  ],
+  "metrics": {
+    "worst_IL_db": 0.8572685822250599,
+    "min_H2_db": 30.004999999887325,
+    "min_H3_db": 30.004999999817663,
+    "min_M_eigenvalue_nH": 3.0525540425003035,
+    "finite_H2H3_30dB_pass": true,
+    "chip_area_units": 5.333333333333333
+  },
+  "optimizer": {
+    "selected_SLSQP_converged": true,
+    "coarse_converged": true,
+    "fine_converged": true,
+    "coarse_iterations": 48,
+    "fine_iterations": 1,
+    "increased_iteration_limits": {
+      "coarse": 500,
+      "fine": 280
+    },
+    "initial_from_EXP055": "nonconverged finite-pass selected vector",
+    "selected_start": 2
+  },
+  "limitations": [
+    "Nominal, fixed-Q, local finite frequency grid; 35dB and 0.3dB targets not met",
+    "Same-area EXP055 best remains IL0.817365590dB, not beaten",
+    "No physical magnetic coupling feasibility, extra H2/H3 margin, SRF, Q(f), EM, tolerances or Phase3"
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-056",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 2,
+    "retain": [
+      "best",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Curate both independently MNA-verified RF-T007 4L 29-parameter full vectors whose predecessor EXP055 local trials were nonconverged, maintaining six settings and k, separately recording convergence; preserve all six start statuses in run_summary",
+    "estimated_curated_bytes": 55000
+  },
+  "checkpoints": [
+    {
+      "candidate_id": "EXP056-T007-4L-CV1-OUTPUT-SHUNT-TIP-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/checkpoints/cv1_output_shunt_tip_converged_best.json",
+      "sha256": "edf300e6fabc4ada18a67d0680864d0e52e1c913f5af3e8060dd59e4b3d08479"
+    },
+    {
+      "candidate_id": "EXP056-T007-4L-CV1-INPUT-PARALLEL-L0-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/checkpoints/cv1_input_parallel_L0_converged_best.json",
+      "sha256": "f8513a7b3519cb510591ba3d1c2b64bc43fb8f21fabea65e8e7859724cc7a3fb"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/validation/cv1_output_shunt_tip_independent_mna.json",
+      "sha256": "1ecea8b1f06a2d895443d1a98852fd38a008a9a73503b11126c86859a0545493"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/validation/cv1_input_parallel_L0_independent_mna.json",
+      "sha256": "ac0da713ce1df881343dd7b0425f5f491e25596b1d969df6c47f43f21dbb52ae"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Explain observed cause of EXP055 SLSQP iteration-limit nonconvergence and six new converged starts; distinguish warm starting from maxiter changes",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/README.md",
+      "sha256": "ba32832de9274ab9eba9c7e8a6da957008ad0ec64885d89cc4cddbe53d3492a4"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "EXP056 increased SLSQP iteration code and two independent 9x9 MNA methods",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-056/refine_nonconverged.py",
+      "sha256": "e3f90fb2a5101976ec3a02fd7893759527a3d2b29a72d19c76610a9bd0f3ffd3"
+    }
+  ],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-056/run_summary.json",
+    "sha256": "d16500f731c09ec249975ebc71a117c1ad67c815c1a1977d1fe2a66d2e320f2d"
+  },
+  "size_exception": null,
+  "git_readback": "passed",
+  "limitations": [
+    "Source Actions raw artifact ID12231005251 retained for 30 days, SHA256 ZIP ab548ebb5a76ea680b6dbd83e4ee411ed7444f5cc4d60a088dddef68283efa38; two complete best vectors and MNA validation overlays Git-curated.",
+    "EXP056 warmstart plus 500/280 maxiter made 6/6 stages converge, cannot attribute to maxiter alone.",
+    "New converged IL0.849084/0.857269dB not lower than prior EXP055 best IL0.817366dB.",
+    "Phase2 only, no physical k or extra harmonic margin, no continuous-band proof."
+  ]
+}

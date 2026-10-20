@@ -1,0 +1,54 @@
+name: EXP-056 RF-T007 longer SLSQP on EXP-055 4L alternatives
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/chatgpt_topology_search/runs/EXP-056/**'
+      - 'tests/test_exp056_longer_slsqp.py'
+      - '.github/workflows/exp056_rft007_slsqp_longer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exp056-iteration-refinement:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify main EXP-056 reservation and finalized Git-only evidence
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-056 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+      - name: Verify EXP-055 input circuit and T007 source guards
+        run: uv run --frozen python -m unittest discover -s tests -p 'test_exp056_longer_slsqp.py' -v
+      - name: Re-run six longer-SLSQP trials on manual dispatch only
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-056/refine_nonconverged.py \
+            --starts 3 --maxiter 500 --fine-maxiter 280 --coarse 7 --fine 17 \
+            --dense 1001 --mna 3 --target 30.005 \
+            --out results/EXP-056/longer_slsqp.json
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: exp056-rft007-longer-slsqp
+          path: results/EXP-056/longer_slsqp.json
+          if-no-files-found: warn
+          retention-days: 30

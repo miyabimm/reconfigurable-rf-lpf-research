@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-056",
+  "constraint_id": "RF-T007",
+  "phase": "Phase 2",
+  "execution_status": "completed",
+  "source_experiment": "EXP-055",
+  "source_workflow_run": 39344219070,
+  "source_code_sha": "ba6fc7422115f45ef6d0be39929f37c0142a4caf",
+  "original_artifact_zip_id": 12231005251,
+  "raw_artifact_zip_sha256": "ab548ebb5a76ea680b6dbd83e4ee411ed7444f5cc4d60a088dddef68283efa38",
+  "raw_json_sha256": "35a38af9b9f1a0599252c9351a69e2032ab6e37ac40dd1410d652a2242f02ac2",
+  "component_policy": "4 LQP02HV/Q25, 2 GJM/Q80, 2 PCB/Q40, 3 IC DTC/Q35, exactly one always-on shunt Cpar0.5pF/Q40, fixed frozen two S2Ps, chip area5+1/3",
+  "comparison_control_exp055_best_IL_db": 0.8173655897607699,
+  "iterations_before": {
+    "coarse": 160,
+    "fine": 80
+  },
+  "iterations_after": {
+    "coarse": 500,
+    "fine": 280
+  },
+  "source_seeds": "Selected EXP055 29-parameter nonconverged dense-grid strict-pass checkpoints plus 2 seeded perturbations each",
+  "attempts": {
+    "planned": 6,
+    "attempted": 6,
+    "converged": 6,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 2,
+  "ranked": [
+    {
+      "variant": "cv1_output_shunt_tip",
+      "cv1_edge": [
+        2,
+        4
+      ],
+      "source_exp055_IL_db": 0.8490840503708262,
+      "new_converged_IL_db": 0.8490840503908837,
+      "min_H2_db": 30.004999999949035,
+      "min_H3_db": 30.004493265872952,
+      "start": 0,
+      "coarse_iterations": 24,
+      "fine_iterations": 25,
+      "all_starts_converged": true,
+      "independent_MNA_pass": true,
+      "max_MNA_IL_difference_db": 1.1795009413617663e-12,
+      "power_residual_W": 1.0408340855860843e-17
+    },
+    {
+      "variant": "cv1_input_parallel_L0",
+      "cv1_edge": [
+        0,
+        1
+      ],
+      "source_exp055_IL_db": 0.8572685739286905,
+      "new_converged_IL_db": 0.8572685822250599,
+      "min_H2_db": 30.004999999887325,
+      "min_H3_db": 30.004999999817663,
+      "start": 2,
+      "coarse_iterations": 48,
+      "fine_iterations": 1,
+      "all_starts_converged": true,
+      "independent_MNA_pass": true,
+      "max_MNA_IL_difference_db": 6.465938895416912e-13,
+      "power_residual_W": 8.673617379884035e-18
+    }
+  ],
+  "all_start_stage_iterations": {
+    "cv1_output_shunt_tip": [
+      [
+        24,
+        25
+      ],
+      [
+        47,
+        27
+      ],
+      [
+        98,
+        26
+      ]
+    ],
+    "cv1_input_parallel_L0": [
+      [
+        4,
+        1
+      ],
+      [
+        40,
+        1
+      ],
+      [
+        48,
+        1
+      ]
+    ]
+  },
+  "slsqp_status": "all six stages coarse and fine terminated successfully",
+  "dense_grid": {
+    "regions": 28,
+    "samples_per_region": 1001,
+    "all_selected_strict_min_H2H3_db": 30
+  },
+  "independent_MNA": {
+    "probes_per_selected": 84,
+    "method": "independent coupled-L branch-current 9x9 MNA and power conservation",
+    "all_selected_pass": true
+  },
+  "no_improvement_over_EXP055_best": true,
+  "limitations": [
+    "Warm start and iteration ceiling changed together, so do NOT attribute improved convergence solely to the higher iteration limits; no isolated causal experiment",
+    "No best-performance gain; new selected fully-converged IL values differ from historical nonconverged by order 1e-11 and 1e-8dB",
+    "Historical EXP-055 selected alternatives remain labelled nonconverged; EXP-056 convergence is NEW separate runs",
+    "Finite grid and constant-Q local minimax; extra H2/H3 margin and physical mutual-k feasibility excluded; no SRF/Q(f), EM, tolerance, measured S2P or Phase3"
+  ]
+}

@@ -4,6 +4,16 @@
 
 根拠：EXP-055の160/80上限到達事例、EXP-056の500/280＋保存解ウォームスタート再探索（6試行全収束、IL新記録なし）。**通常値240/120は運用選択であり独立ベンチによる最適値の証明ではない**。救済値500/280の効果はウォームスタートと未分離であるため収束保証とみなさない。旧EXP-001〜056と実験数値、従来runコードは不変更。通常／救済の回帰テストをCIで実行、物理RF条件不変更、Phase2継続・Phase3停止。
 
+## 2026-10-20：EXP-056（RF-T007・4L未収束2候補のSLSQP反復上限拡大）
+
+**実行済み、Phase2。** 前回EXP-055でCV1(2,4)／CV1(0,1)のSLSQP粗探索が`Iteration limit reached`に達した件を再評価。これはGitHub Actions実行時間の不足ではない。main台帳にEXP-056を実行前予約し、保存済みEXP-055の各29値ベクトルを初期値として採用、SLSQP粗探索上限160→500、詳細80→280反復へ増加。RF-T007、固定外部入出力S2P、6設定、接地Cv0の固定寄生0.5pF/Q40、必須H2/H3≥30dB、4L/Q25・固定Cと可変C/Qを変更していない。
+
+**結果：** [Actions 39344219070](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39344219070) SUCCESS。2接続×3試行の**6/6で粗／詳細の両SLSQP正常収束**、実行失敗0。Cv1(2,4)：IL0.849084050391dB（粗24・詳細25反復）、Cv1(0,1)：IL0.857268582225dB（粗48・詳細1反復）。両解とも28区間×1001点の必須H2/H3≥30dB適合、独立84点9×9結合L枝電流MNA・電力収支PASS。従来EXP-055で各0.849084050371dB、0.857268573929dBだった非収束局所値との差は微小。**EXP-055新最良IL0.817365589761dB（4L、面積5⅓）は更新なし。**
+
+**解釈：** 温スタート化と反復上限延長を**同時に**行っているため、反復上限拡大だけの独立した効果を証明したわけではない。EXP-055の古いソルバー状態を収束済みに書き換えず、EXP-056の別々の**新規収束ベクトル**として保存。[EXP-056実験記録](../experiments/chatgpt_topology_search/runs/EXP-056/README.md)、[6試行の収束記録](../experiments/chatgpt_topology_search/runs/EXP-056/run_summary.json)、[完全設計ベクトル2件](../experiments/chatgpt_topology_search/runs/EXP-056/checkpoints/)、[独立MNA2件](../experiments/chatgpt_topology_search/runs/EXP-056/validation/)。原artifact ZIP SHA256 ab548ebb5a76ea680b6dbd83e4ee411ed7444f5cc4d60a088dddef68283efa38、原JSON SHA256 35a38af9b9f1a0599252c9351a69e2032ab6e37ac40dd1410d652a2242f02ac2。
+
+有限格子、公称Q一定、局所最適化のみ。余剰H2/H3マージン追求、kの物理実現性、SRF/Q(f)、EM、製造公差、実測、Phase3は未実施。正式RF-F003不変更、**Phase2継続／Phase3停止**。
+
 ## 2026-10-20：EXP-055（RF-F003由来4LをRF-T007へ再合成・新局所IL最良）
 
 **Phase 2／RF-T007実行済み。** EXP-047のRF-F003・4L・面積5⅓・2可変C保存ベクトルを出発点とし、RF-T007の接地Cv0(3,GND)へOFFでも常在する**別固定0.5pF/Q40**を加え、接地DTC数は1を維持したまま第3非GND可変Cの配置5案と2DTC基準型の計6トポロジーを探索。mainでEXP-055を事前予約、出典完全ベクトルと新スクリプトをPR #135へ追加。初回CIは新規予約行の日時形式ミスにより数値計算前に停止、日時形式修正後の同一Actions run [39341678211](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39341678211) 再実行が**SUCCESS**。
