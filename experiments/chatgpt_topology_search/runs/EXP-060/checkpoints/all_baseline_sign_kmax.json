@@ -134,5 +134,264 @@
   "limitations": [
     "Finite 28x1001 mesh, local SLSQP from 2 starts, Q(f)/SRF/EM and physical coupled k not validated",
     "Some other variants stopped nonconverged; no global optimality/35dB proof."
-  ]
+  ],
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "GJM_C_edge": [
+      0,
+      1
+    ],
+    "PCB_C_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "parallel_IC_fixed_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "couplings": [
+    {
+      "Lpair": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.1
+    },
+    {
+      "Lpair": [
+        "L1",
+        "L3"
+      ],
+      "k": 0.1
+    },
+    {
+      "Lpair": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.1
+    }
+  ],
+  "components": [
+    {
+      "id": "L0",
+      "type": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 4.191140904785737,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L1",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 4.769661497405759,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L2",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 20.05289369296444,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L3",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 9.615145309244674,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "Cf0",
+      "type": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 1.5516291038052714,
+      "Q": 80,
+      "area_units": 0.6666666666666666
+    },
+    {
+      "id": "PCB0",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.42146491641765,
+      "Q": 60,
+      "area_units": 0
+    },
+    {
+      "id": "PCB1",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 1,
+      "Q": 60,
+      "area_units": 0
+    },
+    {
+      "id": "ICfix0",
+      "type": "IC_FIXED_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.20000000000000054,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv0",
+      "type": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "Q": 35,
+      "C_limit_pf": 3
+    },
+    {
+      "id": "ICfix1",
+      "type": "IC_FIXED_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.2115191459666228,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv1",
+      "type": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "C_limit_pf": 3
+    }
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      1.0474446035589962,
+      0.7695504352527676
+    ],
+    "B12": [
+      0.09165031064942539,
+      1.1113895400015636
+    ],
+    "B28": [
+      0.8983477504108204,
+      0.5196994411314816
+    ],
+    "B13+B14": [
+      0.21651788014139112,
+      0.7102814260084969
+    ],
+    "B26": [
+      0.09387385147962693,
+      0.22771864887401863
+    ],
+    "B8": [
+      0,
+      0
+    ]
+  },
+  "fixed_values": {
+    "L_nH": [
+      4.191140904785737,
+      4.769661497405759,
+      20.05289369296444,
+      9.615145309244674
+    ],
+    "GJM_C_pf": 1.5516291038052714,
+    "PCB_C_pf": [
+      0.42146491641765,
+      1
+    ],
+    "IC_fixed_C_pf": [
+      0.20000000000000054,
+      0.2115191459666228
+    ],
+    "k_nearest": [
+      -0.1,
+      0.1,
+      -0.1
+    ],
+    "L_series": "LQP02HV",
+    "L_Q": 25,
+    "GJM_Q": 80,
+    "PCB_grounded_Q": 60,
+    "IC_fixed_Q": 60,
+    "IC_variable_Q": 35,
+    "installed_PCB_count": 2
+  }
 }
