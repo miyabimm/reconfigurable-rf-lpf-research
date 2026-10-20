@@ -1,4 +1,4 @@
-"""RF-T008 revision 2: mandatory high-Q IC fixed capacitor with each IC DTC.
+"""RF-T008 revision 3: at most two DTCs, each with a high-Q IC fixed capacitor.
 
 For EACH installed variable-C branch stamp BOTH separate lossy admittances
 on the same two nodes. A fixed IC-C remains at Cvar=0 and is optimized
