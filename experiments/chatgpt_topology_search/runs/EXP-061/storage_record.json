@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-061",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain aggregated paired benchmark results, exit status and iteration counts for all 20 matched starts; full candidate and 9x9 MNA for any improved feasible model.",
+    "estimated_curated_bytes": 50000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
+      "sha256": "093ae3a3e3888e0329aa5026cf994d72e4609624efa989c69726b486947f47c6",
+      "reason": "Controlled restart benchmark code from EXP060 raw saved vectors"
+    }
+  ],
+  "limitations": [
+    "Preflight only; numerical result remains pending."
+  ],
+  "size_exception": null
+}
