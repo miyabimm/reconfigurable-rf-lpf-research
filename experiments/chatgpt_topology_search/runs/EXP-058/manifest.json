@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "e531ba7115dff2bf1951a4dfe1308df672789cd6",
+    "execution_sha": "a8a211c5b2a7791ecfa518eeae3e37f5a5129dc5",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -406,13 +406,19 @@
       280
     ],
     "planned_followup_areas": [
-      3.6666666667,
       4,
-      4.3333333333,
-      4.6666666667,
-      5.3333333333,
+      4.333333333333333,
+      4.666666666666667,
+      5.333333333333333,
       6
-    ]
+    ],
+    "second_area": 3.666666666666667,
+    "second_area_GJM_positions": [
+      "cf0",
+      "cf1",
+      "cp"
+    ],
+    "second_area_combination_count": 9
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
@@ -430,7 +436,7 @@
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
-      "sha256": "f4b33b999b7d25d2984b9ce7ff07487b6bddfc08afc33e16d645c7469f3e2dcd"
+      "sha256": "229f06535cce598cd2a6ebf98eb8f244dd043165dbc42592c6004657eaf24e01"
     }
   ],
   "limitations": [
