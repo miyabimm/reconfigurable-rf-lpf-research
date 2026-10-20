@@ -1,0 +1,623 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-064",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "execution_status": "completed",
+  "source_run_id": 39450827220,
+  "code_execution_sha": "e11ae62b8bfe7996751e7e9afabb8b6bf9d0d6be",
+  "constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "attempts": {
+    "planned": 24,
+    "attempted": 24,
+    "converged": 24,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 1,
+  "tested_layouts": [
+    {
+      "layout": "control",
+      "IL_db": 0.9486501590658404,
+      "min_H2_db": 30.004999999830694,
+      "min_H3_db": 30.004999999936462,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "layout": "g3_b01_b12",
+      "IL_db": 1.0103502551927583,
+      "min_H2_db": 30.004999999494224,
+      "min_H3_db": 30.0049999998227,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "layout": "g3g1_b12",
+      "IL_db": 1.0180125639584012,
+      "min_H2_db": 30.004999999822065,
+      "min_H3_db": 30.00499999979089,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "layout": "g3g2_b01",
+      "IL_db": 1.0111127020934791,
+      "min_H2_db": 30.004999999931115,
+      "min_H3_db": 30.0049999999528,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          3,
+          -1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "layout": "g4_b01_b03",
+      "IL_db": 0.9501781604458044,
+      "min_H2_db": 30.00496940946303,
+      "min_H3_db": 30.004999999983724,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_b01",
+      "IL_db": 0.9497923623173139,
+      "min_H2_db": 30.004999999987856,
+      "min_H3_db": 30.004999999999722,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_b02",
+      "IL_db": 0.9539713332609717,
+      "min_H2_db": 30.00499999974877,
+      "min_H3_db": 30.004999999998482,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          2
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_b03",
+      "IL_db": 0.9606458054262328,
+      "min_H2_db": 30.004999998455382,
+      "min_H3_db": 30.004999999983276,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_b12",
+      "IL_db": 0.959418063198799,
+      "min_H2_db": 30.004999999902147,
+      "min_H3_db": 30.0049999992087,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_b34",
+      "IL_db": 0.9291267813958661,
+      "min_H2_db": 30.004999999999455,
+      "min_H3_db": 30.004999999999754,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_g1",
+      "IL_db": 0.960418548682722,
+      "min_H2_db": 30.00499999991261,
+      "min_H3_db": 30.004999999999097,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          1,
+          -1
+        ]
+      ]
+    },
+    {
+      "layout": "g4g3_g2",
+      "IL_db": 0.9603927427591603,
+      "min_H2_db": 30.004999998020253,
+      "min_H3_db": 30.00499999978971,
+      "independent_MNA_pass": true,
+      "PCB_edges": [
+        [
+          4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ],
+        [
+          2,
+          -1
+        ]
+      ]
+    }
+  ],
+  "attempt_stage_outcomes": [
+    {
+      "layout": "control",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9486501590658404
+        }
+      ]
+    },
+    {
+      "layout": "control",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9486501590668482
+        }
+      ]
+    },
+    {
+      "layout": "g3_b01_b12",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 1.0103502551927583
+        }
+      ]
+    },
+    {
+      "layout": "g3_b01_b12",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 1.0103502574311543
+        }
+      ]
+    },
+    {
+      "layout": "g3g1_b12",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 1.018012563959266
+        }
+      ]
+    },
+    {
+      "layout": "g3g1_b12",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 1.0180125639584012
+        }
+      ]
+    },
+    {
+      "layout": "g3g2_b01",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 8.550450443472883
+        }
+      ]
+    },
+    {
+      "layout": "g3g2_b01",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 1.0111127020934791
+        }
+      ]
+    },
+    {
+      "layout": "g4_b01_b03",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9501781604458044
+        }
+      ]
+    },
+    {
+      "layout": "g4_b01_b03",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9501781604705237
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b01",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9540534640238658
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b01",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9497923623173139
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b02",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9539713332621909
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b02",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9539713332609717
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b03",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9606458054262328
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b03",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9606458054317385
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b12",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9594180632048864
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b12",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.959418063198799
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b34",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9291267814176294
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_b34",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9291267813958661
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_g1",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9604185486884471
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_g1",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.960418548682722
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_g2",
+      "start": 0,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9603927427778784
+        }
+      ]
+    },
+    {
+      "layout": "g4g3_g2",
+      "start": 1,
+      "converged": true,
+      "stages": [
+        {
+          "tier": "primary",
+          "coarse_status": 0,
+          "fine_status": 0,
+          "eligible": true,
+          "IL_db": 0.9603927427591603
+        }
+      ]
+    }
+  ],
+  "old_area4_best_IL_db": 0.9486501590658404,
+  "lower_cost_best_IL_db": 0.9340275796118456,
+  "best_found_IL_db": 0.9291267813958661,
+  "best_layout": "g4g3_b34",
+  "improved_over_previous_area4": true,
+  "now_nondominated": true,
+  "limitations": [
+    "12 PCB topologies, two starts each; finite-grid, local results only",
+    "Do not infer global design limit from tested topology failure",
+    "No physical Q(f)/SRF/EM/k implementation, tolerance or continuous-band proof"
+  ]
+}

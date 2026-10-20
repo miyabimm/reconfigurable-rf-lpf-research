@@ -224,7 +224,7 @@ def optimize_one(np,minimize,base,staged,p,seedx,t,target=30.02):
         x=np.asarray(a['vector'][:-1],float)
         s=ev1.summary(x)
         out.append({k:(v.tolist() if hasattr(v,'tolist') else v) for k,v in a.items() if k!='vector'} |
-                   {'vector':x.tolist(),'fine':s})
+                   {'vector':x.tolist(),'fine_metrics':s})
     return {'topology':t,'attempts':out,'policy':res['iteration_policy']}
 
 def main():

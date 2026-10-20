@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "RF_T008_V3_PHASE2_EXP062_TO_EXP065_AUDITED_OBSERVED_PARETO_20261020",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "formal_constraint_unchanged": "RF-F003",
+  "audit_method": "Independent read-only component/constraint/SPD/lineage/Pareto script plus 84-point saved independent 7x7 or 9x9 MNA reports per selected checkpoint, not independent third RF network solver.",
+  "audit_script": "scripts/review_rft008_exp062_065.py",
+  "audit_workflow": ".github/workflows/review_rft008_pr148_151.yml",
+  "experiment_provenance": {
+    "EXP-062": {
+      "pr": 148,
+      "numeric_run": 39447892051,
+      "curation_run": 39448856277,
+      "starts": 24,
+      "converged": 23,
+      "nonconverged": 1
+    },
+    "EXP-063": {
+      "pr": 149,
+      "numeric_run": 39449538072,
+      "curation_run": 39450306065,
+      "starts": 24,
+      "converged": 24,
+      "nonconverged": 0
+    },
+    "EXP-064": {
+      "pr": 150,
+      "numeric_run": 39450827220,
+      "curation_run": 39451449771,
+      "starts": 24,
+      "converged": 24,
+      "nonconverged": 0
+    },
+    "EXP-065": {
+      "pr": 151,
+      "numeric_run": 39453297733,
+      "curation_run": 39453955133,
+      "starts": 192,
+      "converged": 178,
+      "nonconverged": 14
+    }
+  },
+  "sampled_starts": 264,
+  "converged_starts": 249,
+  "nonconverged_starts": 15,
+  "failed_starts": 0,
+  "independent_checkpoint_evidence_reviewed": 10,
+  "observed_nondominated": [
+    {
+      "area_chip_units": 3,
+      "L_count": 3,
+      "GJM_count": 0,
+      "worst_IL_db": 1.0103502552079047,
+      "source": "EXP-058",
+      "confirmation": "EXP-063"
+    },
+    {
+      "area_chip_units": 3.6666666666666665,
+      "L_count": 3,
+      "GJM_count": 1,
+      "worst_IL_db": 0.9340275796118456,
+      "source": "EXP-058",
+      "confirmation": "EXP-063"
+    },
+    {
+      "area_chip_units": 4,
+      "L_count": 4,
+      "GJM_count": 0,
+      "worst_IL_db": 0.9291267813958661,
+      "source": "EXP-064",
+      "candidate_id": "EXP064-area4-g4g3_b34",
+      "new_observed_pareto": true
+    },
+    {
+      "area_chip_units": 4.333333333333333,
+      "L_count": 3,
+      "GJM_count": 2,
+      "worst_IL_db": 0.9281187612899361,
+      "source": "EXP-058",
+      "confirmation": "EXP-063"
+    },
+    {
+      "area_chip_units": 4.666666666666667,
+      "L_count": 4,
+      "GJM_count": 1,
+      "worst_IL_db": 0.8371337485828259,
+      "source": "EXP-059"
+    },
+    {
+      "area_chip_units": 5.333333333333333,
+      "L_count": 4,
+      "GJM_count": 2,
+      "worst_IL_db": 0.8297115403501256,
+      "source": "EXP-065",
+      "candidate_id": "EXP065-pcb_out_ground-two_bridges-original",
+      "new_observed_pareto": true
+    },
+    {
+      "area_chip_units": 6,
+      "L_count": 4,
+      "GJM_count": 3,
+      "worst_IL_db": 0.8278411484628513,
+      "source": "EXP-062",
+      "candidate_id": "EXP062-A6-grounded-best",
+      "new_observed_pareto": true
+    }
+  ],
+  "dominated": [
+    {
+      "area_chip_units": 6.666666666666667,
+      "L_count": 4,
+      "GJM_count": 4,
+      "best_found_IL_db": 0.8377954490288592,
+      "origin": "EXP-062",
+      "dominated_by_area": 6
+    }
+  ],
+  "qualifiers": [
+    "Nominal constant-Q trial RF-T008 v3; no proof of global optimality or all topologies.",
+    "Full six-setting UL/DL/H2/H3 only sampled over 28 intervals x 1001 points; continuum extrema unverified.",
+    "Independent reviewer recomputed L SPD and parts/constraints, inspected stored branch-current MNA pass results, did not re-run full network solver.",
+    "Mandatory H2/H3 >=30dB at sampled points; nominal 35dB goal not established; IL target <=0.30dB not met.",
+    "No device Q(f), SRF, physical simultaneous mutual k, EM, tolerances, actual PCB/IC area or hardware verification; Phase 3 not authorized."
+  ]
+}

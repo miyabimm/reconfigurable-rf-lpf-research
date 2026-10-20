@@ -1,9 +1,5 @@
 name: EXP-066 RF-T005 4L1GJM Phase2 wide topology search
 on:
-  pull_request:
-    paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-066/**'
-      - '.github/workflows/exp066_rft005_4l1c_wide.yml'
   workflow_dispatch:
     inputs:
       run_optimization:

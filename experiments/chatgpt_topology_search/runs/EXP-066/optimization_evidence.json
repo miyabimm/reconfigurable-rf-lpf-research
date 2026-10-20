@@ -1,0 +1,316 @@
+{
+  "experiment_id": "EXP-066",
+  "constraint_id": "RF-T005",
+  "phase": "Phase 2",
+  "source_workflow_run": 39454953851,
+  "head_sha_executed": "d5d3c7d655421cf226056c53e0eda582b933fc9d",
+  "screen": {
+    "counts": {
+      "A": 125,
+      "B": 1800,
+      "C": 720
+    },
+    "selected_for_optimization": 24,
+    "grid_points_per_segment": 5
+  },
+  "optimization": {
+    "target_db": 30.02,
+    "grid_points_per_segment_coarse": 9,
+    "grid_points_per_segment_fine": 31,
+    "screened_topologies_attempted": 8,
+    "all_reported_converged": true,
+    "results": [
+      {
+        "shard": 0,
+        "slot": 0,
+        "il": 0.8195645153820337,
+        "h2": 30.01999999998539,
+        "h3": 30.019999999982396,
+        "nit": 1,
+        "nfev": 31,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 0,
+        "slot": 1,
+        "il": 1.046475952347096,
+        "h2": 30.019999999509377,
+        "h3": 30.019999999736967,
+        "nit": 75,
+        "nfev": 2299,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 1,
+        "slot": 0,
+        "il": 1.3356754323592437,
+        "h2": 30.019999998885357,
+        "h3": 30.019999999398422,
+        "nit": 79,
+        "nfev": 2419,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 1,
+        "slot": 1,
+        "il": 1.47519893205003,
+        "h2": 30.01999999998057,
+        "h3": 30.01999999995519,
+        "nit": 68,
+        "nfev": 2078,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 2,
+        "slot": 0,
+        "il": 1.0451778280850799,
+        "h2": 30.01999999987598,
+        "h3": 30.019999999963115,
+        "nit": 123,
+        "nfev": 3876,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 2,
+        "slot": 1,
+        "il": 1.8789798384146748,
+        "h2": 30.019999999359257,
+        "h3": 30.019999995818687,
+        "nit": 73,
+        "nfev": 2188,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 3,
+        "slot": 0,
+        "il": 1.4491604973304828,
+        "h2": 30.01999999997533,
+        "h3": 30.019999999999357,
+        "nit": 109,
+        "nfev": 3398,
+        "coarse_status": 0,
+        "converged": true
+      },
+      {
+        "shard": 3,
+        "slot": 1,
+        "il": 1.3428339418844704,
+        "h2": 30.01999999912917,
+        "h3": 30.01999999981214,
+        "nit": 73,
+        "nfev": 2243,
+        "coarse_status": 0,
+        "converged": true
+      }
+    ]
+  },
+  "curated_vectors": [
+    {
+      "candidate_id": "baseline_exp042_recovered",
+      "shard": 0,
+      "slot": 0,
+      "topology": {
+        "L": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "F": [
+          [
+            0,
+            1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "V": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "row": [
+          0,
+          1,
+          3,
+          2
+        ]
+      },
+      "vector": [
+        2.1719092285492243,
+        18.57858156786768,
+        21.19932870472672,
+        6.830876145830573,
+        3.0834088716095596,
+        0.19999999999999757,
+        0.19999999999997597,
+        0.18719332486118465,
+        0.09999999999999919,
+        0.06313077343394716,
+        -0.1,
+        0.5995923893915553,
+        0.13966204604064258,
+        1.3574091249798912,
+        0.3128896767689258,
+        0.10852660573443479,
+        1.7175830220231243,
+        0.47772194934188356,
+        0.05031249557269942,
+        1.2377135403739221,
+        0.19496886141855044,
+        0.26132147921005333,
+        0.4513870405907765,
+        0.07292576609128071,
+        0.22036448541732442,
+        0.538191545536035,
+        0.07954247497800405,
+        0.10444591852069048,
+        0.3225419787675126
+      ]
+    },
+    {
+      "candidate_id": "best_novel_screened_unverified",
+      "shard": 2,
+      "slot": 0,
+      "topology": {
+        "L": [
+          [
+            1,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            4,
+            3
+          ]
+        ],
+        "F": [
+          [
+            3,
+            -1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            2,
+            -1
+          ],
+          [
+            3,
+            -1
+          ]
+        ],
+        "V": [
+          [
+            1,
+            -1
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "row": [
+          0,
+          3,
+          1,
+          2
+        ]
+      },
+      "vector": [
+        4.323271759698329,
+        0.5216179949177968,
+        11.005351472210826,
+        0.4,
+        2.8686820489328806,
+        0.02,
+        0.02,
+        0.02,
+        0.09999999999999996,
+        0.09999999999999988,
+        0.05661120674952577,
+        0.9311971048305258,
+        1.5346203211540277,
+        1.1758912625523694,
+        0.28518470748359787,
+        1.2435669275968295,
+        1.090839895475677,
+        0.4068430481204782,
+        2.084004108273964,
+        0.6663340350970262,
+        0.09777759655011965,
+        0.7547267283650075,
+        0.8725508138695067,
+        0.058084464285420766,
+        1.5013186223877744,
+        0.4098442746447572,
+        0,
+        1.3188076231901953,
+        0.1967901187427618
+      ]
+    }
+  ],
+  "artifact_ids": {
+    "screen": 12281420079,
+    "shard_0": 12279219973,
+    "shard_1": 12281050556,
+    "shard_2": 12279638918,
+    "shard_3": 12281325276
+  },
+  "notes": [
+    "Result summary derives from actual GitHub Actions artifacts; recorded vector values are from original frozen artifacts, not rerun.",
+    "Only the two lowest-IL candidates are preserved here as complete 29-parameter vectors; remaining six are reported numerically and identified by original Actions artifacts.",
+    "Legacy output serialized fine_metrics into key fine, overwriting SLSQP fine-stage status; both-stage Boolean converged survived but fine status/iterations did not.",
+    "No new independently verified dense-grid candidate; no novel IL improvement; no Pareto promotion."
+  ]
+}

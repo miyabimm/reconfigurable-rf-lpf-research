@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-065",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "source_actions_run_id": 39453297733,
+  "area": 5.333333333333333,
+  "baseline_EXP062_IL_db": 0.8335054302993898,
+  "new_best_IL_db": 0.8297115403501256,
+  "best_topology": {
+    "layout": "pcb_out_ground",
+    "dtc": "two_bridges",
+    "graph": "original"
+  },
+  "new_pareto_candidate_at_area5p333": true,
+  "note": "Update to merged observed Pareto requires compare lower-cost points and retain historical snapshots; local finite grid.",
+  "limitations": [
+    "96 selected joint topologies not exhaustive/global proof",
+    "Other costs 3, 3p667, 4p333, 4p667, 6, 6p667 unmodified"
+  ]
+}

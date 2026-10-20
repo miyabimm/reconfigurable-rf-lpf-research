@@ -361,27 +361,38 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": null
+    "evaluation_count": 8,
+    "early_close": "owner_requested_stop",
+    "actions_run_id": 39454953851
   },
   "validation": {
-    "numerical": "not_run",
+    "numerical": "screened",
     "independent": "not_run",
     "implementation": "not_run",
-    "analysis_grid": null,
+    "analysis_grid": "5 / 9 / 31 per 28 segment",
     "independent_grid": null
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-066/wide_search.py",
-      "sha256": "6ae289e5bc5a6388267e54f5006df63509bc7f76a2a116c6a9497a6b5b3e349c"
+      "sha256": "957f40b13a59bb58e08a6846cbdee6e012938242a5f031e1384ab8072d59aa9a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-066/optimization_evidence.json",
+      "sha256": "5870dd95cf5e0042c4935aed36b41160049f53623a59c83e628d4643d18ec7de"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-066/summary.json",
+      "sha256": "644d6107987e2b2a2541f69c5c810b8b0096d2e38630efbe44a64d29d9107867"
     }
   ],
   "limitations": [
-    "Numerical screening and optimization not yet run; local structural enumeration is separate and does not establish an RF improvement.",
-    "No dense 28x7001 or independent MNA on new EXP-066 candidate; do not promote coarse numerical candidates to Pareto.",
-    "Scope uses up to three trial RF-T005 variable C branches; formal RF-F003 and RF-T008 remain unchanged.",
-    "No continuous frequency proof, Q(f), SRF, layout feasibility, temperature tolerance, EM, physical measurement or Phase3."
+    "Experiment stopped at owner request after completed Actions screen/8 optimizations; no novel IL improvement was observed.",
+    "Two full candidate vectors curated and all 8 coarse-grid results retained with originating artifact IDs.",
+    "Fine-stage SLSQP status not retained in original artifact because JSON fine key was overwritten; script corrected for reproducibility only.",
+    "No newly discovered result passed dense 28x7001 and independent coupled-L MNA; no promotion.",
+    "Phase 2 RF-T005 only; RF-F003, RF-T008, Phase 3 unchanged."
   ]
 }

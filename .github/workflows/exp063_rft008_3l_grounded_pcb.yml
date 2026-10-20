@@ -1,0 +1,95 @@
+name: EXP-063 RF-T008 three L grounded PCB transfer
+on:
+  push:
+    branches:
+      - exp063-rft008-threeL-grounded-pcb-transfer-20261020
+    paths:
+      - '.github/workflows/exp063_rft008_3l_grounded_pcb.yml'
+      - 'experiments/chatgpt_topology_search/runs/EXP-063/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  threeL_sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        layout: [a3_control, a3_ground_n1, a3_ground_n2, a3_ground_dual, a367_control, a367_ground_n1, a367_ground_n2, a367_gjm_cp, a433_control, a433_ground_n1, a433_ground_n2, a433_gjm_both]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Check main reservation and Phase2 Git-only preflight
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-063 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-063
+          uv run --frozen python -m py_compile experiments/chatgpt_topology_search/runs/EXP-063/sweep_3l_grounded_pcb.py
+      - name: Optimize and validate six-setting RF-T008 3L
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-063/sweep_3l_grounded_pcb.py \
+            --layout "${{ matrix.layout }}" --starts 2 --coarse 7 --fine 17 \
+            --dense 1001 --target 30.005 \
+            --out "results/EXP-063/${{ matrix.layout }}.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp063-${{ matrix.layout }}
+          path: results/EXP-063/${{ matrix.layout }}.json
+          if-no-files-found: warn
+          retention-days: 30
+  aggregate:
+    needs: [threeL_sweep]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp063-a*
+          merge-multiple: true
+          path: results/EXP-063/collected
+      - name: Rank all 12 layouts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files=sorted(Path("results/EXP-063/collected").glob("a*.json"))
+          rows=[]
+          for file in files:
+              d=json.loads(file.read_text())
+              b=d["best_converged_30db"]
+              rows.append({
+                "layout":d["layout"],"area":d["area"],
+                "GJM_edges":d["GJM_edges"],"PCB_edges":d["PCB_edges"],
+                "IL_db":b["dense"]["worst_IL_db"] if b else None,
+                "H2_db":b["dense"]["min_H2_db"] if b else None,
+                "H3_db":b["dense"]["min_H3_db"] if b else None,
+                "MNA_pass":d["independent_MNA"]["pass"] if b else None})
+          for x in sorted(rows,key=lambda x:(x["area"],x["IL_db"] or 1000)):
+              print("RANK",x)
+          dest=Path("results/EXP-063/summary.json")
+          dest.write_text(json.dumps({"experiment_id":"EXP-063",
+                 "completed_layouts":len(files),"rows":rows},indent=2)+"\n")
+          if len(files)!=12: raise SystemExit("Partial run; no complete Pareto claim")
+          if any(r["IL_db"] is not None and not r["MNA_pass"] for r in rows):
+              raise SystemExit("Independent MNA failure")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp063-aggregate-summary
+          path: results/EXP-063/summary.json
+          if-no-files-found: warn
+          retention-days: 30

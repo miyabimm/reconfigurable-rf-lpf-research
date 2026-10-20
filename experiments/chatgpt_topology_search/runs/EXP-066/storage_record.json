@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-066",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "preservation_incomplete",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -23,16 +23,28 @@
     {
       "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-066/wide_search.py",
-      "sha256": "6ae289e5bc5a6388267e54f5006df63509bc7f76a2a116c6a9497a6b5b3e349c",
-      "reason": "Executable EXP-066 graph census, nominal RF-T005 S2P-based screening and termination-aware SLSQP source."
+      "sha256": "957f40b13a59bb58e08a6846cbdee6e012938242a5f031e1384ab8072d59aa9a",
+      "reason": "Reviewed and corrected finite-grid search source; not a post-close new performance run."
+    },
+    {
+      "role": "other",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-066/optimization_evidence.json",
+      "sha256": "5870dd95cf5e0042c4935aed36b41160049f53623a59c83e628d4643d18ec7de",
+      "reason": "Run 39454953851 finite grid counts, 8 original result metrics, 2 complete curated vectors, all 4 optimizer artifact IDs, and audit defect disclosure."
     }
   ],
   "limitations": [
-    "Structural census 125 labeled trees (local); RF grid screening, SLSQP and final independent MNA not run in this artifact state.",
-    "No candidate may be promoted from 5/31 point grids; final 28x7001, independent coupled-L MNA and power balance remain required.",
-    "Git-only evidence policy: curated checkpoint vectors and validation overlays must be added after completed actual run."
+    "8 of 24 screened finalists were optimized; this is not comprehensive enumeration of all numeric configurations.",
+    "Finite 5/9/31-point grids do not prove global six-band H2/H3 compliance or continuous frequency limits.",
+    "Dense 28x7001, independent coupled-L branch-current MNA, and power-balance checks were not performed on new EXP-066 candidates.",
+    "Serialized optimization outputs lost fine-stage SLSQP status object due to an overwritten JSON key; source fixed after the recorded run without retroactive claims.",
+    "No physical Q(f), SRF, EM, PCB trace/parasitic tolerance or Phase 3 assessment.",
+    "RF-F003 formal specification and Phase3 authorization are unchanged."
   ],
   "size_exception": null,
   "git_readback": "pending",
-  "summary": null
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-066/summary.json",
+    "sha256": "644d6107987e2b2a2541f69c5c810b8b0096d2e38630efbe44a64d29d9107867"
+  }
 }
