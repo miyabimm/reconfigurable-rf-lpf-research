@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-058",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "running",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -23,6 +23,18 @@
       "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
       "sha256": "229f06535cce598cd2a6ebf98eb8f244dd043165dbc42592c6004657eaf24e01",
       "reason": "Full source script for explicit RF-T008 two-Q composite capacitor stamping, optimizer and independent MNA."
+    },
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area4.py",
+      "sha256": "5b4eebaf11aaf08d0cd406dacc1d788033965f131960407c977273c340eb7cce",
+      "reason": "Four-L zero-GJM RF-T008 v3 solver with 9x9 coupled-L MNA and 12 variants"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json",
+      "sha256": "21dc10094dab9687e2c0e0877a37a6f595fe00199a929d750321fbe25a90aaf5",
+      "reason": "Git checkpoint records executed area3 and area3p667 two observed Pareto full vectors and verification"
     }
   ],
   "limitations": [
