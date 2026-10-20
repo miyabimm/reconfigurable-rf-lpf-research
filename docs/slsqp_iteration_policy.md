@@ -1,4 +1,49 @@
-# Phase 2 SLSQP反復上限の標準運用（slsqp-staged-v1）
+# Phase 2 SLSQP反復上限の標準運用（現行 v2、v1履歴）
+
+## 2026-10-20 改訂：停止理由に応じた標準手順（slsqp-staged-v2）
+
+**今後の新規Phase 2・2段階SLSQP探索は v2 を標準**とする。RFの電気的な制約値、パレートの判定、過去EXPの終了状態は変更しない。新実装は `run_termination_aware_slsqp`、旧 `run_staged_slsqp` は再現性のため **v1として保存**する。
+
+| 処理 | 粗格子SLSQP maxiter | 精密格子SLSQP maxiter | 追加実行条件 |
+|---|---:|---:|---|
+| **通常** | **240** | **120** | 新しい各初期値でまず実行 |
+| **同一予算ウォーム再始動** | **240** | **120** | 粗格子が反復上限以外の理由（例：status4/8）で停止し、精密格子が正常収束した場合に限り、**精密格子の最終ベクトルから1回だけ** |
+| **真の粗格子反復上限救済** | **500** | **280** | 粗格子が SLSQP status9 または明示的な Iteration limit で停止した場合、精密段階の最終ベクトルから粗・精密を各1回 |
+| **真の精密格子反復上限救済** | — | **280** | **粗格子が正常収束しており**精密だけがstatus9の場合、精密を1回だけ |
+| **粗格子status4/8＋精密格子非収束** | 延長しない | 延長しない | その初期値は失敗として保存し、別初期値・可行性改善・数値尺度調整を検討する |
+
+- **一つの初期値につき最大4回のSLSQP段階呼出し**（通常2回＋許可された回復操作最大2回）。回復を繰り返さない。
+- **個々のmaxiterの絶対上限は粗500／精密280**。通常設定240／120は変更しない。実験者判断で別の上限を試すときは、現行標準の上書きではなく、main事前予約の新EXP・バージョン化された逸脱記録として隔離する。
+- 粗段階status4/8後に精密だけがstatus9となっても、**精密の回数を増やしただけでは粗段階の失敗は解消しない**ため自動増額しない。失敗の原因は「不等式制約が本当に数学的に不可能」とは限らず、局所的な可行解探索やSLSQP線探索に由来し得る。
+- 粗・精密それぞれの `status`、`message`、`nit`、`nfev`、初期・最終ベクトル、ウォームスタート出典、回復tier、利用した上限をすべて保存する。**元の未収束フラグを遡及して書き換えない。**
+- 収束状態と物理的適合性は独立。6設定の全帯域UL/DL・H2/H3密格子、連続帯域に関する未検証部分、SPD、独立MNA、電力収支は従来どおり独立に判定する。
+
+### 実証根拠：EXP-060停止監査とEXP-061の対照再始動
+
+- EXP-060の実行済み126試行中、62試行は両段階収束、64試行は未収束。主停止理由はstatus4が31、status8が29、status9が4。粗格子には240反復到達**0件**、最大229反復。精密格子の120反復到達4件は全件が既に粗格子status4であり、280反復救済でも両段階収束は0件。
+- 粗格子がstatus4/8、精密格子がstatus0で終了した20件をEXP-061で対照検証。**同じ保存ベクトル**から通常240/120と増額500/280を別々に実行したところ、いずれも**20/20件が両段階収束、30dB適合、独立9×9 MNA PASS**。同一初期値の条件では、増額の有無による最終ILの実質的な差を観測しなかった。
+- 結果はこの20件の局所最適化実験であり、他の64件すべてが再始動で収束する保証でも、一般的な「240/120が数学的に最適な計算量」という証明でもない。必要に応じて別の初期値・可行化手法を検討する。
+- 証拠：EXP-060原Actions [39434590336](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39434590336)、停止監査 [39437882717](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39437882717)、EXP-061対照実行 [39439246405](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39439246405)。EXP-061は[PR #146](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/146)上で実行し、既往のEXP-060数値を書き換えない。
+
+**新規コード呼出し例：**
+
+```python
+from lpf.slsqp_budget import run_termination_aware_slsqp
+
+result = run_termination_aware_slsqp(
+    coarse_evaluator, fine_evaluator, compatible_saved_vector,
+    30.005, optimize_stage=optimize_stage
+)
+# callbackは (vector, {"converged": bool, "status": int, "message": str,
+#                      "nit": int, "nfev": int}) を返す。
+# result["attempts"] の各tierを別々に永続化してから全6設定の
+# H2/H3/IL密格子・独立MNAで候補適合性を判定する。
+```
+
+---
+
+## 旧標準 v1（2026-10-20決定、数値上限はv2でも不変）
+
 
 - **決定日:** 2026-10-20
 - **承認の根拠:** ユーザー「適切な上限を設定して、今後の標準にしましょう」
