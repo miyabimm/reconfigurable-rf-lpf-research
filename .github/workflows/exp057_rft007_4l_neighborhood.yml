@@ -30,12 +30,12 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Verify main experiment reservation and pre-run Git evidence
+      - name: Verify main experiment reservation and completed Git evidence audit
         run: |
           git fetch origin main:refs/remotes/origin/main
           uv sync --frozen
           uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-057 --owner MasayaTakagi
-          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-057
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
       - name: Verify frozen EXP-055 reference and ten distinct tree graphs
         run: uv run --frozen python -m unittest discover -s tests -p 'test_exp057_graph_neighbors.py' -v
       - name: Run ten 4L topology optimizations on manual dispatch only after original run
