@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "status": "unregistered_local_preliminary_Phase2_not_official_EXP",
+  "date_jst": "2026-10-20",
+  "study": {
+    "base": "RF-T007",
+    "explicit_one_off_deviation": "Third fixed PCB_PATTERN_C Cg(3,GND) 0.02..1.00pF/Q40 allowed; two original PCB-Cs 0.02..0.20pF/Q40; NOT RF-T008 Q60",
+    "variable_C_move": "Cv1(0,3)->Cv1(0,1)",
+    "second_C": "Cv2(1,2) unchanged",
+    "grounded_DTC_parasitic": "ABSENT; no installed grounded DTC",
+    "six_modes": [
+      "B71",
+      "B12",
+      "B28",
+      "B13+B14",
+      "B26",
+      "B8"
+    ]
+  },
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "L_series": "LQP02HV",
+    "L_Q": 25,
+    "chip_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "GJM01_Q80_fixed_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ]
+    ],
+    "PCB_PATTERN_C_Q40_fixed_edges_with_Cp": [
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "PCB_PATTERN_C_Q40_fixed_edges_without_Cp": [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_Q35_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "L_k_pair_indices": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "chip_area_units": 5.333333333333333
+  },
+  "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,Cp,k01,k13,k32, 6*(Cv0_zero_placeholder,Cv1(0,1),Cv2(1,2)),Cg(3,GND)",
+  "screening": {
+    "free_Cg_runs": 16,
+    "free_Cg_converged": 16,
+    "fixed_Cg_grid_pf": [
+      0.02,
+      0.06,
+      0.1,
+      0.2,
+      0.35,
+      0.5,
+      0.75,
+      1
+    ],
+    "starts_per_fixed_Cg": 3,
+    "fixed_Cg_runs": 24,
+    "fixed_Cg_converged": 23,
+    "coarse_SLSQP_maxiter": 240,
+    "fine_SLSQP_maxiter": 120,
+    "retry_coarse_only_if_iteration_limit": 500,
+    "retry_fine_only_if_iteration_limit": 280,
+    "dense_points_per_28_intervals": [
+      1001,
+      7001
+    ],
+    "independent_coupled_L_MNA_points": 84
+  },
+  "candidates": {
+    "Cp_retained": {
+      "full_precision_vector": [
+        2.5178884913672057,
+        27,
+        5.580918390140731,
+        7.049194423359532,
+        1.6906959597872546,
+        1.0438974600355875,
+        0.19999999999999973,
+        0.2,
+        0.03476632079938425,
+        0.0539916111110477,
+        -0.0854609407760301,
+        0,
+        2.4734304767758735,
+        1.8036976446849287,
+        0,
+        2.4939074115634488,
+        1.5093467968492174,
+        0,
+        2.9999999999999942,
+        1.0942762542650721,
+        0,
+        0,
+        1.2721875079908687,
+        0,
+        1.4132891528546614,
+        0.5146837754649823,
+        0,
+        8.77493116564524e-17,
+        0.22316139580233915,
+        0.0968102448112363
+      ],
+      "solver_converged": true,
+      "metrics": {
+        "worst_IL_db": 0.8473818496173434,
+        "min_H2_db": 30.004999999369875,
+        "min_H3_db": 30.004999999939358,
+        "critical": [
+          {
+            "setting": "B28",
+            "frequency_MHz": 803
+          },
+          {
+            "setting": "B71",
+            "frequency_MHz": 1326
+          },
+          {
+            "setting": "B71",
+            "frequency_MHz": 1989
+          }
+        ]
+      },
+      "MNA": {
+        "probes": 84,
+        "max_IL_discrepancy_dB": 1.0444978215673473e-12,
+        "max_power_balance_W": 1.214306433183765e-17,
+        "min_L_eigenvalue_nH": 2.5145153805753293,
+        "pass": true
+      },
+      "per_mode_Cv1_Cv2": [
+        {
+          "setting": "B71",
+          "Cv1_pF": 2.4734304767758735,
+          "Cv2_pF": 1.8036976446849287,
+          "worst_IL_db": 0.7993096869286982
+        },
+        {
+          "setting": "B12",
+          "Cv1_pF": 2.4939074115634488,
+          "Cv2_pF": 1.5093467968492174,
+          "worst_IL_db": 0.8194655027894382
+        },
+        {
+          "setting": "B28",
+          "Cv1_pF": 2.9999999999999942,
+          "Cv2_pF": 1.0942762542650721,
+          "worst_IL_db": 0.8473818496173434
+        },
+        {
+          "setting": "B13+B14",
+          "Cv1_pF": 0,
+          "Cv2_pF": 1.2721875079908687,
+          "worst_IL_db": 0.8275701822303383
+        },
+        {
+          "setting": "B26",
+          "Cv1_pF": 1.4132891528546614,
+          "Cv2_pF": 0.5146837754649823,
+          "worst_IL_db": 0.844602777254259
+        },
+        {
+          "setting": "B8",
+          "Cv1_pF": 8.77493116564524e-17,
+          "Cv2_pF": 0.22316139580233915,
+          "worst_IL_db": 0.8396148605643514
+        }
+      ]
+    },
+    "Cp_removed": {
+      "full_precision_vector": [
+        3.096141780716054,
+        27,
+        6.751384969093935,
+        7.783863973969713,
+        1.367993456784797,
+        1.0426020475967603,
+        0.19999999999954043,
+        0,
+        0.09999999999999941,
+        -0.005790156356751013,
+        -0.09999999999998864,
+        0,
+        2.299480995897246,
+        1.4000118134509054,
+        0,
+        2.296615605237664,
+        1.0838137832470234,
+        0,
+        2.5491052569629766,
+        0.7897390790180691,
+        0,
+        0.5311089440092973,
+        0.8288874677002265,
+        0,
+        0.8337752311386717,
+        0.38993478916052765,
+        0,
+        2.6620919949812096e-13,
+        0.07841780801886276,
+        0.24528699414522434
+      ],
+      "solver_converged": true,
+      "metrics": {
+        "worst_IL_db": 0.8741688866089524,
+        "min_H2_db": 30.004999999754162,
+        "min_H3_db": 30.004999999986847,
+        "critical": [
+          {
+            "setting": "B28",
+            "frequency_MHz": 803
+          },
+          {
+            "setting": "B71",
+            "frequency_MHz": 1326
+          },
+          {
+            "setting": "B26",
+            "frequency_MHz": 2442
+          }
+        ]
+      },
+      "MNA": {
+        "probes": 84,
+        "max_IL_discrepancy_dB": 5.400124791776761e-13,
+        "max_power_balance_W": 1.214306433183765e-17,
+        "min_L_eigenvalue_nH": 3.0612188663294084,
+        "pass": true
+      }
+    }
+  },
+  "comparison": {
+    "preT008_Cv1_03_plus_Cg_original_worst_IL_db": 0.8310463563827374,
+    "new_worse_than_prior_Cg_db": 0.016335493234606036,
+    "older_no_Cg_two_C_worst_IL_db": 0.8497272635469568,
+    "new_better_than_older_no_Cg_db": 0.0023454139296134047
+  },
+  "external_model": "RF-F003 original RLC source regenerated .s2p 1MHz, complex-S interpolation, matching 800MHz and earlier checkpoint; original Touchstone .s2p hash NOT validated in local runtime",
+  "limitations": [
+    "not official EXP or original .s2p byte-validated",
+    "L1=27nH HV maximum physically high SRF risk",
+    "Cv1 B28=3pF maximum",
+    "Cp and Cf2=0.2pF max",
+    "Only 0.005dB harmonic margin; 35dB nominal target missed",
+    "0.3dB IL target missed",
+    "Global optimality, continuous extrema, SRF, Q(f), EM, coupling physical feasibility, tolerances, measured parasitics and Phase3 unverified"
+  ]
+}
