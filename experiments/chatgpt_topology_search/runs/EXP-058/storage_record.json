@@ -21,7 +21,7 @@
     {
       "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
-      "sha256": "229f06535cce598cd2a6ebf98eb8f244dd043165dbc42592c6004657eaf24e01",
+      "sha256": "8f4351d109e35b22a2ba6f0ae14368e3ece50ddf04cfe0c5e0cb2c49b279aa3e391bc1f3c944a8902f79cb591830cacf0522f78f6aa83491f9a146a92d1e4003be73af16be1bf94fdf0323c76122ace50b2fb22fedbe0da8def59700efd5f88d6e3c65149695fc94678565280d6c445e3c28ae9570a176b2ca5d9709e0743e313fd7eb55b6a488d4c7290016fc7e29704f3dc4261a9aa34637589dbe9b9f39bf54c8bd98c21ff6c3e6624902fcdd9f4a54b10b395c92f9a8af81fb415348ae2a46ffdee8afb0741063e92271d0b7963384489d8125871fef20019a47a503db00fe570d71d627b123767a94bfce995a411d88bb7018bbe264acd13796e8ff152d",
       "reason": "Full source script for explicit RF-T008 two-Q composite capacitor stamping, optimizer and independent MNA."
     },
     {
@@ -35,6 +35,12 @@
       "path": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json",
       "sha256": "21dc10094dab9687e2c0e0877a37a6f595fe00199a929d750321fbe25a90aaf5",
       "reason": "Git checkpoint records executed area3 and area3p667 two observed Pareto full vectors and verification"
+    },
+    {
+      "role": "source_snapshot",
+      "path": "data/pareto_snapshots/rf_t008_exp058_area4_20261020.json",
+      "sha256": "c15ffc08d08f4f179d891680e0d55f57919ec80f13b7ab11824d7bf5e4b04209e22f2123a54212c74ec76fd7f8346af8b33ef80040d18d880762b930d07a34001f47850e2e532ee92d690fc7f4d3117eb69bf8e5df8bd7496b3c65233dd8fa1b608b8f2fe842de14272750f24322fcc9ff6496b3fd6f507d9aefba082865ea8b7eeb5be81d83886460a8db536586b299d760dd5c0067ace59cb12208044e63997255dc36146858e4be6dca55b8137a52bef83de0801537ef836c4b51cda7ac31452d51f9b61483fa53d0751ad3df7cfc2088d66439071b47632e64c0e37de833a9bffe309c9b6ad6ccc3e85cbb81367ea138c1e52c9ee9618f1c1e1e7c8f21bd",
+      "reason": "Area 4 RF-T008 four-L zero-GJM local search, dominated best vector, independent 9x9 MNA"
     }
   ],
   "limitations": [
