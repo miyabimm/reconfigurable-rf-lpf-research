@@ -1,0 +1,397 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-060",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "study": "Physical neighbor signed k saturation, sign flips, L electrical tree rewiring; 4LQP02HV Q25 + GJM Cf0 + grounded PCB C (N4,N3) + two composite IC DTC (IN,N3) (N1,OUT) at chip area 4+2/3",
+  "external_model": "RF-F003 fixed input S2P + 50ohm source, LPF, fixed output S2P + load 60-j40ohm; six setting",
+  "settings": [
+    "B71",
+    "B12",
+    "B28",
+    "B13+B14",
+    "B26",
+    "B8"
+  ],
+  "physical_chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "L_coupling_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      3,
+      2
+    ]
+  ],
+  "C_fixed_GJM_edge": [
+    0,
+    1
+  ],
+  "PCB_C_edges": [
+    [
+      4,
+      -1
+    ],
+    [
+      3,
+      -1
+    ]
+  ],
+  "PCB_C_Q": 60,
+  "variable_IC_edges": [
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "IC_fixed_C_Q": 60,
+  "IC_variable_C_Q": 35,
+  "vector_order": "L0,L1,L2,L3,Cf0_Q80,PCB_C_N4_GND_Q60,PCB_C_N3_GND_Q60,uninstalled_PCB_slot_zero,k_L0_L1,k_L1_L3,k_L3_L2,IC_fixed0,IC_fixed1,6*(Cv0,Cv1)",
+  "validation": "Converged SLSQP at 28x1001 finite grid and 84-point independent explicit coupled-L 9x9 MNA and passivity/power balance.",
+  "candidate_id": "EXP060-outer_input_kminus100",
+  "graph": "original",
+  "L_edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "K_mode": "k01_minus100",
+  "numerical": {
+    "worst_IL_db": 0.8371594519580737,
+    "min_H2_db": 30.00499999986511,
+    "min_H3_db": 30.00499999994385,
+    "finite_30db_pass": true,
+    "solver_converged": true
+  },
+  "vector": [
+    2.4410877948553193,
+    6.169062791213136,
+    12.420500336526795,
+    7.5110942282589335,
+    2.8944539147584294,
+    0.6057704432506651,
+    0.450129325325274,
+    0,
+    -0.1,
+    0.033514310057200666,
+    -0.08673734557305313,
+    0.2,
+    0.327663246649768,
+    1.1981832100700551,
+    1.1605288768066202,
+    0.8993243721926346,
+    1.065661587941034,
+    0.9520996427693411,
+    0.9015071503993387,
+    0.6056340094466381,
+    0.4209459535398175,
+    0.39717993291799664,
+    0.24360994716425258,
+    0,
+    0
+  ],
+  "independent_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 8.455458555545192e-13,
+    "max_power_residual_W": 1.214306433183765e-17,
+    "L_matrix_min_eigenvalue_nH": 2.4010124087234277,
+    "pass": true
+  },
+  "provenance": {
+    "actions_run_id": 39434590336,
+    "artifact_id": 12268519818,
+    "source_json_sha256": "e8272c4822cf0cffe7c5862d2bd1175633798b7c6206b40b7ac455e78a50926a",
+    "workflow_merge_execution_sha": "4f7b187cd5a95eb6c5b2fc6c0db5c4a2f09f73dd"
+  },
+  "limitations": [
+    "Finite 28x1001 mesh, local SLSQP from 2 starts, Q(f)/SRF/EM and physical coupled k not validated",
+    "Some other variants stopped nonconverged; no global optimality/35dB proof."
+  ],
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "GJM_C_edge": [
+      0,
+      1
+    ],
+    "PCB_C_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "parallel_IC_fixed_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "couplings": [
+    {
+      "Lpair": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.1
+    },
+    {
+      "Lpair": [
+        "L1",
+        "L3"
+      ],
+      "k": 0.033514310057200666
+    },
+    {
+      "Lpair": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.08673734557305313
+    }
+  ],
+  "components": [
+    {
+      "id": "L0",
+      "type": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 2.4410877948553193,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L1",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 6.169062791213136,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L2",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 12.420500336526795,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "L3",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 7.5110942282589335,
+      "Q": 25,
+      "area_units": 1
+    },
+    {
+      "id": "Cf0",
+      "type": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 2.8944539147584294,
+      "Q": 80,
+      "area_units": 0.6666666666666666
+    },
+    {
+      "id": "PCB0",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.6057704432506651,
+      "Q": 60,
+      "area_units": 0
+    },
+    {
+      "id": "PCB1",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 0.450129325325274,
+      "Q": 60,
+      "area_units": 0
+    },
+    {
+      "id": "ICfix0",
+      "type": "IC_FIXED_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.2,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv0",
+      "type": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "Q": 35,
+      "C_limit_pf": 3
+    },
+    {
+      "id": "ICfix1",
+      "type": "IC_FIXED_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.327663246649768,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv1",
+      "type": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "C_limit_pf": 3
+    }
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      1.1981832100700551,
+      1.1605288768066202
+    ],
+    "B12": [
+      0.8993243721926346,
+      1.065661587941034
+    ],
+    "B28": [
+      0.9520996427693411,
+      0.9015071503993387
+    ],
+    "B13+B14": [
+      0.6056340094466381,
+      0.4209459535398175
+    ],
+    "B26": [
+      0.39717993291799664,
+      0.24360994716425258
+    ],
+    "B8": [
+      0,
+      0
+    ]
+  },
+  "fixed_values": {
+    "L_nH": [
+      2.4410877948553193,
+      6.169062791213136,
+      12.420500336526795,
+      7.5110942282589335
+    ],
+    "GJM_C_pf": 2.8944539147584294,
+    "PCB_C_pf": [
+      0.6057704432506651,
+      0.450129325325274
+    ],
+    "IC_fixed_C_pf": [
+      0.2,
+      0.327663246649768
+    ],
+    "k_nearest": [
+      -0.1,
+      0.033514310057200666,
+      -0.08673734557305313
+    ],
+    "L_series": "LQP02HV",
+    "L_Q": 25,
+    "GJM_Q": 80,
+    "PCB_grounded_Q": 60,
+    "IC_fixed_Q": 60,
+    "IC_variable_Q": 35,
+    "installed_PCB_count": 2
+  }
+}

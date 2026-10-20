@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-060",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "phase": "Phase 2",
+  "execution_status": "completed",
+  "action_run_id": 39434590336,
+  "action_run_url": "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39434590336",
+  "action_aggregate_artifact_id": 12270330466,
+  "action_aggregate_zip_sha256": "2958681409a7313e47ed2797e58761d4dc89bc838c02daedec355c028b928a33",
+  "action_aggregate_inner_summary_sha256": "d74898dbb93df00ea510f6433cd8f2fb10aa2710fbc986d0a2dbdeade29cef9d",
+  "source_branch": "exp060-rft008-coupling-lgraph-20261020",
+  "base_branch": "exp059-rft008-4l1gjm-pcb-edges-20261020",
+  "source_pr": 145,
+  "parent_experiment": "EXP-059",
+  "action_execution_git_sha": "4f7b187cd5a95eb6c5b2fc6c0db5c4a2f09f73dd",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "scope": {
+    "physical_chip_area": 4.666666666666667,
+    "composite_IC_DTC_branches": 2,
+    "grounded_PCB_C_count": 2,
+    "L_count": 4,
+    "GJM_count": 1,
+    "k_coefficient_limit": 0.1,
+    "original_graph_k_modes": 15,
+    "electrical_rewired_graph_count": 16,
+    "k_modes_per_rewired_graph": 3,
+    "unique_graph_k_cases": 63,
+    "starts_each": 2
+  },
+  "attempts": {
+    "planned": 126,
+    "attempted": 126,
+    "converged": 62,
+    "nonconverged": 64,
+    "failed": 0,
+    "not_started": 0
+  },
+  "verification": {
+    "dense_intervals": 28,
+    "dense_points_per_interval": 1001,
+    "settings": 6,
+    "independent_9x9_MNA_probes_per_selected_eligible": 84,
+    "eligible_cases_checked": 40,
+    "eligible_cases_pass": 40,
+    "eligible_cases_failure": 0
+  },
+  "original_L_graph_K_scan": [
+    {
+      "mode": "free",
+      "worst_IL_db": 0.8371337485828241
+    },
+    {
+      "mode": "k01_minus100",
+      "worst_IL_db": 0.8371594519580737
+    },
+    {
+      "mode": "k01_plus100",
+      "worst_IL_db": 0.8414990972821381
+    },
+    {
+      "mode": "k13_plus100",
+      "worst_IL_db": 0.8900626812699612
+    },
+    {
+      "mode": "k13_minus100",
+      "worst_IL_db": 1.049958291848049
+    },
+    {
+      "mode": "k13_plus080to100",
+      "worst_IL_db": 0.865908562477939
+    },
+    {
+      "mode": "k13_minus080to100",
+      "worst_IL_db": 1.087857952
+    },
+    {
+      "mode": "k32_minus100",
+      "worst_IL_db": 0.8408196483989507
+    },
+    {
+      "mode": "k32_plus100",
+      "worst_IL_db": 0.979975218409197
+    },
+    {
+      "mode": "outer_minus100",
+      "worst_IL_db": 0.8408196483969888
+    },
+    {
+      "mode": "outer_minus095to100",
+      "worst_IL_db": 0.8390946526478162
+    },
+    {
+      "mode": "all_baseline_sign_max",
+      "worst_IL_db": 1.0697958416506814
+    },
+    {
+      "mode": "all_minus100",
+      "worst_IL_db": 1.2051392302049482
+    },
+    {
+      "mode": "all_plus100",
+      "worst_IL_db": 1.79562057
+    },
+    {
+      "mode": "all_inverse_sign_max",
+      "worst_IL_db": 1.39829402
+    }
+  ],
+  "most_relevant": {
+    "baseline": {
+      "graph": "original",
+      "K_mode": "free",
+      "worst_IL_db": 0.8371337485828241,
+      "k": [
+        -0.09218029453384365,
+        0.035166603703000406,
+        -0.08516870393999591
+      ]
+    },
+    "input_k_at_limit": {
+      "graph": "original",
+      "K_mode": "k01_minus100",
+      "worst_IL_db": 0.8371594519580737,
+      "k": [
+        -0.1,
+        0.033514310057200666,
+        -0.08673734557305313
+      ],
+      "penalty_db": 0.0000257033752496
+    },
+    "output_k_at_limit": {
+      "graph": "original",
+      "K_mode": "k32_minus100",
+      "worst_IL_db": 0.8408196483989507
+    },
+    "center_k_at_pos_limit": {
+      "graph": "original",
+      "K_mode": "k13_plus100",
+      "worst_IL_db": 0.8900626812699612
+    },
+    "all_three_at_baseline_sign_limits": {
+      "graph": "original",
+      "K_mode": "all_baseline_sign_max",
+      "worst_IL_db": 1.0697958416506814
+    },
+    "best_other_L_graph": {
+      "graph": "resonators_series_via_n3",
+      "L_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "K_mode": "free",
+      "worst_IL_db": 0.9717167010654971,
+      "k": [
+        -0.1,
+        0.1,
+        -0.07549945425888822
+      ]
+    }
+  },
+  "old_reference_record": {
+    "source_pr": 144,
+    "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/best_n4g_n3g_2pcb.json",
+    "worst_IL_db": 0.8371337485828259
+  },
+  "best_found_IL_improvement_db": 0,
+  "selected_checkpoints": [
+    "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/unrestricted_reference.json",
+    "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/outer_input_kminus100.json",
+    "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/center_kplus100.json",
+    "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/all_baseline_sign_kmax.json",
+    "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/best_rewired_graph.json"
+  ],
+  "interpretation": [
+    "Physical nearest-neighbor coupling strength is not monotonically beneficial at unchanged L electrical tree; center coupling +0.1 worsens 0.837134 to 0.890063dB.",
+    "Input coupling k01=-0.1 gives essentially same IL within 0.000026dB, so it may be a manufacturability-suitable alternate nominal target only after physical feasibility checks.",
+    "16 rewired electric trees across 3 coupling modes gave a best worst IL of 0.9717167dB, above original local optimum; no improvement observed.",
+    "Only 62/126 local starts converged; poor performance in untested basins cannot prove that a graph topology is globally inferior.",
+    "All best-found 30dB candidates have ~0.005 dB margin rather than 35dB nominal target."
+  ],
+  "limitations": [
+    "Only 15 k scenarios and 16 rewired graphs, 2 local starts each; no global graph/parameter optimality.",
+    "Model-origin external S2Ps; no continuous frequency extrema, Q(f), inductor SRF, physical 3-way simultaneous coupling k, EM, tolerance, fab validation.",
+    "RF-T008 remains Phase2 trial, no Phase3 or formal F003 amendment.",
+    "Raw 63-case numerical trace retained in time-limited GitHub Actions artifacts; curated five complete vectors and summary retained in Git."
+  ],
+  "attempt_outcomes_detailed": {
+    "finite_30db_and_converged": 61,
+    "distinct_eligible_cases": 40,
+    "distinct_cases_without_converged_compliant_design": 23
+  },
+  "selected_candidate_count": 5
+}

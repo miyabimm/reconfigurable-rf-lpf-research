@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-060",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "method": "Explicit coupled-L 9x9 MNA independent of optimized Schur reduced 2port response",
+  "source_run_id": 39434590336,
+  "grid": {
+    "segments": 28,
+    "independent_points_per_segment": 3,
+    "total": 84,
+    "settings": 6
+  },
+  "candidates": [
+    {
+      "candidate_id": "EXP060-unrestricted_reference",
+      "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/unrestricted_reference.json",
+      "raw_artifact_id": 12269043379,
+      "max_IL_difference_db": 4.263256414560601e-13,
+      "max_power_balance_residual_W": 9.540979117872439e-18,
+      "min_coupled_inductance_eig_nH": 2.3734160160205056,
+      "pass": true
+    },
+    {
+      "candidate_id": "EXP060-outer_input_kminus100",
+      "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/outer_input_kminus100.json",
+      "raw_artifact_id": 12268519818,
+      "max_IL_difference_db": 8.455458555545192e-13,
+      "max_power_balance_residual_W": 1.214306433183765e-17,
+      "min_coupled_inductance_eig_nH": 2.4010124087234277,
+      "pass": true
+    },
+    {
+      "candidate_id": "EXP060-center_kplus100",
+      "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/center_kplus100.json",
+      "raw_artifact_id": 12269393394,
+      "max_IL_difference_db": 5.897504706808832e-13,
+      "max_power_balance_residual_W": 7.806255641895632e-18,
+      "min_coupled_inductance_eig_nH": 2.626356444703751,
+      "pass": true
+    },
+    {
+      "candidate_id": "EXP060-all_baseline_sign_kmax",
+      "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/all_baseline_sign_kmax.json",
+      "raw_artifact_id": 12269208202,
+      "max_IL_difference_db": 2.8421709430404007e-13,
+      "max_power_balance_residual_W": 1.214306433183765e-17,
+      "min_coupled_inductance_eig_nH": 3.9278996461475524,
+      "pass": true
+    },
+    {
+      "candidate_id": "EXP060-best_rewired_graph",
+      "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/best_rewired_graph.json",
+      "raw_artifact_id": 12269467819,
+      "max_IL_difference_db": 2.7711166694643907e-13,
+      "max_power_balance_residual_W": 7.806255641895632e-18,
+      "min_coupled_inductance_eig_nH": 2.1315740151350866,
+      "pass": true
+    }
+  ],
+  "outcome": {
+    "selected_passed": 5,
+    "selected_failed": 0,
+    "all_eligible_cases_in_run": 40,
+    "all_eligible_cases_MNA_passed": 40
+  },
+  "limit": "84 sampled points per selected candidate, not continuous frequency or physical Q(f)/EM/k validation"
+}
