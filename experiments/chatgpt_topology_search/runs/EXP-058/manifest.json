@@ -504,11 +504,15 @@
     {
       "path": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json",
       "sha256": "f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9"
+    },
+    {
+      "path": "data/pareto_snapshots/rf_t008_exp058_area5p333_to_6p667_20261020.json",
+      "sha256": "30a96103cc020f2c5c74e394b90c60bc20d481a140b3bb78bf194e427c192a49"
     }
   ],
   "limitations": [
-    "Planned experiment and code preparation only until GitHub Actions returns actual numerical result.",
     "History T005/T007/F003 metrics must not be reclassified as T008 numerical results.",
-    "No SRF, Q(f), continuous frequency extrema, physical EM/tolerance or Phase3."
+    "No SRF, Q(f), continuous frequency extrema, physical EM/tolerance or Phase3.",
+    "All eight cost groups through area6p667 have Actions-executed finite-grid candidates. Git preservation audit/finalization is not yet completed."
   ]
 }
