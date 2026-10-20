@@ -35,7 +35,9 @@ class RFT008Tests(unittest.TestCase):
         self.assertEqual(registry["active_formal_id"], "RF-F003")
         self.assertEqual(registry["trial"]["RF-T008"]["state"], "study_authorized")
         self.assertEqual(self.trial["trial_base_constraint_id"], "RF-F003")
-        self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["max_branches_principle"], 3)
+        self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
+        self.assertEqual(self.trial["trial_variable_c_layout"]["branch_count"], 2)
+        self.assertEqual(self.t007["components"]["IC_VARIABLE_C"]["max_branches_principle"], 3)
         self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["q"], 35)
         self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"], 3)
         # The formal default stays 0.2pF/Q40. The trial exception is per-connection.
