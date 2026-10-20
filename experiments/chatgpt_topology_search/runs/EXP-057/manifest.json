@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment_id": "EXP-057",
   "phase": "Phase 2",
-  "purpose": "RF-T007 four-L graph topology neighborhood exploration from verified EXP-055 area5p333 3-DTC best IL0.8173655897607699dB",
+  "purpose": "RF-T007 EXP-055 best four-L area5p333 topology neighborhood ten L spanning-tree graph sweep with staged SLSQP 240/120 then targeted 500/280 recovery",
   "objective": "full_lpf",
   "constraints": {
     "class": "trial",

@@ -38,13 +38,14 @@ jobs:
           uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-057
       - name: Verify frozen EXP-055 reference and ten distinct tree graphs
         run: uv run --frozen python -m unittest discover -s tests -p 'test_exp057_graph_neighbors.py' -v
-      - name: Run all ten 4L topologies with staged SLSQP and independent MNA
+      - name: Run ten 4L topology optimizations on manual dispatch only after original run
+        if: github.event_name == 'workflow_dispatch'
         run: |
           uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-057/sweep_from_exp055.py \
             --starts 2 --coarse 7 --fine 17 --dense 1001 --mna 3 --target 30.005 \
             --out results/EXP-057/exp055_fourl_neighborhood.json
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: github.event_name == 'workflow_dispatch'
         with:
           name: exp057-rft007-fourl-neighborhood
           path: results/EXP-057/exp055_fourl_neighborhood.json
