@@ -98,5 +98,15 @@
     "Stopping status4 does not prove mathematical infeasibility.",
     "Numerical constant-Q nominal circuit model, finite 28×1001 grid only; SRF/Q(f), layout k and tolerance not evaluated.",
     "Phase3 not begun; RF-F003 and RF-T008 electrical constraints unchanged."
-  ]
+  ],
+  "attempts": {
+    "planned": 40,
+    "attempted": 40,
+    "converged": 40,
+    "nonconverged": 0,
+    "failed": 0,
+    "not_started": 0
+  },
+  "selected_candidate_count": 0,
+  "no_candidate_reason": "Convergence recovery diagnostic only, without new lower-IL Pareto candidate; EXP-059 source topology remains the verified best and raw paired vectors remain in Actions artifact."
 }
