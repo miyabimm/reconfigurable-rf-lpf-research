@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "82a6a29527a6520bf9cd7768bca4d8b8a27ded93",
+    "execution_sha": "445fcd98140b37c4a7a217b0bf5cceec2eb51099",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -414,7 +414,7 @@
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
-      "sha256": "093ae3a3e3888e0329aa5026cf994d72e4609624efa989c69726b486947f47c6"
+      "sha256": "044ed4308ac0fda614e5e0f695bea65f7fadb9b7bd8ba8e5ba90a3c542f103e3"
     }
   ],
   "limitations": [
