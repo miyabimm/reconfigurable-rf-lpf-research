@@ -1,10 +1,6 @@
 name: EXP-067 RF-T008 4L1C K01 multi-basin sweep
+# First 22-grid PR run is already executing; future reruns require explicit workflow_dispatch.
 on:
-  pull_request:
-    paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-067/**'
-      - 'data/experiment_index.csv'
-      - '.github/workflows/exp067_rft008_k01_sweep.yml'
   workflow_dispatch:
 permissions:
   contents: read
