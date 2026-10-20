@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-057",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
     "top_k": 3,
     "retain": [
@@ -12,30 +12,73 @@
       "topology_diversity",
       "representative_failure"
     ],
-    "rule": "Curate up to three most informative distinct RF-T007 independently verified 4L L-graph candidates plus control, complete 29 element vector, all six DTC triples, signed k and explicit independent 9x9 MNA; preserve selected solver success/failure flags",
-    "estimated_curated_bytes": 80000
+    "rule": "Keep exact reoptimized EXP055 control plus two highest-performing distinct changed four-L trees, full 29 parameters, six IC DTC setting triples and signed mutual k, and independent explicit 84x9x9 MNA. Preserve poor/failed other starts in source Actions artifact and summary.",
+    "estimated_curated_bytes": 90000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP057-T007-4L-CONTROL-EXP055-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/control_exp055_best.json",
+      "sha256": "b11290501976fe333cd58379fa7b691cca1a33f8cdcdd61e680c7b5ee2e0d305"
+    },
+    {
+      "candidate_id": "EXP057-T007-4L-SHUNT-TIP-FROM-INPUT-001",
+      "selection_reason": "pareto",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/shunt_tip_from_input_best.json",
+      "sha256": "4c2e09050861ae5c4da97cff5f73ac5a184e5d65297ee8a319f4077a05fe4e8f"
+    },
+    {
+      "candidate_id": "EXP057-T007-4L-GROUND-PENDANT-FROM-INPUT-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/ground_pendant_from_input_best.json",
+      "sha256": "2e259336603a2dd31916c215c1e9901040ad73696e6c35aec97a03e8cb4285ad"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/control_exp055_independent_mna.json",
+      "sha256": "21a22e0975050306de5a6b3d0d298ecec7610ff676176180c72ad693abd790ed"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/shunt_tip_from_input_independent_mna.json",
+      "sha256": "9509bc962c9c4f9a81a714b46821c1b316e4d0bb7894035466a0d31a793c16ab"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/ground_pendant_from_input_independent_mna.json",
+      "sha256": "25c30094798894d749150a66f317b008280535adb8ed48efb3704567a1d96571"
+    }
+  ],
   "supporting_evidence": [
     {
       "role": "method_note",
-      "reason": "EXP055-derived 4L area5⅓ topology sweep pre-run scope and RF-T007 one-shunt constraint",
+      "reason": "Executed EXP057 ten-graph numerical and independent MNA summary",
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/README.md",
-      "sha256": "a2a1f1dce9605291385e08c539c94874d6b5be13bbda152208d4848376d64558"
+      "sha256": "4c58664bb6945d50bb835bc431213309fd5cb93133a73a28fea227c2312ecfa9"
     },
     {
       "role": "source_snapshot",
-      "reason": "EXP057 ten-tree deterministic SLSQP primary240/120 and recovery500/280 source",
+      "reason": "Exact executed RF-T007 ten-L-tree SLSQP 240/120 with targeted 500/280 recovery source",
       "path": "experiments/chatgpt_topology_search/runs/EXP-057/sweep_from_exp055.py",
       "sha256": "4687c08833d0ecabf35ee49b9dff66c6c6fd8365487692109d98f61f8a459055"
     }
   ],
-  "summary": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-057/run_summary.json",
+    "sha256": "df4062b767c8dad33ca19c43ee0a2e02c6da5c454f7a4ed8a99fc086b8826fb8"
+  },
   "size_exception": null,
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
-    "Pre-run only; selected numerical outcomes and independent MNA not yet executed",
-    "Original raw Actions artifact, 29-element full vectors and per-graph convergence to be preserved after execution"
+    "Full 113538-byte raw 20-start records stay on Actions artifact ID12241866186 (30-day retention), ZIP SHA256 791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd; inner JSON SHA256 6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17.",
+    "No new best vs EXP055; original control delta 8.66e-11dB only.",
+    "One individual primary stage line-search nonconvergence not mislabelled as iteration-limit, no rescue triggered.",
+    "Phase2 only, no physical k or extra H2/H3 margin, no continuous proof, SRF/Q(f), EM, tolerances or hardware."
   ]
 }
