@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "id": "RF_T008_EXP058_4L_ZERO_GJM_AREA4_20261020",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "phase": "Phase 2",
+  "status": "executed_actions_numerical_and_84point_MNA",
+  "experiment_id": "EXP-058",
+  "actions_run_id": 39423762500,
+  "source_commit": "135adba2a8fc4a5252ec1842650c3abcbf640800",
+  "artifact_id": 12264187937,
+  "model": "four LQP02HV Q25, zero GJM, three position-specific PCB C, two parallel Q60-fixed+Q35-variable IC DTC, fixed S2P 50ohm source/60-j40ohm load, six settings 28 intervals x 1001 points",
+  "result_table": [
+    [
+      "cf0",
+      "input_output",
+      2.120483610934359
+    ],
+    [
+      "cf0",
+      "shunt_output",
+      0.9595929259631455
+    ],
+    [
+      "cf2",
+      "shunt_input",
+      12.775055860618822
+    ],
+    [
+      "cf2",
+      "shunt_output",
+      0.9501781604682049
+    ],
+    [
+      "cf1",
+      "input_output",
+      null
+    ],
+    [
+      "cf1",
+      "shunt_input",
+      29.64930108722875
+    ],
+    [
+      "cf0",
+      "shunt_input",
+      2.2004142081821247
+    ],
+    [
+      "cp",
+      "shunt_output",
+      0.9486501590658404
+    ],
+    [
+      "cp",
+      "shunt_input",
+      1.1962182607147387
+    ],
+    [
+      "cf1",
+      "shunt_output",
+      1.0115492586414998
+    ],
+    [
+      "cp",
+      "input_output",
+      3.5680215738933785
+    ],
+    [
+      "cf2",
+      "input_output",
+      1.6409792870377413
+    ]
+  ],
+  "no_compliant_candidate_note": "cf1_input_output none found in 2-start local search, not global infeasibility.",
+  "best_cost_cell": {
+    "candidate_id": "EXP058-T008-A4-4L-NOGJM-CP-REMOVED-SHUNT-OUTPUT",
+    "area_units": 4,
+    "GJM_count": 0,
+    "PCB_C_count": 3,
+    "variable_C_branch_count": 2,
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_C_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "parallel_IC_fixed_C_edges": [
+      [
+        3,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_chip_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "vector_order": "L0,L1,L2,L3,Cf0,Cf1,Cf2,k01,k13,k32,ICfixed0,ICfixed1,then each of six settings two Cvars",
+    "vector": [
+      4.685033799110878,
+      13.972141301574535,
+      8.342743043704976,
+      8.622512924755803,
+      0.2,
+      0.8970942881166475,
+      0.020000000000000427,
+      0.09999999999992558,
+      0.015391256332454832,
+      -0.08791195856326041,
+      0.5000000000000007,
+      0.36699398132966304,
+      0.49432075486086485,
+      0.7050001797086948,
+      0.41695064921790953,
+      0.5042235073729736,
+      0.39447625144261084,
+      0.4897336384659865,
+      0.21666915275707666,
+      0.3556204112916258,
+      0.11146369557043147,
+      0.20131576557460854,
+      0,
+      0
+    ],
+    "metrics": {
+      "worst_IL_db": 0.9486501590658404,
+      "min_H2_db": 30.004999999830694,
+      "min_H3_db": 30.004999999936462
+    },
+    "slsqp": {
+      "coarse_converged": true,
+      "fine_converged": true,
+      "coarse_iterations": 89,
+      "fine_iterations": 1
+    },
+    "verification": {
+      "finite_30db_pass": true,
+      "independent_9x9_MNA_pass": true,
+      "probes": 84,
+      "max_IL_difference_db": 5.613287612504791e-13,
+      "max_power_balance_residual_W": 9.540979117872439e-18,
+      "min_coupled_L_eigenvalue_nH": 4.615021081919144
+    }
+  },
+  "dominated_by": {
+    "candidate": "EXP058-T008-A3P667-3L-GJM-CF0-SHUNT-OUTPUT",
+    "chip_area_units": 3.666666666666667,
+    "worst_IL_db": 0.9340275796118456
+  },
+  "not_added_to_observed_pareto": true,
+  "limitations": [
+    "finite 28x1001 mesh only",
+    "nonconvex 2-start local search",
+    "H2/H3 margin extremely small",
+    "not 35dB or IL0.3dB goal",
+    "no physical parasitic/Q(f)/SRF/EM/tolerance/Phase3"
+  ]
+}
