@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-057",
+  "candidate_id": "EXP057-T007-4L-SHUNT-TIP-FROM-INPUT-001",
+  "source_actions_run": 39371574312,
+  "source_inner_json_sha256": "6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17",
+  "method": "Independent explicit 5-node KCL plus 4 coupled-L branch-current KVL 9x9 MNA; 84 probes and passive power balance",
+  "probes": 84,
+  "pass": true,
+  "max_IL_difference_db": 5.684341886080801e-13,
+  "max_power_balance_W": 7.806255641895632e-18,
+  "minimum_passive_W": 0,
+  "min_L_eigenvalue_nH": 5.209321518656968
+}
