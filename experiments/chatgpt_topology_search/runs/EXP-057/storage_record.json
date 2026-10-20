@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-057",
+  "phase": "Phase 2",
+  "stage": "complete",
+  "selection": {
+    "top_k": 3,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Keep exact reoptimized EXP055 control plus two highest-performing distinct changed four-L trees, full 29 parameters, six IC DTC setting triples and signed mutual k, and independent explicit 84x9x9 MNA. Preserve poor/failed other starts in source Actions artifact and summary.",
+    "estimated_curated_bytes": 90000
+  },
+  "checkpoints": [
+    {
+      "candidate_id": "EXP057-T007-4L-CONTROL-EXP055-001",
+      "selection_reason": "best",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/control_exp055_best.json",
+      "sha256": "ef86feb1e71fca798841f2f15d1f2444fd2a3784978fce5afa1b727a55a2c74c"
+    },
+    {
+      "candidate_id": "EXP057-T007-4L-SHUNT-TIP-FROM-INPUT-001",
+      "selection_reason": "pareto",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/shunt_tip_from_input_best.json",
+      "sha256": "e5b0a3f6db4a3f77e3a4b3163ebf13fbfea398b089d101534bfbe85c4b446705"
+    },
+    {
+      "candidate_id": "EXP057-T007-4L-GROUND-PENDANT-FROM-INPUT-001",
+      "selection_reason": "topology_diversity",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/checkpoints/ground_pendant_from_input_best.json",
+      "sha256": "9761d085591611b758a47d9a2a7821cfe625245c87ebeb4454e9d440a956cee7"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/control_exp055_independent_mna.json",
+      "sha256": "21a22e0975050306de5a6b3d0d298ecec7610ff676176180c72ad693abd790ed"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/shunt_tip_from_input_independent_mna.json",
+      "sha256": "9509bc962c9c4f9a81a714b46821c1b316e4d0bb7894035466a0d31a793c16ab"
+    },
+    {
+      "method": "independent_mna",
+      "status": "passed",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/validation/ground_pendant_from_input_independent_mna.json",
+      "sha256": "25c30094798894d749150a66f317b008280535adb8ed48efb3704567a1d96571"
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "reason": "Executed EXP057 ten-graph numerical and independent MNA summary",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/README.md",
+      "sha256": "4c58664bb6945d50bb835bc431213309fd5cb93133a73a28fea227c2312ecfa9"
+    },
+    {
+      "role": "source_snapshot",
+      "reason": "Exact executed RF-T007 ten-L-tree SLSQP 240/120 with targeted 500/280 recovery source",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-057/sweep_from_exp055.py",
+      "sha256": "4687c08833d0ecabf35ee49b9dff66c6c6fd8365487692109d98f61f8a459055"
+    }
+  ],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-057/run_summary.json",
+    "sha256": "4c0c14d2c2ab15d4a045d8996addd80fd8d88eb485e7d070e88c400aae1988c9"
+  },
+  "size_exception": null,
+  "git_readback": "passed",
+  "limitations": [
+    "Full 113538-byte raw 20-start records stay on Actions artifact ID12241866186 (30-day retention), ZIP SHA256 791abf3fa2f44fdca9ca738439269088e46b1a28e90ba672f50dad6acba232bd; inner JSON SHA256 6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17.",
+    "No new best vs EXP055; original control delta 8.66e-11dB only.",
+    "One individual primary stage line-search nonconvergence not mislabelled as iteration-limit, no rescue triggered.",
+    "Phase2 only, no physical k or extra H2/H3 margin, no continuous proof, SRF/Q(f), EM, tolerances or hardware."
+  ]
+}

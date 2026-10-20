@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-057",
+  "candidate_id": "EXP057-T007-4L-GROUND-PENDANT-FROM-INPUT-001",
+  "source_actions_run": 39371574312,
+  "source_inner_json_sha256": "6662d8a89dfca7d8c462825535ea63113c10bb6a15a831ef412752e0636f6c17",
+  "method": "Independent explicit 5-node KCL plus 4 coupled-L branch-current KVL 9x9 MNA; 84 probes and passive power balance",
+  "probes": 84,
+  "pass": true,
+  "max_IL_difference_db": 2.5792701308091637e-12,
+  "max_power_balance_W": 1.6479873021779667e-17,
+  "minimum_passive_W": 1.5394373603375017e-23,
+  "min_L_eigenvalue_nH": 4.16466699840066
+}
