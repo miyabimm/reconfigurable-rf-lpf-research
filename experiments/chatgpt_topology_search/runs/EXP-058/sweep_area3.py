@@ -42,27 +42,28 @@ def norm_edge(edge):
 
 
 class Evaluator(old.Evaluator):
-    def __init__(self, policy, variant, points):
+    def __init__(self, policy, variant, points, gjm_position=None):
         self.variant = variant
+        self.gjm_position = gjm_position
         self.ids = VARIANTS[variant]
         self.variable_edges = tuple(ALL_VAR_EDGES[j] for j in self.ids)
         self.fixed_ic_edges = self.variable_edges
         super().__init__(policy, "zero_gjm_double", points)
         self.cap_edges = PCB_EDGES + self.variable_edges + self.fixed_ic_edges
         self.BC = old.incidence(self.cap_edges)
-        self.Q_C = np.array((40., 40., 60., 35., 35., 60., 60.), float)
+        self.Q_C = np.array([80. if gjm_position==j else (60. if -1 in edge else 40.) for j,edge in enumerate(PCB_EDGES)] + [35.,35.,60.,60.], float)
         # Vector: L3, PCB C3, chip neighboring k2, IC fixed C2, six x IC variable C2.
         self.bounds = np.array(
             [(0.4, 27.)] * 3
-            + [(0.02, 0.2), (0.02, 0.2), (0.02, 1.0)]
+            + [(0.02, 100.) if gjm_position==j else ((0.02, 1.) if -1 in edge else (0.02, 0.2)) for j,edge in enumerate(PCB_EDGES)]
             + [(-0.1, 0.1)] * 2
             + [(0.5, 3.) if -1 in edge else (0.2, 3.)
                for edge in self.variable_edges]
             + [(0., 3.)] * 12, float)
-        self.area = 3.
+        self.area = 3. + (2./3. if gjm_position is not None else 0.)
         pcb = [dict(norm_edge(edge), capacitance_pf=0.1,
                     q=60 if -1 in edge else 40)
-               for edge in PCB_EDGES]
+               for j,edge in enumerate(PCB_EDGES) if j != gjm_position]
         validate_trial_pcb_pattern_c_branches(policy, pcb)
         self.policy = policy
 
@@ -162,7 +163,7 @@ def staged(ev0, ev1, x, target):
 
 
 def independent_mna(ev, vector, policy, variant):
-    probe = Evaluator(policy, variant, 3)
+    probe = Evaluator(policy, variant, 3, ev.gjm_position)
     reference = probe.il(vector)
     n = len(probe.f)
     edges = probe.cap_edges
@@ -222,6 +223,7 @@ def independent_mna(ev, vector, policy, variant):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--variant",choices=tuple(VARIANTS),required=True)
+    parser.add_argument("--gjm-position",choices=("none","cf0","cf1","cp"),default="none")
     parser.add_argument("--starts",type=int,default=2)
     parser.add_argument("--coarse",type=int,default=7)
     parser.add_argument("--fine",type=int,default=17)
@@ -237,9 +239,10 @@ def main():
     orig=np.asarray(json.loads(ORIGINAL.read_text())["vector"],float)
     if len(orig)!=26:
         raise ValueError("Historical 3L seed corrupt")
-    dense=Evaluator(policy,arg.variant,arg.dense)
-    coarse=Evaluator(policy,arg.variant,arg.coarse)
-    fine=Evaluator(policy,arg.variant,arg.fine)
+    gjm = {"none":None,"cf0":0,"cf1":1,"cp":2}[arg.gjm_position]
+    dense=Evaluator(policy,arg.variant,arg.dense,gjm)
+    coarse=Evaluator(policy,arg.variant,arg.coarse,gjm)
+    fine=Evaluator(policy,arg.variant,arg.fine,gjm)
     rows=[]
     for j in range(arg.starts):
         initial=seed(dense,orig,j)
@@ -265,7 +268,7 @@ def main():
         validate_ic_fixed_c_settings(policy,br,fixed,dict(zip(old.CASES,var.tolist())))
     record={
         "experiment_id":"EXP-058","phase":"Phase 2","constraint_id":"RF-T008",
-        "revision":3,"area_chip_units":3.0,"variant":arg.variant,
+        "revision":3,"area_chip_units":dense.area,"variant":arg.variant,"GJM_position":arg.gjm_position,
         "fixed_C_edges":PCB_EDGES,"variable_C_edges":dense.variable_edges,
         "composite_IC_fixed_C_edges":dense.fixed_ic_edges,
         "component_Qs":dense.Q_C.tolist(),"physical_chip_row":["L0","Ls","L1"],
@@ -280,7 +283,7 @@ def main():
                        "No continuous-frequency extrema guarantee",
                        "No SRF/Q(f), real PCB area, EM, manufacture tolerances or Phase3"],
     }
-    output=arg.out or ROOT/"results/EXP-058"/(arg.variant+".json")
+    output=arg.out or ROOT/"results/EXP-058"/(arg.gjm_position+"_"+arg.variant+".json")
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+"\n")
     print("RESULT",output,"candidate",best["dense"] if best else "NONE",flush=True)
