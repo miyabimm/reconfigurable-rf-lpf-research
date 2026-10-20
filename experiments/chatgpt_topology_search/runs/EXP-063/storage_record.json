@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-063",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 4,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain one new best converged/30dB/MNA-passed candidate for each lower chip-area cell if nondominated; preserve all layout metadata, complete six-mode tunings and independent 7x7 MNA for retained candidates; keep representative failures and source SHA.",
+    "estimated_curated_bytes": 110000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "limitations": [
+    "Pre-run preservation policy only. No EXP-063 numerical results yet.",
+    "Original EXP-058 artifacts remain unchanged."
+  ],
+  "size_exception": null,
+  "git_readback": "not_run",
+  "summary": null
+}
