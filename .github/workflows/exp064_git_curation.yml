@@ -1,0 +1,48 @@
+name: EXP-064 Curate 4L0GJM confirmed Pareto evidence
+on:
+  push:
+    branches:
+      - exp064-rft008-fourL-zeroGJM-grounded-20261020
+    paths:
+      - '.github/workflows/exp064_git_curation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  curate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify main reservation and pre-run Git storage policy
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-064 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-064
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39450827220
+          github-token: ${{ github.token }}
+          pattern: exp064-*
+          merge-multiple: true
+          path: results/EXP-064/collected
+      - name: Record 12-layout results and retained candidate with 9x9 MNA
+        run: |
+          uv run --frozen python scripts/curate_exp064.py --input results/EXP-064/collected
+      - name: Commit curated evidence, finalize audit and push PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-064/ data/experiment_index.csv data/pareto_snapshots/rf_t008_exp064_area4_20261020.json
+          git commit -m "EXP-064: curate area4 4L zero GJM verified Pareto recovery [skip ci]"
+          uv run --frozen python scripts/audit_new_experiment_storage.py finalize EXP-064
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+          git push origin HEAD:exp064-rft008-fourL-zeroGJM-grounded-20261020
