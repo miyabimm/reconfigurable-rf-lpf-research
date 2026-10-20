@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-067",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "30db_boundary",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain sorted 22-k01 profile with counts by seed family and first/last K01, best positive and negative solutions, worst nonconverged. Archive best verified full 25-element vectors, six DTC settings, fixed k bound, 84-point independently stamped 9x9 MNA. Historical 198 starts not globally exhaustive.",
+    "estimated_curated_bytes": 230000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/k01_sweep.py",
+      "sha256": "8dd20a96068d9077b8791807aa5402605849cd10a7e9d2cbc7c57396c882ba50",
+      "role": "method_note",
+      "reason": "Executable nine-family scrambled-Sobol seeded K01 fixed sweep using RF-T008 v3 and v2 SLSQP"
+    }
+  ],
+  "limitations": [
+    "Planned until Actions computes numerical results.",
+    "K01 polarities unverified in physical layout, Q(f)/SRF and fine-grained continuous-frequency behavior not modeled."
+  ],
+  "size_exception": null
+}
