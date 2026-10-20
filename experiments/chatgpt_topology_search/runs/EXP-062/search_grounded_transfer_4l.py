@@ -120,14 +120,11 @@ def main():
     high=json.loads(HIGH.read_text())
     vec0=np.asarray(best["vector"],float)
     area=cost(ACTIVE)
-    old_area={5.333333333333333:5.333333333333333,6.0:6.0,6.666666666666666:6.666666666666666}
     chosen=min(high["selected_candidates"],key=lambda q:abs(q["area"]-area))
     if abs(chosen["area"]-area)>1e-6: raise AssertionError("Missing cost seed")
     vhigh=np.asarray(chosen["vector"],float)
     high_edges=parent.ALL_FIXED
-    high_gjm=set(chosen["GJM_positions"]) if "GJM_positions" in chosen else None
-    if high_gjm is None:
-        high_gjm=set(parent.GJM_POS[j] for j in chosen["GJM_positions_names"])
+    high_gjm=set(parent.GJM_POS[j] for j in chosen["GJM_positions"])
     types_high=["GJM" if i in high_gjm else "PCB" for i in range(4)]
     ev=Evaluator(policy,"input_output",("cf0",),args.dense)
     ec=Evaluator(policy,"input_output",("cf0",),args.coarse)
