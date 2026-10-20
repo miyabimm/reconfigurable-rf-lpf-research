@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-062",
+  "candidate_id": "EXP062-A6-grounded-best",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "trial_revision": 3,
+  "chip_area_units": 6.0,
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_GJM_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        -1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "PCB_C_edges": [
+      [
+        3,
+        -1
+      ]
+    ],
+    "variable_C_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "IC_fixed_C_parallel_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "components": [
+    {
+      "id": "L0",
+      "type": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "L_nH": 2.3417594035610563,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L1",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "L_nH": 6.672480554287619,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L2",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "L_nH": 12.233005713327929,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "L3",
+      "type": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "L_nH": 7.517004294334803,
+      "Q": 25,
+      "chip_area_units": 1
+    },
+    {
+      "id": "GJM0",
+      "type": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "C_pF": 3.0243582275487273,
+      "Q": 80,
+      "chip_area_units": 0.6666666666666666
+    },
+    {
+      "id": "GJM1",
+      "type": "GJM01",
+      "nodes": [
+        4,
+        -1
+      ],
+      "C_pF": 0.6132112973190048,
+      "Q": 80,
+      "chip_area_units": 0.6666666666666666
+    },
+    {
+      "id": "GJM2",
+      "type": "GJM01",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.14355064043344365,
+      "Q": 80,
+      "chip_area_units": 0.6666666666666666
+    },
+    {
+      "id": "PCB0",
+      "type": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "C_pF": 0.40924984434131717,
+      "Q": 60,
+      "chip_area_units": 0
+    },
+    {
+      "id": "ICfix0",
+      "type": "IC_FIXED_C_Q60",
+      "nodes": [
+        0,
+        3
+      ],
+      "C_pF": 0.2,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv0",
+      "type": "IC_VARIABLE_C_Q35",
+      "nodes": [
+        0,
+        3
+      ],
+      "Q": 35,
+      "setting_dependent": true,
+      "C_max_pF": 3.0
+    },
+    {
+      "id": "ICfix1",
+      "type": "IC_FIXED_C_Q60",
+      "nodes": [
+        1,
+        2
+      ],
+      "C_pF": 0.2000000000000001,
+      "Q": 60,
+      "setting_invariant": true
+    },
+    {
+      "id": "Cv1",
+      "type": "IC_VARIABLE_C_Q35",
+      "nodes": [
+        1,
+        2
+      ],
+      "Q": 35,
+      "setting_dependent": true,
+      "C_max_pF": 3.0
+    }
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "L1"
+      ],
+      "k": -0.0655198425471279
+    },
+    {
+      "pair": [
+        "L1",
+        "L3"
+      ],
+      "k": 0.03152408075698971
+    },
+    {
+      "pair": [
+        "L3",
+        "L2"
+      ],
+      "k": -0.08755052864290495
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      1.0727356079266563,
+      1.149816718208415
+    ],
+    "B12": [
+      0.8074089317190841,
+      1.0363497378919844
+    ],
+    "B28": [
+      0.8508073390729605,
+      0.8912773148869088
+    ],
+    "B13+B14": [
+      0.5296157421344287,
+      0.412574479697918
+    ],
+    "B26": [
+      0.32920510428979,
+      0.21980698380872438
+    ],
+    "B8": [
+      1.0265708794955698e-16,
+      0.0
+    ]
+  },
+  "fixed_values": {
+    "L_nH": [
+      2.3417594035610563,
+      6.672480554287619,
+      12.233005713327929,
+      7.517004294334803
+    ],
+    "GJM_C_pf": [
+      3.0243582275487273,
+      0.6132112973190048,
+      0.14355064043344365
+    ],
+    "PCB_C_pf": [
+      0.40924984434131717
+    ],
+    "k_signed": [
+      -0.0655198425471279,
+      0.03152408075698971,
+      -0.08755052864290495
+    ],
+    "IC_fixed_C_pf": [
+      0.2,
+      0.2000000000000001
+    ]
+  },
+  "vector": [
+    2.3417594035610563,
+    6.672480554287619,
+    12.233005713327929,
+    7.517004294334803,
+    3.0243582275487273,
+    0.6132112973190048,
+    0.14355064043344365,
+    0.40924984434131717,
+    -0.0655198425471279,
+    0.03152408075698971,
+    -0.08755052864290495,
+    0.2,
+    0.2000000000000001,
+    1.0727356079266563,
+    1.149816718208415,
+    0.8074089317190841,
+    1.0363497378919844,
+    0.8508073390729605,
+    0.8912773148869088,
+    0.5296157421344287,
+    0.412574479697918,
+    0.32920510428979,
+    0.21980698380872438,
+    1.0265708794955698e-16,
+    0.0
+  ],
+  "vector_order": "L0..3; 4 fixed caps; k01,k13,k32; two ICfix; six*2 variable",
+  "metrics": {
+    "worst_IL_db": 0.8278411484628513,
+    "min_H2_db": 30.004999999866506,
+    "min_H3_db": 30.004736913098185,
+    "locations": [
+      {
+        "setting": "B8",
+        "mhz": 960.0,
+        "segment": 25
+      },
+      {
+        "setting": "B71",
+        "mhz": 1326.0,
+        "segment": 2
+      },
+      {
+        "setting": "B71",
+        "mhz": 2086.44,
+        "segment": 3
+      }
+    ],
+    "L_eig_min_nH": 2.3262911741104304
+  },
+  "solver": {
+    "start_tier": "iteration_rescue_both",
+    "coarse": {
+      "success": true,
+      "status": 0,
+      "message": "Optimization terminated successfully",
+      "nit": 340,
+      "nfev": 9412,
+      "minimum_sample_slack_db": -3.511395618716051e-10,
+      "iteration_limit": false,
+      "converged": true,
+      "maxiter": 500
+    },
+    "fine": {
+      "success": true,
+      "status": 0,
+      "message": "Optimization terminated successfully",
+      "nit": 21,
+      "nfev": 570,
+      "minimum_sample_slack_db": -1.3349321648092882e-10,
+      "iteration_limit": false,
+      "converged": true,
+      "maxiter": 280
+    }
+  },
+  "independent_MNA": {
+    "probes": 84,
+    "max_IL_difference_db": 8.242295734817162e-13,
+    "max_power_residual_W": 1.214306433183765e-17,
+    "min_component_dissipation_W": -0.0,
+    "L_matrix_min_eigenvalue_nH": 2.3262911741104304,
+    "pass": true
+  },
+  "source": {
+    "run_id": 39447892051,
+    "layout": "a6_grounded",
+    "code_sha": "2b6015247cd6e258cd1d92630e5ca575f6541612"
+  },
+  "limitations": [
+    "Nominal constant-Q model and fixed external S2P",
+    "Local multistart only; no proof of global optimum",
+    "28x1001 grid and 84 independent MNA probes only",
+    "No Q(f)/SRF, physical k, EM, tolerance or Phase3"
+  ]
+}
