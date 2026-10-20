@@ -1,9 +1,6 @@
 name: EXP-059 RF-T008 4L1GJM PCB C relocation
+# Initial 46-variant study already executed on PR; manual reruns only.
 on:
-  pull_request:
-    paths:
-      - 'experiments/chatgpt_topology_search/runs/EXP-059/**'
-      - '.github/workflows/exp059_rft008_pcb_edges.yml'
   workflow_dispatch:
 permissions:
   contents: read
