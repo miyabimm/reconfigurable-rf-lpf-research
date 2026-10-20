@@ -400,27 +400,38 @@
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
-    "evaluation_count": null
+    "evaluation_count": 5708
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "segments": 28,
+      "points_per_segment": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "explicit_matrix": 9,
+      "sampled_points": 84,
+      "verified_candidates": 40
+    }
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-061/benchmark_restart.py",
       "sha256": "044ed4308ac0fda614e5e0f695bea65f7fadb9b7bd8ba8e5ba90a3c542f103e3"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-061/run_summary.json",
+      "sha256": "f9cd5fd6c58c0dfe722e72c767488ec04a9bfcd6253464517a76cee72558fdbe"
     }
   ],
   "limitations": [
-    "Planned numerical comparison, no EXP061 improvement has been computed as of manifest write.",
-    "EXP060 and EXP059 are pending merge in GitHub feature branches; original raw attempt flags never changed.",
-    "Warm-start recovery and maxiter change are controlled using SAME final vector, but two optimizations may follow different trajectories.",
-    "No physically realizable magnetic coupling verification, EM/Q(f)/SRF/Phase3."
+    "EXP061 paired 20 starts × two maxiter caps completed on GitHub Actions 39439246405; 40 paired runs all converged and dense 30dB pass with independent 9x9 MNA.",
+    "EXP060 64 historical nonconverged results remain unchanged; 20 successful NEW restarts do not imply all remaining failures can be recovered.",
+    "No global IL improvement, physical Q(f)/SRF, EM, tolerance or Phase3 research."
   ]
 }
