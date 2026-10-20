@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-060",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Retain all 2-start status counts; select 30dB-compliant converged lowest-IL candidate across couplings/graphs, physical k-constrained strong-coupled examples and source baseline, with full six setting component vector, separate independent coupled-L 9x9 MNA and SHA checks.",
+    "estimated_curated_bytes": 75000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "role": "method_note",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-060/search_coupling_lgraphs.py",
+      "sha256": "939ba766419972f858d1027997f7b5bf0d25f5b2f27cbc6d272fb137ba495763",
+      "reason": "Executed source if run: joint L graph and physical nearest-k scan coupled Q25 inductors, explicit Q60/35 DTC admittance, independent MNA."
+    }
+  ],
+  "limitations": [
+    "Preflight planned only; no EXP-060 numerical result yet.",
+    "Experiment builds on unmerged EXP-059 PR #144; base PR must merge first."
+  ],
+  "size_exception": null
+}
