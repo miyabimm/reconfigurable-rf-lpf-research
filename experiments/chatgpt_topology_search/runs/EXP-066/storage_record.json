@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-066",
   "phase": "Phase 2",
-  "stage": "preservation_incomplete",
+  "stage": "complete",
   "selection": {
     "top_k": 8,
     "retain": [
@@ -42,9 +42,15 @@
     "RF-F003 formal specification and Phase3 authorization are unchanged."
   ],
   "size_exception": null,
-  "git_readback": "pending",
+  "git_readback": "passed",
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-066/summary.json",
     "sha256": "644d6107987e2b2a2541f69c5c810b8b0096d2e38630efbe44a64d29d9107867"
+  },
+  "finalize_provenance": {
+    "actions_run_id": 39454953851,
+    "readback_ref": "b540a6bd17e5d14143797106d300c22037b9887d",
+    "not_independent_mna": true,
+    "does_not_certify_new_best": true
   }
 }
