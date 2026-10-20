@@ -24,7 +24,7 @@
     },
     {
       "candidate_id": "EXP059-alternate_n3g_for_b03",
-      "selection_reason": "pareto",
+      "selection_reason": "topology_diversity",
       "path": "experiments/chatgpt_topology_search/runs/EXP-059/checkpoints/alternate_n3g_for_b03.json",
       "sha256": "f8673849a2ec5c4b1405f9fee5eb484472968f15335086946371ed695d371a0b"
     },
