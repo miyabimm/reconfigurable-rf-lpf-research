@@ -1,4 +1,4 @@
-"""RF-T008 rev2 IC-fixed Q60 plus IC-variable Q35 regression, not RF-T007."""
+"""RF-T008 rev3 max-two IC variable+fixed composite branches, not RF-T007."""
 import math
 import sys
 import unittest
@@ -7,7 +7,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from lpf.constraint_versions import constraint_fingerprint, load_constraint
+from lpf.constraint_versions import (
+    constraint_fingerprint,
+    load_constraint,
+    validate_variable_c_connections,
+)
 from lpf.trial_ic_fixed_c import (
     ic_fixed_c_branches,
     ic_c_pair_admittances,
@@ -35,7 +39,10 @@ class RFT008ICFixedCTests(unittest.TestCase):
         self.assertEqual(c["grounded"], {"min_pf_per_branch": 0.5,
                                         "max_pf_per_branch": 3})
         self.assertEqual(c["variable_capacitance_pf_range"], [0, 3])
-        self.assertEqual(c["max_composite_branches"], 3)
+        self.assertEqual(c["max_composite_branches"], 2)
+        self.assertEqual(p["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
+        self.assertEqual(p["trial_variable_c_layout"]["branch_count"], 2)
+        self.assertEqual(p["trial_base_constraint_id"], "RF-F003")
         self.assertEqual(self.old["trial_shunt_dtc_parasitic"]["q"], 40)
         self.assertEqual(self.old["trial_shunt_dtc_parasitic"]["fixed_capacitance_pf"], 0.5)
         self.assertNotIn("trial_shunt_dtc_parasitic", p)
@@ -43,14 +50,15 @@ class RFT008ICFixedCTests(unittest.TestCase):
         self.assertNotEqual(constraint_fingerprint(p), constraint_fingerprint(self.old))
 
     def test_mandatory_pair_for_each_hot_hot_and_grounded(self):
-        fixed = ic_fixed_c_branches(self.p, [self.bridge, self.series, self.ground],
-                                     [0.2, 3, 0.5])
-        self.assertEqual(len(fixed), 3)
-        self.assertEqual([(e["a"], e["b"]) for e in fixed],
-                         [(2, 3), (4, 5), (6, 0)])
-        self.assertEqual([e["q"] for e in fixed], [60, 60, 60])
-        self.assertEqual([e["variable_branch_index"] for e in fixed], [0, 1, 2])
+        fixed = ic_fixed_c_branches(self.p, [self.bridge, self.ground], [0.2, 0.5])
+        self.assertEqual(len(fixed), 2)
+        self.assertEqual([(e["a"], e["b"]) for e in fixed], [(2, 3), (6, 0)])
+        self.assertEqual([e["q"] for e in fixed], [60, 60])
+        self.assertEqual([e["variable_branch_index"] for e in fixed], [0, 1])
         self.assertTrue(all(e["setting_invariant"] for e in fixed))
+        # A hot-hot series can still be installed in lieu of either branch.
+        series = ic_fixed_c_branches(self.p, [self.series], [3])
+        self.assertEqual((series[0]["a"], series[0]["b"]), (4, 5))
 
     def test_composite_max_total_6pF(self):
         for branch, fix in [(self.bridge, 3), (self.ground, 3)]:
@@ -116,7 +124,14 @@ class RFT008ICFixedCTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ic_fixed_c_branches(self.p, [], [0.5])
         with self.assertRaises(ValueError):
-            ic_fixed_c_branches(self.p, [self.bridge] * 4, [0.2] * 4)
+            ic_fixed_c_branches(self.p, [self.bridge, self.series, self.ground],
+                                 [0.2, 0.2, 0.5])
+        with self.assertRaises(ValueError):
+            validate_variable_c_connections(
+                [self.bridge, self.series, self.ground], self.p)
+        # Old T007 3-branch experiment stays available only under T007.
+        self.assertTrue(validate_variable_c_connections(
+            [self.bridge, self.series, self.ground], self.old))
 
     def test_PCB_ground_still_Q60_and_hot_hot_Q40(self):
         spec = self.p["trial_pcb_pattern_c_by_connection"]

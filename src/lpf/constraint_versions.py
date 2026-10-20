@@ -260,7 +260,7 @@ def _validate_trial_ic_fixed_c_by_connection(spec, resolved):
                 var["min_total_variable_pf_per_branch"],
                 var["max_total_variable_pf_per_branch"]]
             or spec["max_composite_branches"] != var["max_branches_principle"]
-            or spec["max_composite_branches"] != 3
+            or spec["max_composite_branches"] != 2
             or spec["fixed_c_stays_at_variable_C_zero"] is not True
             or spec["fixed_c_setting_invariant"] is not True
             or spec["fixed_c_frequency_invariant"] is not True
