@@ -506,7 +506,7 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/run_summary.json",
-      "sha256": "60ed9b9532142369ac04ea5e1d82865e88633e6fe1beea52bb3da31730c6672a"
+      "sha256": "22eb36479ae026adb05c35dbb1bdd457d46f08d55b8874d5a6eb8c23577b632d"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/validation/selected_independent_mna.json",
@@ -514,23 +514,23 @@
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/unrestricted_reference.json",
-      "sha256": "11cc305c690d7e06f500007971f7639b738aeee03b07be3a0ee9e15468e380b7"
+      "sha256": "41d9a49f67e34f500ceb7e689a63d43da8acdd1e66ab8fd82e16239b5f076a30"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/outer_input_kminus100.json",
-      "sha256": "faef82624210ebb6cc62dff30b22f8e20b5f182ba1e2b50d8bb46545a6750f27"
+      "sha256": "2ca9b0968a6d76dcacd555380c10c239ddfed748a6101a7ff2515d9262c4bbe5"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/center_kplus100.json",
-      "sha256": "4254da3ca9cbe796fe285ce02a63ebf2370e0024e731fec57f975c24063cfb11"
+      "sha256": "5533d852c2efd3d7b94f845aa3d18198667c20f64701365cb4d2fde95a12ad49"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/all_baseline_sign_kmax.json",
-      "sha256": "24d9a2090c6362c92f3beb0f8d8019b8073e929127379844466199633416ab01"
+      "sha256": "7ebfe06d9bc1fc50dcb47fd601a4b9e889383b069cf17bc515c3a504630e5137"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-060/checkpoints/best_rewired_graph.json",
-      "sha256": "1361a9fe7af89f9b81ec959c50a3376cffe9bf5b3553943b619e8c74045fd0d0"
+      "sha256": "7f582e623cb5f3e44f3de59d36c021135a8ee2b430594b8c4cbf846497974785"
     }
   ],
   "limitations": [
