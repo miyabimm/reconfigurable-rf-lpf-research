@@ -31,13 +31,11 @@
   },
   "attempts": {
     "planned": 126,
-    "executed": 126,
-    "SLSQP_converged": 62,
-    "SLSQP_unconverged": 64,
-    "solver_failed_hard": 0,
-    "finite_30db_and_converged": 61,
-    "distinct_eligible_cases": 40,
-    "distinct_cases_without_converged_compliant_design": 23
+    "attempted": 126,
+    "converged": 62,
+    "nonconverged": 64,
+    "failed": 0,
+    "not_started": 0
   },
   "verification": {
     "dense_intervals": 28,
@@ -201,5 +199,11 @@
     "Model-origin external S2Ps; no continuous frequency extrema, Q(f), inductor SRF, physical 3-way simultaneous coupling k, EM, tolerance, fab validation.",
     "RF-T008 remains Phase2 trial, no Phase3 or formal F003 amendment.",
     "Raw 63-case numerical trace retained in time-limited GitHub Actions artifacts; curated five complete vectors and summary retained in Git."
-  ]
+  ],
+  "attempt_outcomes_detailed": {
+    "finite_30db_and_converged": 61,
+    "distinct_eligible_cases": 40,
+    "distinct_cases_without_converged_compliant_design": 23
+  },
+  "selected_candidate_count": 5
 }
