@@ -1,0 +1,48 @@
+name: EXP-063 Git evidence and no-improvement audit
+on:
+  push:
+    branches:
+      - exp063-rft008-threeL-grounded-pcb-transfer-20261020
+    paths:
+      - '.github/workflows/exp063_git_curation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  curate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Verify central EXP-063 reservation and evidence preflight
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-063 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-063
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39449538072
+          github-token: ${{ github.token }}
+          pattern: exp063-a*
+          merge-multiple: true
+          path: results/EXP-063/collected
+      - name: Curate all 12 completed layouts with independent 7x7 MNA
+        run: |
+          uv run --frozen python scripts/curate_exp063.py --input results/EXP-063/collected
+      - name: Commit selected evidence, audit and push draft branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiments/chatgpt_topology_search/runs/EXP-063/ data/experiment_index.csv data/pareto_snapshots/rf_t008_exp063_threeL_20261020.json
+          git commit -m "EXP-063: curate 3L RF-T008 12-layout checked non-improvement [skip ci]"
+          uv run --frozen python scripts/audit_new_experiment_storage.py finalize EXP-063
+          uv run --frozen python scripts/audit_new_experiment_storage.py audit
+          git push origin HEAD:exp063-rft008-threeL-grounded-pcb-transfer-20261020
