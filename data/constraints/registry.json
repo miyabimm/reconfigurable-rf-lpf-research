@@ -79,7 +79,7 @@
       "state": "study_authorized",
       "base_constraint_id": "RF-F003",
       "approved_at": "2026-10-20",
-      "description": "Phase 2 RF-T007-equivalent DTC/shunt-DTC-parasitic trial plus location-specific fixed PCB pattern C: grounded 0.02..1pF Q60; non-ground 0.02..0.2pF Q40; maximum three total."
+      "description": "Phase 2 RF-T008 revision 2 (owner approved 2026-10-20): every DTC (up to 3) has high-Q IC fixed C in parallel, hot-hot 0.2..3pF/Q60 or hot-GND 0.5..3pF/Q60, plus Cvar 0..3pF/Q35; replaces prior grounded 0.5pF/Q40 parasitic, NOT cumulative. Normal PCB C remains ground 0.02..1pF/Q60 and hot-hot 0.02..0.2pF/Q40, max 3."
     }
   },
   "historical": {
