@@ -32,7 +32,7 @@ def cases():
     allrows=[]
     for path in sorted(SRC.glob("*.json")):
         x=json.loads(path.read_text())
-        if x.get("experiment_id")!="EXP-060":continue
+        if x.get("experiment_id")!="EXP-060" or not isinstance(x.get("attempts"), list):continue
         for a in x["attempts"]:
             raw=a["solver"]
             if not raw["coarse"]["success"] and raw["fine"]["success"]:
