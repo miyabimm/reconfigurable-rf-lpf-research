@@ -1,0 +1,38 @@
+name: SLSQP staged iteration policy regression
+
+on:
+  pull_request:
+    paths:
+      - 'src/lpf/slsqp_budget.py'
+      - 'tests/test_slsqp_budget.py'
+      - 'docs/slsqp_iteration_policy.md'
+      - 'docs/chatgpt_project_instructions.md'
+      - '.github/workflows/slsqp_budget_policy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/lpf/slsqp_budget.py'
+      - 'tests/test_slsqp_budget.py'
+      - 'docs/slsqp_iteration_policy.md'
+      - 'docs/chatgpt_project_instructions.md'
+      - '.github/workflows/slsqp_budget_policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  slsqp-budget:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Verify standard 240/120 and targeted 500/280 retry behavior
+        run: uv run --frozen python -m unittest discover -s tests -p 'test_slsqp_budget.py' -v
