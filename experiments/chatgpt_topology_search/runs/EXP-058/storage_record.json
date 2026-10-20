@@ -21,7 +21,7 @@
     {
       "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-058/sweep_area3.py",
-      "sha256": "631755b7325ca6aa983003b0fdde43b475a6fd64ef765c075e1ca96fa959f336",
+      "sha256": "f4b33b999b7d25d2984b9ce7ff07487b6bddfc08afc33e16d645c7469f3e2dcd",
       "reason": "Full source script for explicit RF-T008 two-Q composite capacitor stamping, optimizer and independent MNA."
     }
   ],
