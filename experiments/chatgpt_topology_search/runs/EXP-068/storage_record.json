@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-068",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 8,
+    "retain": [
+      "best",
+      "pareto",
+      "30db_boundary",
+      "topology_diversity",
+      "representative_failure"
+    ],
+    "rule": "Store best feasible results for each fixed K13/K32 point and all eight zero coupling combinations, plus representative complete 25-vector and independent 9x9 MNA results; do not promote nonconverged.",
+    "estimated_curated_bytes": 160000
+  },
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/search_k13_k32_zero.py",
+      "sha256": "65870ac9ee2be3db25765d44b634854b87562d71d6452ed25a6dcf95255b2052",
+      "role": "source_snapshot",
+      "reason": "Executed reproducible 50-case multicoupling and all-zero test source"
+    }
+  ],
+  "limitations": [
+    "Planned until Action results; original 12–20 starting families are numerically local.",
+    "Magnetic coupling layout and SRF/EM not verified."
+  ],
+  "size_exception": null
+}
