@@ -1,0 +1,149 @@
+name: EXP-068 RF-T008 K13 K32 dependency and zero-coupling feasibility
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/exp068_rft008_k13_k32_zero.yml'
+      - 'experiments/chatgpt_topology_search/runs/EXP-068/**'
+      - 'data/experiment_index.csv'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - name: Check EXP068 main reservation and Phase2 Git storage policy
+        run: |
+          git fetch origin main:refs/remotes/origin/main
+          uv sync --frozen
+          uv run --frozen python scripts/experiment_id_registry.py --experiment-id EXP-068 --owner MasayaTakagi
+          uv run --frozen python scripts/audit_new_experiment_storage.py preflight EXP-068
+          uv run --frozen python -m py_compile experiments/chatgpt_topology_search/runs/EXP-068/search_k13_k32_zero.py
+      - name: All three couplings zero, one seed and coarse RF gate smoke only
+        run: |
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-068/search_k13_k32_zero.py \
+            --index 49 --seed-limit 1 --coarse 7 --fine 17 --dense 101 \
+            --out /tmp/exp068-preflight.json
+  sweep:
+    needs: [preflight]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: astral-sh/setup-uv@v6
+        with: {enable-cache: true}
+      - name: Explore independent basin starts at fixed K values, verify 9x9 MNA
+        run: |
+          uv sync --frozen
+          uv run --frozen python experiments/chatgpt_topology_search/runs/EXP-068/search_k13_k32_zero.py \
+            --index ${{ matrix.index }} --coarse 7 --fine 17 --dense 1001 \
+            --out results/EXP-068/case_${{ matrix.index }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp068-case-${{ matrix.index }}
+          path: results/EXP-068/case_${{ matrix.index }}.json
+          retention-days: 30
+          if-no-files-found: warn
+  aggregate:
+    needs: [sweep]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: exp068-case-*
+          merge-multiple: true
+          path: gathered
+      - name: Aggregate legitimate converged 30dB K sweep and all-zero candidate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          rows=[];raw=[]
+          files=sorted(Path("gathered").glob("case_*.json"))
+          for f in files:
+              d=json.loads(f.read_text())
+              if d["experiment_id"]!="EXP-068":raise SystemExit("Experiment identity drift")
+              best=d["best_converged_30db"]
+              if best is not None and not d["independent_MNA"]["pass"]:
+                  raise SystemExit("Independent full MNA failed "+f.name)
+              eligible=sum(any(t["eligible_converged"] for t in v["attempts"]) for v in d["starts"])
+              converged=sum(any(t["converged"] for t in v["attempts"]) for v in d["starts"])
+              rows.append({
+                "index":d["index"],"category":d["category"],
+                "fixed_k":d["fixed_value"],"fixed_pairs":d["fixed_pairs"],
+                "IL_db":best["dense"]["worst_IL_db"] if best else None,
+                "H2_db":best["dense"]["min_H2_db"] if best else None,
+                "H3_db":best["dense"]["min_H3_db"] if best else None,
+                "vector":best["vector"] if best else None,
+                "winning_family":best["initial_seed_family"] if best else None,
+                "seed_count":len(d["starts"]),
+                "converged_seed_count":converged,
+                "eligible_seed_count":eligible,
+                "MNA":d["independent_MNA"]
+              })
+              for seed in d["starts"]:
+                  raw.append({"index":d["index"],"case":d["category"],
+                    "seed":seed["seed_family"],"status_tiers":[{
+                    "tier":a["tier"],"coarse_status":a["coarse"]["status"],
+                    "fine_status":a["fine"]["status"],"converged":a["converged"],
+                    "H2H3_30db":a["finite_H2H3_30db_pass"],
+                    "IL_db":a["dense"]["worst_IL_db"]} for a in seed["attempts"]]})
+          rows.sort(key=lambda v:v["index"])
+          if len(rows)!=50 or len(raw)!=608:raise SystemExit(
+              f"Expected 50 cases and 608 seed paths; got {len(rows)}, {len(raw)}")
+          good=[x for x in rows if x["IL_db"] is not None]
+          summary={
+              "experiment_id":"EXP-068","phase":"Phase 2",
+              "constraint_id":"RF-T008","trial_revision":3,
+              "expected_cases":50,"completed_cases":len(rows),
+              "primary_starts":len(raw),
+              "fully_converged_and_30db_starts":sum(z["eligible_seed_count"] for z in rows),
+              "eligible_cases":len(good),"k13_curve":rows[:21],
+              "k32_curve":rows[21:42],"zero_masks":rows[42:],
+              "all_zero":rows[49],
+              "best":min(good,key=lambda x:x["IL_db"]) if good else None,
+              "attempted_starts_by_case":raw,
+              "reference_exp059_worst_IL_db":0.8371337485828259,
+              "note":"No feasible solution found is not a mathematical infeasibility certificate; all zero cannot be claimed before MNA and H2/H3 pass."
+          }
+          Path("exp068_summary.json").write_text(
+              json.dumps(summary,indent=2,allow_nan=False)+"\n")
+          print("TOTAL",len(rows),"STARTS",len(raw),"ELIGIBLE",len(good),flush=True)
+          for x in rows:
+              print("POINT",x["index"],x["category"],x["fixed_k"],
+                    x["IL_db"],x["eligible_seed_count"],flush=True)
+          print("ALL_ZERO",rows[49],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp068-aggregate
+          path: exp068_summary.json
+          retention-days: 30
+          if-no-files-found: warn
