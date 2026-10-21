@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-067",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "candidate_id": "EXP067-kplus0p05_crossbasin",
+  "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p05_crossbasin.json",
+  "method": "explicit_9x9_coupled_L_independent_MNA_and_passive_power_balance",
+  "status": "passed",
+  "k01_fixed": 0.05,
+  "verification": {
+    "method": "explicit_9x9_coupled_L",
+    "pass": true,
+    "probes": 84,
+    "max_IL_difference_db": 5.115907697472721e-13,
+    "max_power_residual_W": 1.1275702593849246e-17,
+    "L_matrix_min_eigenvalue_nH": 2.347545503378755,
+    "grid_intervals": 28,
+    "probes_per_interval": 3,
+    "total_probes": 84
+  },
+  "metrics": {
+    "worst_IL_db": 0.8404210435753113,
+    "min_H2_db": 30.004999999967477,
+    "min_H3_db": 30.00499999999984,
+    "solver_converged": true
+  },
+  "limitations": [
+    "Numerically independent from reduced two-port SLSQP evaluator, but both share nominal RF-T008 physics",
+    "No continuous-frequency global extrema, SRF, Q(f), PCB EM, physical magnetic winding sign or tolerance verification"
+  ]
+}
