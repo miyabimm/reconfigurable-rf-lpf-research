@@ -3,9 +3,9 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-067",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "complete",
   "selection": {
-    "top_k": 8,
+    "top_k": 5,
     "retain": [
       "best",
       "pareto",
@@ -16,31 +16,99 @@
     "rule": "Retain sorted 22-k01 profile with counts by seed family and first/last K01, best positive and negative solutions, worst nonconverged. Archive best verified full 25-element vectors, six DTC settings, fixed k bound, 84-point independently stamped 9x9 MNA. Historical 198 starts not globally exhaustive.",
     "estimated_curated_bytes": 230000
   },
-  "checkpoints": [],
-  "validation_overlays": [],
+  "checkpoints": [
+    {
+      "candidate_id": "EXP067-best_kminus0p09218",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kminus0p09218.json",
+      "sha256": "fef303433be216bd9f5b6780269c4f898e3b0423e5236b9b950ad8b952730979",
+      "selection_reason": "best"
+    },
+    {
+      "candidate_id": "EXP067-kzero",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kzero.json",
+      "sha256": "8e6789adb7be0a4bfdbf5ce6f69f122d26f92d2a07d9327bfe4a5976c06f541b",
+      "selection_reason": "topology_diversity"
+    },
+    {
+      "candidate_id": "EXP067-best_kplus0p01",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kplus0p01.json",
+      "sha256": "aa7d8503a7fdace5374babced7083f6f0abf762761d72668d20bee2ea68ece38",
+      "selection_reason": "topology_diversity"
+    },
+    {
+      "candidate_id": "EXP067-kplus0p05_crossbasin",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p05_crossbasin.json",
+      "sha256": "14e9017cdeaaccdc0a291cb2e448ec803ef6a611a5aa0753371fa0bf51e4d9f5",
+      "selection_reason": "topology_diversity"
+    },
+    {
+      "candidate_id": "EXP067-kplus0p10",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p10.json",
+      "sha256": "b8032748f2cd59e3737e3021a9c0718c7fddaaee42e2647b34d231ae922d73e9",
+      "selection_reason": "topology_diversity"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/best_kminus0p09218_mna.json",
+      "sha256": "4cd992421fdc27b68c95edd04784331d2acc333b0beda1c5714b083ba9993c0a",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kzero_mna.json",
+      "sha256": "9d5fc1426937ddc0fcc0431994a3ddadae6169106bf969ff7c554cdb9540583c",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/best_kplus0p01_mna.json",
+      "sha256": "b305d1c5c700482dee04f673174f2cc84b2112c4d404442b0d8cbbe0174f40c7",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kplus0p05_crossbasin_mna.json",
+      "sha256": "e73354183dd0955b9d2892b66f291c6d332f794d43cf9d856508acae8586faaf",
+      "method": "independent_mna",
+      "status": "passed"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kplus0p10_mna.json",
+      "sha256": "ccbcfad2882bea15dbfe1b9372413ca95a08402b4696a411279ece4d4a7b22b8",
+      "method": "independent_mna",
+      "status": "passed"
+    }
+  ],
   "supporting_evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/k01_sweep.py",
       "sha256": "8dd20a96068d9077b8791807aa5402605849cd10a7e9d2cbc7c57396c882ba50",
-      "role": "method_note",
-      "reason": "Executable nine-family scrambled-Sobol seeded K01 fixed sweep using RF-T008 v3 and v2 SLSQP"
+      "role": "source_snapshot",
+      "reason": "Frozen reproducible EXP-067 two-stage independent K01 multi-basin source and Phase 2 scope"
     },
     {
-      "role": "method_note",
-      "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
-      "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b",
-      "reason": "Multi-basin K01 fixed sweep experimental method and Phase2 limits"
-    },
-    {
-      "role": "method_note",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py",
       "sha256": "011069b03de04f7b2d4ef7070b75f2dbcba8127427e0e456d96ab11a41d7d5dd",
-      "reason": "Second-stage pinned parent Actions artifact fixed K01 positive-basin transition and negative minimum fine-mesh continuation"
+      "role": "source_snapshot",
+      "reason": "Frozen reproducible EXP-067 two-stage independent K01 multi-basin source and Phase 2 scope"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
+      "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b",
+      "role": "method_note",
+      "reason": "Frozen reproducible EXP-067 two-stage independent K01 multi-basin source and Phase 2 scope"
     }
   ],
   "limitations": [
-    "Planned until Actions computes numerical results.",
-    "K01 polarities unverified in physical layout, Q(f)/SRF and fine-grained continuous-frequency behavior not modeled."
+    "Source Git Actions runs 39517715488 and 39518334041 finished SUCCESS with 22+10 numerical gridpoint MNA PASS; raw 256 original trajectories retained temporarily in Actions artifacts.",
+    "Git retains 5 representative full 25-vector circuit checkpoints and 5 explicit MNA verification overlays, and 28-point best-found sweep curve; does not archive all raw 256 histories.",
+    "Best local-minimum inference only, signed-k physical feasibility, SRF/Q(f), EM, robustness and Phase3 unverified."
   ],
-  "size_exception": null
+  "size_exception": null,
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-067/run_summary.json",
+    "sha256": "857c0380ad908de76e58f9a0bc2613d14dcd2917380abf95c05fa5628d7dc063"
+  },
+  "git_readback": "passed"
 }
