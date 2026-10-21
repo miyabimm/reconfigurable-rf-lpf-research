@@ -1,10 +1,6 @@
 name: EXP-068 RF-T008 K13 K32 dependency and zero-coupling feasibility
+# EXP-068 completed in run 39530977754; rerun only with explicit manual dispatch.
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/exp068_rft008_k13_k32_zero.yml'
-      - 'experiments/chatgpt_topology_search/runs/EXP-068/**'
-      - 'data/experiment_index.csv'
   workflow_dispatch:
 permissions:
   contents: read
