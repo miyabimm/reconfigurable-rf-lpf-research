@@ -20,31 +20,31 @@
     {
       "candidate_id": "EXP067-best_kminus0p09218",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kminus0p09218.json",
-      "sha256": "fef303433be216bd9f5b6780269c4f898e3b0423e5236b9b950ad8b952730979",
+      "sha256": "1a6702d65842cdf8ae483e8140ae15304dfd3df14ce95f0727c6fc6c2bcef818",
       "selection_reason": "best"
     },
     {
       "candidate_id": "EXP067-kzero",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kzero.json",
-      "sha256": "8e6789adb7be0a4bfdbf5ce6f69f122d26f92d2a07d9327bfe4a5976c06f541b",
+      "sha256": "c66729cd1285bac25ec7d39156ff4fe223627fc81dc7c62c64df09c16fb1de8c",
       "selection_reason": "topology_diversity"
     },
     {
       "candidate_id": "EXP067-best_kplus0p01",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kplus0p01.json",
-      "sha256": "aa7d8503a7fdace5374babced7083f6f0abf762761d72668d20bee2ea68ece38",
+      "sha256": "4175694068dfa2e0a87c60c32abac2d1f77fbf8e50bac7352765b86f3bb02099",
       "selection_reason": "topology_diversity"
     },
     {
       "candidate_id": "EXP067-kplus0p05_crossbasin",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p05_crossbasin.json",
-      "sha256": "14e9017cdeaaccdc0a291cb2e448ec803ef6a611a5aa0753371fa0bf51e4d9f5",
+      "sha256": "715dd968c6e444cf68f1f33f1a4aa4827045ec6f77b3091ef698bd2893a25de8",
       "selection_reason": "topology_diversity"
     },
     {
       "candidate_id": "EXP067-kplus0p10",
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p10.json",
-      "sha256": "b8032748f2cd59e3737e3021a9c0718c7fddaaee42e2647b34d231ae922d73e9",
+      "sha256": "28e2faf9805c0f5c3646089ac677359aa72687248fdad88801d9e46798092e4f",
       "selection_reason": "topology_diversity"
     }
   ],
