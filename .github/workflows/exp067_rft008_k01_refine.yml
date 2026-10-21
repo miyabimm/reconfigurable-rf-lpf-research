@@ -1,8 +1,6 @@
 name: EXP-067 K01 cross-basin continuation audit
+# 10-point continuation completed in original run; avoid rerunning all jobs for evidence-only commits.
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/exp067_rft008_k01_refine.yml'
   workflow_dispatch:
 permissions:
   contents: read
