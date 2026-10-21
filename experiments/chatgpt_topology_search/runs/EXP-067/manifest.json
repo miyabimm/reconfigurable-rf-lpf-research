@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "4ea31dd104b8d0825d02c4c1d639cfcb2c12be66",
+    "execution_sha": "c636b2417bef2899f132310b12d5e035ee4d21cf",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -454,21 +454,35 @@
       ],
       "method": "bidirectional nearest-neighbor restart, remote opposite-sign and opposite-basin choices plus geometric cross-basin blend",
       "seed_count_per_target": "up to 7 deduplicated",
-      "source_deterministic": true
-    }
+      "source_deterministic": true,
+      "refinement_execution_sha": "8af0849ed691e3c5cc630cd4afe69ff2fd1a7280"
+    },
+    "executed_total_primary_starts": 198,
+    "executed_total_refinement_starts": 58,
+    "executed_total_original_starts": 256
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "frequency_intervals": 28,
+      "points_per_interval": 1001,
+      "settings": 6
+    },
+    "independent_grid": {
+      "solver": "explicit_9x9_coupled_L_MNA",
+      "probes_per_eligible_candidate": 84,
+      "first_stage_gridpoints": 22,
+      "refinement_gridpoints": 10,
+      "all_selected_pass": true
+    }
   },
   "evidence": [
     {
@@ -476,17 +490,64 @@
       "sha256": "8dd20a96068d9077b8791807aa5402605849cd10a7e9d2cbc7c57396c882ba50"
     },
     {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py",
+      "sha256": "011069b03de04f7b2d4ef7070b75f2dbcba8127427e0e456d96ab11a41d7d5dd"
+    },
+    {
       "path": "experiments/chatgpt_topology_search/runs/EXP-067/README.md",
       "sha256": "00f711dcf45972aca685843101b9279968260cecde880b9d276c4e928b9a3f9b"
     },
     {
-      "path": "experiments/chatgpt_topology_search/runs/EXP-067/refine_k01.py",
-      "sha256": "011069b03de04f7b2d4ef7070b75f2dbcba8127427e0e456d96ab11a41d7d5dd"
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kminus0p09218.json",
+      "sha256": "fef303433be216bd9f5b6780269c4f898e3b0423e5236b9b950ad8b952730979"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kzero.json",
+      "sha256": "8e6789adb7be0a4bfdbf5ce6f69f122d26f92d2a07d9327bfe4a5976c06f541b"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/best_kplus0p01.json",
+      "sha256": "aa7d8503a7fdace5374babced7083f6f0abf762761d72668d20bee2ea68ece38"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p05_crossbasin.json",
+      "sha256": "14e9017cdeaaccdc0a291cb2e448ec803ef6a611a5aa0753371fa0bf51e4d9f5"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/checkpoints/kplus0p10.json",
+      "sha256": "b8032748f2cd59e3737e3021a9c0718c7fddaaee42e2647b34d231ae922d73e9"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/best_kminus0p09218_mna.json",
+      "sha256": "4cd992421fdc27b68c95edd04784331d2acc333b0beda1c5714b083ba9993c0a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kzero_mna.json",
+      "sha256": "9d5fc1426937ddc0fcc0431994a3ddadae6169106bf969ff7c554cdb9540583c"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/best_kplus0p01_mna.json",
+      "sha256": "b305d1c5c700482dee04f673174f2cc84b2112c4d404442b0d8cbbe0174f40c7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kplus0p05_crossbasin_mna.json",
+      "sha256": "e73354183dd0955b9d2892b66f291c6d332f794d43cf9d856508acae8586faaf"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/validation/kplus0p10_mna.json",
+      "sha256": "ccbcfad2882bea15dbfe1b9372413ca95a08402b4696a411279ece4d4a7b22b8"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-067/run_summary.json",
+      "sha256": "857c0380ad908de76e58f9a0bc2613d14dcd2917380abf95c05fa5628d7dc063"
     }
   ],
   "limitations": [
-    "Pre-run plan only; numerical 22-point sweep not executed at manifest creation.",
-    "Nine independent seed families address but cannot eliminate non-convex local minima; 0.01 K01 grid misses potential narrower valleys.",
-    "Formal RF-F003 unchanged, no continuous extrema proof, Q(f)/SRF/EM/coupling polarity hardware/tolerance, no Phase3."
+    "EXP067 executed 22 fixed-K01 gridpoints x9 independent global/historical/mixed starts = 198, plus ten-point bidirectional/refined continuation 58 new starts =256 total.",
+    "205/256 separate primary trajectories achieved both-stage convergence and 30dB finite compliance; 51 did not. 216 initial-run tier outcomes include 17 normal-budget feasible warm restarts and one fine iteration-limit rescue.",
+    "All 22 fixed-grid and 10 refinement selected points pass numerical independent explicit 9x9 MNA. Five selected complete vectors plus 28 unique-point compact sweep are Git-preserved; all raw traces remain time-limited GitHub Actions artifacts.",
+    "Cross-basin transfer improves positive-k 0.04 and 0.05 results, so independent local random seeds alone do NOT establish a single unique global optimum branch.",
+    "Best grid point remains K01=-0.09218029453384365, IL=0.8371337485828259dB, H2/H3~=30.005dB; does not meet 35dB nominal target nor 0.3dB loss target.",
+    "No dense frequency continuum certification, signed magnetic field geometry realization, Q(f), SRF, EM, PCB tolerance or Phase3."
   ]
 }
