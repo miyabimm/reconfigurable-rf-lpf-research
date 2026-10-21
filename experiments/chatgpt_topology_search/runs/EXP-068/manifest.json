@@ -371,7 +371,7 @@
     "legacy_policy_version": "2026-10-16"
   },
   "code": {
-    "execution_sha": "01126651c129f5b8d83255ad7aa99549bacb95e6",
+    "execution_sha": "1735795cc98a549a52e5b78243de75594a0db00c",
     "working_tree_dirty": false,
     "archive_sha": null
   },
@@ -403,30 +403,106 @@
     "seed_families": "six historical mixed / flipped and 4 scrambled Sobol global, plus 8 extra for all-zero",
     "method": "SLSQP-v2, 240/120 normal, 500/280 iteration rescue, one same-budget restart",
     "dense_grid": "28 segments x 1001 points x 6 settings",
-    "independent_MNA": "84 point 9x9 full coupled inductor and power"
+    "independent_MNA": "84 point 9x9 full coupled inductor and power",
+    "actual_primary_starts": 608,
+    "converged_primary_starts": 471,
+    "eligible_primary_starts": 465,
+    "nonconverged_primary_starts": 137
   },
   "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
   "execution": {
-    "status": "planned",
+    "status": "completed",
     "elapsed_seconds": null,
     "evaluation_count": null
   },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
+    "numerical": "passed",
+    "independent": "passed",
     "implementation": "not_run",
-    "analysis_grid": null,
-    "independent_grid": null
+    "analysis_grid": {
+      "segments": 28,
+      "points_per_segment": 1001,
+      "settings": 6,
+      "eligible_cases": 50
+    },
+    "independent_grid": {
+      "solver": "9x9 branch current and power",
+      "probes_per_case": 84,
+      "eligible_cases": 50,
+      "passed_cases": 50
+    }
   },
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-068/search_k13_k32_zero.py",
       "sha256": "65870ac9ee2be3db25765d44b634854b87562d71d6452ed25a6dcf95255b2052"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/run_summary.json",
+      "sha256": "630545df76fa4971155828df2b4455c3cfb5cd646d36e4d2eb73a35e18efd923"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/all_free.json",
+      "sha256": "f1b581718efc72a3e137ad16596d8204100a3db38eecf20255fb22d8c98327d4"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/zero_k01.json",
+      "sha256": "6abb8d33554e7fb4ca5a422ce9c34cf38d5fdfc2ecfdedf6e257559869625f20"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/zero_k13.json",
+      "sha256": "b7cbb0d6a530b092c5f7d2e39ee7c80aa0b16edda37e987012c73b0daa8049b0"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/zero_k32_best.json",
+      "sha256": "4d2235a020aeed95df7bdabac786d23c979b5ffa46ddd4ba777e89b4f04fe88d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/zero_k01_k13.json",
+      "sha256": "2171e908c64a2716699965fdca519a401acdfafc13ed862519a363e90fb216c4"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/zero_k13_k32.json",
+      "sha256": "b875755cc6ddfb54d8f33d5533d1988782059694209424a7eee5210e87dbcb3f"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/all_zero.json",
+      "sha256": "a0eabd6660611788c5bf34f996b6053982b5387f17ed9ec8af5a94ecec7c7d18"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/all_free_mna.json",
+      "sha256": "aa53583d0c4548e36131a1fe4b3afc8a65a0a92af678855b1f68d5093b312ac3"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/zero_k01_mna.json",
+      "sha256": "44549cc6447bb5987d8ba4f66b7d82b755a940d6f4ad12ca29efc4a9b6f95ac7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/zero_k13_mna.json",
+      "sha256": "dffa3c28c548f4ad73746c256dc5c72063605dec0e8bee4eadabb9462b8a07b6"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/zero_k32_best_mna.json",
+      "sha256": "c587a595eed903d49a89c0a30840fbf6f7b96b38a01a280e7bd074ce06260644"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/zero_k01_k13_mna.json",
+      "sha256": "2187fe0ac7ec1785aa7467d3da97dc7ab97870f433d54d696daee1bd69df0b7a"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/zero_k13_k32_mna.json",
+      "sha256": "56cb789dac40248ee723f5e583f0fdd70348433e9aefd541b5bfcc851a0d823d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-068/validation/all_zero_mna.json",
+      "sha256": "fc1163e1c656529da83c9713a28a71a25570fed796689001e0ec2c95e6e9a300"
     }
   ],
   "limitations": [
-    "Planned until GitHub Actions completes; no zero-coupling existence conclusion yet.",
-    "Finite k and nonconvex 12-20-start exploration is not a global optimum or mathematical infeasibility certificate.",
-    "Physical signed coupling, Q(f), SRF, EM and manufacturing tolerance and Phase3 not performed."
+    "Completed Actions run 39530977754: 50/50 converged and 30dB-compliant selected solutions; 608 initial starts, 471 converged, 465 fully compliant, 137 nonconverged, 6 converged but noncompliant.",
+    "All 50 best-case 9x9 independent coupled L MNA PASS, including zero_k01_k13_k32 all-zero.",
+    "All coupling zero worst IL 0.894083dB, H2 minimum 30.004883dB, H3 minimum 30.000487dB; required 30dB passes nominal finite grid but no robust margin.",
+    "K32=0 is multibasin: isolated mask local solution IL0.873887, fixed signed K32 grid yields better IL0.855810. Report minimum verified candidate.",
+    "Nominal35dB rejection and IL0.30dB targets not met; no continuous-frequency guarantee, physical magnetic layout/Q(f)/SRF/EM/tolerances or Phase3."
   ]
 }
