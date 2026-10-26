@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-068",
+  "candidate_id": "EXP068-zero_k32_best",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "source_actions_run_id": 39530977754,
+  "source_case_index": 31,
+  "chip_area_units": 4.666666666666667,
+  "vector": [
+    2.027223999445586,
+    11.813726276952522,
+    6.853312592654469,
+    7.448562425424775,
+    3.685374999097618,
+    0.996663609000696,
+    0.020000000000000046,
+    0,
+    0.1,
+    0.05010945742257565,
+    0,
+    0.23861834889042088,
+    0.5034289158223412,
+    0.6282778992058305,
+    1.1160358627509142,
+    0.5009233137752279,
+    0.8817045959455276,
+    0.5008103796576929,
+    0.857907782423995,
+    0.2798633270481821,
+    0.4228058843967805,
+    0.16995284458861284,
+    0.21170805291085,
+    5.806408221359636e-17,
+    0
+  ],
+  "topology": {
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "GJM_edge": [
+      0,
+      1
+    ],
+    "PCB_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "IC_fixed_and_variable_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "uninstalled_zero_dummy_C_index": 7
+  },
+  "components": [
+    {
+      "id": "L0",
+      "category": "LQP02HV",
+      "nodes": [
+        0,
+        1
+      ],
+      "inductance_nH": 2.027223999445586,
+      "Q": 25
+    },
+    {
+      "id": "L1",
+      "category": "LQP02HV",
+      "nodes": [
+        1,
+        3
+      ],
+      "inductance_nH": 11.813726276952522,
+      "Q": 25
+    },
+    {
+      "id": "L2",
+      "category": "LQP02HV",
+      "nodes": [
+        1,
+        4
+      ],
+      "inductance_nH": 6.853312592654469,
+      "Q": 25
+    },
+    {
+      "id": "L3",
+      "category": "LQP02HV",
+      "nodes": [
+        1,
+        2
+      ],
+      "inductance_nH": 7.448562425424775,
+      "Q": 25
+    },
+    {
+      "id": "GJM_Cf0",
+      "category": "GJM01",
+      "nodes": [
+        0,
+        1
+      ],
+      "capacitance_pF": 3.685374999097618,
+      "Q": 80
+    },
+    {
+      "id": "PCB_N4GND",
+      "category": "PCB_PATTERN_C",
+      "nodes": [
+        4,
+        -1
+      ],
+      "capacitance_pF": 0.996663609000696,
+      "Q": 60
+    },
+    {
+      "id": "PCB_N3GND",
+      "category": "PCB_PATTERN_C",
+      "nodes": [
+        3,
+        -1
+      ],
+      "capacitance_pF": 0.020000000000000046,
+      "Q": 60
+    },
+    {
+      "id": "ICfix_A",
+      "category": "IC_FIXED_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "capacitance_pF": 0.23861834889042088,
+      "Q": 60
+    },
+    {
+      "id": "ICfix_B",
+      "category": "IC_FIXED_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "capacitance_pF": 0.5034289158223412,
+      "Q": 60
+    },
+    {
+      "id": "CvA",
+      "category": "IC_VARIABLE_C",
+      "nodes": [
+        0,
+        3
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    },
+    {
+      "id": "CvB",
+      "category": "IC_VARIABLE_C",
+      "nodes": [
+        1,
+        2
+      ],
+      "range_pF": [
+        0,
+        3
+      ],
+      "Q": 35
+    }
+  ],
+  "couplings": [
+    {
+      "pair": [
+        "L0",
+        "L1"
+      ],
+      "signed_k": 0.1
+    },
+    {
+      "pair": [
+        "L1",
+        "L3"
+      ],
+      "signed_k": 0.05010945742257565
+    },
+    {
+      "pair": [
+        "L3",
+        "L2"
+      ],
+      "signed_k": 0
+    }
+  ],
+  "chip_row": [
+    "L0",
+    "L1",
+    "L3",
+    "L2"
+  ],
+  "ic_variable_C_pf_by_setting": {
+    "B71": [
+      0.6282778992058305,
+      1.1160358627509142
+    ],
+    "B12": [
+      0.5009233137752279,
+      0.8817045959455276
+    ],
+    "B28": [
+      0.5008103796576929,
+      0.857907782423995
+    ],
+    "B13+B14": [
+      0.2798633270481821,
+      0.4228058843967805
+    ],
+    "B26": [
+      0.16995284458861284,
+      0.21170805291085
+    ],
+    "B8": [
+      5.806408221359636e-17,
+      0
+    ]
+  },
+  "fixed_values": {
+    "L_series": "LQP02HV",
+    "L_Q": 25,
+    "L_nH": [
+      2.027223999445586,
+      11.813726276952522,
+      6.853312592654469,
+      7.448562425424775
+    ],
+    "GJM_Q": 80,
+    "GJM_C_pF": 3.685374999097618,
+    "PCB_Q": 60,
+    "PCB_C_pF": [
+      0.996663609000696,
+      0.020000000000000046
+    ],
+    "ICfix_Q": 60,
+    "ICfix_C_pF": [
+      0.23861834889042088,
+      0.5034289158223412
+    ],
+    "Cv_Q": 35,
+    "mutual_k": [
+      0.1,
+      0.05010945742257565,
+      0
+    ]
+  },
+  "metrics": {
+    "worst_IL_db": 0.8558097644132961,
+    "min_H2_db": 30.00499999972056,
+    "min_H3_db": 30.004999999195952,
+    "converged": true,
+    "finite_30db_pass": true
+  },
+  "independent_MNA": {
+    "probe_points": 84,
+    "max_IL_difference_db": 6.821210263296962e-13,
+    "max_power_balance_residual_W": 1.3877787807814457e-17,
+    "min_L_matrix_eigenvalue_nH": 2.0027122415641343,
+    "pass": true
+  },
+  "warnings": [
+    "Nominal finite-grid only; minimum 30dB H2 and H3 required; nominal 35dB not met.",
+    "Cannot infer manufacturability or tolerance from ideal zero magnetic mutual k.",
+    "No SRF/Q(f)/EM or Phase3 evidence."
+  ]
+}
