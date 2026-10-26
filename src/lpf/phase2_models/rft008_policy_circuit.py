@@ -14,7 +14,7 @@ import json
 
 import numpy as np
 
-from lpf.constraint_versions import constraint_fingerprint
+from lpf.constraint_versions import constraint_fingerprint, load_constraint
 from lpf.validation import validate_inductor_coupling
 from .circuit_layout import CapacitorPlacement, InductorTree
 from .coupled_lc import (
@@ -75,6 +75,13 @@ class PolicyBoundRFT008Circuit:
                 policy.get("trial_base_constraint_id") != "RF-F003" or
                 "trial_shunt_dtc_parasitic" in policy):
             raise ValueError("Explicit resolved RF-T008 v3 trial required")
+        # A user-supplied dictionary with forged RF-T008 labels is not an
+        # approved constraint revision. Compare against the current resolved
+        # registry content; the fingerprint in the report is provenance data,
+        # not a substitute for this authorization check.
+        approved = load_constraint("RF-T008", allow_trial=True)
+        if constraint_fingerprint(policy) != constraint_fingerprint(approved):
+            raise ValueError("Resolved RF-T008 policy differs from approved registry")
         spec = policy.get("trial_ic_fixed_c_by_connection")
         if (not isinstance(spec, dict) or
                 spec.get("max_composite_branches") != 2 or
