@@ -7,9 +7,6 @@
 | 対象 | 元ファイル | 読み方 |
 |---|---|---|
 | 共通回路モデルとR2作業 | [R2引継ぎ](../r2_handoff.md)、[R2独立確認JSON](../r2/EXP015_COMMON_MODEL_AUDIT.json) | 旧RF-F001／試験条件に関する保存検証。現行RF-F003性能実績ではない |
-| full_lpf実行ガイド | [full_lpf_execution](../full_lpf_execution.md) | 実行パイプラインの対象RF条件と実行ゲートを確認 |
-| ローカル探索・再開 | [local_execution](../local_execution.md) | uv環境・ローカルmanager・既存計算ジョブ |
-| P4-A探索スコープ | [p4_a_scope](../p4_a_scope.md) | 有限のグラフ探索範囲。RF部品の正式ハード制約とは別 |
 | コイル系列ルール | [inductor_series_policy](../inductor_series_policy.md) | Q仮定・LQP02HV/HQ系列の当時の設計方針 |
 | 探索手法から得た知見 | [topology_search_lessons](../topology_search_lessons.md) | 過去時点の探索改善・制約上の限界 |
 
