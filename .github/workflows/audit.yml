@@ -97,6 +97,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_generic_coupled_lc.py -v
           python -m unittest discover -s tests -p test_phase2_generic_exp043.py -v
           python -m unittest discover -s tests -p test_phase2_rft008_policy_circuit.py -v
+          python -m unittest discover -s tests -p test_phase2_rft005_t007_policy_circuit.py -v
 
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
