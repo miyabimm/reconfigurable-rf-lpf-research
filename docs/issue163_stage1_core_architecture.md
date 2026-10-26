@@ -134,11 +134,17 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 | `series` | Lが全hotノードの接続ツリーを形成するため、C挿入が必須信号経路上にあるとは証明不能 | `role_verified=False`、未証明indexを返し、候補昇格を保留 |
 | 端子・roleの不一致 | GND端子にbridge/series、Hot-Hotにshunt等 | 接続不正として拒否 |
 
-`validate_components`は承認済み部品制約の`component_policy_pass`を**変更せず**、`connection_role_audit`と`candidate_promotion_blocked`を別々に付記する。`evaluate_sampled`にも同じ情報を反映する。したがってseriesがRFポリシー上**許可される場合**、ソルバーは数値評価できても、形式的なシリーズ回路であるという証拠がないまま候補を昇格させることはできない。
+`validate_components`は承認済み部品制約の`component_policy_pass`を**変更せず**、`connection_role_audit`と`connection_role_promotion_blocked`を別々に付記する。`evaluate_sampled`にも同じ情報を反映する。seriesがRFポリシー上**許可される場合**も、シリーズの物理配置が未証明ならroleの未検証フラグを立てる。加えて、**Stage 1は独立MNAとdense RF評価を実行しない**ため、roleが完全に電気的検証済みであっても`candidate_promotion_blocked=True`を常に返し、`promotion_blockers`に`independent_mna_not_checked`と`dense_rf_not_checked`（該当時`connection_role_unverified`）を明記する。単一のブール値でRF適合済みに誤解させない。
 
 この証拠は**可変Cの電気接続グラフだけ**の判定であり、PCB/GJM固定Cの製造可能性、主信号経路の物理定義、直列スイッチ等を証明しない。追加の物理主経路定義・実装証拠が必要な回路ではStage 2/4の候補検証に引き継ぐ。新しいRF数値上限・直列配置禁止を導入したわけではない。
 
 回帰：`tests/test_phase2_connection_roles.py`（5件、相異なるseries/bridge宣言でのnumerical model一致、未証明seriesの候補昇格保留、shunt/bridge不整合拒否、0枝の空監査、インスタンス間の分離）。
+
+### S2P・格子・cache監査（S1-09の一部）
+
+`tests/test_phase2_s2p_grid_cache.py`で、`port_parasitics._load_verified`がSHA-256/50Ω-RIを既存機能で検証し、`get_two_port_s`がキャッシュ内部を別呼び出しへ可変参照として返さないことをチェックする。S21=0、補間範囲外、非有限周波数、改ざんされたS2P SHAは拒否。28帯域区間×3点／6設定のラベル・境界、別評価器のABCD行列非共有も確認する。`_grid.SampledExternalEvaluator`はpointsに整数以外・bool・0以下を明示拒否する。S2Pの再実装や正規データの書換えは行わない。
+
+残るS1-09対象：数値行列の極端条件での診断整理、広い枝数・接続グラフに対する異常系の回帰、最終forwardの失敗理由記録のAPI設計。**S1-09全体は未完了**。
 
 ## 7. 実装の進め方
 
