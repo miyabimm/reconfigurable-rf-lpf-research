@@ -15,8 +15,7 @@ import numpy as np
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
-sys.path[:0]=[str(ROOT/"src"),
-             str(ROOT/"src")]
+sys.path.insert(0, str(ROOT/"src"))
 from lpf.phase2_models import exp058_area4l_gjm as parent
 from lpf.phase2_models import exp058_area3 as optimizer
 from lpf.constraint_versions import load_constraint,constraint_fingerprint
