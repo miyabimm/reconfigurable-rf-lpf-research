@@ -1,0 +1,494 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-068",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "revision": 3,
+  "objective": "full_lpf",
+  "execution_status": "completed",
+  "baseline_EXP059_worst_IL_db": 0.8371337485828259,
+  "source_runs": {
+    "numerical_actions_run": 39530977754,
+    "aggregate_artifact_id": 12314973755,
+    "source_branch": "exp068-rft008-k13-k32-zero-20261021"
+  },
+  "topology": {
+    "area_units": 4.666666666666667,
+    "L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_order": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "GJM_edge": [
+      0,
+      1
+    ],
+    "PCB_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "IC_composite_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "fixed_external_S2P": true,
+    "L_q": 25,
+    "GJM_q": 80,
+    "PCB_q": 60,
+    "ICfixed_q": 60,
+    "ICvariable_q": 35
+  },
+  "attempts": {
+    "planned": 608,
+    "attempted": 608,
+    "converged": 471,
+    "nonconverged": 137,
+    "failed": 0,
+    "not_started": 0
+  },
+  "finite_30db_compliant_original_starts": 465,
+  "converged_but_30db_not_met": 6,
+  "total_solver_terminal_tiers": 665,
+  "v2_restart_tiers": 57,
+  "case_counts": {
+    "k13_grid": 21,
+    "k32_grid": 21,
+    "zero_mask": 8,
+    "total": 50,
+    "eligible_cases": 50,
+    "full_9x9_MNA_pass": 50,
+    "allzero_primary_starts": 20,
+    "allzero_eligible_starts": 12
+  },
+  "method": {
+    "slsqp_policy": "slsqp-staged-v2",
+    "normal_caps": [
+      240,
+      120
+    ],
+    "max_caps": [
+      500,
+      280
+    ],
+    "fixed_k_range": [
+      -0.1,
+      0.1
+    ],
+    "grid_step": 0.01,
+    "seed_methods": "historical positive negative neutral and three Sobol baseline families (four regular global), with eight extra global for allzero",
+    "settings": 6,
+    "frequency_segments": 28,
+    "dense_points_per_segment": 1001,
+    "independent_MNA_probes_per_case": 84,
+    "required_H2_H3_min_db": 30,
+    "nominal_desired_H2_H3_db": 35,
+    "desired_IL_db": 0.3
+  },
+  "k13_curve": [
+    {
+      "index": 0,
+      "fixed_k": -0.1,
+      "best_worst_IL_db": 1.0034454758,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 1,
+      "fixed_k": -0.09,
+      "best_worst_IL_db": 1.1057579179,
+      "eligible_seed_count": 7
+    },
+    {
+      "index": 2,
+      "fixed_k": -0.08,
+      "best_worst_IL_db": 0.9772866254,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 3,
+      "fixed_k": -0.07,
+      "best_worst_IL_db": 1.0359423892,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 4,
+      "fixed_k": -0.06,
+      "best_worst_IL_db": 1.0257043197,
+      "eligible_seed_count": 7
+    },
+    {
+      "index": 5,
+      "fixed_k": -0.05,
+      "best_worst_IL_db": 1.0094036903,
+      "eligible_seed_count": 12
+    },
+    {
+      "index": 6,
+      "fixed_k": -0.04,
+      "best_worst_IL_db": 0.978937254,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 7,
+      "fixed_k": -0.03,
+      "best_worst_IL_db": 0.9496935687,
+      "eligible_seed_count": 12
+    },
+    {
+      "index": 8,
+      "fixed_k": -0.02,
+      "best_worst_IL_db": 0.9121863789,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 9,
+      "fixed_k": -0.01,
+      "best_worst_IL_db": 0.8676059464,
+      "eligible_seed_count": 8
+    },
+    {
+      "index": 10,
+      "fixed_k": 0,
+      "best_worst_IL_db": 0.8473107167,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 11,
+      "fixed_k": 0.01,
+      "best_worst_IL_db": 0.8415969675,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 12,
+      "fixed_k": 0.02,
+      "best_worst_IL_db": 0.838707634,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 13,
+      "fixed_k": 0.03,
+      "best_worst_IL_db": 0.8372233314,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 14,
+      "fixed_k": 0.04,
+      "best_worst_IL_db": 0.8371973314,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 15,
+      "fixed_k": 0.05,
+      "best_worst_IL_db": 0.8376732901,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 16,
+      "fixed_k": 0.06,
+      "best_worst_IL_db": 0.8393527845,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 17,
+      "fixed_k": 0.07,
+      "best_worst_IL_db": 0.8416827538,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 18,
+      "fixed_k": 0.08,
+      "best_worst_IL_db": 0.8640196316,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 19,
+      "fixed_k": 0.09,
+      "best_worst_IL_db": 0.8639398227,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 20,
+      "fixed_k": 0.1,
+      "best_worst_IL_db": 0.8636717989,
+      "eligible_seed_count": 9
+    }
+  ],
+  "k32_curve": [
+    {
+      "index": 21,
+      "fixed_k": -0.1,
+      "best_worst_IL_db": 0.8408196484,
+      "eligible_seed_count": 11
+    },
+    {
+      "index": 22,
+      "fixed_k": -0.09,
+      "best_worst_IL_db": 0.8374461362,
+      "eligible_seed_count": 10
+    },
+    {
+      "index": 23,
+      "fixed_k": -0.08,
+      "best_worst_IL_db": 0.8373194631,
+      "eligible_seed_count": 11
+    },
+    {
+      "index": 24,
+      "fixed_k": -0.07,
+      "best_worst_IL_db": 0.8387396607,
+      "eligible_seed_count": 11
+    },
+    {
+      "index": 25,
+      "fixed_k": -0.06,
+      "best_worst_IL_db": 0.839546877,
+      "eligible_seed_count": 11
+    },
+    {
+      "index": 26,
+      "fixed_k": -0.05,
+      "best_worst_IL_db": 0.8402762831,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 27,
+      "fixed_k": -0.04,
+      "best_worst_IL_db": 0.8405034683,
+      "eligible_seed_count": 11
+    },
+    {
+      "index": 28,
+      "fixed_k": -0.03,
+      "best_worst_IL_db": 0.8430331988,
+      "eligible_seed_count": 8
+    },
+    {
+      "index": 29,
+      "fixed_k": -0.02,
+      "best_worst_IL_db": 0.8503200601,
+      "eligible_seed_count": 8
+    },
+    {
+      "index": 30,
+      "fixed_k": -0.01,
+      "best_worst_IL_db": 0.8590666175,
+      "eligible_seed_count": 8
+    },
+    {
+      "index": 31,
+      "fixed_k": 0,
+      "best_worst_IL_db": 0.8558097644,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 32,
+      "fixed_k": 0.01,
+      "best_worst_IL_db": 0.8556035313,
+      "eligible_seed_count": 6
+    },
+    {
+      "index": 33,
+      "fixed_k": 0.02,
+      "best_worst_IL_db": 0.854476745,
+      "eligible_seed_count": 8
+    },
+    {
+      "index": 34,
+      "fixed_k": 0.03,
+      "best_worst_IL_db": 0.8523419069,
+      "eligible_seed_count": 12
+    },
+    {
+      "index": 35,
+      "fixed_k": 0.04,
+      "best_worst_IL_db": 0.8518939481,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 36,
+      "fixed_k": 0.05,
+      "best_worst_IL_db": 0.8554777084,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 37,
+      "fixed_k": 0.06,
+      "best_worst_IL_db": 0.923960782,
+      "eligible_seed_count": 9
+    },
+    {
+      "index": 38,
+      "fixed_k": 0.07,
+      "best_worst_IL_db": 0.9394825415,
+      "eligible_seed_count": 7
+    },
+    {
+      "index": 39,
+      "fixed_k": 0.08,
+      "best_worst_IL_db": 0.9552492443,
+      "eligible_seed_count": 7
+    },
+    {
+      "index": 40,
+      "fixed_k": 0.09,
+      "best_worst_IL_db": 0.9682554039,
+      "eligible_seed_count": 7
+    },
+    {
+      "index": 41,
+      "fixed_k": 0.1,
+      "best_worst_IL_db": 0.9768869256,
+      "eligible_seed_count": 8
+    }
+  ],
+  "zero_masks": [
+    {
+      "index": 42,
+      "mask": "all_free",
+      "best_worst_IL_db": 0.8371337485816677,
+      "min_H2_db": 30.00499999903853,
+      "min_H3_db": 30.004999999783116,
+      "eligible_seed_count": 10,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 43,
+      "mask": "zero_k01",
+      "best_worst_IL_db": 0.8385239251652797,
+      "min_H2_db": 30.004999997871483,
+      "min_H3_db": 30.004999999855187,
+      "eligible_seed_count": 11,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 44,
+      "mask": "zero_k13",
+      "best_worst_IL_db": 0.8473107166687501,
+      "min_H2_db": 30.00499999960681,
+      "min_H3_db": 30.00499999996492,
+      "eligible_seed_count": 11,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 45,
+      "mask": "zero_k32",
+      "best_worst_IL_db": 0.8738870478195166,
+      "min_H2_db": 30.004999999784193,
+      "min_H3_db": 30.004999999999697,
+      "eligible_seed_count": 10,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 46,
+      "mask": "zero_k01_k13",
+      "best_worst_IL_db": 0.8488537124767483,
+      "min_H2_db": 30.004999998606152,
+      "min_H3_db": 30.00310645390853,
+      "eligible_seed_count": 9,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 47,
+      "mask": "zero_k01_k32",
+      "best_worst_IL_db": 0.8582921062103719,
+      "min_H2_db": 30.004999999595604,
+      "min_H3_db": 30.004999999969115,
+      "eligible_seed_count": 10,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 48,
+      "mask": "zero_k13_k32",
+      "best_worst_IL_db": 0.8860204710362286,
+      "min_H2_db": 30.00499999906883,
+      "min_H3_db": 30.004223190747577,
+      "eligible_seed_count": 7,
+      "independent_MNA_pass": true
+    },
+    {
+      "index": 49,
+      "mask": "all_zero",
+      "best_worst_IL_db": 0.8940833841915568,
+      "min_H2_db": 30.00488348673949,
+      "min_H3_db": 30.000487137281073,
+      "eligible_seed_count": 12,
+      "independent_MNA_pass": true
+    }
+  ],
+  "k32_zero_crossrun_best": {
+    "source_index": 31,
+    "fixed_k32": 0,
+    "best_worst_IL_db": 0.8558097644132961,
+    "min_H2_db": 30.00499999972056,
+    "min_H3_db": 30.004999999195952,
+    "eligible_seeds": 9,
+    "independent_MNA_pass": true,
+    "compare_zero_mask_index45_IL": 0.8738870478195166,
+    "interpretation": "Same fixed k32=0 optimization but distinct broad Sobol seeds find separated local basins; use lower objective eligible solution."
+  },
+  "allzero_verified": {
+    "index": 49,
+    "k01": 0,
+    "k13": 0,
+    "k32": 0,
+    "worst_IL_db": 0.8940833841915568,
+    "min_H2_db": 30.00488348673949,
+    "min_H3_db": 30.000487137281073,
+    "independent_MNA": {
+      "probes": 84,
+      "max_IL_difference_db": 1.1013412404281553e-12,
+      "max_power_residual_W": 7.806255641895632e-18,
+      "L_matrix_min_eigenvalue_nH": 2.730616832833524,
+      "pass": true
+    },
+    "all_zero_magnetic_mutual_L_model": true,
+    "original_starts": 20,
+    "eligible_starts": 12,
+    "interpretation": "Nominal finite grid 30dB passed, but H3 margin only 0.000487dB, NOT robust design or 35dB nominal target."
+  },
+  "best_overall_explored": {
+    "case": "all_free",
+    "worst_IL_db": 0.8371337485816677,
+    "source_index": 42,
+    "meaning": "Equal to EXP059 within numerical tolerance; no material improvement"
+  },
+  "selected_candidate_count": 7,
+  "limitations": [
+    "The study tests K13/K32 with other k values reoptimized and all 2^3 zero masks, not proof of global optimality.",
+    "50/50 selected cases pass dense 28x1001 finite grid and independent 84-probe MNA; continuous extrema unverified.",
+    "All zero H3 minimum only 30.000487dB, well below 35dB nominal and with almost no guard; do not claim robust manufacturing feasibility.",
+    "The isolated zero_k32 mask and its separately swept k32=0 point found different local minima; report the better 0.855809dB, not the 0.873887dB result.",
+    "Real coil coupling sign/orientation, PCB size, SRF/Q(f), electromagnetic proximity, tolerances and Phase3 are not covered.",
+    "Complete 608-start raw results remain in finite-retention GitHub Actions artifacts; this summary records all 50 best case values and stopping statistics."
+  ]
+}

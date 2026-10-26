@@ -1,0 +1,681 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-067",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "trial_revision": 3,
+  "execution_status": "completed",
+  "objective": "full_lpf",
+  "source_provenance": {
+    "parent_baseline": "EXP-059",
+    "prior_k_comparison": "EXP-060",
+    "initial_scan_actions_run_id": 39517715488,
+    "initial_summary_artifact_id": 12308616780,
+    "initial_summary_sha256": "63250aa110ed76105f54dd74131b924bc54a5fcabb1f56f818161ace3fb46d05",
+    "refine_actions_run_id": 39518334041,
+    "refine_summary_artifact_id": 12310125907,
+    "refine_summary_sha256": "cc0185b9493857c32e58a12a3d69cfb5068d14b8672ef92cc40212f4fcfdb148"
+  },
+  "design_scope": {
+    "chip_area_units": 4.666666666666667,
+    "inductor_count": 4,
+    "inductor_Q": 25,
+    "GJM_count": 1,
+    "GJM_Q": 80,
+    "PCB_installed": 2,
+    "PCB_Q": 60,
+    "IC_fixed_C_Q": 60,
+    "IC_var_C_Q": 35,
+    "variable_branches": 2,
+    "electrical_L_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "physical_L_row": [
+      "L0",
+      "L1",
+      "L3",
+      "L2"
+    ],
+    "PCB_edges": [
+      [
+        4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ],
+    "GJM_edge": [
+      0,
+      1
+    ],
+    "DTC_edges": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "K01_fixed_range": [
+      -0.1,
+      0.1
+    ],
+    "K13_K32_floating_bounds": [
+      -0.1,
+      0.1
+    ],
+    "settings": 6,
+    "dense_intervals": 28,
+    "samples_per_interval": 1001,
+    "source": "RF-T008 v3 native fixed source/load external S2P"
+  },
+  "attempts": {
+    "planned": 256,
+    "attempted": 256,
+    "converged": 205,
+    "nonconverged": 51,
+    "failed": 0,
+    "not_started": 0
+  },
+  "measurement": {
+    "primary_grid_points": 22,
+    "additional_unique_grid_points": 6,
+    "total_unique_grid_points": 28,
+    "refined_or_repeated_points": 10,
+    "initial_seed_families_per_grid": 9,
+    "total_initial_starts": 198,
+    "continuation_initial_starts": 58,
+    "primary_terminal_solver_tiers": 216,
+    "primary_additional_SLSQP_tiers": 18,
+    "primary_rescue_breakdown": {
+      "nonlimit_feasible_restart": 17,
+      "iteration_rescue_fine": 1
+    },
+    "primary_finite_30db_eligible_starts": 147,
+    "continuation_finite_30db_eligible_starts": 58,
+    "initial_grid_independent_MNA_pass": 22,
+    "refined_grid_independent_MNA_pass": 10,
+    "independent_MNA_probes_per_valid_point": 84,
+    "minimum_required_H2_H3_db": 30,
+    "internal_solver_target_db": 30.005
+  },
+  "best_candidate": {
+    "k01": -0.09218029453384365,
+    "worst_IL_db": 0.8371337485828259,
+    "k13": 0.035166603703000406,
+    "k32": -0.08516870393999591,
+    "eligible_seed_families": 7,
+    "winning_start_class": "exp059_negative_baseline",
+    "search_tier": "primary",
+    "source": "EXP-059 preserved optimum",
+    "worst_H2_db": 30.00499999857248,
+    "worst_H3_db": 30.00499999975338
+  },
+  "best_strictly_positive_k01": {
+    "k01": 0.01,
+    "worst_IL_db": 0.8389797375091779,
+    "k13": 0.0368762098411649,
+    "k32": -0.07358839912125963,
+    "eligible_seed_families": 6,
+    "winning_start_class": "positive_negative_hybrid",
+    "search_tier": "primary"
+  },
+  "best_nonnegative_k01": {
+    "k01": 0,
+    "worst_IL_db": 0.8385239251652797,
+    "k13": 0.03994132510435198,
+    "k32": -0.07381199261882995,
+    "eligible_seed_families": 7,
+    "winning_start_class": "positive_negative_hybrid",
+    "search_tier": "primary"
+  },
+  "single_grid_results": [
+    {
+      "k01": -0.1,
+      "worst_IL_db": 0.8371594519559168,
+      "k13": 0.03351459336473726,
+      "k32": -0.08673723567256045,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": -0.09218029453384365,
+      "worst_IL_db": 0.8371337485828259,
+      "k13": 0.035166603703000406,
+      "k32": -0.08516870393999591,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": -0.09,
+      "worst_IL_db": 0.8371358538403679,
+      "k13": 0.03564213710401538,
+      "k32": -0.08472691322301056,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": -0.08,
+      "worst_IL_db": 0.8371995567655062,
+      "k13": 0.037316170509622104,
+      "k32": -0.0829541377008388,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": -0.07,
+      "worst_IL_db": 0.8373012689805439,
+      "k13": 0.037659864621646034,
+      "k32": -0.08181483531975815,
+      "eligible_seed_families": 5,
+      "winning_start_class": "exp060_negative_limit"
+    },
+    {
+      "k01": -0.06,
+      "worst_IL_db": 0.8374211033614802,
+      "k13": 0.03798851693761409,
+      "k32": -0.08067993356812021,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp060_negative_limit"
+    },
+    {
+      "k01": -0.05,
+      "worst_IL_db": 0.837558936052957,
+      "k13": 0.03830512624959347,
+      "k32": -0.07954757724224676,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": -0.04,
+      "worst_IL_db": 0.8377147592790875,
+      "k13": 0.0386143005606733,
+      "k32": -0.07841516073815394,
+      "eligible_seed_families": 6,
+      "winning_start_class": "coupling_sign_inversion"
+    },
+    {
+      "k01": -0.03,
+      "worst_IL_db": 0.837888712177576,
+      "k13": 0.03892407211044479,
+      "k32": -0.07727893090573944,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp060_negative_limit"
+    },
+    {
+      "k01": -0.02,
+      "worst_IL_db": 0.838081122367833,
+      "k13": 0.03924075058421939,
+      "k32": -0.07613601569936043,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": -0.01,
+      "worst_IL_db": 0.8382925622647858,
+      "k13": 0.03957598885444078,
+      "k32": -0.0749816807350929,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": 0,
+      "worst_IL_db": 0.8385239251652797,
+      "k13": 0.03994132510435198,
+      "k32": -0.07381199261882995,
+      "eligible_seed_families": 7,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.01,
+      "worst_IL_db": 0.8389797375091779,
+      "k13": 0.0368762098411649,
+      "k32": -0.07358839912125963,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.02,
+      "worst_IL_db": 0.8396617469391693,
+      "k13": 0.037924887868019126,
+      "k32": -0.07042812909398445,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp060_negative_limit"
+    },
+    {
+      "k01": 0.03,
+      "worst_IL_db": 0.8404714617604054,
+      "k13": 0.039334947067727444,
+      "k32": -0.06701787634342121,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp059_negative_baseline"
+    },
+    {
+      "k01": 0.04,
+      "worst_IL_db": 0.8412417741091469,
+      "k13": 0.03622353327918694,
+      "k32": -0.06519352355833581,
+      "eligible_seed_families": 5,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.05,
+      "worst_IL_db": 0.841843091784289,
+      "k13": 0.034769355780562325,
+      "k32": -0.06264894142811053,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.06,
+      "worst_IL_db": 0.8404983840963076,
+      "k13": 0.03834757478375131,
+      "k32": -0.04015723949390324,
+      "eligible_seed_families": 8,
+      "winning_start_class": "coupling_sign_inversion"
+    },
+    {
+      "k01": 0.07,
+      "worst_IL_db": 0.8406326687572174,
+      "k13": 0.040019536968458745,
+      "k32": -0.03809952826746242,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp058_positive_baseline_rewired_C"
+    },
+    {
+      "k01": 0.08,
+      "worst_IL_db": 0.8408310442460494,
+      "k13": 0.041744251633192016,
+      "k32": -0.036004668072541685,
+      "eligible_seed_families": 8,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.09,
+      "worst_IL_db": 0.8411031064984713,
+      "k13": 0.043524711010117026,
+      "k32": -0.03387365953066078,
+      "eligible_seed_families": 8,
+      "winning_start_class": "positive_negative_hybrid"
+    },
+    {
+      "k01": 0.1,
+      "worst_IL_db": 0.8414990972772525,
+      "k13": 0.043467307584124065,
+      "k32": -0.0329925756363139,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp060_negative_limit"
+    }
+  ],
+  "cross_basin_results": [
+    {
+      "k01": -0.095,
+      "worst_IL_db": 0.8371371776593717,
+      "k13": 0.034560586690198195,
+      "k32": -0.0857374925251597,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch"
+    },
+    {
+      "k01": -0.093,
+      "worst_IL_db": 0.8371340416013553,
+      "k13": 0.034989109571325616,
+      "k32": -0.08533446644811113,
+      "eligible_seed_families": 6,
+      "winning_start_class": "lower_neighbor"
+    },
+    {
+      "k01": -0.091,
+      "worst_IL_db": 0.837134362029686,
+      "k13": 0.03542366913467128,
+      "k32": -0.0849295753662737,
+      "eligible_seed_families": 6,
+      "winning_start_class": "lower_neighbor"
+    },
+    {
+      "k01": 0.04,
+      "worst_IL_db": 0.8403858878922831,
+      "k13": 0.035676773591329154,
+      "k32": -0.04485190191891025,
+      "eligible_seed_families": 5,
+      "winning_start_class": "positive_basin"
+    },
+    {
+      "k01": 0.045,
+      "worst_IL_db": 0.8404019578150873,
+      "k13": 0.035949926384032355,
+      "k32": -0.043207747495920275,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_end"
+    },
+    {
+      "k01": 0.05,
+      "worst_IL_db": 0.8404210435753113,
+      "k13": 0.03672421868887748,
+      "k32": -0.04217885877598347,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_basin"
+    },
+    {
+      "k01": 0.055,
+      "worst_IL_db": 0.8404529690944952,
+      "k13": 0.037530157677089546,
+      "k32": -0.04117240700359468,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_end"
+    },
+    {
+      "k01": 0.06,
+      "worst_IL_db": 0.8404983840963076,
+      "k13": 0.03834757478375131,
+      "k32": -0.04015723949390324,
+      "eligible_seed_families": 5,
+      "winning_start_class": "lower_neighbor"
+    },
+    {
+      "k01": 0.065,
+      "worst_IL_db": 0.8405580089573315,
+      "k13": 0.03917722875660161,
+      "k32": -0.03913298161387412,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch"
+    },
+    {
+      "k01": 0.07,
+      "worst_IL_db": 0.8406326687560016,
+      "k13": 0.04001946438624788,
+      "k32": -0.03809957587855138,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch"
+    }
+  ],
+  "final_best_found_curve": [
+    {
+      "k01": -0.1,
+      "worst_IL_db": 0.8371594519559168,
+      "k13": 0.03351459336473726,
+      "k32": -0.08673723567256045,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.095,
+      "worst_IL_db": 0.8371371776593717,
+      "k13": 0.034560586690198195,
+      "k32": -0.0857374925251597,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": -0.093,
+      "worst_IL_db": 0.8371340416013553,
+      "k13": 0.034989109571325616,
+      "k32": -0.08533446644811113,
+      "eligible_seed_families": 6,
+      "winning_start_class": "lower_neighbor",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": -0.09218029453384365,
+      "worst_IL_db": 0.8371337485828259,
+      "k13": 0.035166603703000406,
+      "k32": -0.08516870393999591,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.091,
+      "worst_IL_db": 0.837134362029686,
+      "k13": 0.03542366913467128,
+      "k32": -0.0849295753662737,
+      "eligible_seed_families": 6,
+      "winning_start_class": "lower_neighbor",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": -0.09,
+      "worst_IL_db": 0.8371358538403679,
+      "k13": 0.03564213710401538,
+      "k32": -0.08472691322301056,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.08,
+      "worst_IL_db": 0.8371995567655062,
+      "k13": 0.037316170509622104,
+      "k32": -0.0829541377008388,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.07,
+      "worst_IL_db": 0.8373012689805439,
+      "k13": 0.037659864621646034,
+      "k32": -0.08181483531975815,
+      "eligible_seed_families": 5,
+      "winning_start_class": "exp060_negative_limit",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.06,
+      "worst_IL_db": 0.8374211033614802,
+      "k13": 0.03798851693761409,
+      "k32": -0.08067993356812021,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp060_negative_limit",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.05,
+      "worst_IL_db": 0.837558936052957,
+      "k13": 0.03830512624959347,
+      "k32": -0.07954757724224676,
+      "eligible_seed_families": 8,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.04,
+      "worst_IL_db": 0.8377147592790875,
+      "k13": 0.0386143005606733,
+      "k32": -0.07841516073815394,
+      "eligible_seed_families": 6,
+      "winning_start_class": "coupling_sign_inversion",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.03,
+      "worst_IL_db": 0.837888712177576,
+      "k13": 0.03892407211044479,
+      "k32": -0.07727893090573944,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp060_negative_limit",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.02,
+      "worst_IL_db": 0.838081122367833,
+      "k13": 0.03924075058421939,
+      "k32": -0.07613601569936043,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": -0.01,
+      "worst_IL_db": 0.8382925622647858,
+      "k13": 0.03957598885444078,
+      "k32": -0.0749816807350929,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0,
+      "worst_IL_db": 0.8385239251652797,
+      "k13": 0.03994132510435198,
+      "k32": -0.07381199261882995,
+      "eligible_seed_families": 7,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.01,
+      "worst_IL_db": 0.8389797375091779,
+      "k13": 0.0368762098411649,
+      "k32": -0.07358839912125963,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.02,
+      "worst_IL_db": 0.8396617469391693,
+      "k13": 0.037924887868019126,
+      "k32": -0.07042812909398445,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp060_negative_limit",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.03,
+      "worst_IL_db": 0.8404714617604054,
+      "k13": 0.039334947067727444,
+      "k32": -0.06701787634342121,
+      "eligible_seed_families": 6,
+      "winning_start_class": "exp059_negative_baseline",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.04,
+      "worst_IL_db": 0.8403858878922831,
+      "k13": 0.035676773591329154,
+      "k32": -0.04485190191891025,
+      "eligible_seed_families": 5,
+      "winning_start_class": "positive_basin",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.045,
+      "worst_IL_db": 0.8404019578150873,
+      "k13": 0.035949926384032355,
+      "k32": -0.043207747495920275,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_end",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.05,
+      "worst_IL_db": 0.8404210435753113,
+      "k13": 0.03672421868887748,
+      "k32": -0.04217885877598347,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_basin",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.055,
+      "worst_IL_db": 0.8404529690944952,
+      "k13": 0.037530157677089546,
+      "k32": -0.04117240700359468,
+      "eligible_seed_families": 6,
+      "winning_start_class": "positive_end",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.06,
+      "worst_IL_db": 0.8404983840963076,
+      "k13": 0.03834757478375131,
+      "k32": -0.04015723949390324,
+      "eligible_seed_families": 8,
+      "winning_start_class": "coupling_sign_inversion",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.065,
+      "worst_IL_db": 0.8405580089573315,
+      "k13": 0.03917722875660161,
+      "k32": -0.03913298161387412,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.07,
+      "worst_IL_db": 0.8406326687560016,
+      "k13": 0.04001946438624788,
+      "k32": -0.03809957587855138,
+      "eligible_seed_families": 6,
+      "winning_start_class": "pre_switch",
+      "search_tier": "cross_basin_refinement"
+    },
+    {
+      "k01": 0.08,
+      "worst_IL_db": 0.8408310442460494,
+      "k13": 0.041744251633192016,
+      "k32": -0.036004668072541685,
+      "eligible_seed_families": 8,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.09,
+      "worst_IL_db": 0.8411031064984713,
+      "k13": 0.043524711010117026,
+      "k32": -0.03387365953066078,
+      "eligible_seed_families": 8,
+      "winning_start_class": "positive_negative_hybrid",
+      "search_tier": "primary"
+    },
+    {
+      "k01": 0.1,
+      "worst_IL_db": 0.8414990972772525,
+      "k13": 0.043467307584124065,
+      "k32": -0.0329925756363139,
+      "eligible_seed_families": 7,
+      "winning_start_class": "exp060_negative_limit",
+      "search_tier": "primary"
+    }
+  ],
+  "local_basin_analysis": {
+    "at_k01_0p04_original_IL_db": 0.8412417741091469,
+    "at_k01_0p04_refined_IL_db": 0.8403858878922831,
+    "at_k01_0p05_original_IL_db": 0.841843091784289,
+    "at_k01_0p05_refined_IL_db": 0.8404210435753113,
+    "improvement_at_k01_0p05_db": 0.001422048208977622,
+    "evidence": "Directional cross-basin continuation reveals a lower-IL local solution not reached from the initial nine standalone families at k01=0.04 or 0.05"
+  },
+  "selected_candidate_count": 5,
+  "limitations": [
+    "All numerical minima are local best-found with 9 independent and up to 6 continuation seeds, not certified global optima.",
+    "22 initial fixed K01 values plus 6 additional values; narrower extrema or unobserved distinct basins possible.",
+    "Original 22 complete raw traces and 10 extra cross-basin raw files remain time-limited GitHub Actions artifacts. Git preserves compact full 28-point profile and five representative complete-circuit vectors.",
+    "Finite 28x1001 band samples only, no continuum-extrema proof; 30.005dB margin only, nominal 35dB and loss0.30dB targets unmet.",
+    "Real signed magnetic k physical realization, Q(f), SRF, layout EM and manufacturing tolerances not modeled; Phase3 not approved."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EXP-068",
+  "candidate_id": "EXP068-all_free",
+  "source_checkpoint": "experiments/chatgpt_topology_search/runs/EXP-068/checkpoints/all_free.json",
+  "source_run_id": 39530977754,
+  "method": "independent_9x9_branch_current_coupled_L_MNA",
+  "status": "passed",
+  "validation": {
+    "probe_points": 84,
+    "max_IL_difference_db": 5.186961971048731e-13,
+    "max_power_balance_residual_W": 1.1275702593849246e-17,
+    "min_L_matrix_eigenvalue_nH": 2.3734235392249947,
+    "pass": true
+  },
+  "dense_metric_assertions": {
+    "worst_IL_db": 0.8371337485816677,
+    "min_H2_db": 30.00499999903853,
+    "min_H3_db": 30.004999999783116,
+    "converged": true,
+    "finite_30db_pass": true
+  },
+  "limits": [
+    "84 sampled MNA and power balance probes, dense 28x1001 reduced two-port RF grid",
+    "not continuous frequency extrema nor physical signed k"
+  ]
+}
