@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from .circuit_layout import InductorTree, CapacitorPlacement
 from .rft005_t007_policy_circuit import PolicyBoundRFT005T007Circuit
 from .rft008_policy_circuit import PolicyBoundRFT008Circuit
+from .role_audit import audit_variable_connection_roles
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,7 @@ class NominalCircuit:
     """
 
     _adapter: object
+    definition: CircuitDefinition
 
     @property
     def policy_id(self):
@@ -84,13 +86,42 @@ class NominalCircuit:
     def encode(self, values):
         return self.schema.encode(values)
 
+    def connection_role_audit(self):
+        """Report which declared variable-C roles the L graph can prove.
+
+        The L spanning tree proves grounded and hot-hot chord connectivity.
+        A declared 'series' placement needs independent physical/main-path
+        evidence before candidate promotion; it is not rejected as an RF
+        policy violation merely because this graph lacks that extra proof.
+        """
+        d = self.definition
+        return audit_variable_connection_roles(
+            d.inductor_tree, d.capacitor_placement.variable_edges,
+            d.variable_roles
+        ).as_dict()
+
     def validate_components(self, vector):
-        """Check all covered component/k and six-setting values, not RF IL."""
-        return self._adapter.validate_candidate(vector)
+        """Separate component-policy pass from physical-role evidence."""
+        result = dict(self._adapter.validate_candidate(vector))
+        roles = self.connection_role_audit()
+        result["connection_role_audit"] = roles
+        result["candidate_promotion_blocked"] = not roles["all_verified"]
+        return result
 
     def evaluate_sampled(self, vector, *, points_per_interval=3):
-        """Validate first, then return sampled metrics with explicit caveats."""
-        return self._adapter.checked_summary(vector, points=points_per_interval)
+        """Evaluate sampled forward IL after policy checking; NOT RF PASS."""
+        component = self.validate_components(vector)
+        metrics = self.forward_evaluator(points_per_interval).summary(vector)
+        return {
+            "component_policy": component,
+            "sampled_forward_metrics": metrics,
+            "points_per_interval": int(points_per_interval),
+            "independent_mna_checked": False,
+            "rf_compliance_certified": False,
+            "candidate_promotion_blocked": component[
+                "candidate_promotion_blocked"
+            ],
+        }
 
     def forward_evaluator(self, points_per_interval):
         """Unchecked forward kernel for numerical/optimization work only.
@@ -129,4 +160,4 @@ def build_nominal_circuit(policy, definition):
     else:
         raise ValueError("No reviewed Stage-1 nominal adapter for " +
                          str(constraint_id))
-    return NominalCircuit(backend)
+    return NominalCircuit(backend, definition)
