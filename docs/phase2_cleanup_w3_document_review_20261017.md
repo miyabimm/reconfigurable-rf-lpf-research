@@ -22,7 +22,7 @@
 | D-004 | [repository_storage_audit_20261014.md](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/88562135dae2edf8ba7763aa529181c05f7c1ded/docs/repository_storage_audit_20261014.md) `2918391b` | 旧main `73c4f19b3b1264beeb5e8cbb2764ae3f82fb4f57`の707 tracked files/8.30 MB、実行時診断144件/約2.35 MB、同一blob34組・余分38path、分類方法が時点固有。 | **条件付き保留**：分母・日時・対象SHAを伴う監査履歴に移記後に再判定 |
 | D-005 | [phase2_storage_pareto_review_20261015.md](phase2_storage_pareto_review_20261015.md) `7d97c8a5` | RF-F002／RF-T004の**13候補・8比較群**パレート表を含み、現在の24候補カタログとは条件・保存時点が異なる。535ファイル保全区分・旧CI成果も残る。 | **保持推奨**：表の全行と条件比較・出典を失わない移管実証までは削除対象外 |
 | D-006 | [r2_handoff.md](r2_handoff.md) `ff757983` | EXP-015で4候補の保存値を各周波数区間7001点で再現、72周波数点/候補の3方式照合。最大利得差`3.17e-15`、電力収支残差`3.36e-17 W`。元独立監査JSONへ連結。 | **保持推奨**：独立MNAの方法と当時の合否判定を含むため、別の証拠レビューが必要 |
-| D-007 | [p4_a_scope.md](p4_a_scope.md) `e254a785` | P4-Aの**内部ノード≤4、固定枝≤8、計算面積≤6**、`matching_only`、HV 0.4～12 nH限定・HQ未探索の境界は歴史的ソルバcoverageの出典。 | **保持推奨**：runner/manifestの当時の探索限界の突合まで保全 |
+| D-007 | [p4_a_scope.md（2026-10-26退役前の固定版）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/fd2db0d2bc0bdb2cd54d9c6c55e191da1180fdae/docs/p4_a_scope.md) `e254a785` | P4-Aの**内部ノード≤4、固定枝≤8、計算面積≤6**、`matching_only`、HV 0.4～12 nH限定・HQ未探索の境界は歴史的ソルバcoverageの出典。 | **保持推奨**：runner/manifestの当時の探索限界の突合まで保全 |
 
 ### 保存すべき重要な旧数値の例
 
