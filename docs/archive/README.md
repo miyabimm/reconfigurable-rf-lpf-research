@@ -44,14 +44,11 @@
 - [RF-T004 文献調査とトポロジー探索仮説（2026-10-14）](../research/rf_t004_literature_survey_2026-10-14.md) — `docs/research/rf_t004_literature_survey_2026-10-14.md`
 - [RF-F002 Phase 2：P4-A ベンチマークと Full-LPF 再合成の中間報告](../rf_f002_full_lpf_phase2_20261013.md) — `docs/rf_f002_full_lpf_phase2_20261013.md`
 
-## 研究方法・基礎理論（実装・物理検証との区別を要する）（16件）
+## 研究方法・基礎理論（実装・物理検証との区別を要する）（13件）
 
 理論・方法・実装計画の出典。計算実行と物理検証の有無は各原文で確認。
 
-- [Full-LPF専用ローカル探索マネージャー（Phase 2 / RF-F002）](../full_lpf_execution.md) — `docs/full_lpf_execution.md`
 - [LQP02HV/HQインダクタシリーズ別の新しいPhase 2設計方針](../inductor_series_policy.md) — `docs/inductor_series_policy.md`
-- [ローカルP4-A実行手順（WSL2 / uv）](../local_execution.md) — `docs/local_execution.md`
-- [P4-A有限探索の対象クラス（RF-F001以降の現状）](../p4_a_scope.md) — `docs/p4_a_scope.md`
 - [Phase 2 基礎研究：π型2組結合の伝送零点再配置（2026-10-16）](../phase2_pi_notch_retarget_20261016.md) — `docs/phase2_pi_notch_retarget_20261016.md`
 - [Phase 2 基礎研究追補：π型の中央シリーズLと左右シャントLの2組結合](../phase2_pi_two_pair_coupling_20261016.md) — `docs/phase2_pi_two_pair_coupling_20261016.md`
 - [Phase 2理論追補 — 3コイル平面配置から（＋,＋,−）磁気結合を合成（2026-10-16）](../phase2_t_coupled_inductor_planar_geometry_20261016.md) — `docs/phase2_t_coupled_inductor_planar_geometry_20261016.md`
