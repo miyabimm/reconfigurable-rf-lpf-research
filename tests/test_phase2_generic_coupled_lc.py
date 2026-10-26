@@ -35,9 +35,16 @@ def generic(policy, legacy, *, n_l, n_fixed, n_var, n_ic, edges, pairs,
     tree = InductorTree(n_l + 1, edges if graph is None else graph)
     schema = ParameterVectorSchema(n_l, n_fixed, len(pairs), n_ic, n_var,
                                    tuple(constant_caps))
+    # EXP-055's source-shaped wrapper stores BC but exposes C edges via
+    # capacitor_edges(name); newer EXP-058 wrappers expose cap_edges directly.
+    if hasattr(legacy, "cap_edges"):
+        capacitor_edges = legacy.cap_edges
+    elif hasattr(legacy, "name"):
+        capacitor_edges = exp055.capacitor_edges(legacy.name)
+    else:
+        capacitor_edges = exp042.C_EDGES
     topo = CoupledLCTopology(tree, pairs, (25.,) * n_l,
-                             legacy.cap_edges if hasattr(legacy, "cap_edges")
-                             else exp042.C_EDGES, tuple(map(float, q)))
+                             capacitor_edges, tuple(map(float, q)))
     return CoupledLCEvaluator(policy, points, topo, schema)
 
 
@@ -170,7 +177,7 @@ class GenericCircuitEvaluationTests(unittest.TestCase):
             ((0, 1),),
             (40.,),
         )
-        bad = CircuitValues((1., 1., 1.), (0.9, 0.9, 0.9),
+        bad = CircuitValues((1., 1., 1.), (-0.9, -0.9, -0.9),
                             ((0.1,),) * 6)
         with self.assertRaises(ValueError):
             t.matrices(bad)
