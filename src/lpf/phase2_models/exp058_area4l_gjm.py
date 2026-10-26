@@ -50,7 +50,7 @@ class Evaluator(old4.Evaluator):
                 len(placement.variable_edges)!=2 or len(placement.ic_fixed_edges)!=2):
             raise ValueError("This 4L mixed-C evaluator requires four fixed and two composite C branches")
         self.capacitor_layout=RFT008CapacitorLayout.for_policy(
-            policy,placement,self.gjm_positions
+            policy,placement,self.gjm_positions,gjm_lower_pf=0.02
         )
         self.fixed_edges=placement.fixed_edges
         self.var_edges=placement.variable_edges
