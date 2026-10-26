@@ -255,6 +255,59 @@ HV/HQ/PCB-L value/Q differences; rejection of unsupported L series,
 bad or altered policy dictionaries, and isolation of immutable
 snapshots. These tests were added to the normal Phase-2 smoke CI.
 
+## RF-T005/T007 policy-bound nominal circuit integration
+
+`src/lpf/phase2_models/rft005_t007_policy_circuit.py` adds
+`PolicyBoundRFT005T007Circuit.from_policy`. It creates a generic
+`CoupledLCTopology` / `ParameterVectorSchema` from immutable, explicitly
+typed 3L or 4L `InductorTree` and `CapacitorPlacement` inputs. The
+fully resolved trial is authenticated against the current checked-in
+registry via `load_constraint(id, allow_trial=True)` and the canonical
+`constraint_fingerprint`. Any relabelled, modified or stale constraint
+dictionary is rejected. Historical experiment runners are not imported.
+
+**The T005/T007 distinction is structural, not just a policy label.**
+
+- RF-T005: maximum **three** installed independent variable C branches
+  (0–3 allowed), 0–3pF/Q35 each, **no** constant shunt DTC parasitic
+  and **no** IC-fixed-C counterpart.
+- RF-T007: the same variable-C branch limit, but **every installed
+  ground-shunt DTC** has one extra constant **0.5pF/Q40** fixed capacitor
+  between the same hot node and ground. It stays in the nodal stamp when
+  `Cvar=0`, consumes none of the PCB_PATTERN_C count, and is *never*
+  added to non-ground bridge/series DTCs. This is derived by calling
+  `lpf.trial_shunt_dtc.shunt_dtc_parasitic_branches`; the number of
+  parasitic branches varies with the installed physical DTC graph.
+- Both: GJM01 fixed C Q80, positive nominal capacity ≤100pF
+  (the formal policy does not specify a GJM numerical minimum);
+  PCB_PATTERN_C fixed C Q40/0.02–0.2pF and maximum three fixed PCB
+  branches. All fixed C values and L/k are six-setting-invariant.
+  Exactly one installed physical variable-C branch per setting column,
+  including correctly preserved zero-capacitance/series-open states.
+
+`src/lpf/phase2_models/nominal_inductors.py` is reused by RF-T005,
+RF-T007 and RF-T008 adapters for the explicit RF-F003 L-series
+Q/bounds and nominal physical-chip-row adjacency, chip-PCB k=0,
+full signed k matrix with unlisted pairs 0 and SPD check. It calls
+the existing `validation.validate_inductor_coupling` with the
+required nH→H unit conversion. Unconfirmed series ranges are *not*
+inferred from archived Q25 shortcuts.
+
+`validate_candidate(vector)` is a **component and placement** check.
+`checked_summary` provides separate *sampled* metrics from the generic
+forward evaluator. Neither function certifies dense RF compliance,
+independent MNA, optimizer convergence or physical implementation.
+
+`tests/test_phase2_rft005_t007_policy_circuit.py` tests:
+EXP-042 (T005 4L), EXP-043 (T005 two distinct 3L configurations),
+EXP-055 (T007 4L) saved-vector forward numerical parity; EXP-055's
+historical two-DTC placeholder mapped to a *true two-variable-branch*
+23-value vector; one/two/three installed shunt parasitics and Cv=0;
+RF-T005 absence of parasitics; invalid roles, IC-fixed injection,
+wrong/faked trial, k/physical coupling and L/C bounds. Frozen
+EXP-055's independent 9×9 MNA is run separately. This is regression
+evidence, not a new RF design.
+
 ## Still outstanding (do not close Stage 1)
 
 - Extend the explicit `CapacitorPlacement` integration beyond source-shaped RF-T008 3L/4L: include RF-T005/T007, arbitrary C-branch counts and solver vector schema, and RF-policy-correct physical coupling slots.
@@ -264,8 +317,8 @@ snapshots. These tests were added to the normal Phase-2 smoke CI.
   An immutable generic forward evaluator exists, but no complete
   policy-gated candidate API yet.
 - Extend the **resolved RF policy** validation boundary (now available for
-  RF-T008 v3 LQP02HV/HQ/PCB_L) to RF-T005/T007, other formally specified
-  component series, and the final research-candidate/MNA evidence gate.
+  RF-T005/T007/T008, LQP02HV/HQ/PCB_L) to other fully specified component
+  series, formal RF-F003, and the final research-candidate/MNA evidence gate.
   Structural/policy validity is not proof of RF or physical feasibility.
 - Continue Stage 1 against frozen EXP-042/043/055/058 vectors and Stage 2
   independent numeric regressions. Avoid modifications to archived scripts.
