@@ -1,6 +1,7 @@
 """RF-T008 v3 4L mixed GJM/PCB-C evaluator extracted from EXP-058."""
 import math
 import numpy as np
+from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from ._grid import ROOT
 from . import exp055 as old4
 from . import exp058_area3 as optim
