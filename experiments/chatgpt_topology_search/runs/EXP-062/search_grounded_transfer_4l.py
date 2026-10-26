@@ -11,10 +11,9 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-sys.path.insert(0, str(ROOT / "experiments/chatgpt_topology_search/runs/EXP-058"))
 sys.path.insert(0, str(ROOT / "src"))
-import sweep_area4l_gjm as parent
-import sweep_area3 as optimizer
+from lpf.phase2_models import exp058_area4l_gjm as parent
+from lpf.phase2_models import exp058_area3 as optimizer
 from lpf.slsqp_budget import run_termination_aware_slsqp
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
