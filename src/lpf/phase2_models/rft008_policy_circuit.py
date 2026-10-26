@@ -15,37 +15,12 @@ import json
 import numpy as np
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
-from lpf.validation import validate_inductor_coupling
+from .nominal_inductors import nominal_inductor_series, check_nominal_inductors
 from .circuit_layout import CapacitorPlacement, InductorTree
 from .coupled_lc import (
     CircuitValues, CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
 )
 from .rft008_layout import RFT008CapacitorLayout
-
-
-def _inductor_spec(policy, type_name):
-    """Return Q and documented bounds; refuse unspecified historical guesses."""
-    components = policy["components"]
-    if type_name in ("LQP02HV", "LQP02HQ"):
-        part = components["LQP02"]["series"][type_name]
-        return (float(part["q"]), float(part["min_inductance_nH"]),
-                float(part["max_inductance_nH"]))
-    if type_name == "PCB_L":
-        part = components["PCB_L"]
-        return (float(part["q"]), 0.,
-                float(part["max_inductance_nh"]))
-    # LQP01 lacks confirmed inductance range in the formal policy;
-    # generic 'LQP02' does not specify HV/HQ Q. Do not guess a bound.
-    raise ValueError("Inductor series has no fully defined nominal bounds: "
-                     + str(type_name))
-
-
-def _mutual_k(topology, values):
-    n = len(topology.inductor_tree.edges)
-    K = np.eye(n)
-    for (a, b), coeff in zip(topology.coupling_pairs, values.coupling_k):
-        K[a, b] = K[b, a] = float(coeff)
-    return K
 
 
 @dataclass(frozen=True)
@@ -96,7 +71,7 @@ class PolicyBoundRFT008Circuit:
         types = tuple(inductor_types)
         if len(types) != len(inductor_tree.edges):
             raise ValueError("One explicit inductor series per physical L required")
-        ql = tuple(_inductor_spec(policy, kind)[0] for kind in types)
+        ql = tuple(nominal_inductor_series(policy, kind)[0] for kind in types)
         order = tuple(physical_order)
         chips = tuple(i for i, kind in enumerate(types) if kind != "PCB_L")
         if (len(order) != len(chips) or set(order) != set(chips) or
@@ -151,19 +126,10 @@ class PolicyBoundRFT008Circuit:
         policy = self.policy
         if constraint_fingerprint(policy) != self.policy_fingerprint:
             raise ValueError("Resolved RF policy fingerprint mismatch")
-        for type_name, L_nh in zip(self.inductor_types,
-                                   values.inductances_nh):
-            _, minimum, maximum = _inductor_spec(policy, type_name)
-            if not minimum <= L_nh <= maximum:
-                raise ValueError(f"{type_name} inductance is outside nominal range")
-        # Build all pairwise couplings including implicit zeros and validate
-        # physical chip adjacency, PCB mixed coupling, SPD and count in SI.
-        K = _mutual_k(self.topology, values)
-        coupling = validate_inductor_coupling(
-            self.inductor_types,
-            np.asarray(values.inductances_nh) * 1e-9,
-            K, physical_order=self.physical_order,
-            nominal=True, resolved_policy=policy
+        # Reuse the same RF physical-L checks for T005/T007/T008.
+        coupling = check_nominal_inductors(
+            policy, self.topology, values,
+            self.inductor_types, self.physical_order
         )
         nf = self.schema.n_fixed
         nv = self.schema.n_variable
