@@ -82,7 +82,7 @@ GitHub Actionsによる新規探索は必要時にworkflowを追加して再開�
 |---|---|
 | [`experiments/chatgpt_topology_search/`](experiments/chatgpt_topology_search/) | **ChatGPT探索の作業場所**。新規実験はその下の`runs/EXP-NNN/`を実験開始時に作成 |
 | [`experiments/matching_limit/`](experiments/matching_limit/) | 歴史的なP4-A／RF-F002探索器と旧import互換モジュール。新規共通機能を追加しない |
-| [`src/lpf/`](src/lpf/) | 共通MNA・独立解析・RF制約、[有限グラフ選別](src/lpf/legacy_graph_search.py)・[結合配置](src/lpf/coupling_layout.py)・[原子的JSON保存](src/lpf/checkpoint_io.py)の正規実装 |
+| [`src/lpf/`](src/lpf/) | 共通MNA・独立解析・RF制約、[可変C探索範囲](src/lpf/variable_c_layouts.py)・[有限グラフ選別](src/lpf/legacy_graph_search.py)・[結合配置](src/lpf/coupling_layout.py)・[原子的JSON保存](src/lpf/checkpoint_io.py)の正規実装 |
 | [`candidates/`](candidates/) | 現行比較候補LPF-007/008の正式な記録 |
 | [`data/`](data/) | **正式RF-F003の互換コピー**`design_constraints.json`（正本は`constraints/formal/RF-F003.json`）、制約台帳・履歴条件、帯域`bands.csv`、候補索引 |
 | [`docs/`](docs/) | [設計仕様](docs/specification.md)、[Phase 2ロードマップ](docs/roadmap.md)、[歴史的結果の出典索引](docs/historical_results.md) |
