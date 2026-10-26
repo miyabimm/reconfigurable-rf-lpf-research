@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """EXP-066 | Phase 2 RF-T005 4L+1 GJM01 wide-topology explorer.
 
-Always run in repository checkout; imports EXP-042's frozen S2P engine.
+Always run in repository checkout; uses the shared RF-T005 model extracted from EXP-042.
 This file performs *finite-grid* screening/refinement, never physical qualification.
 Census mode is topology-only and requires no proprietary artifacts.
 """
@@ -116,8 +116,7 @@ def engine_imports():
     import numpy as np
     from scipy.optimize import minimize
     sys.path.insert(0, str(ROOT/'src'))
-    sys.path.insert(0, str(BASE_DIR))
-    import optimize as base
+    from lpf.phase2_models import exp042 as base
     from lpf.constraint_versions import load_constraint
     from lpf.slsqp_budget import run_termination_aware_slsqp
     p=load_constraint('RF-T005',allow_trial=True)
