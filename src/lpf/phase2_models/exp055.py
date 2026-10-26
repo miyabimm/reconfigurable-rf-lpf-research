@@ -181,7 +181,8 @@ def make_starts(seed,name,n,rng):
         x[11:]+=rng.normal(0,.10 if j==2 else .20,18)
         starts.append(np.clip(x,bounds(name)[:,0],bounds(name)[:,1]))
     return starts
-\ndef optimize_stage(ev,start,maxiter,target):
+
+def optimize_stage(ev,start,maxiter,target):
     z=np.asarray(start,float)
     vmax=ev.summary(z)["worst_IL_db"]
     initial=np.r_[z,vmax]
