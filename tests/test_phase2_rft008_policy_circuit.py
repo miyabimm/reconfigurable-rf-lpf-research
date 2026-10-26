@@ -227,6 +227,16 @@ class PolicyBoundT008Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             pcb.validate_candidate(z)
 
+    def test_forged_resolved_policy_is_rejected_against_registry(self):
+        policy = load_constraint("RF-T008", allow_trial=True)
+        policy["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"] = 30
+        with self.assertRaisesRegex(ValueError, "approved registry"):
+            self.make4(policy=policy)
+        policy = load_constraint("RF-T008", allow_trial=True)
+        policy["components"]["LQP02"]["series"]["LQP02HV"]["q"] = 99
+        with self.assertRaisesRegex(ValueError, "approved registry"):
+            self.make4(policy=policy)
+
     def test_retains_protected_resolved_policy_snapshot(self):
         pol = load_constraint("RF-T008", allow_trial=True)
         bound = self.make4(policy=pol)
