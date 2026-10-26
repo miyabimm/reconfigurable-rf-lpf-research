@@ -81,17 +81,18 @@ GitHub Actionsによる新規探索は必要時にworkflowを追加して再開�
 | フォルダ | 用途 |
 |---|---|
 | [`experiments/chatgpt_topology_search/`](experiments/chatgpt_topology_search/) | **ChatGPT探索の作業場所**。新規実験はその下の`runs/EXP-NNN/`を実験開始時に作成 |
-| [`experiments/matching_limit/`](experiments/matching_limit/) | 既存の有限グラフ生成・最適化コード（旧ローカル実行入口ではない） |
-| [`src/lpf/`](src/lpf/) | 両探索で共用するMNA、独立解析、評価、制約検証 |
+| [`experiments/matching_limit/`](experiments/matching_limit/) | 歴史的なP4-A／RF-F002探索器と旧import互換モジュール。新規共通機能を追加しない |
+| [`src/lpf/`](src/lpf/) | 共通MNA・独立解析・RF制約、および[有限グラフ選別](src/lpf/legacy_graph_search.py)・[結合配置](src/lpf/coupling_layout.py)の正規実装 |
 | [`candidates/`](candidates/) | 現行比較候補LPF-007/008の正式な記録 |
-| [`data/`](data/) | **現行RF-F002の互換コピー**`design_constraints.json`（正本は`constraints/formal/RF-F002.json`）、制約台帳・履歴条件、帯域`bands.csv`、候補索引 |
+| [`data/`](data/) | **正式RF-F003の互換コピー**`design_constraints.json`（正本は`constraints/formal/RF-F003.json`）、制約台帳・履歴条件、帯域`bands.csv`、候補索引 |
 | [`docs/`](docs/) | [設計仕様](docs/specification.md)、[Phase 2ロードマップ](docs/roadmap.md)、[歴史的結果の出典索引](docs/historical_results.md) |
 | [`scripts/`](scripts/)・[`tests/`](tests/) | 実験管理・監査・候補検証・回帰テスト |
-| [`.github/workflows/`](.github/workflows/) | 実験専用Actions探索・EXP予約・回帰CI |
+| [`.github/workflows/`](.github/workflows/) | 共通監査・EXP番号予約・回帰CI。EXP専用探索workflowは退役済み |
 
 ## 基本ルール
 
 - AI探索の専用スクリプト・未検証解は実験フォルダへ。広く使える解析・最適化処理は`src/lpf/`へ移す。
+- **移設の原則：** 研究原本の再現性を保持し、旧importを薄い互換層にする。有限P4-Aの面積ビンは旧研究の探索予算であり正式RF制約ではない。EXP-042/055/058等を直接importする歴史的スクリプトは、数値回帰を確認するまで変更しない。
 - 有望解は独立MNA、SPD、電力収支、6設定のUL/DLとH2/H3を確認してから`candidates/`へ登録する。最適化未収束とジョブ失敗を区別する。
 - `matching_only`はH2/H3制約を含まず、`full_lpf`候補との性能比較に混ぜない。
 - **過去の実験・旧ロードマップ・旧候補はGit履歴に保管**し、[歴史的結果の索引](docs/historical_results.md)から元コミット・検証状態を追跡する。削除は研究結果が無効になったことを意味しない。
