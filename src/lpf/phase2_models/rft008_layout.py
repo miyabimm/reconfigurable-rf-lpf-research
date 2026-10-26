@@ -44,6 +44,7 @@ class RFT008CapacitorLayout:
 
     placement: CapacitorPlacement
     gjm_positions: tuple[int, ...]
+    variable_roles: tuple[str, ...]
     q: tuple[float, ...]
     fixed_bounds_pf: tuple[tuple[float, float], ...]
     ic_fixed_bounds_pf: tuple[tuple[float, float], ...]
@@ -122,7 +123,7 @@ class RFT008CapacitorLayout:
             raise ValueError("Invalid trial variable-C range")
         stamp_q = tuple(fixed_q) + (float(spec["variable_c_q"]),) * count + (
             float(spec["fixed_c_q"]),) * count
-        return cls(placement, positions, stamp_q, tuple(fixed_ranges),
+        return cls(placement, positions, roles, stamp_q, tuple(fixed_ranges),
                    fixed_bounds, varrange)
 
     def validate_values(self, policy, fixed_pf, ic_fixed_pf, variable_pf_by_setting):
@@ -140,10 +141,8 @@ class RFT008CapacitorLayout:
         for value, (lo, hi) in zip(f, self.fixed_bounds_pf):
             if not lo <= value <= hi:
                 raise ValueError("Fixed C value outside layout bounds")
-        variable = policy_edges(self.placement.variable_edges, roles=[
-            "shunt_to_ground" if -1 in edge else "bridge"
-            for edge in self.placement.variable_edges
-        ])
+        variable = policy_edges(self.placement.variable_edges,
+                                roles=self.variable_roles)
         # Explicit current RF-T008 policy validation, including per-connection
         # IC-fixed ranges, six setting completeness and per-branch var limits.
         validate_ic_fixed_c_settings(
