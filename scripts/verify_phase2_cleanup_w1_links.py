@@ -144,7 +144,12 @@ def verify_status():
         raise ValueError("EXP-004 legacy note must point to pinned historical source")
 
     original_sha = "055b222c79c73c7fbeacb19383f21c1da0625195"
-    untouched = ["data/bands.csv", "data/constraints/registry.json",
+    # The registry changes when Phase 2 trial policies are approved;
+    # unlike the snapshots below, its bytes are not immutable.
+    registry = json.loads((ROOT / "data/constraints/registry.json").read_text(encoding="utf-8"))
+    if registry["active_formal_id"] != "RF-F003" or registry["trial"]["RF-T008"]["state"] != "study_authorized":
+        raise ValueError("Unexpected current formal or trial registry status")
+    untouched = ["data/bands.csv",
                  "data/constraints/formal/RF-F003.json",
                  "data/constraints/trial/RF-T005.json",
                  "data/design_constraints.json",
