@@ -11,9 +11,8 @@ import numpy as np
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
-sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-058"))
 sys.path.insert(0,str(ROOT/"src"))
-import sweep_area3 as parent
+from lpf.phase2_models import exp058_area3 as parent
 from lpf.slsqp_budget import run_termination_aware_slsqp
 from lpf.constraint_versions import load_constraint,constraint_fingerprint
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
@@ -61,7 +60,7 @@ class Evaluator(BASE):
             raise ValueError("Bad fixed capacitor layout")
         self.fixed_edges=edges
         self.cap_edges=edges+self.variable_edges+self.fixed_ic_edges
-        self.BC=parent.old.incidence(self.cap_edges)
+        self.BC=parent.incidence(self.cap_edges)
         self.Q_C=np.asarray(
             [80.]*len(gjm)+[60. if -1 in e else 40. for e in pcb]
             +[35.,35.,60.,60.],float)
@@ -154,10 +153,10 @@ def main():
         branches=[dict(parent.norm_edge(e),role="shunt_to_ground" if -1 in e else "bridge")
                   for e in full.variable_edges]
         validate_ic_fixed_c_settings(policy,branches,x[8:10].tolist(),
-            dict(zip(parent.old.CASES,x[10:].reshape((6,2)).tolist())))
+            dict(zip(parent.CASES,x[10:].reshape((6,2)).tolist())))
     result={"experiment_id":"EXP-063","constraint_id":"RF-T008","revision":3,
             "phase":"Phase 2","area":area,"layout":ACTIVE,
-            "L_edges":parent.old.L_EDGES,"chip_row":["L0","Ls","L1"],
+            "L_edges":parent.THREE_L_EDGES,"chip_row":["L0","Ls","L1"],
             "GJM_edges":gd,"PCB_edges":pd,"variable_C_edges":full.variable_edges,
             "fixed_IC_C_parallel_edges":full.fixed_ic_edges,
             "effective_constraint_sha256":constraint_fingerprint(policy),
