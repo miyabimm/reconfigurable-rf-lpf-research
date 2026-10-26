@@ -123,6 +123,23 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 
 **S1-07のグラフ上の役割判定について**：直列／橋絡の区別が端子だけで一意に定まらない構造がある場合、無理に自動分類しない。物理主経路との対応を明示した別入力と検証手順を定義し、未証明は`role_unverified`として最終候補ゲートへ送る設計でよい。
 
+## 6.1 変動C接続role監査（S1-07の電気的証拠）
+
+`src/lpf/phase2_models/role_audit.py`は、**RFポリシーがroleの申告を許しているか**という既存`validate_variable_c_connections`の確認とは別に、接続Lツリーで証明できる範囲を返す。新EXP用公開`NominalCircuit.connection_role_audit()`で利用する。
+
+| 宣言 | Lツリーで検証できる証拠 | 扱い |
+| --- | --- | --- |
+| `shunt_to_ground` | 実際に一方がGND（−1） | 電気接続としてverified |
+| `bridge` | Hot-Hot両端間にLツリー経路があり、Cはその経路のchord | **電気的な経路を跨ぐことのみ**verified（物理的ブリッジ実装の保証ではない） |
+| `series` | Lが全hotノードの接続ツリーを形成するため、C挿入が必須信号経路上にあるとは証明不能 | `role_verified=False`、未証明indexを返し、候補昇格を保留 |
+| 端子・roleの不一致 | GND端子にbridge/series、Hot-Hotにshunt等 | 接続不正として拒否 |
+
+`validate_components`は承認済み部品制約の`component_policy_pass`を**変更せず**、`connection_role_audit`と`candidate_promotion_blocked`を別々に付記する。`evaluate_sampled`にも同じ情報を反映する。したがってseriesがRFポリシー上**許可される場合**、ソルバーは数値評価できても、形式的なシリーズ回路であるという証拠がないまま候補を昇格させることはできない。
+
+この証拠は**可変Cの電気接続グラフだけ**の判定であり、PCB/GJM固定Cの製造可能性、主信号経路の物理定義、直列スイッチ等を証明しない。追加の物理主経路定義・実装証拠が必要な回路ではStage 2/4の候補検証に引き継ぐ。新しいRF数値上限・直列配置禁止を導入したわけではない。
+
+回帰：`tests/test_phase2_connection_roles.py`（5件、相異なるseries/bridge宣言でのnumerical model一致、未証明seriesの候補昇格保留、shunt/bridge不整合拒否、0枝の空監査、インスタンス間の分離）。
+
 ## 7. 実装の進め方
 
 - **PR #164：Stage 1 core（既存）**。一貫した公開facade、L/C/Q/k正規化、T005/T007/T008条件差分、凍結数値パリティまで整える。途中の実験系統別`exp*.py`は互換・テスト用途へ位置付けを固定。
