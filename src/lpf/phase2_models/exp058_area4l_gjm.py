@@ -21,7 +21,7 @@ def norm(e):
     return {"a":e[0]+1,"b":e[1]+1}
 
 
-def inductance(v):
+def inductance(v, *, l_edges=old4.L_EDGES):
     L=np.asarray(v[:4],float)
     M=np.diag(L.copy())
     for (a,b),k in zip(old4.K_PAIRS,v[8:11]):
@@ -29,13 +29,13 @@ def inductance(v):
     eig=float(np.linalg.eigvalsh(M)[0])
     if eig<=0:raise ValueError("Inductor matrix not SPD")
     H=np.diag(L/25.)+1j*M
-    BL=old4.incidence(old4.L_EDGES)
+    BL=old4.InductorTree(5,l_edges).incidence()
     return BL@np.linalg.solve(H,BL.T),M,H,BL
 
 
 class Evaluator(old4.Evaluator):
-    def __init__(self,policy,variant,gjm_names,points):
-        super().__init__(policy,points,"two_dtc",False)
+    def __init__(self,policy,variant,gjm_names,points,*,l_edges=old4.L_EDGES):
+        super().__init__(policy,points,"two_dtc",False,l_edges=l_edges)
         self.variant,self.gjm_names=variant,tuple(gjm_names)
         self.gjm_positions=tuple(GJM_POS[q] for q in gjm_names)
         self.fixed_edges=ALL_FIXED
@@ -58,7 +58,7 @@ class Evaluator(old4.Evaluator):
         x=np.asarray(x,float)
         if x.shape!=(25,):raise ValueError("Four-L four-fixed-C vector must be 25 elements")
         if self.cache_x is not None and np.array_equal(self.cache_x,x):return self.cache_il
-        K,_,_,_=inductance(x)
+        K,_,_,_=inductance(x,l_edges=self.inductor_tree)
         n=len(self.f)
         Y=np.broadcast_to(K,(n,5,5)).copy()/(self.omega[:,None,None]*1e-9)
         cv=x[13:].reshape(6,2)[self.setting]
@@ -93,7 +93,7 @@ class Evaluator(old4.Evaluator):
             "min_H3_db":float(y[ext[2]]),
             "locations":[{"setting":CASES[self.setting[i]],"mhz":float(self.f[i]),
                           "segment":int(self.segment[i])} for i in ext],
-            "L_eig_min_nH":float(np.linalg.eigvalsh(inductance(x)[1])[0])}
+            "L_eig_min_nH":float(np.linalg.eigvalsh(inductance(x,l_edges=self.inductor_tree)[1])[0])}
 
 
 def seed(ev,oldseed,randomized=False):
@@ -118,10 +118,10 @@ def seed(ev,oldseed,randomized=False):
     return np.clip(x,ev.bounds[:,0],ev.bounds[:,1])
 
 
-def independent_mna(policy,variant,gjm_names,x):
-    ev=Evaluator(policy,variant,gjm_names,3)
+def independent_mna(policy,variant,gjm_names,x,*,l_edges=old4.L_EDGES):
+    ev=Evaluator(policy,variant,gjm_names,3,l_edges=l_edges)
     expected=ev.il(x)
-    _,M,H,BL=inductance(x)
+    _,M,H,BL=inductance(x,l_edges=ev.inductor_tree)
     B=ev.BC
     err=res=0.
     minpassive=float("inf")
