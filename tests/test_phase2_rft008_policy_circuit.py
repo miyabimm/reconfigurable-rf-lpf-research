@@ -107,6 +107,15 @@ class PolicyBoundT008Tests(unittest.TestCase):
                 np.testing.assert_allclose(bound.evaluator(3).il(vector),
                                            old.il(vector), atol=1e-9, rtol=0)
 
+    def test_formal_gjm_values_below_exp058_study_floor_are_not_rejected(self):
+        circuit = self.make4()
+        saved = self.saved4()
+        saved[4] = 0.001  # formal GJM has no 0.02pF minimum
+        self.assertTrue(circuit.validate_candidate(saved)["component_policy_pass"])
+        saved[4] = 0.0
+        with self.assertRaises(ValueError):
+            circuit.validate_candidate(saved)
+
     def test_zero_one_two_dtc_branches_policy_not_exactly_two(self):
         tree = InductorTree(4, exp058_area3.THREE_L_EDGES)
         for n in (0, 1, 2):
