@@ -46,7 +46,7 @@
 以下は2026-10-12以降の歴史的な記述であり、旧RF-F001、旧面積hard cap、旧PRの進捗を現在の正式状態として使用しない。
 
 
-**2026-10-12（当時の正式条件RF-F001に関する履歴）：** [制約版管理](data/constraints/README.md)を導入。以下のRF-F001に関する実験方針は当時の記録であり、**現行正式条件はRF-F002**。チップ面積はハード制約ではなく、6設定全帯域最悪ILと並ぶパレート評価軸。P4-Aの面積最大6などは計算上の有限探索範囲に限定。Phase 2継続、Phase 3停止。
+**2026-10-12（当時の正式条件RF-F001に関する履歴）：** [制約版管理](data/constraints/README.md)を導入。以下のRF-F001に関する実験方針は当時の記録であり、**現行正式条件はRF-F002**。チップ面積はハード制約ではなく、6設定全帯域最悪ILと並ぶパレート評価軸。当時の面積最大6の探索は実験上の有限探索範囲に限定。Phase 2継続、Phase 3停止。
 
 **ChatGPTプロジェクトの運用指示の正本：** [docs/chatgpt_project_instructions.md](docs/chatgpt_project_instructions.md)。ChatGPTアプリの指示欄はこの正本への短い参照とし、**現行RF制約の変更不可の正式版は [RF-F002](data/constraints/formal/RF-F002.json)、[data/design_constraints.json](data/design_constraints.json) は互換コピー**とする。研究結果は実験記録と検証状態を参照する。
 
@@ -68,26 +68,24 @@
 
 **Phase 2・EXP-007追加探索（2026-10-12）:** [固定C再配置・チップL再配置・PCB-L追加の103件の局所探索と2可変C感度解析](experiments/chatgpt_topology_search/runs/EXP-007/README.md)。各群から35dB条件を満たす粗い数値解は合計44件。最良の追加候補は0.524581dBで、**保存済みA7-04（0.506951dB）は未更新**。B71のH2/H3最小減衰に対する2制御変数の局所感度行列は条件数約9.36で、制御感度の偏りが見られた。0.40dB目標未達、正式hard cap6とPhase 3停止は維持。
 
-**2方式を並行**：ChatGPTはRF理論から回路を発案して専用高速最適化、自動探索は有限のグラフ・素子・配置クラスを生成して比較。良好な構造と初期値を相互に利用し、共通MNAと同一の6設定評価で検証する。現在のP4-Aは可変CがIN/OUT接続に固定されており、LPF-007/008の内部トラップCを探索できないため、一般化が最優先。
+**研究手法：** ChatGPTによる回路提案と有限の体系探索を併用し、良好な構造・初期値を相互利用する。各結果は制約IDを区別し、共通MNAと独立解析で検証する。
 
-## ローカル計算基盤（Stage 2）
+## 探索の実行方法（2026-10-26以降）
 
-大規模P4-A探索の主たる実行基盤は、ユーザー指示によりUbuntu 24.04 / WSL2のローカル環境へ移行する。Python 3.12の環境はuvで管理し、依存条件の正本を`pyproject.toml`、固定版を`uv.lock`とする。GitHub Actionsはuv lockを使うCI・回帰試験として維持し、既存の手動P4-A・実験workflowも削除せず利用可能な状態を保つ。
-
-[`docs/local_execution.md`](docs/local_execution.md)にuvセットアップ、P4-Aのplan/run/status/resume/aggregate操作、resource監視、チェックポイント・再開規則を記載する。`scripts/local_p4.py plan`は計算せず、`run`だけがジョブを開始する。P4-Aは`matching_only`であり`full_lpf`性能達成を示さない。Stage 2は計算基盤の構築・小規模検証で、**大規模探索は未着手**。Phase 2継続、Phase 3停止。
+GitHub Actionsの実験専用ワークフローによる探索を継続する。Pi Codeによる自律ローカル探索は**導入予定・未実装**であり、`src/lpf/`の共通計算・RF制約・独立検証を利用する計画とする。旧ローカルP4-A／RF-F002専用マネージャーは退役し、再実行の入口として案内しない。正式成果はmain予約済みEXP番号・検証証拠を伴って保全する。Phase 2のみ。
 
 ## フォルダ構成と作業先
 
 | フォルダ | 用途 |
 |---|---|
 | [`experiments/chatgpt_topology_search/`](experiments/chatgpt_topology_search/) | **ChatGPT探索の作業場所**。新規実験はその下の`runs/EXP-NNN/`を実験開始時に作成 |
-| [`experiments/matching_limit/`](experiments/matching_limit/) | 自動グラフ探索、P4-A最適化、シャード・再開処理 |
+| [`experiments/matching_limit/`](experiments/matching_limit/) | 既存の有限グラフ生成・最適化コード（旧ローカル実行入口ではない） |
 | [`src/lpf/`](src/lpf/) | 両探索で共用するMNA、独立解析、評価、制約検証 |
 | [`candidates/`](candidates/) | 現行比較候補LPF-007/008の正式な記録 |
 | [`data/`](data/) | **現行RF-F002の互換コピー**`design_constraints.json`（正本は`constraints/formal/RF-F002.json`）、制約台帳・履歴条件、帯域`bands.csv`、候補索引 |
-| [`docs/`](docs/) | [設計仕様](docs/specification.md)、[Phase 2ロードマップ](docs/roadmap.md)、[ローカル実行](docs/local_execution.md)、[歴史的結果の出典索引](docs/historical_results.md) |
-| [`scripts/`](scripts/)・[`tests/`](tests/) | 監査、候補検証、Artifacts、ローカル実行マネージャー、回帰テスト |
-| [`.github/workflows/`](.github/workflows/) | 短いCIと手動のP4-A計算 |
+| [`docs/`](docs/) | [設計仕様](docs/specification.md)、[Phase 2ロードマップ](docs/roadmap.md)、[歴史的結果の出典索引](docs/historical_results.md) |
+| [`scripts/`](scripts/)・[`tests/`](tests/) | 実験管理・監査・候補検証・回帰テスト |
+| [`.github/workflows/`](.github/workflows/) | 実験専用Actions探索・EXP予約・回帰CI |
 
 ## 基本ルール
 
@@ -110,10 +108,8 @@ uv run --frozen python -m unittest discover -s tests -v
 uv run --frozen python scripts/verify_no_pcb_tunable_candidates.py
 ```
 
-`requirements.txt`は後方互換用の依存条件ミラー。通常の開発・CI・ローカル探索は`uv.lock`で固定したuv環境を利用する。
+`requirements.txt`は後方互換用の依存条件ミラー。通常の開発とCIは`uv.lock`で固定したuv環境を利用する。
 
 自動CIでは、基準値を固定したLPF-007/008の有限グリッド回帰と、matching-onlyの解析的既知回路の回帰も検証する。新しい候補は `data/candidate_index.csv` へ追加でき、LPF-007/008を削除することはできない。
 
-大規模P4-Aは[手動Actions](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-p4-a.yml)で実行し、限定的なArtifact保存・再開・集計の再検証には[手動スモーク](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/c6c23bab59aeeea70555b016bdec7806f72d239c/.github/workflows/lpf-p4-a-smoke.yml)を利用する。
 
-旧G1の[1シャード実行](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38128578799)・[2シャード実行](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38128871403)に加え、PR #10変更後の計算構成でも[実機スモーク](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38139630751)が **PASS**。新構成では1シャードの3グラフをArtifact越しに2回再開し、G1集計が完了した。これはソフトウェア動作確認であり、P4-A網羅探索やIL改善の完了ではない。
