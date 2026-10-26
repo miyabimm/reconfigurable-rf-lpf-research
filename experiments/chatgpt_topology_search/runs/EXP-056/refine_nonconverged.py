@@ -17,9 +17,8 @@ import numpy as np
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
-sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-055"))
 sys.path.insert(0,str(ROOT/"src"))
-import adapt_f003_4l as src
+from lpf.phase2_models import exp055 as src
 from lpf.constraint_versions import load_constraint,constraint_fingerprint
 
 SELECTED={
@@ -97,8 +96,8 @@ def main():
         trials=[]
         for j,x in enumerate(runs(start,name,a.starts,rng)):
             try:
-                xc,s0=src.base.exp51.optimize_stage(coarse,x,a.maxiter,a.target)
-                xf,s1=src.base.exp51.optimize_stage(fine,xc,a.fine_maxiter,a.target)
+                xc,s0=src.optimize_stage(coarse,x,a.maxiter,a.target)
+                xf,s1=src.optimize_stage(fine,xc,a.fine_maxiter,a.target)
                 metrics=dense.summary(xf)
                 row={"start":j,"vector":xf.tolist(),"coarse":s0,"fine":s1,
                      "converged":bool(s0["converged"] and s1["converged"]),
