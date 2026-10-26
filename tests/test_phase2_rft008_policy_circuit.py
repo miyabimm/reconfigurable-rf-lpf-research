@@ -149,8 +149,13 @@ class PolicyBoundT008Tests(unittest.TestCase):
             self.make4(roles=("bridge",))
         with self.assertRaises(ValueError):
             self.make4(roles=("shunt_to_ground", "bridge"))
+        # GJM count has no formal hard cap; area is a Pareto objective.
+        self.assertEqual(
+            len(self.make4(fixed_types=("GJM01",)*4).capacitor_layout.gjm_positions),
+            4
+        )
         with self.assertRaises(ValueError):
-            self.make4(fixed_types=("GJM01",)*4)
+            self.make4(fixed_types=("PCB_UNKNOWN",)*4)
         with self.assertRaises(ValueError):
             self.make4(fixed_types=("PCB_PATTERN_C",)*3)
         with self.assertRaises(ValueError):
