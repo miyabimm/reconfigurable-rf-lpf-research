@@ -1,3 +1,7 @@
+## 2026-10-27：Issue #163 Stage 1共通計算基盤のAPIと完了基準を整理（Phase 2／PR #164レビュー中）
+
+新規EXPの共通入口を`src/lpf/phase2_models/api.py`の`CircuitDefinition`／`build_nominal_circuit`へ統一する。RF-T005/T007/T008 v3のL/C/Q/k、物理L順序、6設定値を同じ数値エンジンで扱い、試験条件固有の常設寄生・IC固定Cは内部のpolicyアダプタで構築する。EXP-042/043/055/058の凍結ベクトルとのforwardパリティを維持し、**RF制約適合、forward有限格子評価、独立MNA、最適化収束、物理検証を別の証拠として管理**する。GJMの形式的容量範囲に、旧EXP-058の探索下限0.02pFを混入させない。公開API、レイヤー責務、Stage 1最終DoD 10項目、次段階への切り分けは[Stage 1 共通コア設計](issue163_stage1_core_architecture.md)と[子Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で管理する。**Stage 1は未完了、Stage 2の汎用独立MNA以降にはまだ着手しない**。既存実験ソース、制約、保存数値を変更せず、Phase 2を継続、Phase 3未承認。
+
 ## 2026-10-27：歴史的EXP評価器の共通API抽出（Phase 2、実験結果変更なし）
 
 EXP-042（RF-T005）・EXP-055（RF-T007）・EXP-058（RF-T008 v3）の評価器を再利用可能な`src/lpf/phase2_models/`へ抽出。**既存のEXP-050/056/057/059–067の直接importは、実行証拠SHA-256がmanifestで固定されているため、歴史コードを変更せず残す**。今後の新規EXPは共通APIをimportし、過去EXPの`sys.path`継承を禁止する。保存済みベクトルによる旧評価器との28区間・6設定・固定S2P数値一致、7×7／9×9独立MNAの回帰をCIに追加。既存実験の元数値・制約・履歴・未収束状態は不変更。未解決の歴史的依存関係は廃止済みと見なさない。詳細：[共通評価器・履歴互換の扱い](phase2_shared_evaluator_imports_20261027.md)。本PRは再利用評価APIの抽出であり、新規探索実行・性能改善・Phase 3開始ではない。
