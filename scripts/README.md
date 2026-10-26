@@ -12,9 +12,6 @@
 | 実験inventory | [audit_experiment_inventory.py](audit_experiment_inventory.py) | EXPごとの登録・実行状態・証拠整合を確認 |
 | 事後検証overlay | [audit_validation_overlays.py](audit_validation_overlays.py) | 元実験と後日の独立検証を区別・点検 |
 | 候補のPCB可変Cルール | [verify_no_pcb_tunable_candidates.py](verify_no_pcb_tunable_candidates.py) | 対象条件の候補種別制限を検証 |
-| 既存ローカル探索 | [local_p4.py](local_p4.py) | 旧P4-Aのplan/run/status/resume。matching_only成果はfull_lpf性能ではない |
-| 既存full_lpf runner | [local_full_lpf.py](local_full_lpf.py) | 既存経路の条件を実行前に検証。2026-10-16の計画では旧RF-F002向けで、RF-F003対応を保証しない |
-
 | 統合24候補の派生生成・照合 | [build_phase2_candidate_catalog.py](build_phase2_candidate_catalog.py) | 旧14件固定CSV＋最新10件の不変出典をSHAで検証して生成、`--check`は再生成せず一致判定 |
 | 歴史的W0データ・リンク監査（現在の常用対象外） | [旧tree監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_tree.py)、[旧link監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_links.py) | 2026-10-17の固定コミットを基準とした一時監査。必要時は[Step Cの復元案内](../docs/phase2_stepC_dated_audit_retirement_20261018.md)で元版を取得 |
 
