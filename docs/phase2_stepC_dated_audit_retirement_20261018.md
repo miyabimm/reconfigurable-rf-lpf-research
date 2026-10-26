@@ -1,13 +1,15 @@
 # Phase 2 Step C：旧一時監査スクリプトと専用テストの整理（第1弾・2026-10-18）
 
-> **状態：draft PR上の整理案。mainからの削除は未承認・未実行。** 一時的な履歴監査13スクリプトとそのうち2件の専用ユニットテストを整理候補とする。Phase 2継続、Phase 3移行なし。
+> **2026-10-18時点の状態：draft PR上の整理案。** 一時的な履歴監査13スクリプトとそのうち2件の専用ユニットテストを整理候補とする。Phase 2継続、Phase 3移行なし。
+
+**2026-10-26更新:** 旧ローカル探索の専用マネージャーは別途退役。以下は当時の一時監査コード整理に関する履歴であり、現行のローカル実行入口を示さない。
 
 ## 背景と保持方針
 
 2026-10-18 Step B完了後のmain `f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3`を基準とする。`scripts/`は74追跡ファイル、`tests/`は97追跡ファイル。日常CIは24の代表テストへ縮小済み。
 
 - **削除候補**：2026-10-17のW0～W5、旧リポジトリ再編Step 1～5、GitHub Actions利用履歴、当時のブランチ/容量棚卸し用の一回限りの監査。すべて過去の固定commitに対するレビュー処理であり、RF-F003/T005回路の数値解析器ではない。
-- **保持**：`src/lpf/`、`experiments/`、RF制約と帯域・固定S2P、候補の完全ベクトル、全一次結果、`scripts/local_p4.py`・`scripts/local_full_lpf.py`・`scripts/full_lpf_worker.py`・`scripts/experiment_id_registry.py`・`scripts/audit_results.py`・`scripts/build_phase2_candidate_catalog.py`、重要な独立RF数値検証器と現行6モジュール24テスト。
+- **保持**：`src/lpf/`、`experiments/`、RF制約と帯域・固定S2P、候補の完全ベクトル、全一次結果、`scripts/experiment_id_registry.py`・`scripts/audit_results.py`・`scripts/build_phase2_candidate_catalog.py`、重要な独立RF数値検証器と現行6モジュール24テスト。
 - **既存の手動PR #91原本検証を壊さない**：`.github/workflows/phase2_bc_wave1_consolidated.yml`が呼ぶ`verify_phase2_cleanup_w3.py`、`verify_phase2_cleanup_w1_links.py`、`audit_w4_exp042_*.py`、`audit_w4_exp046_exp047_sources.py`、`verify_phase2_bc_exp046_lossless.py`、`audit_phase2_issue93_consumers.py`等は本バッチの対象外。
 - **旧Git historyの保全**：元のGit blobと実行入口は次表のmain確定SHAからいつでも取得できる。`git bundle`バックアップ器`backup_complete_git_history.py`とその復元テストは保持。
 - 元結果CSV・JSON・W0～W5の考察・履歴報告は**変更・削除しない**。対象が古いからといって新しいRF-F003で数値実行済みと主張しない。
