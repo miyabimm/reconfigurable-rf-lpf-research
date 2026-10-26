@@ -10,7 +10,7 @@
 - 帯域: `data/bands.csv`。固定入力S2Pと出力S2P: `data/parasitics/`配下、正式JSONに固定された各SHA-256を照合する。
 - `RF-T005`はRF-F003基準・最大3独立可変Cのみの明示opt-in試験条件。旧`RF-T004`は旧`RF-F002`基準のまま。
 - PR #56で固定S2Pローダ・複素線形補間・ABCDカスケードprimitive（`src/lpf/port_parasitics.py`）と単体回帰を実装済み。
-- **未統合:** `experiments/matching_limit/full_lpf.py` / `scripts/local_full_lpf.py` / `scripts/full_lpf_worker.py`は現状RF-F002を対象とし、RF-F003の完全外部ポート指標とRF-T005を最適化・検証する実行経路はまだない。既存RF-F002動作とチェックポイントは保持する。
+- **本計画作成時の範囲:** `experiments/matching_limit/full_lpf.py`はRF-F002向けの旧実装であり、RF-F003／RF-T005の実行済み成果を示さない。以後の実行経路は別途検証が必要。
 - PR #54で回収したEXP-017・RF-F002 30dB候補の完全23要素ベクトル（IL 0.301248245dB、H2 30.005000dB、H3 30.004642dB）を含め、過去の数値は**RF-F003性能実績ではない**。
 
 ## 1. RF-F003の必須評価モデル（不変更）
@@ -31,7 +31,7 @@
 
 ### P0：main同期・既存動作の保全（コード実装、EXP不要）
 
-- Pi CodeのWSL2ローカルで未コミット変更・残存プロセス・保護すべきrunとその計算SHAを確認。旧実行中runを新SHAでresumeしない。
+- 既存の未コミット変更・残存プロセス・保護すべきrunと計算SHAを確認する。旧実行状態を互換性確認なしで再開しない。
 - `git fetch origin`後、新規作業ブランチを**最新origin/mainを起点**に作る。過去の済PRブランチや追跡済み研究成果を破壊しない。
 - `uv lock --check` / `uv sync --frozen` / 全テスト / 既存結果・制約・Git証跡監査を実行。旧RF-F002と新RF-F003のsnapshot・registry・bands・S2PファイルSHAを固定確認。
 - **完了ゲート:** 基準CI・旧RF-F002回帰PASS、現行正式ID解決PASS、変更点の出所を一覧化。

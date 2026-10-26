@@ -103,9 +103,8 @@ Full-LPF solver上で今回測定したwall範囲は**158–302秒/seed**（中�
 
 ### 大規模S1をまだ起動しない理由
 
-Full-LPF 数値solverと候補個別の変換器はあるが、**full-LPF用の複数トポロジー生成・費用層を保つ重複排除・multi-start orchestration・shard/checkpoint/resume manager・全結果Pareto aggregatorは未統合**である。現行 `scripts/local_p4.py` は matching-only を実行するためのmanagerであり、そのままfull-LPFへ読み替えていない。従って上表はS1/S2/S3の測定ベース予算であって、実行可能なfull-LPF run plan/完了runではない。無制限バッチは起動していない。
+Full-LPF 数値solverと候補個別の変換器はあるが、**full-LPF用の複数トポロジー生成・費用層を保つ重複排除・multi-start orchestration・shard/checkpoint/resume manager・全結果Pareto aggregatorは未統合**である。当時のmatching-only managerはfull-LPFの実行入口ではなかった。従って上表はS1/S2/S3の測定ベース予算であって、実行可能なfull-LPF run plan/完了runではない。無制限バッチは起動していない。
 
-次の安全な工程： (1) full-LPF managerに計算条件hash/source hash・小batch・RAM gate・atomic checkpoint/resumeを統合、(2) PCB_PATTERN_C/LQW04を含む明示的expanded component alphabetとcost-bin coverage・isomorphism dedupeを実装、(3) multi-startと21点→高密度gridの失敗帯域adaptive refinementを試験、(4) unit+manager integration testsと独立MNA、(5) 2 workerの短いfull-LPF benchmark、(6) 計画値とresource headroomを確認後に承認された有限S1だけ実行。全トポロジー網羅性・global optimum・連続周波数保証は別に証明しない限り主張しない。
 
 ## 6. 保存証跡
 
@@ -127,7 +126,7 @@ Full-LPF 数値solverと候補個別の変換器はあるが、**full-LPF用の�
 
 作業ブランチは最新main `5dbd832...` を基点とし、main側の既存EXP-020～024を保持した。ローカル既存manifestはEXP-025～031へ移し、索引を再生成。RF-F002 JSON、registry、`data/bands.csv` は不変更。統合コミット`ce2f8c7...`に続き、専用runner/worker・scaled optimizerを`03a6e9f...`へ記録した。正式条件SHA-256は全実行で`f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2`。
 
-`scripts/local_full_lpf.py` / `scripts/full_lpf_worker.py` はRF-F002 full_lpf専用であり、RF-T003 seedは初期値のみ。bounded task count / wall-time / worker timeout、最低1.5GiB空きRAM gate、最大2 worker、各BLAS/OpenMP/NumExpr thread=1、config・source・policy・band hashによるresume互換性、atomic result/status、manager/worker OS lock、欠落/重複-aware aggregateを実装。再開/資源gate/lock/aggregate試験は追加した。P4-A `matching_only` は変更しない。統合branch全体のregressionは**240 tests PASS**。`uv lock --check`、`uv sync --frozen`、`uv pip check`、experiment manifest/result/provenance audits、PCB-tunable guard、`py_compile`、`git diff --check`もPASS。RF-F002正本・registry・bandsの差分はない。
+当時のRF-F002用full_lpf managerとworkerはRF-T003 seedを初期値のみに限定した。実装にはbounded task count / wall-time / worker timeout、最低1.5GiB空きRAM gate、最大2 worker、各BLAS/OpenMP/NumExpr thread=1、config・source・policy・band hashによるresume互換性、atomic result/status、manager/worker OS lock、欠落/重複-aware aggregateを実装。再開/資源gate/lock/aggregate試験は追加した。P4-A `matching_only` は変更しない。統合branch全体のregressionは**240 tests PASS**。`uv lock --check`、`uv sync --frozen`、`uv pip check`、experiment manifest/result/provenance audits、PCB-tunable guard、`py_compile`、`git diff --check`もPASS。RF-F002正本・registry・bandsの差分はない。
 
 EXP-032は**事前登録済み**の1 topology・4 start runner smoke。最適化は各stage5 iteration、9点/segment（independent check 21点/segment）のみで、4 startすべて非収束・30dB mandatory H2/H3未達である。したがって性能候補の探索結果ではなく、runner起動・resource・worker scaling確認だけである。結果・両runのmanifest/status/aggregate・全task JSONは[`rf_f002_full_lpf_manager_benchmark_20261014/`](../data/validation/rf_f002_full_lpf_manager_benchmark_20261014/)に保存。
 

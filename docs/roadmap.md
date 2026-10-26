@@ -234,31 +234,13 @@ EXP-053で確認した4L・面積5⅓・最悪IL0.875794664dBの`split_input_shu
 
 # Phase 2 ロードマップ（現行版）
 
-**2026-10-12 RF-F001の正式方針更新：** チップ面積コストのハード上限を廃止し、6設定UL/DL最悪ILとのパレート評価軸とする。以下にある「hard cap6」「面積最大6」は過去の探索条件・旧実験予算の記録であり現行正式RF制約を表さない。P4-Aでは当面の計算範囲として面積6までを維持し、探索範囲の拡張は別管理する。旧候補の実測/数値記録は不変更。詳細は[制約版管理](../data/constraints/README.md)。
+**2026-10-12 RF-F001の正式方針更新：** チップ面積コストのハード上限を廃止し、6設定UL/DL最悪ILとのパレート評価軸とする。以下にある「hard cap6」「面積最大6」は過去の探索条件・旧実験予算の記録であり現行正式RF制約を表さない。当時の有限探索範囲と正式RF制約は区別する。旧候補の実測/数値記録は不変更。詳細は[制約版管理](../data/constraints/README.md)。
 
 ## 2026-10-14 Phase 2 / Full-LPF 追試状況
 
 PR #47（Full-LPF runner統合）は`origin/main`の`eb1de13841c1b4a74f18f4f9320e0316fbdd478f`に含まれる。追試branch `test/rf-f002-full-lpf-recovery-20261014` は[PR #48](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/48)としてレビュー中で、EXP-034～041を事前登録・記録。live SIGINT/SIGTERM/lock/resume/hash拒否、4-task 1/2-worker比較、checkpoint terminal remapping、warm/multi-start、9→17 grid refinement、scaled/unscaled/FTOL比較を実行した。詳細は[Phase 2 Full-LPF追試報告](rf_f002_full_lpf_phase2_20261013.md)と各manifestを参照。
 
 正規importされたEXP-017 warm-startの30dB stageはIL 0.318693189 dB（H2/H3生値29.999999997/29.999999999 dB、1e-5 tolerance内）、35dB stageはIL 0.378349100 dB。1001点/segment有限確認で数値一致したが、IL≤0.30dB未達、30dB点のraw marginは実質ゼロ。scaled条件は35dBで収束し、unscaledは低IL/低marginのtradeoff。よってPhase 2継続、S1（100 start）未開始、Phase 3停止、正式RF-F002不変。最新実測start時間96.7–145.0 worker秒を単純外挿したS1は1 worker 2.7–4.0h。2-workerの1.6–2.3hは短いEXP-035倍率を仮置きしただけで、長時間correctly-mapped throughputは未確認。
-
-## 2026-10-12 Stage 2：WSL2ローカル実行基盤
-
-**大規模P4-Aの主計算先をGitHub ActionsからWSL2ローカルへ移す方針**を反映した。これは計算環境の変更であり、RF-F001・RF-T001/T002/T003、P4-Aの回路探索、評価関数は変更せず、Phase 2を維持する。Phase 3への移行・大規模探索の開始はしていない。
-
-- uv管理を導入。`pyproject.toml`を依存条件の正本、Python 3.12対象の`uv.lock`を固定環境としてGit管理し、`requirements.txt`は互換ミラーとして維持。監査・既存手動探索Actionsも`uv sync --frozen`を利用する。
-- `scripts/local_p4.py`は計画、独立worker起動、RAM・CPU/RSS監視、SIGINT/SIGTERM停止、チェックポイント再開、互換性拒否、集計を提供する。既存`p4_batch.py`/`p4_sharding.py`と集計器を再利用し、RF解析・最適化本体は変更しない。既定worker数2、最大4、利用可能RAMが1.5 GiB未満では新規起動を保留する。
-- `docs/local_execution.md`に環境構築・plan/run/status/resume/aggregate・停止・復旧・結果保管を記載。GitHub ActionsはCI・回帰試験用として維持し、既存P4-A等の手動探索workflowも保存する。
-- 最終回帰: `uv lock --check`、`uv sync --frozen`、`uv pip check`、`scripts/audit_results.py`、ユニット203件、`scripts/verify_no_pcb_tunable_candidates.py`がすべて終了コード0。既存の5L試験コードから未close fileの`ResourceWarning`が1件出るが試験結果には影響なし。
-- WSL2小規模ベンチ（RF-F001、`matching_only`、seed `20261013`、4シャード、最大5グラフ、SLSQP各1反復、粗2点/検証3点条件）では、1/2/4 workerすべて5グラフ・9候補を処理。グラフIDと数値・最適化結果は3条件で一致（完了時刻メタデータのみ異なる）し、失敗0・未実行0・収束0（全9件は1反復のため非収束）。これは実行基盤の比較でありRF性能試験ではない。
-
-| worker | 最大同時worker | wall time（uv起動込み） | 合計ピークworker RSS | 最低available RAM | host CPU peak |
-|---:|---:|---:|---:|---:|---:|
-| 1 | 1 | 7.06 s | 79.27 MiB | 5.69 GiB | 9.6% |
-| 2 | 2 | 5.24 s | 158.09 MiB | 5.63 GiB | 13.0% |
-| 4 | 4 | 3.97 s | 316.20 MiB | 5.53 GiB | 25.3% |
-
-追加で1秒のwall-time制限による中断を実行し、終了コード130・各実行中シャードのcheckpoint保存を確認。`resume`後は5グラフ・9候補でcompleted、重複IDなし、失敗・未実行0。小規模機能検証であり、長時間停止時の実機環境挙動・4-worker時の大規模RAM需要・大規模計算性能は未検証。`results/`はGit管理外であり、生出力を正式研究候補に昇格させていない。
 
 ## 当面の目標
 
@@ -271,7 +253,6 @@ PR #47（Full-LPF runner統合）は`origin/main`の`eb1de13841c1b4a74f18f4f9320
 | **G1** | GitHub Actionsの決定的分割・Artifact保存／別run復元・再開・集計。1/2シャードの実機smoke。 | **完了**（main `35642be3`、[2シャード最終run](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/38128871403)）。 |
 | **R0/R1** | LPF-007/008を汎用MNAで同値再現する回帰テスト。任意内部ノードへの対GND可変C配置を許す共通回路表現。既存G1との互換性テスト。 | **一部完了**：LPF-007/008の基準値固定回帰とG1再開スモークPASS。内部可変C位置の一般化は未完了。 |
 | **G2** | MNAの実測profiling・高速化、SLSQP／epigraph minimax／多初期値・継続法。時間、収束率、評価回数、ILを同条件で比較。 | **部分完了**：bounded Full-LPF runnerの実process recovery、scaled/unscaled、FTOL、warm/multistart、9→17 gridをEXP-034～041で実測。IL≤0.30dB候補は未発見。 |
-| **E1** | P4-A（内部ノード≤4、固定枝≤8、面積≤6）を宣言した探索範囲で実行し、生成・未探索・失敗数、面積別best-found IL、計算資源を記録。 | **未開始**：S1 100 graph/start探索は明示的に未起動。topology coverage/長時間worker throughputを先にreview。 |
 | **E2** | ChatGPT発案の専用ソルバと汎用グラフ探索の両トラックで`full_lpf`最適化。LPF-007を上回る有望解の独立検証。 | **部分完了**：既存4L/2C warm-startの有限局所最適化は実施。目標IL≤0.30dB達成なし、全合法graph探索でもない。 |
 | **V1** | 6設定UL/DL・UL H2/H3の高密度周波数評価、独立式、SPD、電力収支、物理配置、部品・公差の確認。未解決項目を列記。 | **数値のみ部分完了**：EXP-041を1001点/segment・独立MNAで確認。連続band proof、SRF/Q(f)/parasitic/EM/tolerance/physical implementationは未実施。 |
 
@@ -310,7 +291,7 @@ PR #47（Full-LPF runner統合）は`origin/main`の`eb1de13841c1b4a74f18f4f9320
 
 ## 技術的な優先事項
 
-1. 自動P4-AがIN/OUTの可変Cしか配置できない点を改め、LPF-007/008の内部シャントLCを共通モデルで扱えるようにする。
+1. トポロジー探索の可変C配置を一般化し、LPF-007/008の内部シャントLCを共通モデルで評価できるようにする。
 2. `src/lpf/`の共通解析／最適化APIを、既存テストとG1再開互換を確認しながら整備する。実験固有コードは`experiments/`に残す。
 3. 粗い最適化、精密最適化、独立検証を分離する。未収束を性能限界と解釈しない。
 4. 自動探索の「網羅」は宣言した有限グラフクラスに限定し、連続素子値の大域最適性と混同しない。
