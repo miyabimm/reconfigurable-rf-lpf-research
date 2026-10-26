@@ -76,11 +76,17 @@ class ConnectionRoleAuditTests(unittest.TestCase):
         self.assertTrue(valid["component_policy_pass"])
         self.assertTrue(unresolved["component_policy_pass"])
         self.assertTrue(valid["connection_role_audit"]["all_verified"])
-        self.assertFalse(valid["candidate_promotion_blocked"])
+        self.assertFalse(valid["connection_role_promotion_blocked"])
+        self.assertTrue(valid["candidate_promotion_blocked"])
+        self.assertEqual(valid["promotion_blockers"],
+                         ("independent_mna_not_checked", "dense_rf_not_checked"))
         self.assertFalse(unresolved["connection_role_audit"]["all_verified"])
         self.assertEqual(unresolved["connection_role_audit"][
             "unverified_indices"], (1,))
         self.assertTrue(unresolved["candidate_promotion_blocked"])
+        self.assertTrue(unresolved["connection_role_promotion_blocked"])
+        self.assertIn("connection_role_unverified",
+                      unresolved["promotion_blockers"])
         np.testing.assert_allclose(
             approved_bridge.forward_evaluator(3).il(saved),
             series_unproved.forward_evaluator(3).il(saved),
