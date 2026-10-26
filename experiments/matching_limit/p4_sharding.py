@@ -4,9 +4,13 @@ from __future__ import annotations
 import hashlib
 import itertools
 import json
-import os
 from pathlib import Path
-import tempfile
+import sys
+
+_SRC = str(Path(__file__).resolve().parents[2] / "src")
+if _SRC not in sys.path:
+    sys.path.insert(0, _SRC)
+from lpf.checkpoint_io import canonical_config_hash, atomic_write_json  # noqa: E402
 
 
 CHECKPOINT_SCHEMA_VERSION = 2
@@ -80,42 +84,6 @@ def shard_for_graph(graph_id: str, shard_count: int) -> int:
         raise ValueError("graph_id must be a SHA-256 hex digest")
     digest = bytes.fromhex(graph_id)
     return int.from_bytes(digest[:8], "big") % shard_count
-
-
-def canonical_config_hash(config) -> str:
-    encoded = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def atomic_write_json(path, payload) -> None:
-    """Write a JSON checkpoint with fsync plus same-directory atomic replace."""
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
-    )
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-            json.dump(payload, stream, ensure_ascii=False, sort_keys=True, indent=2)
-            stream.write("\n")
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temporary_name, target)
-        try:
-            directory_fd = os.open(target.parent, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
-        except OSError:
-            # The file itself is already durable enough for platforms without
-            # directory fsync support.
-            pass
-    finally:
-        try:
-            os.unlink(temporary_name)
-        except FileNotFoundError:
-            pass
 
 
 def load_checkpoint(path, *, config_hash, shard_index, shard_count, expected_graph_ids):
