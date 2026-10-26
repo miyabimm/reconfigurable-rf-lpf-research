@@ -1,4 +1,14 @@
-"""RF-T007 coupled 4L forward evaluator extracted from EXP-055.\n\nLegacy solver results remain as originally recorded; independent 9x9 MNA\nchecks are kept separate from the forward model.\n"""\nimport math\nimport numpy as np\nfrom scipy.optimize import minimize\nfrom ._grid import ROOT, CASES as SHARED_CASES, incidence as incidence_edges, SampledExternalEvaluator\n\n# Branch L0,L1,L2,L3; single physical row L0-L1-L3-L2.
+"""RF-T007 coupled 4L forward evaluator extracted from EXP-055.
+
+Legacy solver results remain as originally recorded; independent 9x9 MNA
+checks are kept separate from the forward model.
+"""
+import math
+import numpy as np
+from scipy.optimize import minimize
+from ._grid import ROOT, CASES as SHARED_CASES, incidence as incidence_edges, SampledExternalEvaluator
+
+# Branch L0,L1,L2,L3; single physical row L0-L1-L3-L2.
 L_EDGES = ((0,1),(1,3),(1,4),(1,2))
 K_PAIRS = ((0,1),(1,3),(3,2))
 # Optional third DTC is ALWAYS between two non-ground signal nodes.
