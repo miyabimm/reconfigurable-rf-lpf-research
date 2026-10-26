@@ -39,7 +39,7 @@ class Evaluator(ThreeLGrid):
                 len(placement.ic_fixed_edges) != 2):
             raise ValueError("This 3L evaluator requires three fixed and two composite C branches")
         self.capacitor_layout = RFT008CapacitorLayout.for_policy(
-            policy, placement, self.gjm_positions
+            policy, placement, self.gjm_positions, gjm_lower_pf=0.02
         )
         self.variable_edges = placement.variable_edges
         self.fixed_ic_edges = placement.ic_fixed_edges
