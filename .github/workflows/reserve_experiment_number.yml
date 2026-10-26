@@ -8,14 +8,10 @@ on:
         required: true
         type: string
       constraint_id:
-        description: "Approved RF condition"
+        description: "Approved RF ID (validated against data/constraints/registry.json, e.g. RF-F003 or RF-T008)"
         required: true
         default: "RF-F003"
-        type: choice
-        options:
-          - RF-F003
-          - RF-T005
-          - RF-T004
+        type: string
       request_key:
         description: "Stable idempotency key (optional; defaults to workflow run ID)"
         required: false
