@@ -27,8 +27,8 @@ class SampledExternalEvaluator:
     """28-interval sampling and frozen input/output S2P; no topology assumed."""
 
     def __init__(self, policy, points):
-        if points < 1:
-            raise ValueError("At least one frequency point is required")
+        if type(points) is not int or points < 1:
+            raise ValueError("points must be an integer >= 1")
         with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as f:
             records = list(csv.DictReader(f))
         if len(records) != 28:
