@@ -3,7 +3,7 @@ import math
 import numpy as np
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from scipy.optimize import minimize
-from ._grid import ROOT, CASES, ThreeLGrid, THREE_L_FIXED_EDGES, THREE_L_BL, incidence
+from ._grid import ROOT, CASES, ThreeLGrid, THREE_L_EDGES, THREE_L_FIXED_EDGES, THREE_L_BL, incidence
 
 ORIGINAL = ROOT / "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json"
 VARIANTS = {
