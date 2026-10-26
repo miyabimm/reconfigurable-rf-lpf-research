@@ -1,5 +1,8 @@
 # Issue #163 — Stage 1 / first increment: immutable circuit placements
 
+**全体アーキテクチャ・公開API・完了基準の正規資料：**
+[Stage 1 共通コア設計／DoD](issue163_stage1_core_architecture.md)。このファイルは個々の機能追加・数値互換の実装メモとして保持し、今後のStage 1判定は[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で管理する。
+
 **Status:** proposed code under PR review; not a completed Stage 1 and not a new
 EXP. The archived experiment scripts, RF policies, numeric result JSON, and
 checkpoint data remain unchanged.
