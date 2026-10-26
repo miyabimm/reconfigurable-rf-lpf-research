@@ -117,28 +117,37 @@ class Phase2SharedEvaluatorParityTests(unittest.TestCase):
             policy, "input_output", ("cf0",), vector
         )["pass"])
 
-    def test_downstream_does_not_import_frozen_evaluator_files(self):
+    def test_shared_library_import_boundary_and_new_exp_guard(self):
         import re
-        targets = [
-            "EXP-056/refine_nonconverged.py", "EXP-059/search_pcb_edges.py",
-            "EXP-060/search_coupling_lgraphs.py", "EXP-061/benchmark_restart.py",
-            "EXP-062/search_grounded_transfer_4l.py",
-            "EXP-063/sweep_3l_grounded_pcb.py",
-            "EXP-064/sweep_4l_zero_gjm_pcb.py",
-            "EXP-065/wide_search_4l2gjm.py", "EXP-066/wide_search.py",
-            "EXP-067/k01_sweep.py",
-        ]
-        for script in targets:
-            source = (RUNS / script).read_text(encoding="utf-8")
-            with self.subTest(script=script):
-                self.assertNotRegex(
-                    source, r"sys\.path\.[^\n]*EXP-(?:042|055|058)"
-                )
+        library = ROOT / "src/lpf/phase2_models"
+        for source_file in library.glob("*.py"):
+            source = source_file.read_text(encoding="utf-8")
+            with self.subTest(source=source_file.name):
+                self.assertNotIn("sys.path.insert(", source)
                 self.assertNotRegex(
                     source,
-                    r"(?m)^\s*(?:import\s+(?:optimize|adapt_f003_4l|sweep_area[34])\b|"
-                    r"from\s+(?:adapt_f003_4l|sweep_area[34])\s+import\b)"
+                    r"(?m)^\\s*(?:import|from)\\s+"
+                    r"(?:adapt_f003_4l|sweep_area3|sweep_area4|"
+                    r"sweep_area4l_gjm|optimize)\\b",
                 )
+        # All legacy EXP-050–068 source files are immutable research evidence.
+        # Audit only NEW scripts (not their archived copies) for reintroduced
+        # direct dependencies on frozen evaluators.
+        for run_dir in RUNS.glob("EXP-*"):
+            if not run_dir.name[4:].isdigit() or int(run_dir.name[4:]) <= 68:
+                continue
+            for script in run_dir.glob("*.py"):
+                source = script.read_text(encoding="utf-8")
+                with self.subTest(future_script=str(script.relative_to(ROOT))):
+                    self.assertNotRegex(
+                        source, r"sys\\.path\\.[^\\n]*EXP-(?:042|055|058)"
+                    )
+                    self.assertNotRegex(
+                        source,
+                        r"(?m)^\\s*(?:import\\s+"
+                        r"(?:optimize|adapt_f003_4l|sweep_area[34]\\w*)\\b|"
+                        r"from\\s+(?:optimize|adapt_f003_4l|sweep_area[34]\\w*)\\s+import\\b)",
+                    )
 
 
 if __name__ == "__main__":
