@@ -132,6 +132,13 @@ EXP-055 RF-T007 (with and without the constant DTC parasitic), and the
 three distinct RF-T008-v3 EXP-058 area3/4/4L-GJM evaluator families.
 It also checks an alternate 4L electrical tree, six-setting value
 round-trip, SPD rejection, input shape validation and fixed-C invariance.
+
+`tests/test_phase2_generic_exp043.py` additionally loads the **frozen**
+EXP-043 `search_3l.py` only as a read-only regression oracle. It verifies
+`zero_gjm_double` (3 PCB-Cs) and `two_gjm_bridge` (2 GJM + 1 PCB-C),
+both 26-element RF-T005 three-L source vectors, against the very same generic
+solver and schema. This covers the one-shunt L graph and two distinct
+fixed-C type/variable-C connection combinations without a new EXP run.
 This is an **additional independent forward implementation** for numerical
 parity, not the algorithmically independent branch-current MNA; current
 7×7/9×9 MNA checks remain elsewhere and Stage 2 generic MNA remains open.
@@ -169,8 +176,10 @@ resolved policy and independent MNA before any candidate is recorded.
 
 - Extend the explicit `CapacitorPlacement` integration beyond source-shaped RF-T008 3L/4L: include RF-T005/T007, arbitrary C-branch counts and solver vector schema, and RF-policy-correct physical coupling slots.
 - Connect the now-implemented generic 3L/4L L/C stamp and vector schema to
-  final RF policy verification and EXP-043 variations. An immutable generic
-  forward evaluator exists, but no complete policy-gated candidate API yet.
+  final RF policy verification and additional topology/variable-C variants;
+  EXP-043's two source layouts are already covered by frozen-vector parity.
+  An immutable generic forward evaluator exists, but no complete
+  policy-gated candidate API yet.
 - Enforce the **resolved RF policy** at the final circuit-model creation
   boundary. Topological validity alone is not RF/physical admissibility.
 - Continue Stage 1 against frozen EXP-042/043/055/058 vectors and Stage 2
