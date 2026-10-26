@@ -56,6 +56,42 @@ class RFT008CapacitorLayoutTests(unittest.TestCase):
             self.policy, [.5, .3, .1, .08], [.5, .2], var
         ))
 
+    def test_policy_allows_zero_one_or_two_composite_branches(self):
+        # The authorized RF-T008 v3 branch count is an upper bound, not a
+        # requirement that two DTCs must always be installed.
+        for n in (0, 1, 2):
+            var = ((3, -1), (0, 3))[:n]
+            placement = CapacitorPlacement(
+                5, fixed_edges=((0, 1), (4, -1), (1, 2)),
+                variable_edges=var, ic_fixed_edges=var
+            )
+            layout = RFT008CapacitorLayout.for_policy(self.policy, placement)
+            values = [low for low, _ in layout.ic_fixed_bounds_pf]
+            self.assertTrue(layout.validate_values(
+                self.policy, [.1, .5, .1], values, np.zeros((6, n))
+            ))
+            adm = layout.sampled_admittance(
+                np.array([2*np.pi*800e6]), [.1, .5, .1], values,
+                np.zeros((6, n)), [0]
+            )
+            self.assertEqual(adm.shape, (1, 3 + 2*n))
+        with self.assertRaises(ValueError):
+            var = ((3, -1), (0, 3), (1, 2))
+            RFT008CapacitorLayout.for_policy(
+                self.policy, CapacitorPlacement(5, (), var, var)
+            )
+
+    def test_explicit_series_role_survives_value_validation(self):
+        placement = self.mixed_layout()
+        layout = RFT008CapacitorLayout.for_policy(
+            self.policy, placement, (0,),
+            variable_roles=("series", "bridge")
+        )
+        self.assertEqual(layout.variable_roles, ("series", "bridge"))
+        self.assertTrue(layout.validate_values(
+            self.policy, [.5, .3, .1, .08], [.2, .2], np.zeros((6, 2))
+        ))
+
     def test_invalid_composite_or_pcb_layout_rejected(self):
         p = self.policy
         with self.assertRaises(ValueError):
