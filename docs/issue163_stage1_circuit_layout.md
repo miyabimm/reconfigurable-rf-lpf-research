@@ -105,11 +105,72 @@ mna = independent_mna(policy, "input_output", ("cf0",), test_vector,
 branches, incorrect PCB-count and Q bounds, independent Cfixed retention at
 Cv=0, different 3L/4L capacitor placements, and independent 7×7/9×9 MNA.
 
+## Common coupled-L/C network and EXP-compatible parameter schemas
+
+`src/lpf/phase2_models/coupled_lc.py` now includes three new shared
+components:
+
+- `CoupledLCTopology(InductorTree, coupling_pairs, inductor_q,
+  capacitor_edges, capacitor_q)`: explicit L winding/orientation, ordered
+  signed-k matrix slots, per-L Q, ordered C edges and Q. RF policy bounds
+  and physical coupling admissibility remain **separate** checks.
+- `ParameterVectorSchema(n_inductors, n_fixed, n_coupling, n_ic_fixed,
+  n_variable, constant_caps_pf=())`: a frozen, reversible mapping of
+  `[L, Cfixed, k, IC-Cfixed, 6×Cvariable]` into 6 setting-specific,
+  correctly ordered C vectors `[fixed, variable, IC-fixed, constant]`.
+  The six-setting-invariant IC fixed values and permanent shunt parasitics
+  cannot be silently reinterpreted as setting-variable values.
+- `CoupledLCEvaluator(policy, points, topology, schema)`: a **forward**
+  vectorized coupled-L nodal Y-stamp plus per-Q capacitor stamp; Schur
+  reduction and external frozen S2P cascade in the same 28×6 sampled
+  grid as the previous evaluators. Inputs are immutable and instance-local,
+  without imports from historical EXP run scripts.
+
+`tests/test_phase2_generic_coupled_lc.py` compares the new generic
+evaluator at saved vectors against already-extracted EXP-042 RF-T005,
+EXP-055 RF-T007 (with and without the constant DTC parasitic), and the
+three distinct RF-T008-v3 EXP-058 area3/4/4L-GJM evaluator families.
+It also checks an alternate 4L electrical tree, six-setting value
+round-trip, SPD rejection, input shape validation and fixed-C invariance.
+This is an **additional independent forward implementation** for numerical
+parity, not the algorithmically independent branch-current MNA; current
+7×7/9×9 MNA checks remain elsewhere and Stage 2 generic MNA remains open.
+
+A schematic use by new Phase-2 code (the topology and Q are illustrative
+configuration data, not automatic formal RF-policy approval):
+
+```python
+from lpf.phase2_models.circuit_layout import InductorTree
+from lpf.phase2_models.coupled_lc import (
+    CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
+)
+
+network = CoupledLCTopology(
+    InductorTree(5, ((0, 1), (1, 3), (1, 4), (1, 2))),
+    ((0, 1), (1, 3), (3, 2)),
+    (25., 25., 25., 25.),
+    ((0, 1), (4, -1), (1, 2), (0, 3),
+     (3, -1), (0, 3), (1, 2), (3, -1)),
+    (80., 80., 40., 40., 35., 35., 35., 40.),
+)
+schema = ParameterVectorSchema(
+    4, 4, 3, 0, 3, constant_caps_pf=(0.5,)
+)
+evaluation = CoupledLCEvaluator(policy, 3, network, schema)
+sample_il_db = evaluation.il(saved_vector)
+```
+
+This wrapper's numerical parameter schema is deliberately *not* an RF
+candidate approval or a claim that the values satisfy current physical
+placement, Q, L/k or branch-count rules. A new EXP must validate the
+resolved policy and independent MNA before any candidate is recorded.
+
 ## Still outstanding (do not close Stage 1)
 
 - Extend the explicit `CapacitorPlacement` integration beyond source-shaped RF-T008 3L/4L: include RF-T005/T007, arbitrary C-branch counts and solver vector schema, and RF-policy-correct physical coupling slots.
-- Extract the generic 3L/4L coupled-L and capacitor stamping engine and the
-  optimization vector schema, rather than subclassing each EXP-shaped model.
+- Connect the now-implemented generic 3L/4L L/C stamp and vector schema to
+  final RF policy verification and EXP-043 variations. An immutable generic
+  forward evaluator exists, but no complete policy-gated candidate API yet.
 - Enforce the **resolved RF policy** at the final circuit-model creation
   boundary. Topological validity alone is not RF/physical admissibility.
 - Continue Stage 1 against frozen EXP-042/043/055/058 vectors and Stage 2
