@@ -17,10 +17,9 @@ import numpy as np
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
 sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-059"))
-sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-058"))
 sys.path.insert(0,str(ROOT/"src"))
 import search_pcb_edges as base
-import sweep_area3 as optimizer
+from lpf.phase2_models import exp058_area3 as optimizer
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
 from lpf.trial_ic_fixed_c import validate_ic_fixed_c_settings
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
