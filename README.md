@@ -72,6 +72,8 @@
 
 ## 探索の実行方法（2026-10-26以降）
 
+**Actions整理（Step 2・PR審査中）：** 保存状態が`complete`のEXP-050～057、059～065、067～068の実験専用workflow、および旧PR専用レビューworkflowの計30件を退役予定。退役前の[YAML原本（固定コミット）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/0feba9827be9bdd45c3b6065156933bb2b70c847/.github/workflows)はGit履歴から参照可能。実験の`manifest.json`、`run_summary.json`、`storage_record.json`、完全候補・独立MNA証拠、数値ソースは削除しない。**EXP-058（storage record未完了）とEXP-066（評価の一部未実施）の実行workflowは維持する。** RF条件やPhase 2は不変更。
+
 GitHub Actionsの実験専用ワークフローによる探索を継続する。Pi Codeによる自律ローカル探索は**導入予定・未実装**であり、`src/lpf/`の共通計算・RF制約・独立検証を利用する計画とする。旧ローカルP4-A／RF-F002専用マネージャーは退役し、再実行の入口として案内しない。正式成果はmain予約済みEXP番号・検証証拠を伴って保全する。Phase 2のみ。
 
 ## フォルダ構成と作業先
