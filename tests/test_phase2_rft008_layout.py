@@ -32,7 +32,9 @@ class RFT008CapacitorLayoutTests(unittest.TestCase):
 
     def test_policy_derived_q_bounds_and_separate_dtc_admittance(self):
         layout = self.mixed_layout(variable_edges=((4, -1), (1, 2)))
-        spec = RFT008CapacitorLayout.for_policy(self.policy, layout, (0,))
+        spec = RFT008CapacitorLayout.for_policy(
+            self.policy, layout, (0,), gjm_lower_pf=0.02
+        )
         self.assertEqual(spec.q, (80., 60., 40., 40., 35., 35., 60., 60.))
         self.assertEqual(spec.fixed_bounds_pf,
                          ((0.02, 100.), (0.02, 1.), (0.02, 0.2), (0.02, 0.2)))
@@ -91,6 +93,24 @@ class RFT008CapacitorLayoutTests(unittest.TestCase):
         self.assertTrue(layout.validate_values(
             self.policy, [.5, .3, .1, .08], [.2, .2], np.zeros((6, 2))
         ))
+
+    def test_formal_gjm_cap_limit_not_replaced_by_study_search_floor(self):
+        placement = self.mixed_layout()
+        legal = RFT008CapacitorLayout.for_policy(self.policy, placement, (0,))
+        study = RFT008CapacitorLayout.for_policy(
+            self.policy, placement, (0,), gjm_lower_pf=0.02
+        )
+        self.assertEqual(legal.fixed_bounds_pf[0], (0.0, 100.0))
+        self.assertEqual(study.fixed_bounds_pf[0], (0.02, 100.0))
+        c = [0.001, 0.4, 0.1, 0.1]
+        fixed_ic = [0.2, 0.2]
+        variable = np.zeros((6, 2))
+        self.assertTrue(legal.validate_values(self.policy, c, fixed_ic, variable))
+        with self.assertRaises(ValueError):
+            study.validate_values(self.policy, c, fixed_ic, variable)
+        c[0] = 0.
+        with self.assertRaises(ValueError):
+            legal.validate_values(self.policy, c, fixed_ic, variable)
 
     def test_invalid_composite_or_pcb_layout_rejected(self):
         p = self.policy
