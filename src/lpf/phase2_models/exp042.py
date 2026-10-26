@@ -1,4 +1,16 @@
-"""RF-T005 C-H30p0002 forward evaluator extracted from EXP-042.\n\nOriginal EXP-042 run code remains unchanged; this is a stable import API.\n"""\nimport csv\nimport json\nfrom pathlib import Path\nimport numpy as np\nfrom lpf.port_parasitics import get_two_port_s, s_to_abcd\nfrom ._grid import ROOT\nHERE = ROOT / "experiments/chatgpt_topology_search/runs/EXP-042"\n\nCASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")
+"""RF-T005 C-H30p0002 forward evaluator extracted from EXP-042.
+
+Original EXP-042 run code remains unchanged; this is a stable import API.
+"""
+import csv
+import json
+from pathlib import Path
+import numpy as np
+from lpf.port_parasitics import get_two_port_s, s_to_abcd
+from ._grid import ROOT
+HERE = ROOT / "experiments/chatgpt_topology_search/runs/EXP-042"
+
+CASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")
 L_EDGES = ((0,1), (1,3), (1,4), (1,2))  # L0,L1,L2,L3; nodes 1..5 mapped 0..4
 C_EDGES = ((0,1), (4,-1), (1,2), (0,3),
            (3,-1), (4,-1), (1,2))  # Cf0,Cf1,Cf2,Cp,Cv0,Cv1,Cv2
