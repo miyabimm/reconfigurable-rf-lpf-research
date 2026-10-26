@@ -22,8 +22,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
 OLD = ROOT / "experiments/chatgpt_topology_search/runs/EXP-042"
 CHECKPOINT = OLD / "selected_checkpoints_rft005.json"
+sys.path.insert(0, str(OLD))
 sys.path.insert(0, str(ROOT / "src"))
-from lpf.phase2_models import exp042 as t005
+import optimize as t005
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
 from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
 
