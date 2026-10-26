@@ -114,7 +114,7 @@ jobs:
           else
             compare_base="$(git rev-parse HEAD^)"
           fi
-          if git diff --name-only "$compare_base" HEAD | grep -E -q '^(src/lpf/(legacy_graph_search|legacy_graph_builder|coupling_layout|checkpoint_io|variable_c_layouts)[.]py|experiments/matching_limit/(topology_selection|selection_patch|coupling_layout|p4_sharding|search_space|instantiate_graph)[.]py|tests/test_(shared_.*|search_space_extensions|three_variable_c_trials|graph_instantiation|grounded_enumeration)[.]py|[.]github/workflows/audit[.]yml)$'; then
+          if git diff --name-only "$compare_base" HEAD | grep -E -q '^(src/lpf/(legacy_graph_search|legacy_graph_builder|coupling_layout|checkpoint_io|variable_c_layouts|twoport_reduction)[.]py|experiments/matching_limit/(topology_selection|selection_patch|coupling_layout|p4_sharding|search_space|instantiate_graph)[.]py|tests/test_(shared_.*|search_space_extensions|three_variable_c_trials|graph_instantiation|grounded_enumeration)[.]py|[.]github/workflows/audit[.]yml)$'; then
             for test_file in \
               test_shared_graph_core.py \
               test_shared_checkpoint_io.py \
@@ -125,6 +125,7 @@ jobs:
               test_graph_instantiation.py \
               test_shared_graph_builder.py \
               test_matching_numeric_reference.py \
+              test_twoport_reduction.py \
               test_grounded_enumeration.py \
               test_p4_sharding.py \
               test_three_variable_c_trials.py; do
