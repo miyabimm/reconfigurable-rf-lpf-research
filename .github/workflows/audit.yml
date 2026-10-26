@@ -88,6 +88,11 @@ jobs:
             python -m unittest discover -s tests -p "$test_file" -v
           done
 
+      - name: Verify extracted EXP-042/055/058 evaluator parity
+        run: |
+          python -m compileall -q src/lpf/phase2_models
+          python -m unittest discover -s tests -p test_phase2_shared_exp_evaluators.py -v
+
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
       - name: Run 12 storage gate tests only when storage governance changes
