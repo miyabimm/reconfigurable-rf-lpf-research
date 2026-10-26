@@ -5,6 +5,8 @@ from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from ._grid import ROOT
 from . import exp055 as old4
 from . import exp058_area3 as optim
+from .circuit_layout import CapacitorPlacement
+from .rft008_layout import RFT008CapacitorLayout
 
 CASES=old4.CASES
 SOURCE=ROOT/"experiments/chatgpt_topology_search/runs/EXP-047/area5p333_g2_independent_28x1001_20261017.json"
@@ -35,25 +37,33 @@ def inductance(v, *, l_edges=old4.L_EDGES):
 
 
 class Evaluator(old4.Evaluator):
-    def __init__(self,policy,variant,gjm_names,points,*,l_edges=old4.L_EDGES):
+    def __init__(self,policy,variant,gjm_names,points,*,l_edges=old4.L_EDGES,capacitor_placement=None):
         super().__init__(policy,points,"two_dtc",False,l_edges=l_edges)
         self.variant,self.gjm_names=variant,tuple(gjm_names)
         self.gjm_positions=tuple(GJM_POS[q] for q in gjm_names)
-        self.fixed_edges=ALL_FIXED
-        self.var_edges=DTC[variant]
-        self.cap_edges=self.fixed_edges+self.var_edges+self.var_edges
-        self.BC=old4.incidence(self.cap_edges)
-        self.Q_C=np.array([80 if i in self.gjm_positions else (60 if -1 in e else 40) for i,e in enumerate(self.fixed_edges)]+[35,35,60,60],float)
+        self.capacitor_placement = (
+            capacitor_placement if capacitor_placement is not None else
+            CapacitorPlacement(5,ALL_FIXED,DTC[variant],DTC[variant])
+        )
+        placement=self.capacitor_placement
+        if (placement.node_count!=5 or len(placement.fixed_edges)!=4 or
+                len(placement.variable_edges)!=2 or len(placement.ic_fixed_edges)!=2):
+            raise ValueError("This 4L mixed-C evaluator requires four fixed and two composite C branches")
+        self.capacitor_layout=RFT008CapacitorLayout.for_policy(
+            policy,placement,self.gjm_positions
+        )
+        self.fixed_edges=placement.fixed_edges
+        self.var_edges=placement.variable_edges
+        self.cap_edges=placement.edges
+        self.BC=placement.incidence()
+        self.Q_C=np.asarray(self.capacitor_layout.q,float)
         self.bounds=np.array(
             [(0.4,27.)]*4
-            + [(0.02,100.) if i in self.gjm_positions else ((0.02,1.) if -1 in e else (0.02,0.2)) for i,e in enumerate(self.fixed_edges)]
+            + list(self.capacitor_layout.fixed_bounds_pf)
             + [(-0.1,0.1)]*3
-            + [(0.5,3.) if -1 in e else (0.2,3.) for e in self.var_edges]
-            + [(0.,3.)]*12,float)
+            + list(self.capacitor_layout.ic_fixed_bounds_pf)
+            + [self.capacitor_layout.variable_bounds_pf]*12,float)
         self.cache_x=self.cache_il=None
-        pcbs=[dict(norm(e),capacitance_pf=0.1,q=(60 if -1 in e else 40))
-              for i,e in enumerate(self.fixed_edges) if i not in self.gjm_positions]
-        validate_trial_pcb_pattern_c_branches(policy,pcbs)
 
     def il(self,x):
         x=np.asarray(x,float)
@@ -62,10 +72,9 @@ class Evaluator(old4.Evaluator):
         K,_,_,_=inductance(x,l_edges=self.inductor_tree)
         n=len(self.f)
         Y=np.broadcast_to(K,(n,5,5)).copy()/(self.omega[:,None,None]*1e-9)
-        cv=x[13:].reshape(6,2)[self.setting]
-        caps=np.column_stack((np.broadcast_to(x[4:8],(n,4)),cv,
-                              np.broadcast_to(x[11:13],(n,2))))
-        adm=self.omega[:,None]*1e-12*caps/(1/self.Q_C[None,:]-1j)
+        adm=self.capacitor_layout.sampled_admittance(
+            self.omega,x[4:8],x[11:13],x[13:].reshape(6,2),self.setting
+        )
         Y+=np.einsum("nb,ib,jb->nij",adm,self.BC,self.BC,optimize=True)
         port=[0,2];interior=[1,3,4]
         P=Y[:,port,:][:,:,port]
@@ -119,8 +128,9 @@ def seed(ev,oldseed,randomized=False):
     return np.clip(x,ev.bounds[:,0],ev.bounds[:,1])
 
 
-def independent_mna(policy,variant,gjm_names,x,*,l_edges=old4.L_EDGES):
-    ev=Evaluator(policy,variant,gjm_names,3,l_edges=l_edges)
+def independent_mna(policy,variant,gjm_names,x,*,l_edges=old4.L_EDGES,capacitor_placement=None):
+    ev=Evaluator(policy,variant,gjm_names,3,l_edges=l_edges,
+                 capacitor_placement=capacitor_placement)
     expected=ev.il(x)
     _,M,H,BL=inductance(x,l_edges=ev.inductor_tree)
     B=ev.BC
