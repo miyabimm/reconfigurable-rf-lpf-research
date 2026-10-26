@@ -29,7 +29,8 @@ def inductance(v, *, l_edges=old4.L_EDGES):
     eig=float(np.linalg.eigvalsh(M)[0])
     if eig<=0:raise ValueError("Inductor matrix not SPD")
     H=np.diag(L/25.)+1j*M
-    BL=old4.InductorTree(5,l_edges).incidence()
+    tree = l_edges if isinstance(l_edges, old4.InductorTree) else old4.InductorTree(5,l_edges)
+    BL=tree.incidence()
     return BL@np.linalg.solve(H,BL.T),M,H,BL
 
 
