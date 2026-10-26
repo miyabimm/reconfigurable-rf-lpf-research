@@ -16,9 +16,8 @@ import numpy as np
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
-sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-055"))
 sys.path.insert(0,str(ROOT/"src"))
-import adapt_f003_4l as src
+from lpf.phase2_models import exp055 as src
 from lpf.constraint_versions import constraint_fingerprint,load_constraint
 from lpf.slsqp_budget import run_staged_slsqp, STANDARD_SLSQP_BUDGET
 
@@ -132,7 +131,7 @@ def main():
             trials=[]
             for j,x in enumerate(starts(seed,a.starts,rng)):
                 try:
-                    opt=run_staged_slsqp(coarse,fine,x,a.target,src.base.exp51.optimize_stage)
+                    opt=run_staged_slsqp(coarse,fine,x,a.target,src.optimize_stage)
                     # Preserve every primary and recovery attempt separately.
                     rows=[]
                     for at in opt["attempts"]:
