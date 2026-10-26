@@ -1,7 +1,8 @@
 # Legacy navigation note for EXP-004 (research Phase 2).
-# This ordinary file exists only to preserve a path in the SHA-pinned original
-# EXP-004 README. It is NOT a GitHub Actions workflow or executable.
-# Actual workflow source: .github/workflows/lpf-target040.yml
-# To manually start the historic workflow, use:
-# https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/workflows/lpf-target040.yml
-# Historical conditions remain historical. Do not treat this as a new RF run.
+# This ordinary file preserves a path in the SHA-pinned EXP-004 README.
+# It is NOT a GitHub Actions workflow or executable.
+# The true .github/workflows/lpf-target040.yml was retired from main.
+# Reproduce its historical source, without executing it, via:
+# git show 055b222c79c73c7fbeacb19383f21c1da0625195:.github/workflows/lpf-target040.yml
+# Recreate and review a new workflow if this old study must be rerun.
+# Historic RF conditions are not current Phase 2 numerical results.

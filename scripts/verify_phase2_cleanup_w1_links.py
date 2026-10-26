@@ -125,20 +125,31 @@ def verify_status():
         raise ValueError("EXP-004 original README checksum changed")
     if "../../../../actions/workflows/lpf-target040.yml" not in legacy:
         raise ValueError("Original EXP-004 workflow link no longer matches stored evidence")
+    # The original EXP-004 YAML was retired from main. Verify its pinned Git
+    # object rather than requiring a deleted live workflow to reappear.
+    historic = "055b222c79c73c7fbeacb19383f21c1da0625195:.github/workflows/lpf-target040.yml"
+    historic_blob = subprocess.check_output(
+        ["git", "rev-parse", historic], cwd=ROOT, text=True).strip()
+    if historic_blob != "9bdb97ff365a626a614bc0198c04cfe419771a8b":
+        raise ValueError("EXP-004 historical Actions source changed")
     alias = ROOT / "actions/workflows/lpf-target040.yml"
-    real = ROOT / ".github/workflows/lpf-target040.yml"
-    if not alias.is_file() or alias.is_symlink() or not real.is_file():
-        raise ValueError("Missing regular legacy EXP-004 navigation note or true workflow")
+    if not alias.is_file() or alias.is_symlink():
+        raise ValueError("Missing regular legacy EXP-004 navigation note")
     alias_text = alias.read_text(encoding="utf-8")
     if not all(k in alias_text for k in (
         "NOT a GitHub Actions workflow",
-        ".github/workflows/lpf-target040.yml",
-        "https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/workflows/lpf-target040.yml",
+        "git show " + historic,
+        "retired from main",
     )):
-        raise ValueError("EXP-004 legacy note no longer leads to the true manual workflow")
+        raise ValueError("EXP-004 legacy note must point to pinned historical source")
 
     original_sha = "055b222c79c73c7fbeacb19383f21c1da0625195"
-    untouched = ["data/bands.csv", "data/constraints/registry.json",
+    # The registry changes when Phase 2 trial policies are approved;
+    # unlike the snapshots below, its bytes are not immutable.
+    registry = json.loads((ROOT / "data/constraints/registry.json").read_text(encoding="utf-8"))
+    if registry["active_formal_id"] != "RF-F003" or registry["trial"]["RF-T008"]["state"] != "study_authorized":
+        raise ValueError("Unexpected current formal or trial registry status")
+    untouched = ["data/bands.csv",
                  "data/constraints/formal/RF-F003.json",
                  "data/constraints/trial/RF-T005.json",
                  "data/design_constraints.json",
