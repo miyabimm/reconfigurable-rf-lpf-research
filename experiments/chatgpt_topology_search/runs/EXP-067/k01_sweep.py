@@ -21,10 +21,11 @@ HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[3]
 sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-060"))
 sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-059"))
+sys.path.insert(0,str(ROOT/"experiments/chatgpt_topology_search/runs/EXP-058"))
 sys.path.insert(0,str(ROOT/"src"))
 import search_coupling_lgraphs as graph
 import search_pcb_edges as pcb
-from lpf.phase2_models import exp058_area3 as optim
+import sweep_area3 as optim
 from lpf.constraint_versions import load_constraint,constraint_fingerprint
 from lpf.slsqp_budget import run_termination_aware_slsqp, STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
 from lpf.trial_ic_fixed_c import validate_ic_fixed_c_settings
