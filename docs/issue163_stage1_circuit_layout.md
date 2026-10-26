@@ -172,6 +172,89 @@ candidate approval or a claim that the values satisfy current physical
 placement, Q, L/k or branch-count rules. A new EXP must validate the
 resolved policy and independent MNA before any candidate is recorded.
 
+## Stage-1 RF-T008 v3 resolved-policy validation boundary
+
+`src/lpf/phase2_models/rft008_policy_circuit.py` adds the immutable
+`PolicyBoundRFT008Circuit.from_policy` constructor for **new nominal
+Phase-2 candidates**. It explicitly requires a registry-resolved,
+unaltered RF-T008 revision-3 trial and stores a fingerprinted JSON copy.
+A caller may not pass an altered dictionary merely relabelled RF-T008.
+The connection and L/Q validation rules are read from current RF-F003 /
+RF-T008 constraints rather than copied into a separate set of RF limits.
+
+The constructor accepts `InductorTree`, named L series, physical chip
+order, ordered signed-k slots, `CapacitorPlacement`, named GJM01 or
+PCB_PATTERN_C fixed branches, and the explicit connection role of each
+variable C. It constructs both the generic `CoupledLCTopology` and the
+reversible `ParameterVectorSchema` without importing historical EXP
+runners. It uses these already-approved checkers:
+
+- `validation.validate_inductor_coupling` on the **full coupling matrix**
+  including implicit zero off-diagonal entries, passing converted L
+  inductances in **henries** (the new source model stores nH). Nominal
+  nonadjacent chip couplings must be zero, adjacent chip pairs obey the
+  resolved |k| bound, chip–PCB coupling is checked, and M must be SPD.
+- LQP02HV uses the explicit RF-F003 series bounds 0.4–27nH/Q25;
+  LQP02HQ uses 0.2–56nH/Q20; PCB_L uses positive L ≤2nH/Q12.
+  Bare `LQP02` (no HV/HQ series), LQP01 (unconfirmed range) and
+  currently unmodeled LQW04 bounds **fail closed** rather than silently
+  inheriting the historical fixed-Q25 assumption. Support may be
+  expanded when a fully specified range is available.
+- `RFT008CapacitorLayout.validate_values` and the existing IC/PCB
+  validators enforce fixed types and bounds, Q/parallel IC-fixed
+  metadata, all six variable settings, 0–2 installed composite IC-C
+  branches, one setting-invariant Q60 IC-fixed C per variable branch,
+  Q35 variable C, and the RF-T008 prohibition on the former RF-T007
+  Q40 shunt parasitic. There is **no formal GJM-count hard cap**; GJM
+  usage participates in the area objective and its 0.02pF lower bound
+  in this adapter is an explicitly documented EXP-style *search bound*.
+
+`validate_candidate(vector)` returns component/placement verification
+and the actual resolved-policy fingerprint, **not** RF filter approval.
+`checked_summary(vector, points=3)` validates first, then returns
+finite-grid forward metrics *separately*; independent branch-current
+MNA, dense-frequency verification, optimizer convergence and physical
+Q(f)/SRF/EM/tolerance checks remain mandatory before research-result
+promotion. Direct `CoupledLCEvaluator.il()` intentionally remains
+available for historical numerical parity but is **not a policy gate**.
+
+Example with configuration derived from the same legal RF-T008 family:
+
+```python
+from lpf.constraint_versions import load_constraint
+from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.phase2_models.rft008_policy_circuit import PolicyBoundRFT008Circuit
+
+p = load_constraint("RF-T008", allow_trial=True)
+v = ((0, 3), (1, 2))
+c = PolicyBoundRFT008Circuit.from_policy(
+    p,
+    inductor_tree=InductorTree(
+        5, ((0, 1), (1, 3), (1, 4), (1, 2))
+    ),
+    inductor_types=("LQP02HV",) * 4,
+    physical_order=(0, 1, 3, 2),
+    coupling_pairs=((0, 1), (1, 3), (3, 2)),
+    capacitor_placement=CapacitorPlacement(
+        5, ((0, 1), (4, -1), (1, 2), (0, 3)), v, v
+    ),
+    fixed_c_types=("GJM01", "PCB_PATTERN_C",
+                   "PCB_PATTERN_C", "PCB_PATTERN_C"),
+    variable_roles=("bridge", "bridge"),
+)
+component_check = c.validate_candidate(saved_vector)
+sampled_report = c.checked_summary(saved_vector, points=3)
+# NOT independent MNA verification, dense RF approval or a new EXP.
+```
+
+`tests/test_phase2_rft008_policy_circuit.py` checks saved EXP-058 3L
+and 4L numerical parity under the new component policy; RF-T008 0/1/2
+vs forbidden 3 installed C branches; false PCB/GJM/IC C bounds and
+variable settings; physical chip adjacency, signed k and PCB mixed k;
+HV/HQ/PCB-L value/Q differences; rejection of unsupported L series,
+bad or altered policy dictionaries, and isolation of immutable
+snapshots. These tests were added to the normal Phase-2 smoke CI.
+
 ## Still outstanding (do not close Stage 1)
 
 - Extend the explicit `CapacitorPlacement` integration beyond source-shaped RF-T008 3L/4L: include RF-T005/T007, arbitrary C-branch counts and solver vector schema, and RF-policy-correct physical coupling slots.
@@ -180,8 +263,10 @@ resolved policy and independent MNA before any candidate is recorded.
   EXP-043's two source layouts are already covered by frozen-vector parity.
   An immutable generic forward evaluator exists, but no complete
   policy-gated candidate API yet.
-- Enforce the **resolved RF policy** at the final circuit-model creation
-  boundary. Topological validity alone is not RF/physical admissibility.
+- Extend the **resolved RF policy** validation boundary (now available for
+  RF-T008 v3 LQP02HV/HQ/PCB_L) to RF-T005/T007, other formally specified
+  component series, and the final research-candidate/MNA evidence gate.
+  Structural/policy validity is not proof of RF or physical feasibility.
 - Continue Stage 1 against frozen EXP-042/043/055/058 vectors and Stage 2
   independent numeric regressions. Avoid modifications to archived scripts.
 - Stage 3 uses `slsqp-staged-v2`; this increment runs no optimizer or new EXP.
