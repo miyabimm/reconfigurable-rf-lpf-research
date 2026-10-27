@@ -1,15 +1,24 @@
-# Issue 168 PR-B2 — WIP evidence
+# Issue 168 PR-B2 — finite-grid evidence
 
-Base: `e7226e67c6e5eef2d85d00f43dcd8e8dc7f97b35`. This is an incomplete draft, not Stage 2 completion or certification.
+Base: `e7226e67c6e5eef2d85d00f43dcd8e8dc7f97b35`. Draft, not Stage 2 completion or certification. Changes after reviewed WIP head `75bed7c0228c590c88ce268fb43196cc1ddf860e` address the review; the PR head identifies the resulting code and tests.
 
-- Frozen EXP-042, EXP-043 (zero_gjm_double and two_gjm_bridge), EXP-055 and EXP-058 vectors: RF-T005/T007/T008 trial policies, 28 canonical case-linked intervals × 3 endpoints/midpoint = 420 comparisons, not the six-setting cross product. Assertions enforce absolute IL error < 1e-9 dB, power residual < 1e-12 W and passive loss tolerance. Forward nodal/matrix methods are mocked to fail during MNA.
-- Two-point real EXP-042 cross scan: 6 × 28 segments (336 samples); synthetic 3-point cross scan tests local refinement and distinguishes mandatory 30 dB from nominal 35 dB. Local refinement only detects sampled interior extrema, not arbitrary hidden features. No continuous-frequency guarantee.
-- Local `uv run --frozen` unittest: independent RF 3 tests, public API 6, branch MNA 6, EXP-043 generic 1, T005/T007 policy circuit 8: 24 tests passed (subtests included in their parent test). No large dense run or optimization.
-- Attempted wider `test_phase2*.py` suite before final fix: failed due to a temporary test syntax error (subsequently fixed) and a pre-existing history check referencing `26a5d4a:docs/archive/maintenance_notes_20261027.md`, absent in the local Git history. Full suite has not been rerun after the fix; CI result must be verified separately.
+## Five-vector parity
 
-## Required before review / remaining work
+`uv run --frozen python -m unittest discover -s tests -p test_phase2_independent_rf.py -v`: 5 saved vectors × 28 canonical case-linked intervals × 3 endpoints/midpoint = 420 samples, not the six-setting cross product. Component policy, ID, fingerprint and six settings are checked; forward nodal/matrix methods are mocked to fail during MNA. IL error < 1e-9 dB, power residual < 1e-12 W and passive loss tolerance are asserted. Local measured maxima:
 
-- Record actual maximum IL error and power residual with vector, setting and frequency; currently only assertion thresholds are established. Record refined synthetic numerical evidence and final head SHA.
-- Strengthen local-extremum failure and non-finite/non-passive tests, boundary/label assertions, explicit flag separation and per-role worst-case summaries. Review dense completion semantics and threshold handling. Verify exact-head Actions actually runs the amended test.
-- Full Stage 1 regression and history audit remain outstanding. Promotion gate integration and final history/DoD audit are PR-B3. No independent review yet; do not merge this draft.
-- RF-F003 and RF-T006 remain unsupported by the Stage 1 API. No fixed policies, RF thresholds, S2P, historical EXP artifacts, Phase 3 or physical validation were changed or authorized.
+- |ΔIL| = **4.476419235288631e-13 dB**, EXP-058 area4p667, RF-T008, setting 4, segment 23, 2442 MHz; policy fingerprint `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`.
+- |power residual| = **5.833007687972014e-17 W**, EXP-043 zero_gjm_double, RF-T005, setting 0, segment 1, 652 MHz; fingerprint `59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c`.
+
+Input SHA-256 (read only):
+
+- `experiments/chatgpt_topology_search/runs/EXP-042/preliminary_js_5pt.json`: `c1a1dcdb61cb49ed983256cc4a115425342d6fb60ed1e095c4fb5aaf5d750930`
+- `experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json`: `8578a6b39d5af0e71028b7ffcd0237d2ffc6101e9b19d3642b5fc3d525dfa975`
+- `experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/two_gjm_bridge.json`: `7408b3639deb31d5f3bfb4acfc1626b8ac87374837cf3ea5c8109b6abcafcbed`
+- `experiments/chatgpt_topology_search/runs/EXP-055/checkpoints/cv1_input_tip_best.json`: `65d0d637e8a233c97e6a76b39dca2a15aaf90e46b2380ffaae1b6ea1689361cb`
+- `data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json`: `f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9`
+
+## Scan evidence and limitations
+
+Two-point real EXP-042 cross scan: 6 × 28 segments (336 samples); synthetic 3-point cross scan exercises local peak and stopband minimum refinement, labels, tie order, and distinguishes mandatory 30 dB from nominal 35 dB. Two-point refinement is rejected; numerical errors and unsuccessful/non-finite optimizer results fail closed. A successful refinement only examines sampled interior extrema and cannot guarantee detection of an invisible feature or prove a continuous-frequency bound. Summaries separately report pass, UL, DL, H2, H3 worst with location, for the requested canonical or cross mode. Cross is diagnostic, not a canonical RF verdict.
+
+Local `uv run --frozen python -m unittest discover -s tests -p 'test_phase2*.py'`: 109 tests passed, including Stage 1 regressions and history check. The earlier history failure was resolved when the missing Git object was fetched; no test was relaxed. Exact-head Actions and independent re-review are pending; do not merge before both. Full historical audit and promotion gate integration are PR-B3. No large dense run, optimization, Phase 3 or physical validation. RF-F003 and RF-T006 remain unsupported by the Stage 1 API. Formal policies, RF thresholds, S2P and historical EXP artifacts are unchanged.

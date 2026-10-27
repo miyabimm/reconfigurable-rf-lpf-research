@@ -18,6 +18,8 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
     """
     if type(points_per_interval) is not int or points_per_interval < 2:
         raise ValueError("points_per_interval must be an integer >= 2")
+    if refine and points_per_interval < 3:
+        raise ValueError("refinement requires at least 3 points per interval")
     if coverage not in ("canonical", "cross"):
         raise ValueError("coverage must be canonical or cross")
     if not math.isfinite(tolerance_hz) or tolerance_hz <= 0:
@@ -26,6 +28,7 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         rows = list(csv.DictReader(f))
     segments = validated_band_segments(rows)
     full = circuit._adapter.policy["evaluation"]["full_phase2"]
+    component = circuit.validate_components(vector)
     results = []
     for index, (canonical, role, low, high) in enumerate(segments):
         for setting in (range(6) if coverage == "cross" else (canonical,)):
@@ -63,9 +66,23 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
                             "additional_evaluations": extra,
                             "mandatory_stop_pass": observed >= full["minimum_h2_h3_db"] if role else None,
                             "nominal_goal_pass": observed >= full["nominal_h2_h3_target_db"] if role else observed <= full["nominal_max_il_db"]})
-    return {"constraint_id": circuit.policy_id, "coverage": coverage,
+    # Ties retain CSV segment order, then ascending setting; grid ties retain
+    # ascending frequency. Cross summaries never stand in for canonical ones.
+    def worst(regions, key, maximize):
+        subset = [r for r in results if r['region'] in regions]
+        chosen = min(subset, key=lambda r: (-1 if maximize else 1) * r[key]['il_db'])
+        return {name: chosen[name] for name in ('segment', 'case', 'region', 'subband', 'setting', 'canonical_setting')} | chosen[key]
+    summary = {key: {role: worst(regions, key, maximum) for role, regions, maximum in (
+        ('pass_il', ('UL', 'DL'), True), ('UL', ('UL',), True), ('DL', ('DL',), True),
+        ('H2', ('H2',), False), ('H3', ('H3',), False))}
+        for key in ('grid_worst', 'refined_worst')}
+    return {"constraint_id": circuit.policy_id, "constraint_fingerprint": circuit.policy_fingerprint,
+            "coverage": coverage, "summary": summary,
+            "component_policy_pass": component['component_policy_pass'],
+            "component_policy": component, "forward_sampled_checked": False,
             "points_per_interval": points_per_interval, "segments": results,
             "local_extrema_checked": refine, "tolerance_hz": tolerance_hz if refine else None,
             "independent_mna_checked": True, "rf_dense_evaluation_completed": False,
+            "optimization_converged": None, "physical_validation_checked": False,
             "finite_grid_only": True, "continuous_band_proven": False,
             "rf_compliance_certified": False, "candidate_promotion_blocked": True}

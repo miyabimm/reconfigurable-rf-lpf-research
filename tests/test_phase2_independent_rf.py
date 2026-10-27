@@ -18,7 +18,9 @@ from lpf.phase2_models.independent_rf import evaluate_independent_sample
 class IndependentRFTests(unittest.TestCase):
     def test_scan_coverage_and_refinement(self):
         policy = load_constraint('RF-T005', allow_trial=True)
-        circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005')
+        circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',
+                                  policy_fingerprint='synthetic',
+                                  validate_components=lambda x: {'component_policy_pass': True})
         # Smooth synthetic maximum in the first UL segment, resolved by the
         # midpoint but underestimated by the endpoints and by the midpoint itself.
         from lpf.phase2_models._grid import ROOT
@@ -35,6 +37,18 @@ class IndependentRFTests(unittest.TestCase):
             canonical = scan_independent_rf(circuit, None, points_per_interval=2)
         self.assertEqual(len(report['segments']), 168)
         self.assertEqual(len(canonical['segments']), 28)
+        self.assertEqual(report['coverage'], 'cross')
+        self.assertEqual(canonical['coverage'], 'canonical')
+        self.assertEqual(report['summary']['grid_worst']['pass_il']['setting'], 0)
+        self.assertEqual(report['summary']['grid_worst']['pass_il']['segment'], 0)
+        self.assertEqual(report['summary']['refined_worst']['H2']['region'], 'H2')
+        self.assertEqual(report['summary']['refined_worst']['H3']['region'], 'H3')
+        for summary in canonical['summary'].values():
+            for item in summary.values():
+                self.assertEqual(item['setting'], item['canonical_setting'])
+        self.assertTrue(report['component_policy_pass'])
+        self.assertFalse(report['forward_sampled_checked'])
+        self.assertEqual({r['subband'] for r in report['segments'] if r['case'] == 'B13+B14'}, {'B13', 'B14'})
         self.assertEqual({(r['segment'], r['setting']) for r in report['segments']},
                          {(s, k) for s in range(28) for k in range(6)})
         first = report['segments'][0]
@@ -46,6 +60,41 @@ class IndependentRFTests(unittest.TestCase):
         self.assertFalse(stop['nominal_goal_pass'])
         self.assertFalse(report['rf_compliance_certified'])
         self.assertTrue(report['candidate_promotion_blocked'])
+
+    def test_scan_failure_and_stop_refinement(self):
+        policy = load_constraint('RF-T005', allow_trial=True)
+        circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',
+                                  policy_fingerprint='synthetic',
+                                  validate_components=lambda x: {'component_policy_pass': False})
+        for kwargs in ({'points_per_interval': 1}, {'points_per_interval': 2, 'refine': True},
+                       {'points_per_interval': 3, 'coverage': 'bad'}):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                scan_independent_rf(circuit, None, **kwargs)
+        with patch('lpf.phase2_models.independent_scan.evaluate_independent_sample', return_value={'il_db': float('nan')}):
+            with self.assertRaisesRegex(ValueError, 'Non-finite'):
+                scan_independent_rf(circuit, None, points_per_interval=3)
+        for reason in ('non-SPD', 'non-passive'):
+            with patch('lpf.phase2_models.independent_scan.evaluate_independent_sample', side_effect=ValueError(reason)):
+                with self.assertRaisesRegex(ValueError, reason):
+                    scan_independent_rf(circuit, None, points_per_interval=3)
+        from lpf.phase2_models._grid import ROOT
+        import csv
+        with (ROOT / 'data/bands.csv').open(newline='', encoding='utf-8') as f:
+            row = next(r for r in csv.DictReader(f) if r['region'] == 'H2')
+        low, high = float(row['low_mhz'])*1e6, float(row['high_mhz'])*1e6
+        center = low + .4*(high-low)
+        def fake(c, v, f, s):
+            return {'il_db': 31 + ((f-center)/(high-low))**2 if low <= f <= high else 32}
+        with patch('lpf.phase2_models.independent_scan.evaluate_independent_sample', side_effect=fake):
+            report = scan_independent_rf(circuit, None, points_per_interval=3, refine=True)
+            h2 = next(r for r in report['segments'] if r['case'] == row['case'] and r['region'] == 'H2' and r['subband'] == row['note'])
+            self.assertLess(h2['refined_worst']['il_db'], h2['grid_worst']['il_db'])
+            self.assertAlmostEqual(h2['refined_worst']['frequency_hz'], center, delta=2)
+            self.assertFalse(report['component_policy_pass'])
+            for result in (SimpleNamespace(success=False, fun=0), SimpleNamespace(success=True, fun=float('nan'))):
+                with patch('lpf.phase2_models.independent_scan.minimize_scalar', return_value=result):
+                    with self.assertRaisesRegex(ValueError, 'refinement failed'):
+                        scan_independent_rf(circuit, None, points_per_interval=3, refine=True)
 
     def test_small_real_cross_scan(self):
         _, x = exp042.policy_and_seed()
@@ -90,8 +139,16 @@ class IndependentRFTests(unittest.TestCase):
                 fixed_c_types=tuple('GJM01' if t == 'GJM' else 'PCB_PATTERN_C' for t in types),
                 variable_roles=tuple('shunt_to_ground' if -1 in e else 'bridge' for e in edges))
             cases.append(('RF-T005', config, row['vector']))
-        for trial, config, x in cases:
+        maxima = {'il': (-1, None), 'power': (-1, None)}
+        labels = ['EXP-042/preliminary_js_5pt', 'EXP-055/cv1_input_tip_best',
+                  'EXP-058/area4p667', 'EXP-043/zero_gjm_double', 'EXP-043/two_gjm_bridge']
+        for label, (trial, config, x) in zip(labels, cases):
             c = build_nominal_circuit(load_constraint(trial, allow_trial=True), config)
+            component = c.validate_components(x)
+            self.assertTrue(component['component_policy_pass'], label)
+            self.assertEqual(component['constraint_id'], trial)
+            self.assertEqual(component['constraint_fingerprint'], c.policy_fingerprint)
+            self.assertEqual(len(c.decode(x).capacitors_pf_by_setting), 6)
             forward = c.forward_evaluator(3)
             reference = forward.il(x)
             self.assertEqual(len(reference), 84)
@@ -102,9 +159,15 @@ class IndependentRFTests(unittest.TestCase):
                     with patch.object(CoupledLCTopology, 'node_admittance', side_effect=AssertionError('forward called')), \
                          patch.object(CoupledLCTopology, 'matrices', side_effect=AssertionError('forward called')):
                         result = evaluate_independent_sample(c, x, frequency_mhz*1e6, setting)
+                    location = (label, trial, setting, int(forward.segment[i]), frequency_mhz, c.policy_fingerprint)
+                    for key, value in (('il', abs(result['il_db'] - expected)),
+                                       ('power', abs(result['power_residual_w']))):
+                        if value > maxima[key][0]:
+                            maxima[key] = (value, location)
                     self.assertLess(abs(result['il_db'] - expected), 1e-9)
                     self.assertLess(abs(result['power_residual_w']), 1e-12)
                     for key in ('inductor_loss_w','capacitor_loss_w','input_s2p_loss_w','output_s2p_loss_w','load_power_w'):
                         self.assertGreaterEqual(result[key], -1e-12, key)
                     self.assertFalse(result['rf_compliance_certified'])
                     self.assertTrue(result['candidate_promotion_blocked'])
+        print('B2 parity maxima:', maxima)
