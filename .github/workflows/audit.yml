@@ -106,6 +106,10 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
           python -m unittest discover -s tests -p test_phase2_zero_branch_projection.py -v
 
+      - name: Check documentation entrypoints and preserved evidence links
+        run: |
+          python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
+          python scripts/verify_phase2_cleanup_w1_links.py
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
       - name: Run 12 storage gate tests only when storage governance changes
