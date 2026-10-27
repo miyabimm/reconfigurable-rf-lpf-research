@@ -258,6 +258,19 @@ class CoupledLCTopology:
         return Y
 
 
+def _fixed_port_impedance(policy, key):
+    """Load exact source/load values from the resolved RF policy, never guess."""
+    try:
+        section = policy[key]
+        impedance = complex(float(section["real"]), float(section["imag"]))
+    except (KeyError, TypeError, ValueError, OverflowError) as exc:
+        raise ValueError(f"Invalid {key} in resolved RF policy") from exc
+    if (not np.isfinite(impedance) or impedance.real <= 0 or
+            section.get("frequency_dependent", False)):
+        raise ValueError(f"Unsupported or non-passive constant {key}")
+    return impedance
+
+
 class CoupledLCEvaluator(SampledExternalEvaluator):
     """Phase-2 sampled RF forward evaluator over explicit immutable inputs.
 
@@ -276,6 +289,8 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
             raise ValueError("Circuit schema and topology disagree")
         self.topology = topology
         self.schema = schema
+        self.source_ohms = _fixed_port_impedance(policy, "source_ohms")
+        self.load_ohms = _fixed_port_impedance(policy, "load_ohms")
         super().__init__(policy, points)
 
     def il(self, vector):
@@ -326,7 +341,7 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
             raise CircuitNumericalError(
                 "cascade_nonfinite", "Non-finite external S2P + LPF cascade"
             )
-        zl, zs = 60 - 40j, 50.
+        zl, zs = self.load_ohms, self.source_ohms
         den = full[:, 0, 0] * zl + full[:, 0, 1] + zs * (
             full[:, 1, 0] * zl + full[:, 1, 1]
         )
@@ -334,7 +349,7 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
             raise CircuitNumericalError(
                 "gain_denominator_invalid", "Non-finite or zero cascade denominator"
             )
-        gain = 4 * zs * zl.real / np.abs(den) ** 2
+        gain = 4 * zs.real * zl.real / np.abs(den) ** 2
         if not np.all(np.isfinite(gain)):
             raise CircuitNumericalError("gain_nonfinite", "Non-finite transfer gain")
         il = -10 * np.log10(np.maximum(gain, 1e-300))
