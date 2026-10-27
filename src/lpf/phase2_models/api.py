@@ -106,10 +106,12 @@ class NominalCircuit:
         result = dict(self._adapter.validate_candidate(vector))
         roles = self.connection_role_audit()
         result["connection_role_audit"] = roles
-        result["connection_role_promotion_blocked"] = not roles["all_verified"]
+        result["connection_role_evidence_incomplete"] = not roles[
+            "all_declared_roles_supported_by_l_tree"
+        ]
         blockers = ["independent_mna_not_checked", "dense_rf_not_checked"]
-        if not roles["all_verified"]:
-            blockers.append("connection_role_unverified")
+        if result["connection_role_evidence_incomplete"]:
+            blockers.append("declared_role_not_proven_by_l_tree")
         result["promotion_blockers"] = tuple(blockers)
         # A Stage-1 component check MUST NEVER authorize final candidate
         # promotion: the Stage-2 independent MNA and dense RF gate have
