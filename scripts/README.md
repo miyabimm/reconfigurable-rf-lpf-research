@@ -51,4 +51,4 @@ uv run --frozen python -m unittest discover -s tests -v
 
 探索・検証スクリプトの変更に伴って原checkpointや実行済み結果を改変しない。新条件の数値を算出する場合は、コードSHA・制約SHA・bandsと固定S2P・格子・独立検証を記録する。Phase 3は明示承認まで停止。
 
-[全体README](../README.md) ／ [実験原本の案内](../experiments/README.md) ／ [結果の入口](../docs/results/README.md)
+[全体README](../README.md) ／ [実験原本の案内](../experiments/README.md) ／ [結果の入口](../docs/results.md)

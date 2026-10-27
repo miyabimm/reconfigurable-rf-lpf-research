@@ -5,15 +5,15 @@
 ## 1. 正本とW4の境界
 
 - 作業起点：main `a11e9edc06b1238558cfeff1efb005faf668692b`（2026-10-17、PR #80統合後）。研究Phase 2。Phase 3はユーザー明示承認まで着手しない。
-- [運用正本](chatgpt_project_instructions.md)、[追加整理計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)、[W0監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W3個別審査](phase2_cleanup_w3_document_review_20261017.md)を参照。
+- [運用正本](chatgpt_project_instructions.md)、[追加整理計画](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/phase2_repository_cleanup_and_deletion_plan_20261017.md)、[W0監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W3個別審査](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/phase2_cleanup_w3_document_review_20261017.md)を参照。
 - E-001 `data/validation/`、E-002 `experiments/chatgpt_topology_search/runs/`、W-001 `.github/workflows/exp042_*.yml`、その他EXP専用workflowを対象。正式RF-F003/試験RF-T005の正本や候補・実験結果には変更しない。
 - [W4審査ゲートCSV](../data/repository_reviews/w4_cleanup_decision_gates_20261017.csv)は判断区分、個別承認状態を記録。**ファイル個票はCI runのArtifactsとして生成**し、現時点ではGitに全個票を直接追加しない。
 
 ## 2. 新しい実行済み監査との区別
 
-既存の[証拠逆引きツール](../scripts/build_reference_inventory.py)はmanifestにハッシュ登録された証拠、候補台帳checkpoint/verification、補助索引とvalidation overlayを追跡する。**索引未参照は不要の証明にならない。** 中断・再開のlocks／tasks／manager.log、ソースコピー、独立回路検証、旧PRの履歴などに別の役割がある。
+既存の[証拠逆引きツール](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/scripts/build_reference_inventory.py)はmanifestにハッシュ登録された証拠、候補台帳checkpoint/verification、補助索引とvalidation overlayを追跡する。**索引未参照は不要の証明にならない。** 中断・再開のlocks／tasks／manager.log、ソースコピー、独立回路検証、旧PRの履歴などに別の役割がある。
 
-W4では[読み取り専用監査スクリプト](../scripts/audit_phase2_cleanup_w4.py)を追加し、最新checkout上の：
+W4では[読み取り専用監査スクリプト](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/scripts/audit_phase2_cleanup_w4.py)を追加し、最新checkout上の：
 - 全tracked E-001/E-002ファイルをGit blob SHA／bytes／実験・validation群／既存機械参照／旧46件保護の有無で区分する。
 - `.github/workflows/`を列挙して`workflow_dispatch`の再実行性、contents書込／git push、研究ブランチ固定参照、ソースliteral pathを検出する。
 - [W3マージ後main](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/commit/a11e9edc06b1238558cfeff1efb005faf668692b)との差分で**削除0件**を保証し、旧46件の追跡Git blob SHAを照合する。

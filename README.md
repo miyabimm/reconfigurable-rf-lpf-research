@@ -10,7 +10,7 @@
 | 周波数帯・固定寄生 | [bands.csv](data/bands.csv)／[固定S2P](data/parasitics/) |
 | 仕様の意味・制約の解釈 | [設計仕様](docs/specification.md) |
 | 現在地と次の開発ゲート | [ロードマップ](docs/roadmap.md)／[Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163) |
-| 保存済み研究成果 | [結果一覧](docs/results/README.md)／[実験索引](data/experiment_index.csv) |
+| 保存済み研究成果 | [結果一覧](docs/results.md)／[実験索引](data/experiment_index.csv) |
 | 実験原本・検証根拠 | [experiments](experiments/README.md) |
 | 研究運用ルール | [プロジェクト運用指示](docs/chatgpt_project_instructions.md) |
 | 文書・データ整理 | [Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170) |

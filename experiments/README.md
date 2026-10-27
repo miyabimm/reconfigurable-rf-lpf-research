@@ -9,4 +9,4 @@
 
 完全L/C/k、全設定の可変C、原ソースSHA・検証格子・独立MNA・制約IDを確認します。後日の検証overlayは、元実験の実行環境を自動的に証明するものではありません。
 
-[結果一覧](../docs/results/README.md) ／ [データの案内](../data/README.md)
+[結果一覧](../docs/results.md) ／ [データの案内](../data/README.md)

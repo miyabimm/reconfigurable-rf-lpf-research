@@ -87,8 +87,8 @@
 
 ## 検証・最新研究との分離
 
-- 本統合は**旧資料の読取と整理であり新しいRF解析、最適化、EM測定ではない**。RF-F003正式とRF-T005試験の数値比較は[現行結果](../results/README.md)、[固定仕様](../../data/constraints/registry.json)を優先。
-- [W3個別審査](../phase2_cleanup_w3_document_review_20261017.md)は**削除承認前に実行した当時のレビュー**。本書および削除PRのCI結果が後続の実施状態を更新する。
+- 本統合は**旧資料の読取と整理であり新しいRF解析、最適化、EM測定ではない**。RF-F003正式とRF-T005試験の数値比較は[現行結果](../results.md)、[固定仕様](../../data/constraints/registry.json)を優先。
+- [W3個別審査](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/phase2_cleanup_w3_document_review_20261017.md)は**削除承認前に実行した当時のレビュー**。本書および削除PRのCI結果が後続の実施状態を更新する。
 - [W3処分台帳](../../data/repository_reviews/w3_document_disposition_20261017.csv)、[削除計画台帳](../../data/repository_reviews/phase2_cleanup_deletion_candidates_20261017.csv)に削除直前SHAと所有者承認区分を記録。W3 CIで4件を歴史コミットから`git show`復元してSHAを照合し、保持するD-005～007と旧46ファイルは現在blobの不変性を検査。
 - **削除4件は現在の追跡treeのpath数を4減らすだけ**。新統合文書・更新検証コードを加えるため、リポジトリ全体のnetファイル数やGit履歴pack bytesの減少を保証しない。
 
