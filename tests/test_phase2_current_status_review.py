@@ -4,6 +4,7 @@ Does not re-run RF optimization or rewrite old experiments.
 """
 import csv
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -38,6 +39,27 @@ class Phase2CurrentStatusTests(unittest.TestCase):
         results = (ROOT / "docs/results/README.md").read_text(encoding="utf-8")
         self.assertIn("EXP-048", results)
         self.assertIn("EXP-049", results)
+
+    def test_retired_process_documents_are_recoverable_from_git(self):
+        pinned_commit = "0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53"
+        old_blobs = {
+            "docs/phase2_repository_cleanup_and_deletion_plan_20261017.md": "88cb034aab4d231c927de3605ded758f5d27153d",
+            "docs/phase2_stepA_smoke_and_on_demand_checks_20261018.md": "3c70c0af0d8d7103521a7135443189d6b10bb570",
+            "docs/phase2_stepB_workflow_retirement_20261018.md": "d90f00f1b61b6a145ae6f015649e3e9117de58be",
+            "docs/phase2_first_wave_workflow_parity_review_20261018.md": "a2f741bfac38cd54d0d0270575b8a7835c2cbf9b",
+            "docs/phase2_stepC_dated_audit_retirement_20261018.md": "95c15a54b0b17e7ae6911410b3f43aa893c32513",
+        }
+        index = (ROOT / "docs/archive/maintenance_notes_20261027.md").read_text(
+            encoding="utf-8")
+        for path, expected_blob in old_blobs.items():
+            with self.subTest(path=path):
+                self.assertFalse((ROOT / path).exists())
+                self.assertIn(pinned_commit + "/" + path, index)
+                self.assertIn(expected_blob, index)
+                actual_blob = subprocess.check_output(
+                    ["git", "rev-parse", pinned_commit + ":" + path],
+                    cwd=ROOT, text=True).strip()
+                self.assertEqual(expected_blob, actual_blob)
 
     def test_exp017_near_0301_is_recovered_without_changing_original_sources(self):
         source = (ROOT / "experiments/chatgpt_topology_search/runs/EXP-017/README.md").read_text(encoding="utf-8")

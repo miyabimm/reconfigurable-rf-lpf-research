@@ -5,7 +5,7 @@
 ## 1. 正本とW4の境界
 
 - 作業起点：main `a11e9edc06b1238558cfeff1efb005faf668692b`（2026-10-17、PR #80統合後）。研究Phase 2。Phase 3はユーザー明示承認まで着手しない。
-- [運用正本](chatgpt_project_instructions.md)、[追加整理計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)、[W0監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W3個別審査](phase2_cleanup_w3_document_review_20261017.md)を参照。
+- [運用正本](chatgpt_project_instructions.md)、[追加整理計画](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/phase2_repository_cleanup_and_deletion_plan_20261017.md)、[W0監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W3個別審査](phase2_cleanup_w3_document_review_20261017.md)を参照。
 - E-001 `data/validation/`、E-002 `experiments/chatgpt_topology_search/runs/`、W-001 `.github/workflows/exp042_*.yml`、その他EXP専用workflowを対象。正式RF-F003/試験RF-T005の正本や候補・実験結果には変更しない。
 - [W4審査ゲートCSV](../data/repository_reviews/w4_cleanup_decision_gates_20261017.csv)は判断区分、個別承認状態を記録。**ファイル個票はCI runのArtifactsとして生成**し、現時点ではGitに全個票を直接追加しない。
 

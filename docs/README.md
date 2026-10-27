@@ -23,3 +23,5 @@
 - [旧governance目次](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)：整理当時の運用・監査資料へのリンク。
 
 現在の状況は[ロードマップ](roadmap.md)とGitHub Issues、計算結果は[EXP原本](../experiments/README.md)を参照します。旧文書の内容を現在のRF性能や未解決事項として読み替えません。
+
+旧い管理・CI運用案、廃止時点の対象一覧、元blobの固定参照は[旧管理資料の保存索引](archive/maintenance_notes_20261027.md)へ集約しました。現行の実行ルールではありません。
