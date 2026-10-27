@@ -1,3 +1,9 @@
+## 2026-10-27：Stage 1共通回路コアをmainへ統合（Phase 2）
+
+[PR #164](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164)をKISS最終レビュー・CI完了後にsquash merge（統合コミット`8be0d3be0e4bf4c90f8c1db2be8864f4b45a1391`）。[原head Actions #40492546669](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40492546669)／[main Actions #40494282161](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40494282161)ともに**PASS**。Stage 1 DoD **S1-01～10完了**：[設計と完了証拠](issue163_stage1_core_architecture.md)、[子Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)。主要成果は`CircuitDefinition`＋`build_nominal_circuit`の統一公開API、T005/T007/T008 v3の版別制約と損失C/Q、グラフパラメータ化forward、厳密28区間×6設定・S2P/数値異常入力検査、EXP-042/043/055/058凍結値パリティ。旧実験コード・元結果・制約・manifest・固定S2Pは変更していない。
+
+**親Issue #163はStage 2～5の残作業のためOPEN**。次段階は独立generic branch-current MNAの別開発であり、本マージによる実行・達成を意味しない。新EXP探索・最適化・dense RF適合・実装性能・Phase 3は実施していない。**研究はPhase 2継続、Phase 3はユーザー明示承認まで開始しない**。以下の2026-10-27各節でいう「Draft／未マージ」「DoD未完了」はそれぞれ当時の進捗履歴である。
+
 ## 2026-10-27：KISS重点レビューの修正（Phase 2／Draft PR #164）
 
 [PR #164 KISSレビュー](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6439964091)で見つかった28帯域のcase×region×subband網羅性検証不足を、`_grid.validated_band_segments`の小さな集合検査で修正。B71のH2をULへ誤記する反例、B13+B14のB13/B14重複・未知サブバンドを回帰テストで拒否。28区間・6設定・固定RF周波数・S2Pとloss/Q条件は不変更。歴史的29→23要素ベクトル移行処理は`vector_migration.py`からのみ明示importし、通常の`api.py`からの依存を解消。trial別の共通L物理順序・固定C部品型チェックを小さい`nominal_parts.py`の2関数に整理。T007常設寄生とT008 IC-fixed Q60は各々のpolicyアダプタへ残す。古いdocstringを更新し、Lの境界検査を一条件に簡素化。**Stage 1 S1-09の回帰/CIがPASSしてもS1-10最終レビュー・main統合は別工程**。PR #164はDraft・未マージ、Stage 2・最適化・Phase 3には進まない。
