@@ -294,8 +294,13 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
         super().__init__(policy, points)
 
     def il(self, vector):
-        values = (vector if isinstance(vector, CircuitValues)
-                  else self.schema.decode(vector))
+        if isinstance(vector, CircuitValues):
+            # A typed value is not an escape hatch for cross-setting changes
+            # to fixed/IC-fixed/constant C or topology dimension mismatches.
+            self.schema.encode(vector)
+            values = vector
+        else:
+            values = self.schema.decode(vector)
         Y = self.topology.node_admittance(values, self.omega, self.setting)
         ports = (self.topology.inductor_tree.source_node,
                  self.topology.inductor_tree.load_node)
