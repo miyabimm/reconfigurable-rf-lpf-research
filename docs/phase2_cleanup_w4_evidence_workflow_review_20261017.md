@@ -11,9 +11,9 @@
 
 ## 2. 新しい実行済み監査との区別
 
-既存の[証拠逆引きツール](../scripts/build_reference_inventory.py)はmanifestにハッシュ登録された証拠、候補台帳checkpoint/verification、補助索引とvalidation overlayを追跡する。**索引未参照は不要の証明にならない。** 中断・再開のlocks／tasks／manager.log、ソースコピー、独立回路検証、旧PRの履歴などに別の役割がある。
+既存の[証拠逆引きツール](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/scripts/build_reference_inventory.py)はmanifestにハッシュ登録された証拠、候補台帳checkpoint/verification、補助索引とvalidation overlayを追跡する。**索引未参照は不要の証明にならない。** 中断・再開のlocks／tasks／manager.log、ソースコピー、独立回路検証、旧PRの履歴などに別の役割がある。
 
-W4では[読み取り専用監査スクリプト](../scripts/audit_phase2_cleanup_w4.py)を追加し、最新checkout上の：
+W4では[読み取り専用監査スクリプト](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/scripts/audit_phase2_cleanup_w4.py)を追加し、最新checkout上の：
 - 全tracked E-001/E-002ファイルをGit blob SHA／bytes／実験・validation群／既存機械参照／旧46件保護の有無で区分する。
 - `.github/workflows/`を列挙して`workflow_dispatch`の再実行性、contents書込／git push、研究ブランチ固定参照、ソースliteral pathを検出する。
 - [W3マージ後main](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/commit/a11e9edc06b1238558cfeff1efb005faf668692b)との差分で**削除0件**を保証し、旧46件の追跡Git blob SHAを照合する。

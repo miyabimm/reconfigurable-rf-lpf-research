@@ -5,8 +5,8 @@
 ## 対象と出典
 
 - main起点 `fd8c3fb4dc9f972dfd3d646009facb25cf344a0b`（[W4前回のPR #82](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/pull/82)統合済み）。
-- [前回のW4個票225件](../data/repository_reviews/w4_unindexed_225_review_20261017.csv)、[39 workflowのAPI可視履歴](../data/repository_reviews/w4_workflow_runs_20261017.csv)、[46件の保全対象](../data/repository_reviews/step4_retention_46_20261017.csv)を**入力**とし、旧出典SHAを照合する。
-- [読み取り専用依存・構文監査](../scripts/audit_phase2_w4_replay_dependencies.py)は全225パスのGit blob SHA/bytes、同じ実験groupの元manifestとREADMEでの**文字列参照（証拠ではなく手掛かり）**、元workflowが元パス全体を直接参照するか、元sourceのS2P取得・動的path構築・checkpoint処理の有無を分類する。
+- [前回のW4個票225件](../data/repository_reviews/w4_unindexed_225_review_20261017.csv)、[39 workflowのAPI可視履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/data/repository_reviews/w4_workflow_runs_20261017.csv)、[46件の保全対象](../data/repository_reviews/step4_retention_46_20261017.csv)を**入力**とし、旧出典SHAを照合する。
+- [読み取り専用依存・構文監査](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/5a1d32099541f6ab561401494893457bbbd10376/scripts/audit_phase2_w4_replay_dependencies.py)は全225パスのGit blob SHA/bytes、同じ実験groupの元manifestとREADMEでの**文字列参照（証拠ではなく手掛かり）**、元workflowが元パス全体を直接参照するか、元sourceのS2P取得・動的path構築・checkpoint処理の有無を分類する。
 - `.py`原本に限りPython AST、`.js`原本に限りNode.jsのmodule構文をチェック。**構文検査は実行・数値再現を意味しない**。Code Modeの`tools`／元S2P／seed／環境依存やトップレベル構文の実行形態は別途確認する。歴史的in-chatソースを強制実行しない。
 - [6件のEXP-042 Actions runとArtifactの実在メタデータ](../data/repository_reviews/w4_exp042_actions_artifact_metadata_20261018.json)はGitHub Actionsコネクターが**2026-10-18に返した情報**を固定保存。これは実際のzipダウンロードやzip内成果物検証、GitHub全workflowの完全な履歴照会ではない。
 
