@@ -209,8 +209,9 @@ runners. It uses these already-approved checkers:
   branches, one setting-invariant Q60 IC-fixed C per variable branch,
   Q35 variable C, and the RF-T008 prohibition on the former RF-T007
   Q40 shunt parasitic. There is **no formal GJM-count hard cap**; GJM
-  usage participates in the area objective and its 0.02pF lower bound
-  in this adapter is an explicitly documented EXP-style *search bound*.
+  usage participates in the area objective. The 0.02pF GJM minimum
+  exists only in explicitly requested EXP-058 *search* bounds, not
+  in the default RF-T008 component-policy adapter.
 
 The internal adapter's `validate_candidate(vector)` checks component
 constraints, **not** RF filter approval. For NEW EXPs use only
