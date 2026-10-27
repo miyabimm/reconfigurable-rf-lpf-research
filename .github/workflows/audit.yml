@@ -102,6 +102,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_connection_roles.py -v
           python -m unittest discover -s tests -p test_phase2_s2p_grid_cache.py -v
           python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
+          python -m unittest discover -s tests -p test_phase2_zero_branch_projection.py -v
 
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
