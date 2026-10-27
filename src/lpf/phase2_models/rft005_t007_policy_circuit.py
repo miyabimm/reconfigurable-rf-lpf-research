@@ -21,7 +21,8 @@ from .circuit_layout import CapacitorPlacement, InductorTree
 from .coupled_lc import (
     CircuitValues, CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
 )
-from .nominal_inductors import nominal_inductor_series, check_nominal_inductors
+from .nominal_inductors import check_nominal_inductors
+from .nominal_parts import checked_inductor_metadata, checked_fixed_c_types
 
 
 def _policy_connections(edges, roles):
@@ -77,19 +78,10 @@ class PolicyBoundRFT005T007Circuit:
         p = capacitor_placement
         if (p.node_count != inductor_tree.node_count or p.ic_fixed_edges):
             raise ValueError("T005/T007 cannot install composite IC-fixed C")
-        types = tuple(inductor_types)
-        if len(types) != len(inductor_tree.edges):
-            raise ValueError("One inductor series per L branch required")
-        L_q = tuple(nominal_inductor_series(policy, kind)[0] for kind in types)
-        order = tuple(physical_order)
-        chips = {i for i, kind in enumerate(types) if kind != "PCB_L"}
-        if (len(order) != len(chips) or set(order) != chips or
-                any(type(i) is not int for i in order)):
-            raise ValueError("Physical chip order must list all chip Ls once")
-        c_types = tuple(fixed_c_types)
-        if (len(c_types) != len(p.fixed_edges) or any(
-                kind not in ("GJM01", "PCB_PATTERN_C") for kind in c_types)):
-            raise ValueError("Explicit approved GJM/PCB fixed C types required")
+        types, order, L_q = checked_inductor_metadata(
+            policy, inductor_tree, inductor_types, physical_order
+        )
+        c_types = checked_fixed_c_types(p.fixed_edges, fixed_c_types)
         roles = tuple(variable_roles)
         if len(roles) != len(p.variable_edges):
             raise ValueError("Explicit role per installed variable C required")
