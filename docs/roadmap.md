@@ -1,3 +1,11 @@
+## 2026-10-27：Stage 1残課題の堅牢性・旧ベクトル変換（Phase 2／PR #164）
+
+[Stage 1共通コア設計](issue163_stage1_core_architecture.md)／[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)に従い、`NumericalCircuitError`ではなく**`CircuitNumericalError`**の`code`／`sample_index`契約を追加。結合Lの非SPD・解法失敗、節点／Schur／伝達Y／ABCD／外部S2P合成／利得の数値異常を原因別に識別する。50Ω源・60−j40Ω負荷は同じ公称値のままresolved policyから取得し、無効なZや周波数依存Zを暗黙に補正しない。既存S2Pのハッシュ検証・データキャッシュを再利用し、5L合成グラフとRF-T005の共通政策ゲートで新規EXP用APIの拡張可能性を回帰。
+
+EXP-055旧29要素ベクトルのゼロ可変Cプレースホルダーから23要素・実設置2枝への変換は、`phase2_models.api.project_zero_variable_branches`で制約fingerprint・L/k・固定C・枝の接続とrole・T007常設寄生／全6設定厳密0pFを確認してから行う。T008のIC内固定Cが消える変換、RF-T007接地寄生の消去、非ゼロ枝の削除は拒否。新規候補のRF認定・独立MNAを代替しない。[GitHub Actions #40451603248](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40451603248) **PASS**。Source parity・storage/provenance gateを含み、履歴ソース・数値・manifestは変更なし。
+
+Stage 1のS1-01～09は新規API/回帰で確認済み。**S1-10最終レビューとmainへの統合は未完了、PR #164はDraftで未マージ**。Stage 2を開始せず、Phase 2継続／Phase 3未承認。
+
 ## 2026-10-27：Issue #163 Stage 1共通計算基盤のAPIと完了基準を整理（Phase 2／PR #164レビュー中）
 
 新規EXPの共通入口を`src/lpf/phase2_models/api.py`の`CircuitDefinition`／`build_nominal_circuit`へ統一する。RF-T005/T007/T008 v3のL/C/Q/k、物理L順序、6設定値を同じ数値エンジンで扱い、試験条件固有の常設寄生・IC固定Cは内部のpolicyアダプタで構築する。EXP-042/043/055/058の凍結ベクトルとのforwardパリティを維持し、**RF制約適合、forward有限格子評価、独立MNA、最適化収束、物理検証を別の証拠として管理**する。GJMの形式的容量範囲に、旧EXP-058の探索下限0.02pFを混入させない。公開API、レイヤー責務、Stage 1最終DoD 10項目、次段階への切り分けは[Stage 1 共通コア設計](issue163_stage1_core_architecture.md)と[子Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で管理する。**Stage 1は未完了、Stage 2の汎用独立MNA以降にはまだ着手しない**。既存実験ソース、制約、保存数値を変更せず、Phase 2を継続、Phase 3未承認。
