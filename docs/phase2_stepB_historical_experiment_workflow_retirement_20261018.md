@@ -59,7 +59,7 @@ git show c6c23bab59aeeea70555b016bdec7806f72d239c:.github/workflows/lpf-exp013.y
 
 ## Draft PRの受入条件
 
-1. [Step Aの軽量スモーク](phase2_stepA_smoke_and_on_demand_checks_20261018.md) がPASSし、3つの残存workflow `audit.yml`／`reserve_experiment_number.yml`／`phase2_bc_wave1_consolidated.yml`を維持する。
+1. [Step Aの軽量スモーク](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/phase2_stepA_smoke_and_on_demand_checks_20261018.md) がPASSし、3つの残存workflow `audit.yml`／`reserve_experiment_number.yml`／`phase2_bc_wave1_consolidated.yml`を維持する。
 2. **差分の削除パスは表の28 workflow YAMLに限定**。Python、実験結果、候補ベクトル、独立検証、JSON、固定S2P、制約は削除しない。
 3. **manifestでSHA固定されていない**通常文書の削除先相対リンクだけを上記固定Git URLへ変更。**SHA固定の実験README 5件は原本として改変しない**。元相対リンクの参照先は本ページの固定Git版へ誘導し、未実行・未収束・失敗の歴史記録を維持する。
 4. **28パスの一括退役・削除は2026-10-18のユーザー回答「承認します」により個別承認済み**。PR #102の最終headで軽量CI成功と差分範囲を再確認してからmainへ統合する。追加の監査workflowや巨大なSHA台帳は新設しない。
