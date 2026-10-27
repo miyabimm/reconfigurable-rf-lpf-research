@@ -3,6 +3,7 @@
 All tests use synthetic circuits or frozen numeric fixtures. They do not
 claim RF feasibility, optimizer convergence or independent MNA validation.
 """
+import copy
 import json
 import sys
 import unittest
@@ -122,6 +123,25 @@ class Stage1NumericalFailureTests(unittest.TestCase):
                 ev.il(y)
         with self.assertRaises(ValueError):
             ev.il(x[:-1])
+
+    def test_port_impedance_came_from_policy_and_bad_values_rejected(self):
+        ev, x = self.legacy_fixture()
+        self.assertEqual(ev.source_ohms, 50.0 + 0j)
+        self.assertEqual(ev.load_ohms, 60.0 - 40j)
+        self.assertTrue(np.all(np.isfinite(ev.il(x))))
+        for key, val in (
+            ("source_ohms", {"real": 0, "imag": 0}),
+            ("source_ohms", {"real": float("nan"), "imag": 0}),
+            ("load_ohms", {"real": -1, "imag": -40}),
+            ("load_ohms", {"real": 60, "imag": float("inf")}),
+            ("load_ohms", {"real": 60, "imag": -40,
+                           "frequency_dependent": True}),
+        ):
+            with self.subTest(key=key, val=val):
+                policy = copy.deepcopy(self.policy)
+                policy[key] = val
+                with self.assertRaises(ValueError):
+                    CoupledLCEvaluator(policy, 3, ev.topology, ev.schema)
 
     def test_graph_dimension_ports_orientation_and_duplicate_checks(self):
         good = InductorTree(
