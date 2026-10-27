@@ -15,7 +15,6 @@ from .circuit_layout import InductorTree, CapacitorPlacement
 from .rft005_t007_policy_circuit import PolicyBoundRFT005T007Circuit
 from .rft008_policy_circuit import PolicyBoundRFT008Circuit
 from .role_audit import audit_variable_connection_roles
-from .vector_migration import ZeroBranchProjection, project_zero_variable_branches
 
 
 @dataclass(frozen=True)
