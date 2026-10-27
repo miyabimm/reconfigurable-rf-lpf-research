@@ -43,6 +43,9 @@ class Phase2CurrentStatusTests(unittest.TestCase):
             "docs/maintenance/branch_cleanup_20261014.md": "ecc0ed6a874329c376b3211f1d166eb9a0d0bba3",
             "docs/phase2_issue93_pr91_canonical_reconciliation_20261018.md": "e4cfc796b11f1748e91044b005451f77824aa69b",
             "docs/phase2_issue93_pr92_retirement_20261018.md": "dafe9b9e0f8dceba2e4ea073bdb8aa4c44cb29bd",
+            "docs/results/rf_t008_exp062_high_cost_20261020.md": "10d4b8ed70861d156402c6a1f0b95cbc0fc386d9",
+            "docs/results/rf_t008_exp063_threeL_20261020.md": "fd415be646d3ce47ee9bb06c3034b96a872170b2",
+            "docs/results/rf_t008_exp062_exp063_exp064_20261020.md": "14db3307f783e6c2bf7220a692128d94e6f74fde",
         }
         previous_head = "26a5d4aff7d197754f17991123acc44e8b356b83"
         original_entrypoints = (

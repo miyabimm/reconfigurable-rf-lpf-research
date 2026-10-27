@@ -18,3 +18,16 @@
 EXP-048/049の当時の要約は[固定履歴版のステータス記録](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/phase2_status.md)から確認できます。後続の正式条件で検証済みの結果として再分類しません。
 
 旧条件の数値記録や当時の未実行提案については[固定履歴版の研究索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/historical_results.md)を参照してください。現行RF制約への性能適合とは区別します。
+
+## RF-T008 v3の保存済み比較（2026-10-20時点の履歴）
+
+2026-10-20のEXP-062～065の横断レビューでは、**RF-T008試験条件**、全6設定・28区間×1,001点（有限格子）に対する以下のbest-foundが記録されています。後続EXP-066～068を含む最新値への更新や正式RF-F003への昇格ではありません。
+
+| chip面積 | worst IL [dB] | 保存時点の出典・条件 |
+|---:|---:|---|
+| 3 / 3⅔ / 4⅓ | 1.010350255 / 0.934027580 / 0.928118761 | EXP-058。EXP-063（24/24両段階収束）は3Lの固定配置で記録更新なし |
+| 4 | 0.929126781 | EXP-064、4L/0GJMの追加PCB-C配置 |
+| 5⅓ | 0.829711540 | EXP-065で更新（EXP-062時点は0.833505430） |
+| 6 | 0.827841148 | EXP-062、4L/3GJMの保存記録 |
+
+[EXP-062～065の独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)では合計264試行のうち249収束・15非収束を記録し、選別10解の部品・SPD・既存MNA記録との照合を実施しています。**全28区間の独立RF解法でこのPRから再計算したものではなく、連続帯域・EM・実測は未検証**です。元の試行条件と個別結果は[実験索引](../data/experiment_index.csv)、[当時の統合スナップショット](../data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)から追跡してください。各段階の元文書も[Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)に固定Git blob付きで記録します。
