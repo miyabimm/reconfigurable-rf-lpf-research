@@ -83,8 +83,7 @@ jobs:
             test_rf_f003_t005.py \
             test_phase2_candidate_catalog.py \
             test_exp047_legacy_manifest_adapter.py \
-            test_github_actions_yaml_keys.py \
-            test_shared_search_ci_trigger.py; do
+            test_github_actions_yaml_keys.py; do
             echo "Running smoke module: $test_file"
             python -m unittest discover -s tests -p "$test_file" -v
           done
@@ -127,32 +126,23 @@ jobs:
             python -m unittest discover -s tests -p "$test_file" -v
           done
 
-      - name: Check shared search primitives and independent MNA when they change
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PUSH_BEFORE: ${{ github.event.before }}
-          EVENT_SHA: ${{ github.sha }}
+      - name: Check shared search primitives
         run: |
           set -euo pipefail
-          if [[ "$(bash scripts/shared_search_ci_trigger.sh "$EVENT_NAME" "$PUSH_BEFORE" "$EVENT_SHA")" == run ]]; then
-            for test_file in \
-              test_shared_graph_core.py \
-              test_shared_checkpoint_io.py \
-              test_shared_variable_c_layouts.py \
-              test_topology_selection.py \
-              test_coupling_layout.py \
-              test_search_space_extensions.py \
-              test_graph_instantiation.py \
-              test_shared_graph_builder.py \
-              test_matching_numeric_reference.py \
-              test_twoport_reduction.py \
-              test_grounded_enumeration.py \
-              test_p4_sharding.py \
-              test_three_variable_c_trials.py; do
-              echo "Running shared-core regression: $test_file"
-              python -m unittest discover -s tests -p "$test_file" -v
-            done
-          else
-            echo "Shared search primitives unchanged; skip focused regression."
-          fi
+          for test_file in \
+            test_shared_graph_core.py \
+            test_shared_checkpoint_io.py \
+            test_shared_variable_c_layouts.py \
+            test_topology_selection.py \
+            test_coupling_layout.py \
+            test_search_space_extensions.py \
+            test_graph_instantiation.py \
+            test_shared_graph_builder.py \
+            test_matching_numeric_reference.py \
+            test_twoport_reduction.py \
+            test_grounded_enumeration.py \
+            test_p4_sharding.py \
+            test_three_variable_c_trials.py; do
+            echo "Running shared-core regression: $test_file"
+            python -m unittest discover -s tests -p "$test_file" -v
+          done

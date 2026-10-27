@@ -59,19 +59,6 @@ class Stage1NumericalFailureTests(unittest.TestCase):
         self.assertEqual(c.exception.code, "mutual_not_spd")
         self.assertIsNone(c.exception.sample_index)
 
-    def test_coupled_inductor_solve_failure_is_not_rf_failure(self):
-        t = CoupledLCTopology(
-            InductorTree(4, ((0, 1), (1, 2), (1, 3))),
-            (), (25.,)*3, (), (),
-        )
-        good = CircuitValues((1., 2., 3.), (), ((),)*6)
-        with patch("lpf.phase2_models.coupled_lc.np.linalg.solve",
-                   side_effect=np.linalg.LinAlgError("synthetic solve failure")):
-            with self.assertRaises(CircuitNumericalError) as c:
-                t.matrices(good)
-        self.assertEqual(c.exception.code, "inductor_solve_failed")
-        self.assertIn("inductor_solve_failed", str(c.exception))
-
     def test_batched_schur_singular_has_diagnostic(self):
         ev, x = self.legacy_fixture()
         count, nodes = ev.f.size, ev.topology.inductor_tree.node_count
@@ -96,13 +83,6 @@ class Stage1NumericalFailureTests(unittest.TestCase):
                 ev.il(x)
         self.assertEqual(c.exception.code, "transfer_singular")
         self.assertEqual(c.exception.sample_index, 0)
-
-    def test_nonfinite_cascade_reports_stage(self):
-        ev, x = self.legacy_fixture()
-        ev.pre[0, 0, 0] = np.nan
-        with self.assertRaises(CircuitNumericalError) as c:
-            ev.il(x)
-        self.assertEqual(c.exception.code, "cascade_nonfinite")
 
     def test_bad_frequency_setting_and_early_schema_rejection(self):
         ev, x = self.legacy_fixture()

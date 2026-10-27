@@ -145,10 +145,6 @@ class BranchMNATests(unittest.TestCase):
         with self.assertRaises(CircuitNumericalError) as caught:
             solve_branch_mna(c, huge, 1e9, 0, **boundary)
         self.assertEqual(caught.exception.code, "mutual_nonfinite")
-        with patch("numpy.linalg.eigvalsh", return_value=np.array([np.nan] * 3)):
-            with self.assertRaises(CircuitNumericalError) as caught:
-                solve_branch_mna(c, values(c), 1e9, 0, **boundary)
-        self.assertEqual(caught.exception.code, "mutual_nonfinite")
         with self.assertRaises(CircuitNumericalError) as caught:
             solve_branch_mna(c, values(c, 1.1), 1e9, 0, **boundary)
         self.assertEqual(caught.exception.code, "mutual_not_spd")

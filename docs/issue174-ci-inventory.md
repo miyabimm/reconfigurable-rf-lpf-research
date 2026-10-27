@@ -1,6 +1,6 @@
 # Issue 174: CI 検出能力の棚卸し（暫定）
 
-この表はモジュール単位の初期棚卸しであり、削除の承認ではない。特に保存値パリティの類似テストは、入口 API、寄生、回路構造、参照実装が異なるため、重複と決めつけない。今回テストメソッドは削除・統合していない。
+この表はモジュール単位の初期棚卸しであり、未分類ケースの削除の承認ではない。保存値パリティの類似テストは入口 API、寄生、回路構造、参照実装が異なるため、重複と決めつけない。退役した契約外のケースは下表に記録する。
 
 | ID | 主な検査と現状の扱い |
 | --- | --- |
@@ -18,7 +18,7 @@
 | T12 | 追加通常: `test_experiment_number_reservation`（重複・再利用・push競合）、`test_new_experiment_storage.test_main_reservation_is_authoritative_and_matches_manifest`（一時Git履歴でmain台帳との照合）。当面常時実行 |
 | T13 | 追加通常: `test_new_experiment_storage`, `test_experiment_provenance`（manifest、SHA、選別、未追跡成果等）。既存の狭いパス条件を撤廃し当面常時実行 |
 
-その他通常実行の `test_github_actions_yaml_keys` はCI構文、`test_phase2_current_status_review` とリンク検査は文書・証拠への入口を守る。共有探索13モジュールは変更時経路を維持する。push全体（before〜head）を比較し、未知の履歴・手動実行では実行する。依存を見落とさないよう対象パスは広めに取り、`test_shared_search_ci_trigger` が一時Git履歴で複数コミットpushとPRを検証する。その他の `tests/` は履歴・専門検証として現行CIの対象外であり、削除しない。全テストのメソッド単位の完全な棚卸しは未完了。
+その他通常実行の `test_github_actions_yaml_keys` はCI構文、`test_phase2_current_status_review` とリンク検査は文書・証拠への入口を守る。共有探索13モジュールも通常CIで常時実行する。以前の変更検知はworkflowの起動条件とほぼ同じで実質的にskipしないため、helperとそのテストを廃止した。その他の `tests/` は履歴・専門検証として現行CIの対象外であり、削除しない。全テストのメソッド単位の完全な棚卸しは未完了。
 
 ## T07/T08 メソッド単位の棚卸し（保持、統合候補未確定）
 
@@ -33,7 +33,16 @@
 | `phase2_rft008_policy_circuit` | `saved_4l_candidate_component_gate_and_forward_parity`: 保存4L・指紋・6設定・SPD・未検証。`saved_3l_zero_and_one_gjm_parameter_policy`: 保存3LのGJM数別。`formal_gjm_values_below_exp058_study_floor_are_not_rejected`: 正式下限と探索下限の分離。`zero_one_two_dtc_branches_policy_not_exactly_two`: 可変枝数とOFF時固定C。`wrong_policy_missing_roles_and_types_fail_closed`: 条件・部品・接続拒否。`l_limits_adjacency_and_explicit_series_q`: L範囲・隣接・Q。`pcb_l_cap_limits_and_six_setting_invariance`: PCB L/C境界・設定不変。`forged_resolved_policy_is_rejected_against_registry`: 偽造条件拒否。`retains_protected_resolved_policy_snapshot`: 条件スナップショット保護 |
 | `phase2_independent_rf` / `phase2_branch_mna` | `frozen_external_parity_and_power`: 独立branch-current MNA・S2P・電力、T07と別目的。branch MNAの `references`, `branched_tree_hot_hot_and_signed_couplings`, `nonfinite_mutual_classification`, `orientation_and_signed_coupling`, `off`, `invalid`: 参照回路・分岐・符号・OFF・不正入力 |
 
-**契約外・退役:** 確定した候補はまだない。T07のこれらは保存値・公開API・trial境界・独立計算の契約に関わるため、類似のみを根拠に退役しない。残りのモジュールは実際の入力・実行契約を確認して分類する。契約外の専用ケースを特定できた場合は根拠を記載し代替テストを作らない。
+## 契約外・退役
+
+| テスト・アサーション | 根拠 |
+| --- | --- |
+| `test_phase2_numeric_diagnostics.test_coupled_inductor_solve_failure_is_not_rf_failure` | 正のL/Q、SPDの有効な行列に対し `np.linalg.solve` 自体を強制失敗させるライブラリ故障模擬。通常の数値入力で生じた特異行列の検査ではない。SPDは `test_mutual_spd_failure_has_stable_error_code` 等で保持。 |
+| `test_phase2_numeric_diagnostics.test_nonfinite_cascade_reports_stage` | 固定S2Pから構築した内部 `ev.pre` を直接NaNに書き換える。入力経路からS2Pを改竄した場合のSHA拒否は `test_phase2_s2p_grid_cache.test_sha_and_network_identity_fail_closed` で保持。 |
+| `test_phase2_branch_mna.test_nonfinite_mutual_classification` 内の `eigvalsh` NaN返却patch | 有限SPD行列の固有値計算を強制的にNaN化するライブラリ故障模擬。非SPD拒否の同一メソッド内アサーションと `test_invalid` は保持。 |
+| `test_shared_search_ci_trigger` の2メソッドとhelper | workflowのパス条件と同じ対象を再判定する不要な分岐と、その一時Gitテスト。共有探索を常時実行するので比較範囲・未知履歴の処理自体が不要。 |
+
+`test_nonfinite_mutual_classification` の `1e308` 入力は保留: `solve_branch_mna` は部品ポリシーを別途検証する裸のソルバーと明記されており、`evaluate_independent_sample` もポリシー範囲を先に検証しない。正の有限入力によるオーバーフローをソルバー契約外と断定できない。特異Schurと伝達ゼロも実回路からの到達性を未確認のため保持する。T07の保存値・公開API・trial境界・独立計算は類似のみを根拠に退役しない。
 
 ## 科学的評価ゲート
 
@@ -43,11 +52,12 @@
 
 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`、`.venv/bin/python -m unittest discover -s tests -p <module> -q` で実行。元の通常21モジュールは114件・14.52秒でPASS。追加4モジュールは50件・合計3.37秒でPASS（SLSQP 14件、予約8件、出典14件、保存14件のうち保存14件は従来も条件付き）。時間はプロセス起動を含むローカル実測で、CIの計測値ではない。共有探索の条件付き13モジュール、ストレージ監査コマンド、リンク検査と高密度評価はこの計測に含まない。この時点で通常実行は164件。今回は削減ではなく検査経路の欠落防止を優先した。
 
-レビュー対応後、通常167件（既存164件＋トリガー2件＋予約照合1件）、条件付き共有探索69件の合計236件と、リンク検査・ストレージ監査がPASS、合計18.28秒（高密度評価は除外）。既存の通常契約内の失敗検出11メソッドを個別に実行しPASS: `test_formal_registry_and_compat`, `test_formal_pending_or_modified_snapshot_is_rejected`, `test_sha_and_network_identity_fail_closed`, `test_band_coverage_rejects_missing_or_duplicated_regions_subbands`, `test_schema_finite_shape_fixed_state_and_spd_guards`, `test_typed_forward_rejects_setting_dependent_fixed_or_ic_values`, `test_reject_out_of_range_caps_q_spd_and_nonadjacent_k`, `test_forged_resolved_policy_is_rejected_against_registry`, `test_source_blob_mismatch_fails_closed`, `test_formal_trial_swap_is_rejected`, `test_policy_bound_five_l_graph_without_exp_specific_class`。これらは元々の異常入力/昇格阻止検査であり、契約外の架空故障を追加していない。
+HEAD `3c1303a` では通常167件（既存164件＋トリガー2件＋予約照合1件）、条件付き共有探索69件の合計236件と、リンク検査・ストレージ監査がPASS、合計18.28秒（高密度評価は除外）。既存の通常契約内の失敗検出11メソッドを個別に実行しPASS: `test_formal_registry_and_compat`, `test_formal_pending_or_modified_snapshot_is_rejected`, `test_sha_and_network_identity_fail_closed`, `test_band_coverage_rejects_missing_or_duplicated_regions_subbands`, `test_schema_finite_shape_fixed_state_and_spd_guards`, `test_typed_forward_rejects_setting_dependent_fixed_or_ic_values`, `test_reject_out_of_range_caps_q_spd_and_nonadjacent_k`, `test_forged_resolved_policy_is_rejected_against_registry`, `test_source_blob_mismatch_fails_closed`, `test_formal_trial_swap_is_rejected`, `test_policy_bound_five_l_graph_without_exp_specific_class`。これらは元々の異常入力/昇格阻止検査であり、契約外の架空故障を追加していない。
+
+次のレビュー対応後は、通常163件＋共有探索69件＝常時232件とリンク検査・ストレージ監査がPASS、合計17.59秒。同じローカル環境・コマンドで、変更前は236件・18.28秒。差分は不要な変更検知2件と契約外数値診断2件の退役で、MNA内のpatch 1アサーションも削除。変更前の診断9件・MNA6件は別途PASSし、変更後は診断7件・MNA6件を含む。これはローカルでの比較でありGitHub Actions所要時間ではない。科学的候補評価は実施していない。
 
 ## 未完了
 
-- T07の比較を含む全モジュールの各assertionを照合し、統合・契約外退役の可否を実証する。削除はまだ行っていない。
-- 広い共有探索の変更条件は、実依存との対応を引き続き精査する。
+- その他のT09と入力境界について、実運用契約と退役・統合の可否を引き続き確認する。
 - T01–T10の境界ごとの完全な検出能力の監査と、統合を行った場合の同一HEAD比較は未完了。通常契約内の代表的異常は上記の既存検査を実行。
 - PR上のCIとトリガーの実証、独立レビュー、承認・main上のCI確認は別途必要。
