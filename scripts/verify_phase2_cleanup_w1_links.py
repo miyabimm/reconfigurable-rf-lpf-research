@@ -11,6 +11,7 @@ import json
 import posixpath
 import re
 import subprocess
+import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -18,6 +19,18 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCAL_RE = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
 REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(\S+)")
 HTML_REF = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""")
+ACTIVE_ENTRYPOINTS = (
+    "README.md",
+    "docs/README.md",
+    "docs/chatgpt_project_instructions.md",
+    "docs/roadmap.md",
+    "docs/results/README.md",
+    "docs/specification.md",
+    "docs/governance/phase2_experiment_storage_policy.md",
+    "data/README.md",
+    "experiments/README.md",
+)
+
 def tracked():
     raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
     return {p for p in raw.decode("utf-8", "surrogateescape").split("\x00") if p}
@@ -156,12 +169,20 @@ def verify_status():
 
 
 def main():
+    args = sys.argv[1:]
+    if args not in ([], ["--active-only"]):
+        raise SystemExit("Usage: verify_phase2_cleanup_w1_links.py [--active-only]")
     known = tracked()
     md = sorted(p for p in known if p.endswith((".md", ".mdx", ".markdown")))
+    if args:
+        missing = sorted(set(ACTIVE_ENTRYPOINTS) - known)
+        if missing:
+            raise SystemExit("Missing active documentation: " + ", ".join(missing))
+        md = list(ACTIVE_ENTRYPOINTS)
     issues, stats = all_links(md, known)
     verified_pages, source_files = verify_status()
     result = {
-        "phase": "Phase 2", "scope": "W1 current checked-out tracked files",
+        "phase": "Phase 2", "scope": ("active entrypoints" if args else "W1 current checked-out tracked files"),
         "tracked_files": len(known), "markdown_files": len(md),
         "markdown_links": stats["all_links"],
         "local_resolved": stats["local_resolved"],

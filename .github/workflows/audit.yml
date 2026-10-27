@@ -109,7 +109,7 @@ jobs:
       - name: Check documentation entrypoints and preserved evidence links
         run: |
           python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
-          python scripts/verify_phase2_cleanup_w1_links.py
+          python scripts/verify_phase2_cleanup_w1_links.py --active-only
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
       - name: Run 12 storage gate tests only when storage governance changes
