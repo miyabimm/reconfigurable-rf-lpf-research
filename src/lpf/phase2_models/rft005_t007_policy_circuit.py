@@ -1,4 +1,4 @@
-"""RF-T005 and RF-T007 policy-bound 3L/4L forward model adapters.
+"""RF-T005 and RF-T007 graph-parametric nominal circuit policy adapters.
 
 The sole T007-vs-T005 difference is the *explicit* one-per-grounded-DTC
 constant 0.5pF/Q40 shunt branch. T005 never installs those parasitics;
