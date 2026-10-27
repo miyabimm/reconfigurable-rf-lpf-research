@@ -6,8 +6,8 @@ It validates *component and connection constraints*, not RF attenuation,
 optimizer convergence, independent MNA, physical Q(f), SRF, EM or tolerance.
 
 Local graph nodes 0..N-1, ground -1; L values nH, C values pF. Existing
-lpf.validation.validate_inductor_coupling uses SI henries, hence explicit
-1e-9 conversion below. Historical EXP checkpoints are not modified.
+lpf.validation.validate_inductor_coupling uses SI henries; the conversion
+is handled by nominal_inductors.py. Historical EXP checkpoints are untouched.
 """
 from dataclasses import dataclass
 import json
@@ -15,7 +15,8 @@ import json
 import numpy as np
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
-from .nominal_inductors import nominal_inductor_series, check_nominal_inductors
+from .nominal_inductors import check_nominal_inductors
+from .nominal_parts import checked_inductor_metadata, checked_fixed_c_types
 from .circuit_layout import CapacitorPlacement, InductorTree
 from .coupled_lc import (
     CircuitValues, CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
@@ -27,9 +28,10 @@ from .rft008_layout import RFT008CapacitorLayout
 class PolicyBoundRFT008Circuit:
     """Immutable policy-bound network ready for *checked* nominal evaluation.
 
-    A bare CoupledLCEvaluator remains numerically usable without constraints
-    by design (for frozen historical parity). New-candidate callers should
-    use validate_candidate or checked_summary before saving/selecting designs.
+    A bare CoupledLCEvaluator remains usable for historical numeric parity.
+    New EXPs should use NominalCircuit.validate_components() and
+    NominalCircuit.evaluate_sampled() via build_nominal_circuit(); these
+    never certify independent MNA or final RF compliance.
     """
 
     topology: CoupledLCTopology
@@ -68,20 +70,12 @@ class PolicyBoundRFT008Circuit:
             raise TypeError("capacitor_placement must be CapacitorPlacement")
         if inductor_tree.node_count != capacitor_placement.node_count:
             raise ValueError("L and C circuit node counts differ")
-        types = tuple(inductor_types)
-        if len(types) != len(inductor_tree.edges):
-            raise ValueError("One explicit inductor series per physical L required")
-        ql = tuple(nominal_inductor_series(policy, kind)[0] for kind in types)
-        order = tuple(physical_order)
-        chips = tuple(i for i, kind in enumerate(types) if kind != "PCB_L")
-        if (len(order) != len(chips) or set(order) != set(chips) or
-                any(type(i) is not int for i in order)):
-            raise ValueError("Physical chip order must list each chip L exactly once")
-        fixed_types = tuple(fixed_c_types)
-        if (len(fixed_types) != len(capacitor_placement.fixed_edges) or
-                any(kind not in ("GJM01", "PCB_PATTERN_C")
-                    for kind in fixed_types)):
-            raise ValueError("Fixed C requires explicit GJM01/PCB_PATTERN_C type")
+        types, order, ql = checked_inductor_metadata(
+            policy, inductor_tree, inductor_types, physical_order
+        )
+        fixed_types = checked_fixed_c_types(
+            capacitor_placement.fixed_edges, fixed_c_types
+        )
         positions = tuple(i for i, kind in enumerate(fixed_types)
                           if kind == "GJM01")
         var_roles = tuple(variable_roles)
