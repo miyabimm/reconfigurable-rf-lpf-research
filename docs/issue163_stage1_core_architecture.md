@@ -26,6 +26,14 @@
 
 これらは**共通計算基盤の保守性と安全性の改善**であり、新しいEXPやRF性能達成の証拠ではない。Stage 1の最終統合・Phase 3移行を意味しない。
 
+## Stage 1統合完了（2026-10-27）
+
+- [PR #164](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164)を`main`に**squash merge**。統合コミット`8be0d3be0e4bf4c90f8c1db2be8864f4b45a1391`、原PR head `fadaea41e68a1a45ae08ca56a3e467919fc103c0`。
+- 原PR headの[Actions #40492546669](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40492546669) **PASS**。main mergeコミットの[Actions #40494282161](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40494282161) **PASS**。EXP-042/043/055/058保存値パリティ、既存独立MNA回帰、RF制約/28帯域×6設定、固定S2P、証拠SHA・storage/provenance監査を確認。
+- 変更31ファイルはPhase 2の共通モデル、`tests/test_phase2_*.py`、`docs`、audit workflowのみ。旧EXPソース、manifest/checkpoint、保存数値、RF正式/試験制約、固定S2Pを変更していない。
+- [Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)でStage 1の10条件完了を追跡。親[Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)は**Stage 2～5／57項目の残作業があるためOPEN**のまま維持。
+- 本統合は**共通forward計算基盤の完成**であり、独立汎用branch-current MNA・dense RF判定・最適化収束・Phase 3移行や新たなRF性能達成ではない。研究はPhase 2。
+
 ## 1. 結論：Stage 1の共通コアを先に完成させる
 
 57項目を全部切り出してから進むのではなく、**回路の定義・RFポリシー適用・計算可能な行列・単一の公開API**というStage 1の閉じた単位を完了させる。その後にStage 2の独立MNA・高密度RF検査、Stage 3の最適化、Stage 4のトポロジー探索、Stage 5の実行基盤を積み上げる。Stage 1以降で使う最小の「部品配置とパラメータの意味」を先に固定しなければ、新しい実装ごとに相互変換が増える。
@@ -132,7 +140,7 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 
 ## 6. Stage 1を完了と認定するDoD
 
-各DoDの充足証拠は公開API、対応する試験、CIおよびIssue #165に記録する。**現時点ではS1-10の最終レビュー／GitHub mainへの統合が未完了であり、Stage 1全体は未達**。
+各DoDの充足証拠は公開API、対応する試験、CIおよびIssue #165に記録する。**2026-10-27にStage 1のS1-01～S1-10を確認し、PR #164をmainへsquash merge済み**。Stage 2～5は親Issue #163で別途継続する。
 
 - [x] **S1-01 公開契約**：`api.py`を入口にT005/T007/T008の全代表構成を表現でき、EXP固有実行スクリプトへの依存・グローバルpatchがない。サンプルコードと型／単位／例外の説明が一致。
 - [x] **S1-02 不変回路データ**：向き付きL枝、source/load端子、GND、C並列・接地、物理L順序、結合kスロット、0～N個の合法枝を混線させずに表現・検査。
@@ -143,7 +151,7 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 - [x] **S1-07 接続役割の整理**：shunt/series/bridgeの意味を定義し、検査可能なものを検証、未証明の物理分類をポリシー適合と混同しない。
 - [x] **S1-08 数値パリティ**：EXP-042/043/055/058の保存済みベクトルと28×6格子上で許容誤差（まずabsolute 1e−9dB）以内、外部50Ω・60−j40Ωと固定入出力S2Pを保持する。代替L/Cグラフでinstance間干渉がない。
 - [x] **S1-09 堅牢性**：不正な接続/値/Q/k/非SPD/非有限入力を拒否し、単位取り違え・S2Pの不正データ・意図しないキャッシュ汚染を検出。正規化はnode 0始まり・GND=−1で一元化。
-- [ ] **S1-10 証拠とCI**：新旧互換回帰・数値パリティ・制約チェック・証拠SHA監査をCIでPASS、コード例とDoD文書が更新済み。旧EXPソース/manifest/実験結果は不変更。
+- [x] **S1-10 証拠とCI**：新旧互換回帰・数値パリティ・制約チェック・証拠SHA監査をCIでPASS、コード例とDoD文書が更新済み。旧EXPソース/manifest/実験結果は不変更。
 
 **S1-07のグラフ上の役割判定について**：直列／橋絡の区別が端子だけで一意に定まらない構造がある場合、無理に自動分類しない。物理主経路との対応を明示した別入力と検証手順を定義し、未証明は`declared_role_not_proven_by_l_tree`として候補昇格保留の理由を記録する。
 
