@@ -23,6 +23,43 @@ def incidence(edges, nodes=4):
 
 THREE_L_BL = incidence(THREE_L_EDGES)
 
+def validated_band_segments(records):
+    """Validate the canonical 28 intervals; never reinterpret unknown labels.
+
+    Returns (setting_index, role_index, low_MHz, high_MHz) per row. This
+    checks the *meaning* of every CSV row before any frequency samples or
+    external S2P arrays are allocated.
+    """
+    if len(records) != 28:
+        raise ValueError("Unexpected number of band intervals")
+    segments = []
+    seen = set()
+    for index, row in enumerate(records):
+        case, region, kind = row.get("case"), row.get("region"), row.get("type")
+        if case not in CASES:
+            raise ValueError(f"Unknown band case at segment {index}")
+        if (kind == "pass" and region in ("UL", "DL")):
+            role = 0
+        elif kind == "stop" and region == "H2":
+            role = 1
+        elif kind == "stop" and region == "H3":
+            role = 2
+        else:
+            raise ValueError(f"Invalid band type/region at segment {index}")
+        try:
+            low = float(row["low_mhz"])
+            high = float(row["high_mhz"])
+        except (KeyError, TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(f"Invalid frequency endpoints at segment {index}") from exc
+        if not (np.isfinite(low) and np.isfinite(high) and 0 < low < high):
+            raise ValueError(f"Invalid band frequency range at segment {index}")
+        segments.append((CASES.index(case), role, low, high))
+        seen.add(case)
+    if seen != set(CASES):
+        raise ValueError("Six band settings are required")
+    return tuple(segments)
+
+
 class SampledExternalEvaluator:
     """28-interval sampling and frozen input/output S2P; no topology assumed."""
 
@@ -31,15 +68,12 @@ class SampledExternalEvaluator:
             raise ValueError("points must be an integer >= 1")
         with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as f:
             records = list(csv.DictReader(f))
-        if len(records) != 28:
-            raise ValueError("Unexpected number of band intervals")
         frequency, setting, role, segment = [], [], [], []
-        for seg, row in enumerate(records):
-            sampled = np.linspace(float(row["low_mhz"]), float(row["high_mhz"]), points)
-            frequency.extend(sampled)
-            setting.extend([CASES.index(row["case"])] * points)
-            role.extend([0 if row["type"] == "pass" else
-                         1 if row["region"] == "H2" else 2] * points)
+        for seg, (case_index, role_index, low, high) in enumerate(
+                validated_band_segments(records)):
+            frequency.extend(np.linspace(low, high, points))
+            setting.extend([case_index] * points)
+            role.extend([role_index] * points)
             segment.extend([seg] * points)
         self.f = np.asarray(frequency, float)
         self.omega = 2e6 * np.pi * self.f
