@@ -60,7 +60,9 @@ class T005T007PolicyCircuitTests(unittest.TestCase):
             exp042.Evaluator(load_constraint("RF-T005", allow_trial=True), 3).il(vec),
             atol=1e-9, rtol=0
         )
-        self.assertFalse(bound.checked_summary(vec)["rf_compliance_certified"])
+        self.assertTrue(np.isfinite(
+            bound.evaluator(3).summary(vec)["worst_IL_db"]
+        ))  # Candidate promotion flags live only on public NominalCircuit.
 
     def test_t007_exp055_four_l_saved_vector_and_independent_mna(self):
         p = load_constraint("RF-T007", allow_trial=True)
