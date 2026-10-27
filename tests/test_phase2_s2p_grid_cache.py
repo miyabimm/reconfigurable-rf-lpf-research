@@ -110,8 +110,35 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
         rows = [dict(row) for row in original]
         for item in rows:
             item["case"] = "B71"
-        with self.assertRaisesRegex(ValueError, "Six band"):
+        with self.assertRaises(ValueError):
             validated_band_segments(rows)
+
+    def test_band_coverage_rejects_missing_or_duplicated_regions_subbands(self):
+        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as file:
+            original = list(csv.DictReader(file))
+        self.assertEqual(len(validated_band_segments(original)), 28)
+        scenarios = (
+            # 28 rows and all six cases still present, but B71 H2 vanished.
+            ({"case": "B71", "region": "H2"}, {"region": "UL", "type": "pass"}),
+            # B13 and B14 must each have an H3 interval.
+            ({"case": "B13+B14", "region": "H3", "note": "B14"},
+             {"note": "B13"}),
+            # Unknown subband labels must not silently become valid.
+            ({"case": "B13+B14", "region": "DL", "note": "B14"},
+             {"note": "B15"}),
+            # Single-band entries must not acquire an ambiguous subband.
+            ({"case": "B8", "region": "UL"}, {"note": "B8"}),
+        )
+        for match, updates in scenarios:
+            rows = [dict(row) for row in original]
+            found = next(i for i, row in enumerate(rows)
+                         if all(row[key] == value for key, value in match.items()))
+            rows[found].update(updates)
+            self.assertEqual(len(rows), 28)
+            self.assertEqual({row["case"] for row in rows}, set(CASES))
+            with self.subTest(match=match, updates=updates):
+                with self.assertRaisesRegex(ValueError, "subband"):
+                    validated_band_segments(rows)
 
     def test_invalid_integer_grid_counts_are_rejected(self):
         for points in (0, -1, 1.5, 3.0, True, None):
