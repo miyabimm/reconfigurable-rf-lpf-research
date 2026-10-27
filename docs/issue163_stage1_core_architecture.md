@@ -144,7 +144,7 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 
 `tests/test_phase2_s2p_grid_cache.py`で、`port_parasitics._load_verified`がSHA-256/50Ω-RIを既存機能で検証し、`get_two_port_s`がキャッシュ内部を別呼び出しへ可変参照として返さないことをチェックする。S21=0、補間範囲外、非有限周波数、改ざんされたS2P SHAは拒否。28帯域区間×3点／6設定のラベル・境界、別評価器のABCD行列非共有も確認する。`_grid.SampledExternalEvaluator`はpointsに整数以外・bool・0以下を明示拒否する。S2Pの再実装や正規データの書換えは行わない。
 
-残るS1-09対象：数値行列の極端条件での診断整理、広い枝数・接続グラフに対する異常系の回帰、最終forwardの失敗理由記録のAPI設計。**S1-09全体は未完了**。
+**S1-09は完了扱い**：上記のS2P/cache検証に加え、後節の型付き数値失敗診断と5L合成境界テストを追加し、CIで確認した。極限Q(f)・物理Sパラメータの追加検証はStage 2以降の物理/RF検証対象であり、本DoDの数値入力・行列異常対応と混同しない。
 
 ### S1-09 共通forward失敗の分類（2026-10-27）
 
