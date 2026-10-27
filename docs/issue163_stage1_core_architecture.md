@@ -9,11 +9,22 @@
 - **P1-1**：`_grid.validated_band_segments()`で28区間のcase/type/region、全6設定、有限かつ正の`low<high`を事前確認。未知type/regionをH3扱いしない。
 - **P1-2**：`CoupledLCEvaluator.il(CircuitValues)`にも`ParameterVectorSchema.encode`による固定C・IC内固定C・常設寄生Cと6設定の不変条件を適用。通常ベクトルへの数値演算は不変更。
 - **P2-3**：正式な有限格子のレポートと候補昇格保留は`NominalCircuit.evaluate_sampled()`へ統一。trial別内部アダプタの`checked_summary()`を廃止。
-- **P2-4**：歴史的ゼロ枝の変換は`vector_migration.py`へ分離。`api.py`からは旧呼び方を互換再公開するだけ。新EXPの通常の回路定義には不要。
+- **P2-4**：歴史的ゼロ枝の変換は`vector_migration.py`へ分離。通常の`api.py`からはimportせず、移行が必要な箇所でのみ明示importする。新EXPの通常の回路定義には不要。
 - **P2-5**：role監査は`all_declared_roles_supported_by_l_tree`と`unsupported_role_indices`を使用し、`physical_layout_checked=False`を明示。`role_verified`という物理検証を連想させる名称を廃止。
 
 実測RF特性の保証、独立MNA、dense RF判定、新EXP探索は今回も対象外。
 **Stage 1全体はmain統合前のため完了扱いにしない。**
+
+## 2026-10-27 KISS追加レビュー指摘の修正
+
+[PR #164のKISSレビュー](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6439964091)で追加発見した4項目を、小さい変更に限定して対処した。
+
+- **P1：帯域区間の網羅性**。28行・6case・合法ラベルだけでなく、各caseのUL/DL/H2/H3および`B13+B14`のB13/B14各サブバンドを一度ずつ確認。既存`data/bands.csv`の`note`欄でサブバンドを区別し、未知・重複・欠落を失敗させる。新しいRF周波数上下限はハードコードしない。H2をULへ誤記しても行数が28のままの反例と、B13/B14の重複・誤ラベルをテストする。
+- **P2：依存方向**。`api.py`→`vector_migration.py`のimportを除去。通常の新規EXPは`api.py`のみ参照し、凍結EXP形式の移行時にだけ`vector_migration.py`を直接import。`vector_migration`→`api.NominalCircuit`の遅延importは型検証のために残るが、逆向き依存はない。
+- **P2：反復するメタデータ検証**。`nominal_parts.py`の2つの短い関数に物理chip順序／固定Cの部品名チェックを集約。RF試験条件固有の寄生C、IC固定C、各C/Q・容量範囲は元のアダプタ／validatorで維持する。新しい基底クラス・DSL・registryは作らない。
+- **P2：説明と判定式**。`rft008_policy_circuit.py`の削除済み`checked_summary`案内とnH→H変換の所在を更新。`nominal_inductors.py`のL値境界検査を直接的な1条件へ簡素化。
+
+これらは**共通計算基盤の保守性と安全性の改善**であり、新しいEXPやRF性能達成の証拠ではない。Stage 1の最終統合・Phase 3移行を意味しない。
 
 ## 1. 結論：Stage 1の共通コアを先に完成させる
 
@@ -201,7 +212,7 @@ forwardカーネルの旧ハードコードを廃止して、
 
 `phase2_models.vector_migration.project_zero_variable_branches(source, target,
 vector, kept_indices)`を新公開APIとして追加。
-公開APIの`api.py`からも同名関数を互換再公開する。`ZeroBranchProjection`には、新ベクトルの値タプル、
+通常の`api.py`からの再公開を廃止したため、履歴移行時のみ`vector_migration`を直接importする。`ZeroBranchProjection`には、新ベクトルの値タプル、
 残す／除去する可変Cのソース順index、制約fingerprintを保持する。
 元ベクトルを変更せず、以下を全部検査した場合のみ変換する。
 
