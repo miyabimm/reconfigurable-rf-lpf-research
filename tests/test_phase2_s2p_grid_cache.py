@@ -19,7 +19,7 @@ from lpf.constraint_versions import load_constraint
 from lpf.port_parasitics import (
     _load_verified, get_two_port_s, s_to_abcd,
 )
-from lpf.phase2_models._grid import CASES, SampledExternalEvaluator
+from lpf.phase2_models._grid import CASES, SampledExternalEvaluator, validated_band_segments
 
 
 class Phase2S2PCacheAndGridTests(unittest.TestCase):
@@ -81,6 +81,37 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
         np.testing.assert_array_equal(a.pre[0], prev)
         self.assertTrue(np.all(np.isfinite(a.pre)))
         self.assertTrue(np.all(np.isfinite(a.post)))
+
+    def test_band_csv_validation_fails_closed_instead_of_reclassifying_h3(self):
+        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as file:
+            original = list(csv.DictReader(file))
+        segments = validated_band_segments(original)
+        self.assertEqual(len(segments), 28)
+        self.assertEqual({row[0] for row in segments}, set(range(6)))
+        self.assertEqual({row[1] for row in segments}, {0, 1, 2})
+        for updates in (
+            {"type": "stpo"},
+            {"region": "H4"},
+            {"type": "pass", "region": "H2"},
+            {"type": "stop", "region": "UL"},
+            {"case": "B999"},
+            {"low_mhz": "nan"},
+            {"high_mhz": "inf"},
+            {"low_mhz": "-5"},
+            {"low_mhz": "1400", "high_mhz": "1300"},
+            {"low_mhz": ""},
+        ):
+            rows = [dict(row) for row in original]
+            rows[2].update(updates)
+            with self.subTest(updates=updates), self.assertRaises(ValueError):
+                validated_band_segments(rows)
+        with self.assertRaises(ValueError):
+            validated_band_segments(original[:-1])
+        rows = [dict(row) for row in original]
+        for item in rows:
+            item["case"] = "B71"
+        with self.assertRaisesRegex(ValueError, "Six band"):
+            validated_band_segments(rows)
 
     def test_invalid_integer_grid_counts_are_rejected(self):
         for points in (0, -1, 1.5, 3.0, True, None):
