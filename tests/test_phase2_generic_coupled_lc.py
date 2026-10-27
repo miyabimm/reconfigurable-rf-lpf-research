@@ -153,6 +153,47 @@ class GenericCircuitEvaluationTests(unittest.TestCase):
         np.testing.assert_array_equal(a.il(x), a0)
         self.assertGreater(float(np.max(np.abs(b.il(x) - a0))), 1e-6)
 
+    def test_typed_forward_rejects_setting_dependent_fixed_or_ic_values(self):
+        policy = load_constraint("RF-T008", allow_trial=True)
+        x = snapshot("rf_t008_exp058_area4p667_20261020.json", "best")["vector"]
+        legacy = exp058_area4l_gjm.Evaluator(policy, "input_output", ("cf0",), 3)
+        forward = generic(
+            policy, legacy, n_l=4, n_fixed=4, n_var=2, n_ic=2,
+            edges=legacy.L_edges, pairs=FOUR_PAIRS, q=legacy.Q_C
+        )
+        original = forward.schema.decode(x)
+        np.testing.assert_allclose(forward.il(original), forward.il(x),
+                                   atol=1e-12, rtol=0)
+        for index in (0, forward.schema.n_fixed + forward.schema.n_variable):
+            rows = list(original.capacitors_pf_by_setting)
+            row = list(rows[3])
+            row[index] += .01
+            rows[3] = tuple(row)
+            typed = CircuitValues(original.inductances_nh, original.coupling_k,
+                                  tuple(rows))
+            with self.subTest(capacitor_index=index):
+                with self.assertRaisesRegex(ValueError, "differ by setting"):
+                    forward.il(typed)
+                with self.assertRaisesRegex(ValueError, "differ by setting"):
+                    forward.summary(typed)
+        # T007 constant Q40 parasite also must not be changed by setting.
+        p = load_constraint("RF-T007", allow_trial=True)
+        legacy2 = exp055.Evaluator(p, 3, "cv1_input_tip", True)
+        arr = np.asarray(json.loads(
+            (RUNS / "EXP-055/checkpoints/cv1_input_tip_best.json").read_text()
+        )["vector"], float)
+        forward2 = generic(
+            p, legacy2, n_l=4, n_fixed=4, n_var=3, n_ic=0,
+            edges=legacy2.L_edges, pairs=FOUR_PAIRS, q=exp055.Q_C,
+            constant_caps=(.5,)
+        )
+        typed = forward2.schema.decode(arr)
+        rows = list(typed.capacitors_pf_by_setting)
+        rows[4] = rows[4][:-1] + (.51,)
+        with self.assertRaisesRegex(ValueError, "differ by setting"):
+            forward2.il(CircuitValues(typed.inductances_nh, typed.coupling_k,
+                                      tuple(rows)))
+
     def test_schema_finite_shape_fixed_state_and_spd_guards(self):
         schema = ParameterVectorSchema(3, 1, 2, 1, 2, (0.5,))
         self.assertEqual(schema.vector_length, 3 + 1 + 2 + 1 + 12)
