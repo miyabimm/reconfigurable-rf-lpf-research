@@ -83,7 +83,8 @@ jobs:
             test_rf_f003_t005.py \
             test_phase2_candidate_catalog.py \
             test_exp047_legacy_manifest_adapter.py \
-            test_github_actions_yaml_keys.py; do
+            test_github_actions_yaml_keys.py \
+            test_shared_search_ci_trigger.py; do
             echo "Running smoke module: $test_file"
             python -m unittest discover -s tests -p "$test_file" -v
           done
@@ -128,14 +129,13 @@ jobs:
 
       - name: Check shared search primitives and independent MNA when they change
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            compare_base="$(git merge-base origin/main HEAD)"
-          else
-            compare_base="$(git rev-parse HEAD^)"
-          fi
-          if git diff --name-only "$compare_base" HEAD | grep -E -q '^(src/lpf/(legacy_graph_search|legacy_graph_builder|coupling_layout|checkpoint_io|variable_c_layouts|twoport_reduction)[.]py|experiments/matching_limit/(topology_selection|selection_patch|coupling_layout|p4_sharding|search_space|instantiate_graph)[.]py|tests/test_(shared_.*|search_space_extensions|three_variable_c_trials|graph_instantiation|grounded_enumeration)[.]py|[.]github/workflows/audit[.]yml)$'; then
+          if [[ "$(bash scripts/shared_search_ci_trigger.sh "$EVENT_NAME" "$PUSH_BEFORE" "$EVENT_SHA")" == run ]]; then
             for test_file in \
               test_shared_graph_core.py \
               test_shared_checkpoint_io.py \

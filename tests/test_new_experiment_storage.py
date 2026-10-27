@@ -8,9 +8,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.audit_new_experiment_storage import (
-    CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, validate_checkpoint, validate_run,
-    validate_selection, validate_summary,
+    CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, reservation_on_main,
+    validate_checkpoint, validate_run, validate_selection, validate_summary,
 )
+from scripts.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
 
 SCRIPT = "scripts.audit_new_experiment_storage"
 
@@ -107,6 +108,56 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(ValueError, "preflight execution"):
             self.validate("preflight")
+
+    def test_main_reservation_is_authoritative_and_matches_manifest(self):
+        def git(*args):
+            return subprocess.run(["git", *args], cwd=self.root, check=True,
+                                  capture_output=True, text=True)
+
+        git("init", "-q", "-b", "main")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        ledger = self.root / PATH
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        source = Path(__file__).resolve().parents[1] / PATH
+        rows = read_ledger(source.read_text(encoding="utf-8"))
+        ledger.write_text(as_csv(rows), encoding="utf-8")
+        git("add", PATH)
+        git("commit", "-qm", "baseline")
+        git("update-ref", "refs/remotes/origin/main", "HEAD")
+        rows, ident, _ = next_reservation(
+            rows, owner="fixture", purpose="fixture", request_id="fixture-001",
+            constraint_id="RF-F003", reserved_at_utc="2026-10-15T08:00:00Z")
+        ledger.write_text(as_csv(rows), encoding="utf-8")
+        # A working-tree reservation is not a main-backed reservation.
+        with self.assertRaisesRegex(ValueError, "not reserved on main"):
+            reservation_on_main(self.root, ident, main_ref="origin/main", starting=True)
+        git("add", PATH)
+        git("commit", "-qm", "reserve")
+        git("update-ref", "refs/remotes/origin/main", "HEAD")
+        self.assertEqual("RF-F003", reservation_on_main(
+            self.root, ident, main_ref="origin/main", starting=True)["constraint_id"])
+
+        self.run = self.run.parent / ident
+        self.run.mkdir()
+        self.record["experiment_id"] = ident
+        self.manifest["experiment_id"] = ident
+        self.manifest["constraints"]["constraint_id"] = "RF-F002"
+        self.save()
+        with patch(SCRIPT + ".validate_manifest"):
+            with self.assertRaisesRegex(ValueError, "reservation and manifest RF conditions disagree"):
+                validate_run(self.root, ident, mode="preflight", main_ref="origin/main")
+        rows[-1]["state"] = "cancelled"
+        ledger.write_text(as_csv(rows), encoding="utf-8")
+        git("add", PATH)
+        git("commit", "-qm", "cancel")
+        git("update-ref", "refs/remotes/origin/main", "HEAD")
+        with self.assertRaisesRegex(ValueError, "invalid main reservation state"):
+            reservation_on_main(self.root, ident, main_ref="origin/main", starting=True)
+        self.assertEqual("cancelled", reservation_on_main(
+            self.root, ident, main_ref="origin/main", starting=False)["state"])
+        with self.assertRaisesRegex(ValueError, "ledger unavailable"):
+            reservation_on_main(self.root, ident, main_ref="missing", starting=True)
 
     def test_six_settings_are_mandatory_not_claim_of_rf_correctness(self):
         obj = self.checkpoint()
