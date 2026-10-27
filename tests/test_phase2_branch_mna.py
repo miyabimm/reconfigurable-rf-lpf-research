@@ -78,8 +78,11 @@ def check_invalid():
     c = circuit(3)
     kwargs = dict(injected_currents_a=[.02, 0, 0, 0],
                   termination_admittances_s=[.02, 0, 0, 1/60])
-    with unittest.TestCase().assertRaisesRegex(CircuitNumericalError, expected_regex="mutual_not_spd"):
+    with unittest.TestCase().assertRaisesRegex(
+        CircuitNumericalError, "mutual_not_spd"
+    ) as caught:
         solve_branch_mna(c, values(c, 1.1), 1e9, 0, **kwargs)
+    assert caught.exception.code == "mutual_not_spd"
     for f, setting in [(float('nan'), 0), (0, 0), (1e9, True), (1e9, 6)]:
         with unittest.TestCase().assertRaises(ValueError):
             solve_branch_mna(c, values(c), f, setting, **kwargs)
@@ -145,9 +148,6 @@ class BranchMNATests(unittest.TestCase):
         with self.assertRaises(CircuitNumericalError) as caught:
             solve_branch_mna(c, huge, 1e9, 0, **boundary)
         self.assertEqual(caught.exception.code, "mutual_nonfinite")
-        with self.assertRaises(CircuitNumericalError) as caught:
-            solve_branch_mna(c, values(c, 1.1), 1e9, 0, **boundary)
-        self.assertEqual(caught.exception.code, "mutual_not_spd")
 
     def test_orientation_and_signed_coupling(self):
         original = circuit(3)
