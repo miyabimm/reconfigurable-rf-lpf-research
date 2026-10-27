@@ -32,6 +32,14 @@ def validated_band_segments(records):
     """
     if len(records) != 28:
         raise ValueError("Unexpected number of band intervals")
+    # One UL, DL, H2 and H3 interval per physical band. B13+B14 has
+    # two individually named subbands in the existing CSV note column.
+    expected = {
+        (case, region, subband)
+        for case in CASES
+        for region in ("UL", "DL", "H2", "H3")
+        for subband in (case.split("+") if "+" in case else ("",))
+    }
     segments = []
     seen = set()
     for index, row in enumerate(records):
@@ -46,6 +54,10 @@ def validated_band_segments(records):
             role = 2
         else:
             raise ValueError(f"Invalid band type/region at segment {index}")
+        key = (case, region, row.get("note", ""))
+        if key not in expected or key in seen:
+            raise ValueError(f"Unknown or duplicate band subband at segment {index}")
+        seen.add(key)
         try:
             low = float(row["low_mhz"])
             high = float(row["high_mhz"])
@@ -54,9 +66,8 @@ def validated_band_segments(records):
         if not (np.isfinite(low) and np.isfinite(high) and 0 < low < high):
             raise ValueError(f"Invalid band frequency range at segment {index}")
         segments.append((CASES.index(case), role, low, high))
-        seen.add(case)
-    if seen != set(CASES):
-        raise ValueError("Six band settings are required")
+    if seen != expected:
+        raise ValueError("Missing required band case/region/subband intervals")
     return tuple(segments)
 
 
