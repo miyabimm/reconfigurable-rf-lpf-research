@@ -2,7 +2,7 @@
 
 **ポリシーID：phase2-git-only-v1。** 本変更のmainマージ以降に新規作成する **EXP-050以降**へ適用する。**EXP-001～049（特にRF-T006のEXP-048/049）**の原manifest／checkpoint／証拠には遡及適用しない。研究対象とRF数値仕様の変更は含まない。
 
-**既存根拠：** [運用正本](../chatgpt_project_instructions.md)、[整理計画（固定履歴版）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[2026-10-15保存方針案](../experiment_result_storage_policy_proposal_20261015.md)、[既存容量基準](../../data/phase2_git_storage_budget.json)、[EXP番号中央予約](../experiment_number_reservation_policy_20261015.md)。当時の提案・歴史記録は上書きしない。
+**既存根拠：** [運用正本](../chatgpt_project_instructions.md)、[整理計画（固定履歴版）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[2026-10-15保存方針案](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_result_storage_policy_proposal_20261015.md)、[既存容量基準](../../data/phase2_git_storage_budget.json)、[EXP番号中央予約](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_number_reservation_policy_20261015.md)。当時の提案・歴史記録は上書きしない。
 
 ## 適用開始と歴史的実験の保護
 
