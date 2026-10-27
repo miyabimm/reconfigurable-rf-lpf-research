@@ -84,11 +84,10 @@ class PolicyBoundT008Tests(unittest.TestCase):
         )
         np.testing.assert_allclose(bound.evaluator(3).il(x),
                                    original.il(x), atol=1e-9, rtol=0)
-        report = bound.checked_summary(x, 3)
-        self.assertFalse(report["rf_compliance_certified"])
-        self.assertFalse(report["independent_mna_checked"])
-        self.assertEqual(report["points_per_interval"], 3)
-        self.assertAlmostEqual(report["sampled_forward_metrics"]["worst_IL_db"],
+        # Internal adapters build/check a circuit only. The one public
+        # sampled report (including certification blockers) is NominalCircuit.
+        metrics = bound.evaluator(3).summary(x)
+        self.assertAlmostEqual(metrics["worst_IL_db"],
                                original.summary(x)["worst_IL_db"], places=9)
 
     def test_saved_3l_zero_and_one_gjm_parameter_policy(self):
