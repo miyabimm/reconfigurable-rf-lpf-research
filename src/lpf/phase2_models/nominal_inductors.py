@@ -46,11 +46,11 @@ def check_nominal_inductors(policy, topology, values, inductor_types, physical_o
         raise ValueError("L vector length mismatch")
     for kind, q, value in zip(types, topology.inductor_q, values.inductances_nh):
         approved_q, minimum, maximum = nominal_inductor_series(policy, kind)
-        if q != approved_q or not minimum < value <= maximum:
-            # LQP02HV/HQ min_nH is inclusive; PCB_L zero is exclusive.
-            if not (q == approved_q and kind != "PCB_L"
-                    and minimum <= value <= maximum):
-                raise ValueError("L series Q or inductance outside resolved policy")
+        # Chip L minima are inclusive; PCB_L requires strictly positive L.
+        in_range = (minimum < value <= maximum if kind == "PCB_L"
+                    else minimum <= value <= maximum)
+        if q != approved_q or not in_range:
+            raise ValueError("L series Q or inductance outside resolved policy")
     return validate_inductor_coupling(
         types, np.asarray(values.inductances_nh, float) * 1e-9,
         nominal_coupling_matrix(topology, values),
