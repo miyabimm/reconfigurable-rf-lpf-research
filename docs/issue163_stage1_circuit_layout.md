@@ -212,10 +212,11 @@ runners. It uses these already-approved checkers:
   usage participates in the area objective and its 0.02pF lower bound
   in this adapter is an explicitly documented EXP-style *search bound*.
 
-`validate_candidate(vector)` returns component/placement verification
-and the actual resolved-policy fingerprint, **not** RF filter approval.
-`checked_summary(vector, points=3)` validates first, then returns
-finite-grid forward metrics *separately*; independent branch-current
+The internal adapter's `validate_candidate(vector)` checks component
+constraints, **not** RF filter approval. For NEW EXPs use only
+`NominalCircuit.validate_components()` and
+`NominalCircuit.evaluate_sampled(..., points_per_interval=3)` for the
+authoritative sampled report and promotion blockers; independent branch-current
 MNA, dense-frequency verification, optimizer convergence and physical
 Q(f)/SRF/EM/tolerance checks remain mandatory before research-result
 promotion. Direct `CoupledLCEvaluator.il()` intentionally remains
@@ -226,12 +227,11 @@ Example with configuration derived from the same legal RF-T008 family:
 ```python
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
-from lpf.phase2_models.rft008_policy_circuit import PolicyBoundRFT008Circuit
+from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
 
 p = load_constraint("RF-T008", allow_trial=True)
 v = ((0, 3), (1, 2))
-c = PolicyBoundRFT008Circuit.from_policy(
-    p,
+c = build_nominal_circuit(p, CircuitDefinition(
     inductor_tree=InductorTree(
         5, ((0, 1), (1, 3), (1, 4), (1, 2))
     ),
@@ -244,9 +244,9 @@ c = PolicyBoundRFT008Circuit.from_policy(
     fixed_c_types=("GJM01", "PCB_PATTERN_C",
                    "PCB_PATTERN_C", "PCB_PATTERN_C"),
     variable_roles=("bridge", "bridge"),
-)
-component_check = c.validate_candidate(saved_vector)
-sampled_report = c.checked_summary(saved_vector, points=3)
+))
+component_check = c.validate_components(saved_vector)
+sampled_report = c.evaluate_sampled(saved_vector, points_per_interval=3)
 # NOT independent MNA verification, dense RF approval or a new EXP.
 ```
 
@@ -296,9 +296,9 @@ the existing `validation.validate_inductor_coupling` with the
 required nH→H unit conversion. Unconfirmed series ranges are *not*
 inferred from archived Q25 shortcuts.
 
-`validate_candidate(vector)` is a **component and placement** check.
-`checked_summary` provides separate *sampled* metrics from the generic
-forward evaluator. Neither function certifies dense RF compliance,
+`validate_candidate(vector)` is an **internal component/placement** check.
+The public `NominalCircuit.evaluate_sampled()` is the **only** authoritative
+sampled report, including candidate-promotion blockers. Neither certifies dense RF compliance,
 independent MNA, optimizer convergence or physical implementation.
 
 `tests/test_phase2_rft005_t007_policy_circuit.py` tests:
