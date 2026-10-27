@@ -49,8 +49,8 @@ class ConnectionRoleAuditTests(unittest.TestCase):
             self.tree, ((3, -1), (0, 3), (1, 2)),
             ("shunt_to_ground", "bridge", "series")
         )
-        self.assertEqual(r.unverified_indices, (2,))
-        self.assertFalse(r.all_verified)
+        self.assertEqual(r.unsupported_role_indices, (2,))
+        self.assertFalse(r.all_declared_roles_supported_by_l_tree)
         self.assertEqual(r.branches[0].evidence, "verified_ground_endpoint")
         self.assertEqual(r.branches[1].electrical_class,
                          "inductor_tree_chord")
@@ -58,7 +58,8 @@ class ConnectionRoleAuditTests(unittest.TestCase):
                          "verified_L_path_between_terminals")
         self.assertEqual(r.branches[2].evidence,
                          "series_path_not_provable_from_spanning_L_tree")
-        self.assertFalse(r.as_dict()["all_verified"])
+        self.assertFalse(r.as_dict()["all_declared_roles_supported_by_l_tree"])
+        self.assertFalse(r.as_dict()["physical_layout_checked"])
 
     def test_public_policy_pass_not_promotion_for_declared_series(self):
         saved = np.asarray(json.loads(
@@ -75,17 +76,17 @@ class ConnectionRoleAuditTests(unittest.TestCase):
         unresolved = series_unproved.validate_components(saved)
         self.assertTrue(valid["component_policy_pass"])
         self.assertTrue(unresolved["component_policy_pass"])
-        self.assertTrue(valid["connection_role_audit"]["all_verified"])
-        self.assertFalse(valid["connection_role_promotion_blocked"])
+        self.assertTrue(valid["connection_role_audit"]["all_declared_roles_supported_by_l_tree"])
+        self.assertFalse(valid["connection_role_evidence_incomplete"])
         self.assertTrue(valid["candidate_promotion_blocked"])
         self.assertEqual(valid["promotion_blockers"],
                          ("independent_mna_not_checked", "dense_rf_not_checked"))
-        self.assertFalse(unresolved["connection_role_audit"]["all_verified"])
+        self.assertFalse(unresolved["connection_role_audit"]["all_declared_roles_supported_by_l_tree"])
         self.assertEqual(unresolved["connection_role_audit"][
-            "unverified_indices"], (1,))
+            "unsupported_role_indices"], (1,))
         self.assertTrue(unresolved["candidate_promotion_blocked"])
-        self.assertTrue(unresolved["connection_role_promotion_blocked"])
-        self.assertIn("connection_role_unverified",
+        self.assertTrue(unresolved["connection_role_evidence_incomplete"])
+        self.assertIn("declared_role_not_proven_by_l_tree",
                       unresolved["promotion_blockers"])
         np.testing.assert_allclose(
             approved_bridge.forward_evaluator(3).il(saved),
@@ -117,8 +118,8 @@ class ConnectionRoleAuditTests(unittest.TestCase):
     def test_no_dtc_branches_vacuously_verified(self):
         r = audit_variable_connection_roles(self.tree, (), ())
         self.assertEqual(r.branches, ())
-        self.assertEqual(r.unverified_indices, ())
-        self.assertTrue(r.all_verified)
+        self.assertEqual(r.unsupported_role_indices, ())
+        self.assertTrue(r.all_declared_roles_supported_by_l_tree)
 
     def test_two_models_audit_is_instance_local(self):
         a = audit_variable_connection_roles(
@@ -129,10 +130,10 @@ class ConnectionRoleAuditTests(unittest.TestCase):
             self.tree, ((3, -1), (0, 3)),
             ("shunt_to_ground", "bridge")
         )
-        self.assertFalse(a.all_verified)
-        self.assertTrue(b.all_verified)
-        self.assertEqual(a.unverified_indices, (1,))
-        self.assertEqual(b.unverified_indices, ())
+        self.assertFalse(a.all_declared_roles_supported_by_l_tree)
+        self.assertTrue(b.all_declared_roles_supported_by_l_tree)
+        self.assertEqual(a.unsupported_role_indices, (1,))
+        self.assertEqual(b.unsupported_role_indices, ())
 
 
 if __name__ == "__main__":
