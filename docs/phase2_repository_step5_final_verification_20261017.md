@@ -72,7 +72,7 @@ mainに保存された [EXP-047元manifest](../experiments/chatgpt_topology_sear
 
 ## 5. 歴史資料とGitHub-only保全
 
-- mainに存在した56文書は [歴史目次](archive/README.md)、[手法目次](methods/README.md)、[運用目次](governance/README.md)から閲覧可能。実際の元文書パスは維持。
+- mainに存在した56文書は [歴史目次](archive/README.md)、[手法目次](methods/README.md)、[運用目次](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)から閲覧可能。実際の元文書パスは維持。
 - 同一blob 34組・38追加pathは条件／run出典の役割が異なり、Git packの削減見込みに読み替えない。正式RF-F003互換コピーは特に保持。
 - 旧46要レビュー資料は元blobが一致し、**46件すべて保全継続**。削除・移動の承認を得た資料は0件。
 - GitHub Actionsの期限付きartifactは検証の補助に過ぎず、重要な監査記録はPRのGit追跡ファイルとして保存する。

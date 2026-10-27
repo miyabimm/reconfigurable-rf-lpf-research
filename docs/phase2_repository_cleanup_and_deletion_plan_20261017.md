@@ -61,7 +61,7 @@
 | ID | ファイル | 削除の目的 | **削除前に満たすべき追加条件** |
 |---|---|---|---|
 | D-001 | `docs/repository_reorganization_plan.md`（2026-10-12旧R1～R5計画） | 後継[2026-10-17の整理計画](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[今回の計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)への一本化 | 旧R2/P4-A実装ゲートと未実行事項に現在も固有の規範がないか確認し、残る事項は履歴に明記する |
-| D-002 | `docs/research_result_governance.md`（2026-10-14初版） | 現行RF-F003と矛盾するRF-F002「現行」規定、旧9候補の初版説明を現行ルールから除外 | 出典別比較規則、元候補の昇格基準、訂正ルールで独自の意味があれば[運用目次](governance/README.md)と正本へ移す |
+| D-002 | `docs/research_result_governance.md`（2026-10-14初版） | 現行RF-F003と矛盾するRF-F002「現行」規定、旧9候補の初版説明を現行ルールから除外 | 出典別比較規則、元候補の昇格基準、訂正ルールで独自の意味があれば[運用目次](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)と正本へ移す |
 | D-003 | `docs/phase2_actions_ci_repair_20261017.md`（過去CI修復メモ） | 解消したワークフローの一時運用説明を常時閲覧対象から外す | EXP-044/046当時の改訂理由、CI障害の原因、実run URL・コミット、修正履歴を事故記録に集約。再発テストは保持 |
 | D-004 | `docs/repository_storage_audit_20261014.md`（旧Git tree数値監査） | 旧規模707件/8.30MBを現行値と誤認しないよう監査導線を一本化 | 当時のmain SHA、件数、対象条件、比較可能性、旧runログ／再開証拠の説明を日時付き監査履歴へ保持 |
 | D-005 | `docs/phase2_storage_pareto_review_20261015.md`（旧13候補の保存レポート） | 現行24件カタログ導入後の旧候補サマリーを整理 | **慎重扱い**。当時の候補の数値・条件・優越判定を完全に引き継げること、元候補の実測ではないこと、必要な再現性を確認するまで**削除しない** |

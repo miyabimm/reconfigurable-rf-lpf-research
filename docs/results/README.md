@@ -6,7 +6,7 @@
 |---|---|---|
 | **RF-F003（正式）** | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/README.md) | 正式2可変C。2026-10-17に固定したパレート4件は当時の記録 |
 | **RF-T005（試験）** | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md)、[EXP-043](../../experiments/chatgpt_topology_search/runs/EXP-043/README.md)、[EXP-045](../../experiments/chatgpt_topology_search/runs/EXP-045/README.md) | 最大3可変C。固定パレート6件 |
-| **RF-T006/T007（試験）** | [実験索引](../../data/experiment_index.csv) | 追加阻止帯域／固定寄生モデルの条件差がある |
+| **RF-T006/T007（試験）** | [実験索引](../../data/experiment_index.csv)／[EXP-048](../../experiments/chatgpt_topology_search/runs/EXP-048/README.md)／[EXP-049](../../experiments/chatgpt_topology_search/runs/EXP-049/README.md) | 追加阻止帯域／固定寄生モデルの条件差がある。EXP-048/049の数値と実行範囲は旧試験時点の記録 |
 | **RF-T008 v3（試験）** | [EXP-058](../../experiments/chatgpt_topology_search/runs/EXP-058/manifest.json)／[EXP-062～068の索引](../../data/experiment_index.csv) | IC固定Cと最大2可変Cのモデル。各EXPの数値・独立MNA・収束状態を個別に確認 |
 
 [旧固定パレートJSON](../../data/pareto_snapshots/rf_t005_rf_f003_20261017.json)と[2026-10-17候補24件CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)は**歴史的スナップショット**であり、後続の探索を反映した現行最良一覧ではありません。[当時の説明](../pareto_rf_t005_rf_f003_20261017.md)と元EXPで出典・訂正を確認します。
@@ -14,3 +14,5 @@
 正式／試験／旧条件を混ぜてパレートを計算しません。目的関数、実効制約SHA、周波数格子、検証水準が等しい候補だけを比較します。H2/H3最低必須30dBと公称35dB、IL目標0.30dBは別判定です。固定S2Pはモデル由来であり、Q(f)・SRF・EM・公差・実測は未保証です。
 
 [ロードマップ](../roadmap.md) ／ [実験入口](../../experiments/README.md)
+
+EXP-048/049の当時の要約は[固定履歴版のステータス記録](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/phase2_status.md)から確認できます。後続の正式条件で検証済みの結果として再分類しません。

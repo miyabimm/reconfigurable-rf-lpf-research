@@ -25,6 +25,20 @@ class Phase2CurrentStatusTests(unittest.TestCase):
         self.assertIn("IL≤0.30dB", roadmap)
         self.assertNotIn("Phase 3", roadmap)
 
+    def test_retired_navigation_is_pinned_and_sources_stay_separate(self):
+        for path in ("docs/current/phase2_status.md",
+                     "docs/current/open_research_questions.md",
+                     "docs/governance/README.md"):
+            self.assertFalse((ROOT / path).exists())
+        docs_index = (ROOT / "docs/README.md").read_text(encoding="utf-8")
+        for path in ("docs/current/phase2_status.md",
+                     "docs/current/open_research_questions.md",
+                     "docs/governance/README.md"):
+            self.assertIn("https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/" + path.removeprefix("docs/"), docs_index)
+        results = (ROOT / "docs/results/README.md").read_text(encoding="utf-8")
+        self.assertIn("EXP-048", results)
+        self.assertIn("EXP-049", results)
+
     def test_exp017_near_0301_is_recovered_without_changing_original_sources(self):
         source = (ROOT / "experiments/chatgpt_topology_search/runs/EXP-017/README.md").read_text(encoding="utf-8")
         self.assertIn("30dB必須条件での近接値", source)

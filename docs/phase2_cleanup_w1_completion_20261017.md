@@ -8,7 +8,7 @@
 |---|---|---|
 | メイン入口 | [README.md](../README.md) | PR #67レビュー中→統合PR #71マージ済み、旧CI失敗→マージ前SUCCESS、条件別24候補への導線 |
 | 現行ロードマップ | [roadmap.md](roadmap.md) | EXP-047の監査失敗と14+10候補未統合のP0/P1記述を、解消済みと残課題へ分離 |
-| 現況 | [Phase 2状態](current/phase2_status.md)、[未解決課題](current/open_research_questions.md) | 既知CI成功の範囲、元manifest非標準のまま、構造検索不足と実行出典不明を保持 |
+| 現況 | [Phase 2状態](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/phase2_status.md)、[未解決課題](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/open_research_questions.md) | 既知CI成功の範囲、元manifest非標準のまま、構造検索不足と実行出典不明を保持 |
 | 成果 | [結果一覧](results/README.md)、[data案内](../data/README.md) | 旧14＋新10件の[派生24候補CSV](../data/catalog/phase2_candidate_catalog_20261017.csv)を現行案内に追加。条件混合禁止 |
 | 実験・スクリプト | [実験索引](../experiments/README.md)、[scripts索引](../scripts/README.md) | `--catalog`、派生生成の`--check`、旧EXP-047専用互換アダプターの用途を区別 |
 | 文書運用 | [docs索引](README.md) | 整理Step 1～5統合済み、追加整理PR #72・W0を区別 |

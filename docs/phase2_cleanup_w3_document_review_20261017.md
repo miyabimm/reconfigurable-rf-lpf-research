@@ -9,7 +9,7 @@
 - **レビュー基準main**：`731e901e79cfa367fd06b4350844c6987b30caa5`（PR #72→#73→#75→#78を統合後）。
 - [運用指示正本](chatgpt_project_instructions.md)、[W0固定main監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/727de04781cf42e6a9aaa710dc33f0ab0fb78b6d/docs/phase2_cleanup_w0_current_main_audit_20261017.md)、[W1リンク修正](phase2_cleanup_w1_completion_20261017.md)、[W2構造索引](results/phase2_topology_search_20261017.md)、[整理・削除計画](phase2_repository_cleanup_and_deletion_plan_20261017.md)に従う。
 - GitHub上のmainにある7文書の本文とGit blob SHAを個別に取得し、W0の削除候補台帳と照合した。判定の機械可読正本は[W3個別台帳](../data/repository_reviews/w3_document_disposition_20261017.csv)。
-- W0で判明したリンク元・静的参照と、mainに現存する[archive目次](archive/README.md)、[governance目次](governance/README.md)、[methods目次](methods/README.md)の参照を確認。**main現行全追跡treeの網羅的な逆参照スキャン・Git履歴全体・動的path・外部URLは本書のGitHub取得だけでは検証していない**。W3 CIで現行文書リンクと対象blobを検査する。
+- W0で判明したリンク元・静的参照と、mainに現存する[archive目次](archive/README.md)、[governance目次](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)、[methods目次](methods/README.md)の参照を確認。**main現行全追跡treeの網羅的な逆参照スキャン・Git履歴全体・動的path・外部URLは本書のGitHub取得だけでは検証していない**。W3 CIで現行文書リンクと対象blobを検査する。
 - 旧W0の「静的流入0」は**旧時点の旧監査値**であり、現在の参照不存在を意味しない。
 
 ## 2. 個別判定
@@ -32,7 +32,7 @@
 
 ## 3. 現行参照と復元ゲート
 
-- [歴史資料索引](archive/README.md)は**7件すべて**へのリンクを持つ。[運用管理索引](governance/README.md)にはD-001～005のリンクがあり、[方法索引](methods/README.md)にはD-006/007のリンクがある。[docs目次](README.md)にはD-005の現行リンクもある。これらは削除の前に解消必須。
+- [歴史資料索引](archive/README.md)は**7件すべて**へのリンクを持つ。[運用管理索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)にはD-001～005のリンクがあり、[方法索引](methods/README.md)にはD-006/007のリンクがある。[docs目次](README.md)にはD-005の現行リンクもある。これらは削除の前に解消必須。
 - 削除前の復元元は `git show 731e901e79cfa367fd06b4350844c6987b30caa5:<source_path>`。**GitHub上で旧時点のblobが現存することを確認済み**だが、当該コマンドを現在のGitHub runner上で実行した確認は本書の作成時点では未実施。W3 CIでread-only照合する。
 - Git履歴へのforce push/rebase、実験originalの改変、固定S2P/条件JSONの書換、旧46件の削除・移動は対象外。古いGit履歴が存在することだけでは現在のリンク互換性や研究の再現性を保証しない。
 - 全追跡Markdownのローカルリンクの現在値は[W1検証スクリプト](../scripts/verify_phase2_cleanup_w1_links.py)のPR CI実行により別に判定。外部リンク、アンカー、PRコメント中の参照、動的コード内のパスは完全な保証外。

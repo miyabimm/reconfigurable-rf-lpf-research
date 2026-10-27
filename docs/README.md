@@ -13,3 +13,13 @@
 | 過去の文書整理と分類 | [Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170) |
 
 数値正本は[registry.json](../data/constraints/registry.json)が選ぶ正式版、[bands.csv](../data/bands.csv)と固定S2Pです。実験原本は[experiments](../experiments/README.md)です。日付別の作業経緯はIssue・PR・Git履歴に記録し、この入口に追記し続けません。原本の削除・移動は別レビューで判断します。
+
+## 過去の現況文書の出典
+
+次の旧入口は最新の開発状況を示さないため、現役ツリーから整理しました。本文はGit履歴の固定版で閲覧できます。
+
+- [2026-10-18時点の研究ステータス](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/phase2_status.md)：EXP-048/049の当時の実行範囲・試験条件の記録。
+- [2026-10-17時点の未解決課題](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/current/open_research_questions.md)：当時のRG課題・出典欠損の整理。
+- [旧governance目次](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/governance/README.md)：整理当時の運用・監査資料へのリンク。
+
+現在の状況は[ロードマップ](roadmap.md)とGitHub Issues、計算結果は[EXP原本](../experiments/README.md)を参照します。旧文書の内容を現在のRF性能や未解決事項として読み替えません。
