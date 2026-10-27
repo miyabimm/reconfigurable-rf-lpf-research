@@ -11,6 +11,7 @@ import json
 import posixpath
 import re
 import subprocess
+import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
@@ -18,10 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCAL_RE = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
 REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(\S+)")
 HTML_REF = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""")
-HISTORY_BOUNDARIES = {
-    "README.md": "## 2026-10-15時点の研究状況",
-    "docs/roadmap.md": "## 2026-10-17以前の計画・進捗",
-}
+ACTIVE_ENTRYPOINTS = (
+    "README.md",
+    "docs/README.md",
+    "docs/chatgpt_project_instructions.md",
+    "docs/roadmap.md",
+    "docs/results/README.md",
+    "docs/specification.md",
+    "docs/governance/phase2_experiment_storage_policy.md",
+    "data/README.md",
+    "experiments/README.md",
+)
 
 def tracked():
     raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
@@ -93,21 +101,17 @@ def all_links(md, known):
 
 def verify_status():
     required = {
-        "README.md": ["#71", "39028160775", "24"],
-        "docs/roadmap.md": ["39028160775", "phase2_candidate_catalog_20261017.csv", "#71"],
-        "docs/current/phase2_status.md": ["055b222c79c73c7fbeacb19383f21c1da0625195",
-                                          "39028160775", "RF-F003", "RF-T005"],
-        "docs/current/open_research_questions.md": [
-            "39028160775", "24", "src/lpf/legacy_manifest_adapter.py"],
-        "docs/results/README.md": ["phase2_candidate_catalog_20261017.csv", "RF-T005", "RF-F003"],
-        "data/README.md": ["phase2_candidate_catalog_20261017.csv", "research_candidate_register_20261017.csv"],
+        "README.md": ["RF-F003", "docs/roadmap.md", "docs/results/README.md"],
+        "docs/roadmap.md": ["Stage 1", "Stage 2", "#163", "IL≤0.30dB"],
+        "docs/results/README.md": ["RF-T005", "RF-F003", "experiment_index.csv"],
+        "data/README.md": ["constraints/registry.json", "experiment_index.csv"],
+        "docs/README.md": ["chatgpt_project_instructions.md", "roadmap.md"],
+        "experiments/README.md": ["experiment_index.csv", "EXP-NNN"],
         "scripts/README.md": ["--catalog", "build_phase2_candidate_catalog.py", "39028160775"],
-        "experiments/README.md": ["legacy_manifest_adapter.py", "39028160775"],
-        "docs/README.md": ["#71", "#72"],
     }
     for file, tokens in required.items():
         txt = (ROOT / file).read_text(encoding="utf-8")
-        current = txt.split(HISTORY_BOUNDARIES[file], 1)[0] if file in HISTORY_BOUNDARIES else txt
+        current = txt
         for token in tokens:
             if token not in current:
                 raise ValueError("W1 current-status reference missing: " + file + ":" + token)
@@ -165,12 +169,20 @@ def verify_status():
 
 
 def main():
+    args = sys.argv[1:]
+    if args not in ([], ["--active-only"]):
+        raise SystemExit("Usage: verify_phase2_cleanup_w1_links.py [--active-only]")
     known = tracked()
     md = sorted(p for p in known if p.endswith((".md", ".mdx", ".markdown")))
+    if args:
+        missing = sorted(set(ACTIVE_ENTRYPOINTS) - known)
+        if missing:
+            raise SystemExit("Missing active documentation: " + ", ".join(missing))
+        md = list(ACTIVE_ENTRYPOINTS)
     issues, stats = all_links(md, known)
     verified_pages, source_files = verify_status()
     result = {
-        "phase": "Phase 2", "scope": "W1 current checked-out tracked files",
+        "phase": "Phase 2", "scope": ("active entrypoints" if args else "W1 current checked-out tracked files"),
         "tracked_files": len(known), "markdown_files": len(md),
         "markdown_links": stats["all_links"],
         "local_resolved": stats["local_resolved"],

@@ -16,15 +16,14 @@ def read_csv(relpath):
 
 
 class Phase2CurrentStatusTests(unittest.TestCase):
-    def test_current_frontmatter_indicates_merged_prs_but_preserves_history(self):
+    def test_current_roadmap_identifies_active_development_gates(self):
         roadmap = (ROOT / "docs/roadmap.md").read_text(encoding="utf-8")
-        current, historic = roadmap.split("## 以下は過去時点の記録（現行ステータスではない）", 1)
-        self.assertIn("Phase 2 現行状況", current)
-        self.assertIn("PR #48", current)
-        self.assertIn("PR #52", current)
-        self.assertIn("IL≤0.30dB", current)
-        self.assertIn("Phase 3", current)
-        self.assertIn("未merge", historic)
+        self.assertIn("Stage 1", roadmap)
+        self.assertIn("Stage 2", roadmap)
+        self.assertIn("PR #164", roadmap)
+        self.assertIn("Issue #163", roadmap)
+        self.assertIn("IL≤0.30dB", roadmap)
+        self.assertNotIn("Phase 3", roadmap)
 
     def test_exp017_near_0301_is_recovered_without_changing_original_sources(self):
         source = (ROOT / "experiments/chatgpt_topology_search/runs/EXP-017/README.md").read_text(encoding="utf-8")
