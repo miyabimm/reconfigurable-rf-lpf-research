@@ -1,3 +1,7 @@
+## 2026-10-27：KISS重点レビューの修正（Phase 2／Draft PR #164）
+
+[PR #164 KISSレビュー](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6439964091)で見つかった28帯域のcase×region×subband網羅性検証不足を、`_grid.validated_band_segments`の小さな集合検査で修正。B71のH2をULへ誤記する反例、B13+B14のB13/B14重複・未知サブバンドを回帰テストで拒否。28区間・6設定・固定RF周波数・S2Pとloss/Q条件は不変更。歴史的29→23要素ベクトル移行処理は`vector_migration.py`からのみ明示importし、通常の`api.py`からの依存を解消。trial別の共通L物理順序・固定C部品型チェックを小さい`nominal_parts.py`の2関数に整理。T007常設寄生とT008 IC-fixed Q60は各々のpolicyアダプタへ残す。古いdocstringを更新し、Lの境界検査を一条件に簡素化。**Stage 1 S1-09の回帰/CIがPASSしてもS1-10最終レビュー・main統合は別工程**。PR #164はDraft・未マージ、Stage 2・最適化・Phase 3には進まない。
+
 ## 2026-10-27：Stage 1最終設計レビュー5件の修正（Phase 2／PR #164）
 
 [PR #164の最終レビュー指摘](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6438747128)に対する修正を実装：未知case/type/region・非有限／不正band範囲を`_grid.validated_band_segments`で拒否し、直接渡された`CircuitValues`も`ParameterVectorSchema.encode`で6設定の固定C／IC固定C／常設寄生C不変性を確認。共通`NominalCircuit.evaluate_sampled`を唯一のサマリー／昇格ブロック入口としてtrial別重複`checked_summary`を廃止。歴史的29→23要素の変換実装を`vector_migration.py`へ隔離して`api.py`から互換再公開。role判定を`all_declared_roles_supported_by_l_tree`・`physical_layout_checked=False`とし、電気的確認を物理実装保証と混同しない。保存EXP-042/043/055/058ベクトルと既存RF・証拠監査を維持。**Stage 1最終CI・S1-10レビュー後のmain統合まではDraft／未マージ、Stage 2未着手**。Phase 2継続、Phase 3未承認。子[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で完了基準を管理する。
