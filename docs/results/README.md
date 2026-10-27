@@ -1,49 +1,16 @@
-# RF LPF研究成果・パレート解の入口（2026-10-17、Phase 2）
+# RF-LPFの保存結果と検証証拠
 
-**利用範囲：保存済み・有限格子で確認された局所探索のbest-found。** 研究段階はPhase 2であり、以下の数値を数学的な大域最適値、RF-F003達成目標値、物理的な実装保証とは呼ばない。
+このページは閲覧用です。数値原本は[実験索引](../../data/experiment_index.csv)と各EXPのmanifest・候補・検証記録です。有限格子のbest-foundを大域最適性や実装性能の保証とは扱いません。
 
-**詳細出典：** [RF-T005 / RF-F003 パレート説明](../pareto_rf_t005_rf_f003_20261017.md) ／ [機械可読不変スナップショット](../../data/pareto_snapshots/rf_t005_rf_f003_20261017.json) ／ [旧14件＋最新10件の統合24候補](../../data/catalog/phase2_candidate_catalog_20261017.csv)。
+| RF条件 | 代表的な出典 | 判定時の注意 |
+|---|---|---|
+| **RF-F003（正式）** | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/README.md) | 正式2可変C。2026-10-17に固定したパレート4件は当時の記録 |
+| **RF-T005（試験）** | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md)、[EXP-043](../../experiments/chatgpt_topology_search/runs/EXP-043/README.md)、[EXP-045](../../experiments/chatgpt_topology_search/runs/EXP-045/README.md) | 最大3可変C。固定パレート6件 |
+| **RF-T006/T007（試験）** | [実験索引](../../data/experiment_index.csv) | 追加阻止帯域／固定寄生モデルの条件差がある |
+| **RF-T008 v3（試験）** | [EXP-058](../../experiments/chatgpt_topology_search/runs/EXP-058/README.md)／[EXP-062～068の索引](../../data/experiment_index.csv) | IC固定Cと最大2可変Cのモデル。各EXPの数値・独立MNA・収束状態を個別に確認 |
 
-## 条件ごとの整理（絶対に混合しない）
+[旧固定パレートJSON](../../data/pareto_snapshots/rf_t005_rf_f003_20261017.json)と[2026-10-17候補24件CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)は**歴史的スナップショット**であり、後続の探索を反映した現行最良一覧ではありません。[当時の説明](../pareto_rf_t005_rf_f003_20261017.md)と元EXPで出典・訂正を確認します。
 
-| 区分 | 正式／試験 | IC可変C | 保存された非支配点 | H2/H3評価 |
-|---|---|---:|---:|---|
-| **RF-F003** | 正式 | 最大2枝 | 4Lのみ4点 | 30dB必須の有限格子適合 |
-| **RF-T005** | 試験 | 最大3枝 | 3Lが3点、4Lが3点 | 30dB必須の有限格子適合 |
+正式／試験／旧条件を混ぜてパレートを計算しません。目的関数、実効制約SHA、周波数格子、検証水準が等しい候補だけを比較します。H2/H3最低必須30dBと公称35dB、IL目標0.30dBは別判定です。固定S2Pはモデル由来であり、Q(f)・SRF・EM・公差・実測は未保証です。
 
-どちらも外部固定S2P → LPF → 固定S2P、50Ω源、60−j40Ω負荷、6設定28不連続周波数区間を基準にする。35dB公称減衰とIL≤0.30dBは全候補で**未達**。
-
-## RF-T005：3可変Cの試験条件（6点）
-
-| Chip面積 | 構成 | GJM固定C | PCB-C | 最悪IL [dB] | 原実験 |
-|---:|---|---:|---:|---:|---|
-| 3 | 3L | 0 | 3 | 0.944268363 | [EXP-043](../../experiments/chatgpt_topology_search/runs/EXP-043/README.md) |
-| 3⅔ | 3L | 1 | 3 | 0.895180009 | [EXP-045](../../experiments/chatgpt_topology_search/runs/EXP-045/README.md) |
-| 4⅓ | 3L | 2 | 1 | 0.879244690 | [EXP-043](../../experiments/chatgpt_topology_search/runs/EXP-043/README.md) |
-| 4⅔ | 4L | 1 | 3 | 0.819564515 | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md) |
-| 5⅓ | 4L | 2 | 2 | 0.811306586 | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md) |
-| 6 | 4L | 3 | 1 | 0.805148668 | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md) |
-
-## RF-F003：2可変Cの正式条件（4点）
-
-| Chip面積 | 構成 | GJM固定C | 最悪IL [dB] | 原実験 |
-|---:|---|---:|---:|---|
-| 4⅔ | 4L | 1 | 0.882646928 | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/manifest.json) |
-| 5⅓ | 4L | 2 | 0.843652332 | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/manifest.json) |
-| 6 | 4L | 3 | 0.836867952 | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/manifest.json) |
-| 6⅔ | 4L | 4 | 0.833188234 | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/manifest.json) |
-
-**4GJM候補の面積訂正：** 元独立検証JSONには `chip_area=6` との誤記がある。部品数ベースの正しい値は**6⅔**であり、元JSON自体は保存・不変とする。詳細は[元レポート](../pareto_rf_t005_rf_f003_20261017.md)。
-
-## 読み方と限界
-
-- **面積軸：** チップL／GJMの規約に基づく相対面積コスト。PCBパターンCおよび可変Cのchip面積コスト0は、実装物理面積ゼロを意味しない。
-- **IL軸：** 外部端子間6設定の最悪値。min H2/H3、全6設定のCv、完全L/C/k、独立MNAの格子数は[元レポート](../pareto_rf_t005_rf_f003_20261017.md)の各checkpoint参照で確認する。
-- **検証深度：** 有限格子値は候補により検証点数・独立MNA照合範囲が異なる。連続帯域極値、Q(f)、SRF、EM、公差、実測は未保証。
-- **過去との区別：** [2026-10-17固定の旧14件](../../data/catalog/research_candidate_register_20261017.csv)と、本ページのRF-T005 6件・RF-F003 4件は[統合24候補CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)に出典別・条件別で収録済み。[検索・比較方法](../../data/catalog/README.md)に従い、旧RF-F002/T004とのパレートを混同しない。
-
-[現行ステータス](../current/phase2_status.md) ／ [実験フォルダの案内](../../experiments/README.md) ／ [文書総合入口](../README.md)
-
-## W2：トポロジー・磁気結合の符号で検索
-
-[構造検索レポート](phase2_topology_search_20261017.md)と[24件の構造検索CSV](../../data/catalog/phase2_topology_search_20261017.csv)を追加しました。[元の24件性能CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)と`catalog_id`で結合できます。出典に記録がない接続・インダクタ順は`unknown`のまま保持し、数値モデル上の符号つき`k`をコイル極性やEM実現性の実証と混同しません。
+[ロードマップ](../roadmap.md) ／ [実験入口](../../experiments/README.md)
