@@ -36,7 +36,7 @@ class Phase2CurrentStatusTests(unittest.TestCase):
                      "docs/current/open_research_questions.md",
                      "docs/governance/README.md"):
             self.assertIn("https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/" + path.removeprefix("docs/"), docs_index)
-        results = (ROOT / "docs/results/README.md").read_text(encoding="utf-8")
+        results = (ROOT / "docs/results.md").read_text(encoding="utf-8")
         self.assertIn("EXP-048", results)
         self.assertIn("EXP-049", results)
 
