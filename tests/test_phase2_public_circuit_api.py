@@ -136,6 +136,35 @@ class PublicPhase2CircuitAPITests(unittest.TestCase):
         with self.assertRaises(FrozenInstanceError):
             circuit._adapter = None
 
+    def test_policy_bound_five_l_graph_without_exp_specific_class(self):
+        # 5L is a forward/API extension regression, not a new RF result.
+        definition = CircuitDefinition(
+            inductor_tree=InductorTree(
+                6, ((0, 1), (1, 3), (3, 4), (4, 5), (5, 2)),
+                source_node=0, load_node=2
+            ),
+            inductor_types=("LQP02HV",) * 5,
+            physical_order=(0, 1, 2, 3, 4),
+            coupling_pairs=(),
+            capacitor_placement=CapacitorPlacement(
+                6, ((0, -1), (5, -1), (2, -1)), (), ()
+            ),
+            fixed_c_types=("PCB_PATTERN_C",) * 3,
+            variable_roles=(),
+        )
+        model = build_nominal_circuit(
+            load_constraint("RF-T005", allow_trial=True), definition
+        )
+        x = np.asarray([2., 3., 4., 5., 6., .1, .1, .1], dtype=float)
+        self.assertTrue(model.validate_components(x)["component_policy_pass"])
+        self.assertEqual(model.schema.vector_length, len(x))
+        self.assertEqual(model.schema.n_variable, 0)
+        np.testing.assert_array_equal(model.encode(model.decode(x)), x)
+        results = model.evaluate_sampled(x, points_per_interval=3)
+        self.assertFalse(results["rf_compliance_certified"])
+        self.assertTrue(results["candidate_promotion_blocked"])
+        self.assertTrue(np.all(np.isfinite(model.forward_evaluator(3).il(x))))
+
     def test_fail_closed_for_unreviewed_policy_and_wrong_model(self):
         c = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
                        ("GJM01", "GJM01", "GJM01", "PCB_PATTERN_C"),
