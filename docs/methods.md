@@ -2,6 +2,12 @@
 
 **研究手法と出典の案内です。**本ページは手法・理論研究の出典リンクを集めるのみで、元ファイルは移動していない。各文書の作成時のRF条件、実行済み検証と未実行計画、回路解析と物理実験の区別を確認する。
 
+## 統合済みの共通回路計算基盤
+
+[PR #164](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164)で共通回路レイヤーの実装を統合しました。現在の公開入口は[`api.py`](../src/lpf/phase2_models/api.py)、巻線方向・結合符号とL/C接続の構造は[`circuit_layout.py`](../src/lpf/phase2_models/circuit_layout.py)、旧EXPのゼロ枝変換は通常APIと分離した[`vector_migration.py`](../src/lpf/phase2_models/vector_migration.py)です。[公開APIテスト](../tests/test_phase2_public_circuit_api.py)と[構造テスト](../tests/test_phase2_circuit_layout.py)に実装上の不変条件を保持します。
+
+全6設定・不連続28区間、L結合のSPD、固定／可変Cの接続・OFF状態、およびRF条件IDを混同しません。共通forward APIの一致は、外部S2Pを含む独立MNAの全面検証やRF要求適合を意味しません。旧Stage 1の判断経緯・DoDは[Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)、[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)、PR #164、元設計文書の[固定履歴版](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs)から追跡できます。
+
 ## 共通回路モデル・実装方法
 
 | 対象 | 元ファイル | 読み方 |

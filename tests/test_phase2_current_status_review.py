@@ -48,6 +48,8 @@ class Phase2CurrentStatusTests(unittest.TestCase):
             "docs/results/rf_t008_exp062_exp063_exp064_20261020.md": "14db3307f783e6c2bf7220a692128d94e6f74fde",
             "docs/phase2_evidence_triage_20261015.md": "c6efa7e6ec47b65758881fc3f88e2ca5d0f36440",
             "docs/phase2_w5_followup_disposition_20261018.md": "be0941f200331c481877e0e18c6f30700528ceb2",
+            "docs/issue163_stage1_circuit_layout.md": "fe3d8824af1714acd30687a7ab7fc8c200e505d0",
+            "docs/issue163_stage1_core_architecture.md": "05d60bf90d564460e920df48059e896e6b700d35",
         }
         previous_head = "26a5d4aff7d197754f17991123acc44e8b356b83"
         original_entrypoints = (
