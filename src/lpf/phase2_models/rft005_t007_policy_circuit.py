@@ -180,14 +180,3 @@ class PolicyBoundRFT005T007Circuit:
 
     def evaluator(self, points):
         return CoupledLCEvaluator(self.policy, points, self.topology, self.schema)
-
-    def checked_summary(self, vector, points=3):
-        component = self.validate_candidate(vector)
-        metrics = self.evaluator(points).summary(vector)
-        return {
-            "component_policy": component,
-            "sampled_forward_metrics": metrics,
-            "points_per_interval": int(points),
-            "independent_mna_checked": False,
-            "rf_compliance_certified": False,
-        }
