@@ -99,6 +99,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_rft008_policy_circuit.py -v
           python -m unittest discover -s tests -p test_phase2_rft005_t007_policy_circuit.py -v
           python -m unittest discover -s tests -p test_phase2_public_circuit_api.py -v
+          python -m unittest discover -s tests -p test_phase2_branch_mna.py -v
           python -m unittest discover -s tests -p test_phase2_connection_roles.py -v
           python -m unittest discover -s tests -p test_phase2_s2p_grid_cache.py -v
           python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
