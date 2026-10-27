@@ -1,3 +1,7 @@
+## 2026-10-27：Stage 1最終設計レビュー5件の修正（Phase 2／PR #164）
+
+[PR #164の最終レビュー指摘](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6438747128)に対する修正を実装：未知case/type/region・非有限／不正band範囲を`_grid.validated_band_segments`で拒否し、直接渡された`CircuitValues`も`ParameterVectorSchema.encode`で6設定の固定C／IC固定C／常設寄生C不変性を確認。共通`NominalCircuit.evaluate_sampled`を唯一のサマリー／昇格ブロック入口としてtrial別重複`checked_summary`を廃止。歴史的29→23要素の変換実装を`vector_migration.py`へ隔離して`api.py`から互換再公開。role判定を`all_declared_roles_supported_by_l_tree`・`physical_layout_checked=False`とし、電気的確認を物理実装保証と混同しない。保存EXP-042/043/055/058ベクトルと既存RF・証拠監査を維持。**Stage 1最終CI・S1-10レビュー後のmain統合まではDraft／未マージ、Stage 2未着手**。Phase 2継続、Phase 3未承認。子[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で完了基準を管理する。
+
 ## 2026-10-27：Stage 1残課題の堅牢性・旧ベクトル変換（Phase 2／PR #164）
 
 [Stage 1共通コア設計](issue163_stage1_core_architecture.md)／[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)に従い、`NumericalCircuitError`ではなく**`CircuitNumericalError`**の`code`／`sample_index`契約を追加。結合Lの非SPD・解法失敗、節点／Schur／伝達Y／ABCD／外部S2P合成／利得の数値異常を原因別に識別する。50Ω源・60−j40Ω負荷は同じ公称値のままresolved policyから取得し、無効なZや周波数依存Zを暗黙に補正しない。既存S2Pのハッシュ検証・データキャッシュを再利用し、5L合成グラフとRF-T005の共通政策ゲートで新規EXP用APIの拡張可能性を回帰。
