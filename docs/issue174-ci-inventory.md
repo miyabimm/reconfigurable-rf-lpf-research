@@ -42,7 +42,13 @@
 | `test_phase2_branch_mna.test_nonfinite_mutual_classification` 内の `eigvalsh` NaN返却patch | 有限SPD行列の固有値計算を強制的にNaN化するライブラリ故障模擬。非SPD拒否の同一メソッド内アサーションと `test_invalid` は保持。 |
 | `test_shared_search_ci_trigger` の2メソッドとhelper | workflowのパス条件と同じ対象を再判定する不要な分岐と、その一時Gitテスト。共有探索を常時実行するので比較範囲・未知履歴の処理自体が不要。 |
 
-`test_nonfinite_mutual_classification` の `1e308` 入力は保留: `solve_branch_mna` は部品ポリシーを別途検証する裸のソルバーと明記されており、`evaluate_independent_sample` もポリシー範囲を先に検証しない。正の有限入力によるオーバーフローをソルバー契約外と断定できない。特異Schurと伝達ゼロも実回路からの到達性を未確認のため保持する。T07の保存値・公開API・trial境界・独立計算は類似のみを根拠に退役しない。
+### 保持・調査結果
+
+- `test_nonfinite_mutual_classification` の `1e308` 入力: `solve_branch_mna` は部品ポリシーを別途検証する裸のソルバーと明記され、`evaluate_independent_sample` もポリシー範囲を先に検証しない。正の有限入力によるオーバーフローを契約外と断定できない。
+- `test_batched_schur_singular_has_diagnostic`: mockの全ゼロ節点Yは実回路そのものではない。`InductorTree` は全hotノードの連結木を強制し、正のL/Q・SPDと非負Cの理想算術では内部Schurブロックは非特異（接地ポートを基準に木の損失の実部が正）。ただし数値悪条件や有限精度での解法失敗は別で、公開schemaはRF部品範囲に制限されず、S1-09の失敗分類も要求するため、実装の特異診断を保持する。このfixtureが物理的浮遊ノードや具体的な悪条件回路の再現であるとは主張しない。独立MNAの実際の浮遊境界の拒否は `test_phase2_branch_mna.test_invalid` に残る。
+- `test_transfer_zero_has_indexed_diagnostic`: 単位行列は人工fixtureであり、実回路の零点を再現した証拠ではない。一方、阻止帯の極深ノッチ・S21ほぼゼロは `docs/rf_f003_phase2_rebaseline_plan_20261016.md` でfail-closedが必要な実RF上の境界として明記されている。伝達特異診断とsample indexを保持し、物理的に達成可能な正確な零点がこのfixtureから証明されるとは扱わない。
+
+T07の保存値・公開API・trial境界・独立計算は類似のみを根拠に退役しない。
 
 ## 科学的評価ゲート
 
@@ -54,7 +60,9 @@
 
 HEAD `3c1303a` では通常167件（既存164件＋トリガー2件＋予約照合1件）、条件付き共有探索69件の合計236件と、リンク検査・ストレージ監査がPASS、合計18.28秒（高密度評価は除外）。既存の通常契約内の失敗検出11メソッドを個別に実行しPASS: `test_formal_registry_and_compat`, `test_formal_pending_or_modified_snapshot_is_rejected`, `test_sha_and_network_identity_fail_closed`, `test_band_coverage_rejects_missing_or_duplicated_regions_subbands`, `test_schema_finite_shape_fixed_state_and_spd_guards`, `test_typed_forward_rejects_setting_dependent_fixed_or_ic_values`, `test_reject_out_of_range_caps_q_spd_and_nonadjacent_k`, `test_forged_resolved_policy_is_rejected_against_registry`, `test_source_blob_mismatch_fails_closed`, `test_formal_trial_swap_is_rejected`, `test_policy_bound_five_l_graph_without_exp_specific_class`。これらは元々の異常入力/昇格阻止検査であり、契約外の架空故障を追加していない。
 
-次のレビュー対応後は、通常163件＋共有探索69件＝常時232件とリンク検査・ストレージ監査がPASS、合計17.59秒。同じローカル環境・コマンドで、変更前は236件・18.28秒。差分は不要な変更検知2件と契約外数値診断2件の退役で、MNA内のpatch 1アサーションも削除。変更前の診断9件・MNA6件は別途PASSし、変更後は診断7件・MNA6件を含む。これはローカルでの比較でありGitHub Actions所要時間ではない。科学的候補評価は実施していない。
+次のレビュー対応後は、PR単独HEAD `398acdc` のローカルで通常163件＋共有探索69件＝常時232件とリンク検査・ストレージ監査がPASS、合計17.59秒。同じローカル環境・コマンドで、変更前は236件・18.28秒。差分は不要な変更検知2件と契約外数値診断2件の退役で、MNA内のpatch 1アサーションも削除。変更前の診断9件・MNA6件は別途PASSし、変更後は診断7件・MNA6件を含む。
+
+同HEADのGitHub ActionsはPR merge評価で当時のmain `e7226e6` の `test_retired_docs_remain_git_recoverable` が加わり233件PASS（smoke 21秒）。ローカル232件はmain統合前のPR単独HEADの結果で、環境・比較対象が異なる。main `e7226e6` をPRへ統合した後のローカルは233件・19.77秒、リンク検査・ストレージ監査もPASS。初回は履歴回復テストの固定コミット `26a5d4aff7d197754f17991123acc44e8b356b83` がローカルに存在せず失敗したため、`git fetch origin 26a5d4aff7d197754f17991123acc44e8b356b83` の後に再実行した。この固定コミットはmainから到達できず、新規checkoutでの取得可能性はCI結果を確認する必要がある。高密度RFや科学的候補評価は実施していない。
 
 ## 未完了
 
