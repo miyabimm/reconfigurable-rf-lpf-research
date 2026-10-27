@@ -193,6 +193,10 @@ def project_zero_variable_branches(source, target, vector, kept_indices):
             or len(set(keep)) != len(keep)):
         raise ValueError("Invalid explicit retained-variable index mapping")
     removed = tuple(i for i in range(a.n_variable) if i not in keep)
+    # Conservative migration: do not erase a declared physical shunt device.
+    # T007 shunts also retain a Q40 parasite even when the variable part is 0.
+    if any(-1 in d0.capacitor_placement.variable_edges[i] for i in removed):
+        raise ValueError("Only zero-valued hot-hot placeholders may be removed")
     n0 = d0.inductor_tree.node_count
     for destination, origin in enumerate(keep):
         old_edge = d0.capacitor_placement.variable_edges[origin]
