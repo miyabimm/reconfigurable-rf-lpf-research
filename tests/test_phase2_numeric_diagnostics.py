@@ -145,9 +145,7 @@ class Stage1NumericalFailureTests(unittest.TestCase):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 InductorTree(6, good.edges, **kwargs)
         with self.assertRaises(ValueError):
-            incidence_matrix(((0, -1),), 6) if False else InductorTree(
-                3, ((0, -1), (1, 2))
-            )
+            InductorTree(3, ((0, -1), (1, 2)))
         cap = CapacitorPlacement(
             6, fixed_edges=((0, 3), (3, 0)),
             variable_edges=((5, -1), (0, 4)),
