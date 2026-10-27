@@ -101,6 +101,58 @@ class BranchMNATests(unittest.TestCase):
                 with self.subTest(n=n, trial=trial):
                     compare_reference(n, trial)
 
+    def test_branched_tree_hot_hot_and_signed_couplings(self):
+        definition = CircuitDefinition(
+            InductorTree(5, ((0, 1), (1, 2), (1, 3), (3, 4)), 0, 2),
+            ("LQP02HV",) * 4, (0, 1, 2, 3), ((1, 2), (2, 3)),
+            CapacitorPlacement(5, ((2, 4),), ((3, -1),)),
+            ("PCB_PATTERN_C",), ("shunt_to_ground",),
+        )
+        c = build_nominal_circuit(load_constraint("RF-T005", allow_trial=True), definition)
+        v = c.decode([2., 3., 4., 5., .1, .08, -.09] + [.7] * 6)
+        self.assertTrue(c.validate_components(v)["component_policy_pass"])
+        f = 1.1e9
+        omega = 2 * np.pi * f
+        source = np.array([.02, 0, 0, 0, 0], dtype=complex)
+        term = np.array([1/50, 0, 1/(60-40j), 0, 0], dtype=complex)
+        y = c.topology.node_admittance(v, np.array([omega]), np.array([2]))[0]
+        expected = np.linalg.solve(y + np.diag(term), source)
+        voltage, current = solve_branch_mna(c, v, f, 2,
+            injected_currents_a=source, termination_admittances_s=term)
+        np.testing.assert_allclose(voltage, expected, rtol=1e-11, atol=1e-11)
+
+        # Independent explicit KCL/KVL equations in SI units, not solver matrices.
+        b = np.array([[1, 0, 0, 0], [-1, 1, 1, 0], [0, -1, 0, 0],
+                      [0, 0, -1, 1], [0, 0, 0, -1]], dtype=float)
+        l = np.array([2., 3., 4., 5.]) * 1e-9
+        mutual = np.diag(l)
+        mutual[1, 2] = mutual[2, 1] = .08 * np.sqrt(l[1] * l[2])
+        mutual[2, 3] = mutual[3, 2] = -.09 * np.sqrt(l[2] * l[3])
+        z = omega * (np.diag(l / 25.) + 1j * mutual)
+        cap_current = np.zeros(5, dtype=complex)
+        hot = omega * .1e-12 / (1/40 - 1j) * (voltage[2] - voltage[4])
+        cap_current[2], cap_current[4] = hot, -hot
+        cap_current[3] = omega * .7e-12 / (1/35 - 1j) * voltage[3]
+        np.testing.assert_allclose(term * voltage + b @ current + cap_current,
+                                   source, rtol=0, atol=1e-14)
+        np.testing.assert_allclose(b.T @ voltage, z @ current, rtol=0, atol=1e-13)
+
+    def test_nonfinite_mutual_classification(self):
+        c = circuit(3)
+        boundary = dict(injected_currents_a=[.02, 0, 0, 0],
+                        termination_admittances_s=[.02, 0, 0, 1/60])
+        huge = c.schema.decode([1e308] * 3 + [.1] + [.2] + [0.] * 6)
+        with self.assertRaises(CircuitNumericalError) as caught:
+            solve_branch_mna(c, huge, 1e9, 0, **boundary)
+        self.assertEqual(caught.exception.code, "mutual_nonfinite")
+        with patch("numpy.linalg.eigvalsh", return_value=np.array([np.nan] * 3)):
+            with self.assertRaises(CircuitNumericalError) as caught:
+                solve_branch_mna(c, values(c), 1e9, 0, **boundary)
+        self.assertEqual(caught.exception.code, "mutual_nonfinite")
+        with self.assertRaises(CircuitNumericalError) as caught:
+            solve_branch_mna(c, values(c, 1.1), 1e9, 0, **boundary)
+        self.assertEqual(caught.exception.code, "mutual_not_spd")
+
     def test_orientation_and_signed_coupling(self):
         original = circuit(3)
         definition = original.definition

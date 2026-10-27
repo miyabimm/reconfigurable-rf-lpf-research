@@ -51,13 +51,18 @@ def solve_branch_mna(circuit, values, frequency_hz, setting, *,
 
     L = np.asarray(values.inductances_nh) * 1e-9
     mutual = np.diag(L.copy())
-    for (a, b), k in zip(topology.coupling_pairs, values.coupling_k):
-        mutual[a, b] = mutual[b, a] = k * np.sqrt(L[a] * L[b])
+    with np.errstate(over="ignore", invalid="ignore"):
+        for (a, b), k in zip(topology.coupling_pairs, values.coupling_k):
+            mutual[a, b] = mutual[b, a] = k * np.sqrt(L[a] * L[b])
+    if not np.all(np.isfinite(mutual)):
+        raise CircuitNumericalError("mutual_nonfinite", "Non-finite MNA mutual L matrix")
     try:
         eig = np.linalg.eigvalsh(mutual)
     except np.linalg.LinAlgError as exc:
         raise CircuitNumericalError("mutual_eigensolve_failed", "MNA L eigensolver failed") from exc
-    if not np.all(np.isfinite(eig)) or eig[0] <= eig[-1] * 1e-12:
+    if not np.all(np.isfinite(eig)):
+        raise CircuitNumericalError("mutual_nonfinite", "Non-finite MNA L eigenvalues")
+    if eig[0] <= eig[-1] * 1e-12:
         raise CircuitNumericalError("mutual_not_spd", "MNA mutual L matrix is not SPD")
 
     omega = 2 * np.pi * f

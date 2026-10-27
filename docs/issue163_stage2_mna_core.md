@@ -19,8 +19,10 @@ numerical guard, not an RF constraint or proof of physical infeasibility.
 The solver does not call the forward nodal/Schur/ABCD machinery.
 
 Synthetic tests cover 3L/4L matrix dimensions and agreement with the forward
-nodal solution, direction/sign reversal, OFF trial-specific branches, and
-invalid or singular inputs. No new experiment or optimization is run.
+nodal solution, including a branched 4L tree with hot-hot C and signed
+non-leading coupling slots, with explicit KCL/KVL residual checks. They also
+cover direction/sign reversal, OFF trial-specific branches, nonfinite mutual
+matrix/eigenvalue classification, and invalid or singular inputs. No new experiment or optimization is run.
 S2-01–03/08 remain subject to independent review and broader graph/edge-case
 coverage. External S2P, resolved RF boundary, power balance, frozen EXP
 parity, dense RF and promotion gates are **not implemented** here; PR-B must
