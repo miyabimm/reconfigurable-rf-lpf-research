@@ -7,7 +7,7 @@
 | 対象 | 状態 | 出典・次の条件 |
 |---|---|---|
 | Stage 1：共通回路コア | **完了** | [PR #164](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164)、[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)。既存EXPの凍結ベクトルとのパリティを確認 |
-| Stage 2：独立MNA・外部端子評価 | **進行中** | [Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)／[Issue #168](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/168)。[裸回路MNA設計](issue163_stage2_mna_core.md)だけでは外部S2P込みのRF適合判定は未完了 |
+| Stage 2：独立MNA・外部端子評価 | **一部main統合・Stage全体は未完了** | [PR #169](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/169)の裸回路MNAと[PR #171](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/171)の外部S2P／電力収支B1を統合済み。[Issue #168](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/168)のEXP-043照合・dense RF・候補昇格ゲート等は未完了。[親Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)を参照 |
 | Stage 3以降：共通探索・実行基盤 | **未完了** | 前工程のDoDと独立検証を確認して進める |
 | 文書・データの再編 | **進行中** | [Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)。文書の簡素化と原本保全を別に検証 |
 
