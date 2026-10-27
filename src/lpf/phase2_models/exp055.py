@@ -7,6 +7,7 @@ import math
 import numpy as np
 from scipy.optimize import minimize
 from ._grid import ROOT, CASES as SHARED_CASES, incidence as incidence_edges, SampledExternalEvaluator
+from .circuit_layout import InductorTree
 
 # Branch L0,L1,L2,L3; single physical row L0-L1-L3-L2.
 L_EDGES = ((0,1),(1,3),(1,4),(1,2))
@@ -44,7 +45,8 @@ def bounds(name):
     assert x.shape == (29,2)
     return x
 
-def inductance(x):
+def inductance(x, *, l_edges=L_EDGES):
+    tree = l_edges if isinstance(l_edges, InductorTree) else InductorTree(5, l_edges)
     L = np.asarray(x[:4],float)
     M = np.diag(L.copy())
     for (a,b),k in zip(K_PAIRS,x[8:11]):
@@ -53,18 +55,25 @@ def inductance(x):
     if eig <= 0:
         raise ValueError("Non-positive inductance matrix")
     H = np.diag(L/25.) + 1j*M
-    BL = incidence(L_EDGES)
+    BL = tree.incidence()
     return BL@np.linalg.solve(H,BL.T), M, H, BL
 
 class Evaluator(SampledExternalEvaluator):
-    def __init__(self,policy,points,name,with_parasitic=True):
+    def __init__(self,policy,points,name,with_parasitic=True,*,l_edges=L_EDGES):
         super().__init__(policy,points)
         self.name = name
         self.with_parasitic = bool(with_parasitic)
-        self.L_edges = L_EDGES
+        self.inductor_tree = (l_edges if isinstance(l_edges, InductorTree)
+                              else InductorTree(5, l_edges))
+        if self.inductor_tree.node_count != 5 or self.inductor_tree.source_node != 0 or self.inductor_tree.load_node != 2:
+            raise ValueError("4L evaluator requires 5 nodes and ports 0,2")
         self.BC = incidence(capacitor_edges(name))
         self.bounds = bounds(name)
         self.cache_x = self.cache_il = None
+
+    @property
+    def L_edges(self):
+        return self.inductor_tree.edges
 
     def il(self,x):
         x = np.asarray(x,float)
@@ -72,7 +81,7 @@ class Evaluator(SampledExternalEvaluator):
             raise ValueError("Expected EXP-047 full 29 element parameter vector")
         if self.cache_x is not None and np.array_equal(self.cache_x,x):
             return self.cache_il
-        K,_,_,_ = inductance(x)
+        K,_,_,_ = inductance(x, l_edges=self.inductor_tree)
         n = len(self.f)
         Y = np.broadcast_to(K,(n,5,5)).copy()/(self.omega[:,None,None]*1e-9)
         cv = x[11:].reshape(6,3)[self.setting]
@@ -104,7 +113,7 @@ class Evaluator(SampledExternalEvaluator):
         for role in (0,1,2):
             w=np.flatnonzero(self.role==role)
             idx.append(int(w[np.argmax(v[w]) if role==0 else np.argmin(v[w])]))
-        mineig=float(np.linalg.eigvalsh(inductance(np.asarray(x,float))[1])[0])
+        mineig=float(np.linalg.eigvalsh(inductance(np.asarray(x,float), l_edges=self.inductor_tree)[1])[0])
         return {"worst_IL_db":float(v[idx[0]]),
                 "min_H2_db":float(v[idx[1]]),"min_H3_db":float(v[idx[2]]),
                 "locations":[{"setting":CASES[self.setting[i]],
@@ -113,11 +122,11 @@ class Evaluator(SampledExternalEvaluator):
                 "min_M_eigenvalue_nH":mineig,
                 "finite_H2H3_30dB_pass":bool(v[idx[1]]>=30 and v[idx[2]]>=30)}
 
-def independent_mna(policy,x,name,points):
+def independent_mna(policy,x,name,points,*,l_edges=L_EDGES):
     """Independent explicit 5-node / 4-coupled-L-current 9x9 MNA."""
-    ev=Evaluator(policy,points,name,True)
+    ev=Evaluator(policy,points,name,True,l_edges=l_edges)
     fast=ev.il(x)
-    _,M,H,BL=inductance(x)
+    _,M,H,BL=inductance(x,l_edges=ev.inductor_tree)
     BC=ev.BC
     max_delta=max_residual=0.
     minimum_passive=float("inf")

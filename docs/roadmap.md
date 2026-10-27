@@ -1,3 +1,23 @@
+## 2026-10-27：KISS重点レビューの修正（Phase 2／Draft PR #164）
+
+[PR #164 KISSレビュー](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6439964091)で見つかった28帯域のcase×region×subband網羅性検証不足を、`_grid.validated_band_segments`の小さな集合検査で修正。B71のH2をULへ誤記する反例、B13+B14のB13/B14重複・未知サブバンドを回帰テストで拒否。28区間・6設定・固定RF周波数・S2Pとloss/Q条件は不変更。歴史的29→23要素ベクトル移行処理は`vector_migration.py`からのみ明示importし、通常の`api.py`からの依存を解消。trial別の共通L物理順序・固定C部品型チェックを小さい`nominal_parts.py`の2関数に整理。T007常設寄生とT008 IC-fixed Q60は各々のpolicyアダプタへ残す。古いdocstringを更新し、Lの境界検査を一条件に簡素化。**Stage 1 S1-09の回帰/CIがPASSしてもS1-10最終レビュー・main統合は別工程**。PR #164はDraft・未マージ、Stage 2・最適化・Phase 3には進まない。
+
+## 2026-10-27：Stage 1最終設計レビュー5件の修正（Phase 2／PR #164）
+
+[PR #164の最終レビュー指摘](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6438747128)に対する修正を実装：未知case/type/region・非有限／不正band範囲を`_grid.validated_band_segments`で拒否し、直接渡された`CircuitValues`も`ParameterVectorSchema.encode`で6設定の固定C／IC固定C／常設寄生C不変性を確認。共通`NominalCircuit.evaluate_sampled`を唯一のサマリー／昇格ブロック入口としてtrial別重複`checked_summary`を廃止。歴史的29→23要素の変換実装を`vector_migration.py`へ隔離して`api.py`から互換再公開。role判定を`all_declared_roles_supported_by_l_tree`・`physical_layout_checked=False`とし、電気的確認を物理実装保証と混同しない。保存EXP-042/043/055/058ベクトルと既存RF・証拠監査を維持。**Stage 1最終CI・S1-10レビュー後のmain統合まではDraft／未マージ、Stage 2未着手**。Phase 2継続、Phase 3未承認。子[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で完了基準を管理する。
+
+## 2026-10-27：Stage 1残課題の堅牢性・旧ベクトル変換（Phase 2／PR #164）
+
+[Stage 1共通コア設計](issue163_stage1_core_architecture.md)／[Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)に従い、`NumericalCircuitError`ではなく**`CircuitNumericalError`**の`code`／`sample_index`契約を追加。結合Lの非SPD・解法失敗、節点／Schur／伝達Y／ABCD／外部S2P合成／利得の数値異常を原因別に識別する。50Ω源・60−j40Ω負荷は同じ公称値のままresolved policyから取得し、無効なZや周波数依存Zを暗黙に補正しない。既存S2Pのハッシュ検証・データキャッシュを再利用し、5L合成グラフとRF-T005の共通政策ゲートで新規EXP用APIの拡張可能性を回帰。
+
+EXP-055旧29要素ベクトルのゼロ可変Cプレースホルダーから23要素・実設置2枝への変換は、`phase2_models.api.project_zero_variable_branches`で制約fingerprint・L/k・固定C・枝の接続とrole・T007常設寄生／全6設定厳密0pFを確認してから行う。T008のIC内固定Cが消える変換、RF-T007接地寄生の消去、非ゼロ枝の削除は拒否。新規候補のRF認定・独立MNAを代替しない。[GitHub Actions #40451603248](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40451603248) **PASS**。Source parity・storage/provenance gateを含み、履歴ソース・数値・manifestは変更なし。
+
+Stage 1のS1-01～09は新規API/回帰で確認済み。**S1-10最終レビューとmainへの統合は未完了、PR #164はDraftで未マージ**。Stage 2を開始せず、Phase 2継続／Phase 3未承認。
+
+## 2026-10-27：Issue #163 Stage 1共通計算基盤のAPIと完了基準を整理（Phase 2／PR #164レビュー中）
+
+新規EXPの共通入口を`src/lpf/phase2_models/api.py`の`CircuitDefinition`／`build_nominal_circuit`へ統一する。RF-T005/T007/T008 v3のL/C/Q/k、物理L順序、6設定値を同じ数値エンジンで扱い、試験条件固有の常設寄生・IC固定Cは内部のpolicyアダプタで構築する。EXP-042/043/055/058の凍結ベクトルとのforwardパリティを維持し、**RF制約適合、forward有限格子評価、独立MNA、最適化収束、物理検証を別の証拠として管理**する。GJMの形式的容量範囲に、旧EXP-058の探索下限0.02pFを混入させない。公開API、レイヤー責務、Stage 1最終DoD 10項目、次段階への切り分けは[Stage 1 共通コア設計](issue163_stage1_core_architecture.md)と[子Issue #165](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/165)で管理する。**Stage 1は未完了、Stage 2の汎用独立MNA以降にはまだ着手しない**。既存実験ソース、制約、保存数値を変更せず、Phase 2を継続、Phase 3未承認。
+
 ## 2026-10-27：歴史的EXP評価器の共通API抽出（Phase 2、実験結果変更なし）
 
 EXP-042（RF-T005）・EXP-055（RF-T007）・EXP-058（RF-T008 v3）の評価器を再利用可能な`src/lpf/phase2_models/`へ抽出。**既存のEXP-050/056/057/059–067の直接importは、実行証拠SHA-256がmanifestで固定されているため、歴史コードを変更せず残す**。今後の新規EXPは共通APIをimportし、過去EXPの`sys.path`継承を禁止する。保存済みベクトルによる旧評価器との28区間・6設定・固定S2P数値一致、7×7／9×9独立MNAの回帰をCIに追加。既存実験の元数値・制約・履歴・未収束状態は不変更。未解決の歴史的依存関係は廃止済みと見なさない。詳細：[共通評価器・履歴互換の扱い](phase2_shared_evaluator_imports_20261027.md)。本PRは再利用評価APIの抽出であり、新規探索実行・性能改善・Phase 3開始ではない。

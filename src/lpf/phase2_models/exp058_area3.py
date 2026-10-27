@@ -4,6 +4,8 @@ import numpy as np
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from scipy.optimize import minimize
 from ._grid import ROOT, CASES, ThreeLGrid, THREE_L_EDGES, THREE_L_FIXED_EDGES, THREE_L_BL, incidence
+from .circuit_layout import CapacitorPlacement
+from .rft008_layout import RFT008CapacitorLayout
 
 ORIGINAL = ROOT / "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json"
 VARIANTS = {
@@ -21,30 +23,39 @@ def norm_edge(edge):
 
 
 class Evaluator(ThreeLGrid):
-    def __init__(self, policy, variant, points, gjm_position=None):
+    def __init__(self, policy, variant, points, gjm_position=None, *, capacitor_placement=None):
         self.variant = variant
         self.gjm_position = gjm_position
         self.gjm_positions = (() if gjm_position is None else ((gjm_position,) if isinstance(gjm_position,int) else tuple(gjm_position)))
         self.ids = VARIANTS[variant]
-        self.variable_edges = tuple(ALL_VAR_EDGES[j] for j in self.ids)
-        self.fixed_ic_edges = self.variable_edges
+        source_edges = tuple(ALL_VAR_EDGES[j] for j in self.ids)
+        self.capacitor_placement = (
+            capacitor_placement if capacitor_placement is not None else
+            CapacitorPlacement(4, PCB_EDGES, source_edges, source_edges)
+        )
+        placement = self.capacitor_placement
+        if (placement.node_count != 4 or len(placement.fixed_edges) != 3 or
+                len(placement.variable_edges) != 2 or
+                len(placement.ic_fixed_edges) != 2):
+            raise ValueError("This 3L evaluator requires three fixed and two composite C branches")
+        self.capacitor_layout = RFT008CapacitorLayout.for_policy(
+            policy, placement, self.gjm_positions, gjm_lower_pf=0.02
+        )
+        self.variable_edges = placement.variable_edges
+        self.fixed_ic_edges = placement.ic_fixed_edges
         super().__init__(policy, points)
-        self.cap_edges = PCB_EDGES + self.variable_edges + self.fixed_ic_edges
-        self.BC = incidence(self.cap_edges)
-        self.Q_C = np.array([80. if j in self.gjm_positions else (60. if -1 in edge else 40.) for j,edge in enumerate(PCB_EDGES)] + [35.,35.,60.,60.], float)
-        # Vector: L3, PCB C3, chip neighboring k2, IC fixed C2, six x IC variable C2.
+        self.cap_edges = placement.edges
+        self.BC = placement.incidence()
+        self.Q_C = np.asarray(self.capacitor_layout.q, float)
+        # Parameter order: L3, fixed C3, k2, IC-fixed C2, six-setting Cv2.
         self.bounds = np.array(
-            [(0.4, 27.)] * 3
-            + [(0.02, 100.) if j in self.gjm_positions else ((0.02, 1.) if -1 in edge else (0.02, 0.2)) for j,edge in enumerate(PCB_EDGES)]
-            + [(-0.1, 0.1)] * 2
-            + [(0.5, 3.) if -1 in edge else (0.2, 3.)
-               for edge in self.variable_edges]
-            + [(0., 3.)] * 12, float)
+            [(0.4, 27.)] * 3 +
+            list(self.capacitor_layout.fixed_bounds_pf) +
+            [(-0.1, 0.1)] * 2 +
+            list(self.capacitor_layout.ic_fixed_bounds_pf) +
+            [self.capacitor_layout.variable_bounds_pf] * 12, float
+        )
         self.area = 3. + (2./3.) * len(self.gjm_positions)
-        pcb = [dict(norm_edge(edge), capacitance_pf=0.1,
-                    q=60 if -1 in edge else 40)
-               for j,edge in enumerate(PCB_EDGES) if j not in self.gjm_positions]
-        validate_trial_pcb_pattern_c_branches(policy, pcb)
         self.policy = policy
 
     def il(self, x):
@@ -58,13 +69,9 @@ class Evaluator(ThreeLGrid):
         if np.linalg.eigvalsh(M)[0] <= 0:
             raise ValueError("Non-positive coupled-inductor matrix")
         Y = np.broadcast_to(K, (n, 4, 4)).copy() / (self.omega[:, None, None] * 1e-9)
-        cv = x[10:].reshape((6, 2))[self.setting]
-        caps = np.column_stack((
-            np.broadcast_to(x[3:6], (n, 3)),
-            cv,
-            np.broadcast_to(x[8:10], (n, 2)),
-        ))
-        yc = self.omega[:, None] * 1e-12 * caps / (1/self.Q_C[None, :] - 1j)
+        yc = self.capacitor_layout.sampled_admittance(
+            self.omega, x[3:6], x[8:10], x[10:].reshape((6, 2)), self.setting
+        )
         Y += np.einsum("nb,ib,jb->nij", yc, self.BC, self.BC, optimize=True)
         ports, interior = [0, 2], [1, 3]
         P = Y[:, ports, :][:, :, ports]
@@ -143,7 +150,8 @@ def staged(ev0, ev1, x, target):
 
 
 def independent_mna(ev, vector, policy, variant):
-    probe = Evaluator(policy, variant, 3, ev.gjm_position)
+    probe = Evaluator(policy, variant, 3, ev.gjm_position,
+                      capacitor_placement=ev.capacitor_placement)
     reference = probe.il(vector)
     n = len(probe.f)
     edges = probe.cap_edges
