@@ -14,6 +14,7 @@ import numpy as np
 
 from ._grid import CASES, SampledExternalEvaluator
 from .circuit_layout import InductorTree, incidence_matrix
+from .numerical_diagnostics import CircuitNumericalError
 
 
 def _floats(values, *, label, positive=False, nonnegative=False):
@@ -182,6 +183,8 @@ class CoupledLCTopology:
 
     def matrices(self, values):
         """Return the coupled L admittance numerator and signed M matrix."""
+        if not isinstance(values, CircuitValues):
+            raise TypeError("Expected CircuitValues")
         L = np.asarray(values.inductances_nh, dtype=float)
         k = np.asarray(values.coupling_k, dtype=float)
         n = len(self.inductor_tree.edges)
@@ -190,18 +193,42 @@ class CoupledLCTopology:
         M = np.diag(L.copy())
         for (a, b), coeff in zip(self.coupling_pairs, k):
             M[a, b] = M[b, a] = coeff * np.sqrt(L[a] * L[b])
-        eigenvalues = np.linalg.eigvalsh(M)
+        if not np.all(np.isfinite(M)):
+            raise CircuitNumericalError("mutual_nonfinite", "Non-finite mutual L matrix")
+        try:
+            eigenvalues = np.linalg.eigvalsh(M)
+        except np.linalg.LinAlgError as exc:
+            raise CircuitNumericalError(
+                "mutual_eigensolve_failed", "Mutual L eigensolver failed"
+            ) from exc
+        if not np.all(np.isfinite(eigenvalues)):
+            raise CircuitNumericalError("mutual_nonfinite", "Non-finite L eigenvalues")
         if eigenvalues[0] <= eigenvalues[-1] * 1e-12:
-            raise ValueError("Coupled inductance matrix is not SPD")
+            raise CircuitNumericalError("mutual_not_spd", "Coupled L matrix is not SPD")
         H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
         B = self.inductor_tree.incidence()
-        numerator = B @ np.linalg.solve(H, B.T)
+        try:
+            numerator = B @ np.linalg.solve(H, B.T)
+        except np.linalg.LinAlgError as exc:
+            raise CircuitNumericalError(
+                "inductor_solve_failed", "Coupled L admittance solve failed"
+            ) from exc
+        if not np.all(np.isfinite(numerator)):
+            raise CircuitNumericalError(
+                "inductor_admittance_nonfinite", "Non-finite L admittance"
+            )
         return numerator, M
 
     def node_admittance(self, values, omega_rad_s, setting_indices):
         """Assemble independent lossy L and C contributions for each sample."""
+        if not isinstance(values, CircuitValues):
+            raise TypeError("Expected CircuitValues")
         omega = np.asarray(omega_rad_s, dtype=float)
-        setting = np.asarray(setting_indices, dtype=int)
+        raw_setting = np.asarray(setting_indices)
+        if (raw_setting.dtype.kind not in "iu" or
+                raw_setting.dtype.kind == "b"):
+            raise ValueError("Setting indices must be integers")
+        setting = raw_setting.astype(int)
         if (omega.ndim != 1 or setting.shape != omega.shape or
                 not np.all(np.isfinite(omega)) or np.any(omega <= 0) or
                 np.any(setting < 0) or np.any(setting >= len(CASES))):
@@ -222,7 +249,12 @@ class CoupledLCTopology:
                               self.inductor_tree.node_count)
         Y += np.einsum("fb,ib,jb->fij", yc, Bc, Bc, optimize=True)
         if not np.all(np.isfinite(Y)):
-            raise ValueError("Non-finite nodal admittance")
+            raise CircuitNumericalError(
+                "node_nonfinite", "Non-finite nodal admittance",
+                sample_index=int(np.flatnonzero(
+                    ~np.all(np.isfinite(Y), axis=(1, 2))
+                )[0])
+            )
         return Y
 
 
@@ -261,24 +293,54 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
             U = Y[:, ports, :][:, :, middle]
             V = Y[:, middle, :][:, :, ports]
             E = Y[:, middle, :][:, :, middle]
-            R = P - U @ np.linalg.solve(E, V)
+            try:
+                R = P - U @ np.linalg.solve(E, V)
+            except np.linalg.LinAlgError as exc:
+                raise CircuitNumericalError(
+                    "schur_solve_failed",
+                    "Internal-node Schur solve singular or ill-conditioned"
+                ) from exc
+        if not np.all(np.isfinite(R)):
+            raise CircuitNumericalError(
+                "schur_nonfinite", "Non-finite reduced two-port admittance",
+                sample_index=int(np.flatnonzero(
+                    ~np.all(np.isfinite(R), axis=(1, 2))
+                )[0])
+            )
         a, b, c, d = R[:, 0, 0], R[:, 0, 1], R[:, 1, 0], R[:, 1, 1]
-        if np.any(np.abs(c) < 1e-21):
-            raise ValueError("Transfer admittance is singular")
+        bad_transfer = np.flatnonzero(np.abs(c) < 1e-21)
+        if bad_transfer.size:
+            raise CircuitNumericalError(
+                "transfer_singular", "Transfer admittance is singular",
+                sample_index=int(bad_transfer[0])
+            )
         t = np.empty((len(self.f), 2, 2), complex)
         t[:, 0, 0] = -d / c
         t[:, 0, 1] = -1 / c
         t[:, 1, 0] = -(a * d - b * c) / c
         t[:, 1, 1] = -a / c
+        if not np.all(np.isfinite(t)):
+            raise CircuitNumericalError("abcd_nonfinite", "Non-finite LPF ABCD")
         full = self.pre @ t @ self.post
+        if not np.all(np.isfinite(full)):
+            raise CircuitNumericalError(
+                "cascade_nonfinite", "Non-finite external S2P + LPF cascade"
+            )
         zl, zs = 60 - 40j, 50.
         den = full[:, 0, 0] * zl + full[:, 0, 1] + zs * (
             full[:, 1, 0] * zl + full[:, 1, 1]
         )
+        if not np.all(np.isfinite(den)) or np.any(den == 0):
+            raise CircuitNumericalError(
+                "gain_denominator_invalid", "Non-finite or zero cascade denominator"
+            )
         gain = 4 * zs * zl.real / np.abs(den) ** 2
         if not np.all(np.isfinite(gain)):
-            raise ValueError("Non-finite transfer gain")
-        return -10 * np.log10(np.maximum(gain, 1e-300))
+            raise CircuitNumericalError("gain_nonfinite", "Non-finite transfer gain")
+        il = -10 * np.log10(np.maximum(gain, 1e-300))
+        if not np.all(np.isfinite(il)):
+            raise CircuitNumericalError("il_nonfinite", "Non-finite insertion loss")
+        return il
 
     def summary(self, vector):
         values = vector if isinstance(vector, CircuitValues) else self.schema.decode(vector)
