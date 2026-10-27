@@ -2,23 +2,18 @@
 
 **状態：Stage 1 進行中。** 本書はPR #164の実装レビューと、Stage 2へ移る前の完了判定に使う設計方針。履歴EXPの変更や、新規EXP探索、Phase 3の承認を意味しない。RF数値条件・外部S2P・SLSQP予算の変更は含めない。
 
-## 2026-10-27 最終設計レビューの判定
+## 2026-10-27 最終レビュー指摘の修正状況
 
-**判定：要修正（PR #164はDraft・未マージ）。** レビューコメント：
-[PR #164 / final design review](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6438747128)。
+[PR #164のレビュー指摘](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164#issuecomment-6438747128)へのコード修正は完了した。正式なStage 1完了・マージ前には最終headのCI監査とレビューを改めて確認する。
 
-正常系のEXP数値パリティと最終headのCI PASSは確認済み。ただし拡張時の誤評価防止のため、
-(1) `_grid`が未知region/typeをH3へ分類する入力境界、
-(2) `CoupledLCEvaluator.il(CircuitValues)`の固定C設定不変条件バイパス
-を修正するまで**S1-09を再オープン**する。
+- **P1-1**：`_grid.validated_band_segments()`で28区間のcase/type/region、全6設定、有限かつ正の`low<high`を事前確認。未知type/regionをH3扱いしない。
+- **P1-2**：`CoupledLCEvaluator.il(CircuitValues)`にも`ParameterVectorSchema.encode`による固定C・IC内固定C・常設寄生Cと6設定の不変条件を適用。通常ベクトルへの数値演算は不変更。
+- **P2-3**：正式な有限格子のレポートと候補昇格保留は`NominalCircuit.evaluate_sampled()`へ統一。trial別内部アダプタの`checked_summary()`を廃止。
+- **P2-4**：歴史的ゼロ枝の変換は`vector_migration.py`へ分離。`api.py`からは旧呼び方を互換再公開するだけ。新EXPの通常の回路定義には不要。
+- **P2-5**：role監査は`all_declared_roles_supported_by_l_tree`と`unsupported_role_indices`を使用し、`physical_layout_checked=False`を明示。`role_verified`という物理検証を連想させる名称を廃止。
 
-また、評価サマリー生成は公開`NominalCircuit`に集約し、
-旧EXPプレースホルダー専用移行処理は標準API本文から分離する。
-電気的な`role_verified`を物理的配置の証明と混同させない名称または
-契約を適用する。新しい抽象階層の大幅増設はしない。
-**S1-01～08完了、S1-09/S1-10未完了（8/10）**。
-前節の旧S1-09対応済みテストは有効だが、このレビューで追加発見した
-異常系が終わるまでStage 1を完了扱いにしない。Phase 2継続。
+実測RF特性の保証、独立MNA、dense RF判定、新EXP探索は今回も対象外。
+**Stage 1全体はmain統合前のため完了扱いにしない。**
 
 ## 1. 結論：Stage 1の共通コアを先に完成させる
 
@@ -136,10 +131,10 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 - [x] **S1-06 可逆パラメータ**：`decode/encode`がT005/T007/T008の全枝数、6設定、固定C不変、T007常設枝、T008IC固定枝、旧placeholder移行について可逆または明示変換／拒否。
 - [x] **S1-07 接続役割の整理**：shunt/series/bridgeの意味を定義し、検査可能なものを検証、未証明の物理分類をポリシー適合と混同しない。
 - [x] **S1-08 数値パリティ**：EXP-042/043/055/058の保存済みベクトルと28×6格子上で許容誤差（まずabsolute 1e−9dB）以内、外部50Ω・60−j40Ωと固定入出力S2Pを保持する。代替L/Cグラフでinstance間干渉がない。
-- [ ] **S1-09 堅牢性**：不正な接続/値/Q/k/非SPD/非有限入力を拒否し、単位取り違え・S2Pの不正データ・意図しないキャッシュ汚染を検出。正規化はnode 0始まり・GND=−1で一元化。
+- [x] **S1-09 堅牢性**：不正な接続/値/Q/k/非SPD/非有限入力を拒否し、単位取り違え・S2Pの不正データ・意図しないキャッシュ汚染を検出。正規化はnode 0始まり・GND=−1で一元化。
 - [ ] **S1-10 証拠とCI**：新旧互換回帰・数値パリティ・制約チェック・証拠SHA監査をCIでPASS、コード例とDoD文書が更新済み。旧EXPソース/manifest/実験結果は不変更。
 
-**S1-07のグラフ上の役割判定について**：直列／橋絡の区別が端子だけで一意に定まらない構造がある場合、無理に自動分類しない。物理主経路との対応を明示した別入力と検証手順を定義し、未証明は`role_unverified`として最終候補ゲートへ送る設計でよい。
+**S1-07のグラフ上の役割判定について**：直列／橋絡の区別が端子だけで一意に定まらない構造がある場合、無理に自動分類しない。物理主経路との対応を明示した別入力と検証手順を定義し、未証明は`declared_role_not_proven_by_l_tree`として候補昇格保留の理由を記録する。
 
 ## 6.1 変動C接続role監査（S1-07の電気的証拠）
 
@@ -149,10 +144,10 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 | --- | --- | --- |
 | `shunt_to_ground` | 実際に一方がGND（−1） | 電気接続としてverified |
 | `bridge` | Hot-Hot両端間にLツリー経路があり、Cはその経路のchord | **電気的な経路を跨ぐことのみ**verified（物理的ブリッジ実装の保証ではない） |
-| `series` | Lが全hotノードの接続ツリーを形成するため、C挿入が必須信号経路上にあるとは証明不能 | `role_verified=False`、未証明indexを返し、候補昇格を保留 |
+| `series` | Lが全hotノードの接続ツリーを形成するため、C挿入が必須信号経路上にあるとは証明不能 | `declared_role_supported_by_l_tree=False`、対象indexを返す |
 | 端子・roleの不一致 | GND端子にbridge/series、Hot-Hotにshunt等 | 接続不正として拒否 |
 
-`validate_components`は承認済み部品制約の`component_policy_pass`を**変更せず**、`connection_role_audit`と`connection_role_promotion_blocked`を別々に付記する。`evaluate_sampled`にも同じ情報を反映する。seriesがRFポリシー上**許可される場合**も、シリーズの物理配置が未証明ならroleの未検証フラグを立てる。加えて、**Stage 1は独立MNAとdense RF評価を実行しない**ため、roleが完全に電気的検証済みであっても`candidate_promotion_blocked=True`を常に返し、`promotion_blockers`に`independent_mna_not_checked`と`dense_rf_not_checked`（該当時`connection_role_unverified`）を明記する。単一のブール値でRF適合済みに誤解させない。
+`validate_components`は承認済み部品制約の`component_policy_pass`を**変更せず**、`connection_role_audit`と`connection_role_evidence_incomplete`を別々に付記する。`evaluate_sampled`にも同じ情報を反映する。seriesがRFポリシー上**許可される場合**も、シリーズの物理配置が未証明ならroleの未検証フラグを立てる。加えて、**Stage 1は独立MNAとdense RF評価を実行しない**ため、roleが完全に電気的検証済みであっても`candidate_promotion_blocked=True`を常に返し、`promotion_blockers`に`independent_mna_not_checked`と`dense_rf_not_checked`（該当時`declared_role_not_proven_by_l_tree`）を明記する。単一のブール値でRF適合済みに誤解させない。
 
 この証拠は**可変Cの電気接続グラフだけ**の判定であり、PCB/GJM固定Cの製造可能性、主信号経路の物理定義、直列スイッチ等を証明しない。追加の物理主経路定義・実装証拠が必要な回路ではStage 2/4の候補検証に引き継ぐ。新しいRF数値上限・直列配置禁止を導入したわけではない。
 
@@ -162,7 +157,7 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 
 `tests/test_phase2_s2p_grid_cache.py`で、`port_parasitics._load_verified`がSHA-256/50Ω-RIを既存機能で検証し、`get_two_port_s`がキャッシュ内部を別呼び出しへ可変参照として返さないことをチェックする。S21=0、補間範囲外、非有限周波数、改ざんされたS2P SHAは拒否。28帯域区間×3点／6設定のラベル・境界、別評価器のABCD行列非共有も確認する。`_grid.SampledExternalEvaluator`はpointsに整数以外・bool・0以下を明示拒否する。S2Pの再実装や正規データの書換えは行わない。
 
-**S1-09はここまで部分対応完了（最終レビューで再オープン）**：上記のS2P/cache検証に加え、後節の型付き数値失敗診断と5L合成境界テストを追加し、CIで確認した。極限Q(f)・物理Sパラメータの追加検証はStage 2以降の物理/RF検証対象であり、本DoDの数値入力・行列異常対応と混同しない。
+**S1-09は最終レビューのP1入力境界修正まで含めて対応済み**：上記のS2P/cache検証に加え、後節の型付き数値失敗診断と5L合成境界テストを追加し、CIで確認した。極限Q(f)・物理Sパラメータの追加検証はStage 2以降の物理/RF検証対象であり、本DoDの数値入力・行列異常対応と混同しない。
 
 ### S1-09 共通forward失敗の分類（2026-10-27）
 
@@ -204,9 +199,9 @@ forwardカーネルの旧ハードコードを廃止して、
 
 ### S1-06 凍結EXPプレースホルダーの厳密な削除
 
-`phase2_models.api.project_zero_variable_branches(source, target,
+`phase2_models.vector_migration.project_zero_variable_branches(source, target,
 vector, kept_indices)`を新公開APIとして追加。
-`ZeroBranchProjection`には、新ベクトルの値タプル、
+公開APIの`api.py`からも同名関数を互換再公開する。`ZeroBranchProjection`には、新ベクトルの値タプル、
 残す／除去する可変Cのソース順index、制約fingerprintを保持する。
 元ベクトルを変更せず、以下を全部検査した場合のみ変換する。
 
