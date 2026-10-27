@@ -117,8 +117,8 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 - [ ] **S1-05 L物理モデル**：現在の明示シリーズの範囲とQ、chip順序、名目非隣接k=0、混合PCB k、SPDをチェックし、未仕様のLシリーズを非対応として示す。
 - [ ] **S1-06 可逆パラメータ**：`decode/encode`がT005/T007/T008の全枝数、6設定、固定C不変、T007常設枝、T008IC固定枝、旧placeholder移行について可逆または明示変換／拒否。
 - [x] **S1-07 接続役割の整理**：shunt/series/bridgeの意味を定義し、検査可能なものを検証、未証明の物理分類をポリシー適合と混同しない。
-- [ ] **S1-08 数値パリティ**：EXP-042/043/055/058の保存済みベクトルと28×6格子上で許容誤差（まずabsolute 1e−9dB）以内、外部50Ω・60−j40Ωと固定入出力S2Pを保持する。代替L/Cグラフでinstance間干渉がない。
-- [ ] **S1-09 堅牢性**：不正な接続/値/Q/k/非SPD/非有限入力を拒否し、単位取り違え・S2Pの不正データ・意図しないキャッシュ汚染を検出。正規化はnode 0始まり・GND=−1で一元化。
+- [x] **S1-08 数値パリティ**：EXP-042/043/055/058の保存済みベクトルと28×6格子上で許容誤差（まずabsolute 1e−9dB）以内、外部50Ω・60−j40Ωと固定入出力S2Pを保持する。代替L/Cグラフでinstance間干渉がない。
+- [x] **S1-09 堅牢性**：不正な接続/値/Q/k/非SPD/非有限入力を拒否し、単位取り違え・S2Pの不正データ・意図しないキャッシュ汚染を検出。正規化はnode 0始まり・GND=−1で一元化。
 - [ ] **S1-10 証拠とCI**：新旧互換回帰・数値パリティ・制約チェック・証拠SHA監査をCIでPASS、コード例とDoD文書が更新済み。旧EXPソース/manifest/実験結果は不変更。
 
 **S1-07のグラフ上の役割判定について**：直列／橋絡の区別が端子だけで一意に定まらない構造がある場合、無理に自動分類しない。物理主経路との対応を明示した別入力と検証手順を定義し、未証明は`role_unverified`として最終候補ゲートへ送る設計でよい。
@@ -145,6 +145,44 @@ sampled = circuit.evaluate_sampled(saved_vector, points_per_interval=3)
 `tests/test_phase2_s2p_grid_cache.py`で、`port_parasitics._load_verified`がSHA-256/50Ω-RIを既存機能で検証し、`get_two_port_s`がキャッシュ内部を別呼び出しへ可変参照として返さないことをチェックする。S21=0、補間範囲外、非有限周波数、改ざんされたS2P SHAは拒否。28帯域区間×3点／6設定のラベル・境界、別評価器のABCD行列非共有も確認する。`_grid.SampledExternalEvaluator`はpointsに整数以外・bool・0以下を明示拒否する。S2Pの再実装や正規データの書換えは行わない。
 
 残るS1-09対象：数値行列の極端条件での診断整理、広い枝数・接続グラフに対する異常系の回帰、最終forwardの失敗理由記録のAPI設計。**S1-09全体は未完了**。
+
+### S1-09 共通forward失敗の分類（2026-10-27）
+
+`src/lpf/phase2_models/numerical_diagnostics.py`の
+`CircuitNumericalError(ValueError)`は、次段階の最適化器が失敗理由を
+文字列メッセージのパース無しに保持できるよう、
+`code`と（特定できた場合のみ）`sample_index`を明示する。
+
+| `code` | 区別する異常 |
+| --- | --- |
+| `mutual_nonfinite` / `mutual_eigensolve_failed` / `mutual_not_spd` | 相互L行列・SPD検証 |
+| `inductor_solve_failed` / `inductor_admittance_nonfinite` | 結合L admittanceの解法 |
+| `node_nonfinite` | L/Cからの節点アドミタンス計算 |
+| `schur_solve_failed` / `schur_nonfinite` | 内部ノードのSchur縮約 |
+| `transfer_singular` / `abcd_nonfinite` | Y→ABCD変換 |
+| `cascade_nonfinite` | 固定入出力S2Pとの積 |
+| `gain_denominator_invalid` / `gain_nonfinite` / `il_nonfinite` | 端子利得・IL |
+
+構成の事前入力エラー（非有限vector、非整数setting index、
+不正ポート、設定数の不一致、容量・Qの不適合）は原則`ValueError`、
+型契約違反は`TypeError`を維持する。数値特異点を勝手に修復したり、
+悪条件行列の失敗をRF実現不能の数学的証明と解釈したりしない。
+`sample_index`は最初の異常サンプルを確定できた場合のみ設定する。
+
+`tests/test_phase2_numeric_diagnostics.py`は保存済みEXP-055
+ベクトルと専用の合成行列で、非SPD、L solve失敗、
+Schur特異、伝達admittance特異、非有限外部cascade、
+設定／周波数／非有限vector、グラフの自己ループ・非連結・無効port、
+平行C枝、5L（6 hotノード）forward演算を確認する。
+**5Lは合成数値動作テストであり、承認済み部品・RF性能達成を意味しない。**
+
+入力50Ω／負荷60−j40Ωは従来の公称RF値のままで、
+forwardカーネルの旧ハードコードを廃止して、
+**resolved policyの`source_ohms`と`load_ohms`から取得**。
+非有限／受動でない／周波数依存の未対応インピーダンスは
+推定代用せず拒否する。`port_parasitics.py`の50Ω RI S2P
+正規化・SHAをそのまま使用する。旧EXP-042/043/055/058との
+完全なforward数値パリティをCIで維持する。
 
 ## 7. 実装の進め方
 
