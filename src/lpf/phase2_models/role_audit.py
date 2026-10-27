@@ -23,34 +23,37 @@ class ConnectionRoleEvidence:
     declared_role: str
     electrical_class: str
     evidence: str
-    role_verified: bool
+    declared_role_supported_by_l_tree: bool
 
 
 @dataclass(frozen=True)
 class ConnectionRoleAudit:
-    """Immutable report; all_verified is false on any unproved 'series'."""
+    """Electrical L-tree report only; no physical-layout certification."""
 
     branches: tuple[ConnectionRoleEvidence, ...]
 
     @property
-    def all_verified(self):
-        return all(item.role_verified for item in self.branches)
+    def all_declared_roles_supported_by_l_tree(self):
+        return all(item.declared_role_supported_by_l_tree for item in self.branches)
 
     @property
-    def unverified_indices(self):
+    def unsupported_role_indices(self):
         return tuple(i for i, b in enumerate(self.branches)
-                     if not b.role_verified)
+                     if not b.declared_role_supported_by_l_tree)
 
     def as_dict(self):
         return {
-            "all_verified": self.all_verified,
-            "unverified_indices": self.unverified_indices,
+            "all_declared_roles_supported_by_l_tree":
+                self.all_declared_roles_supported_by_l_tree,
+            "unsupported_role_indices": self.unsupported_role_indices,
+            "physical_layout_checked": False,
             "branches": tuple({
                 "edge": b.edge,
                 "declared_role": b.declared_role,
                 "electrical_class": b.electrical_class,
                 "evidence": b.evidence,
-                "role_verified": b.role_verified,
+                "declared_role_supported_by_l_tree":
+                    b.declared_role_supported_by_l_tree,
             } for b in self.branches)
         }
 
