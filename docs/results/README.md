@@ -7,7 +7,7 @@
 | **RF-F003（正式）** | [EXP-047](../../experiments/chatgpt_topology_search/runs/EXP-047/README.md) | 正式2可変C。2026-10-17に固定したパレート4件は当時の記録 |
 | **RF-T005（試験）** | [EXP-042](../../experiments/chatgpt_topology_search/runs/EXP-042/README.md)、[EXP-043](../../experiments/chatgpt_topology_search/runs/EXP-043/README.md)、[EXP-045](../../experiments/chatgpt_topology_search/runs/EXP-045/README.md) | 最大3可変C。固定パレート6件 |
 | **RF-T006/T007（試験）** | [実験索引](../../data/experiment_index.csv) | 追加阻止帯域／固定寄生モデルの条件差がある |
-| **RF-T008 v3（試験）** | [EXP-058](../../experiments/chatgpt_topology_search/runs/EXP-058/README.md)／[EXP-062～068の索引](../../data/experiment_index.csv) | IC固定Cと最大2可変Cのモデル。各EXPの数値・独立MNA・収束状態を個別に確認 |
+| **RF-T008 v3（試験）** | [EXP-058](../../experiments/chatgpt_topology_search/runs/EXP-058/manifest.json)／[EXP-062～068の索引](../../data/experiment_index.csv) | IC固定Cと最大2可変Cのモデル。各EXPの数値・独立MNA・収束状態を個別に確認 |
 
 [旧固定パレートJSON](../../data/pareto_snapshots/rf_t005_rf_f003_20261017.json)と[2026-10-17候補24件CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)は**歴史的スナップショット**であり、後続の探索を反映した現行最良一覧ではありません。[当時の説明](../pareto_rf_t005_rf_f003_20261017.md)と元EXPで出典・訂正を確認します。
 
