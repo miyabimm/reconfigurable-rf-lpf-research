@@ -39,10 +39,16 @@ def rf_input_file(root, logical_path):
     Historical RF JSON, manifest paths and effective fingerprints stay unchanged.
     Never fall back to data/: a sparse Pi checkout must fail on missing RF inputs.
     """
-    if not isinstance(logical_path, str) or not logical_path.startswith("data/"):
-        raise ValueError("Expected a registered legacy RF input path")
+    if not isinstance(logical_path, str):
+        raise ValueError("Expected an RF input path")
+    if logical_path.startswith("data/"):
+        relative = "rf/" + logical_path[len("data/"):]
+    elif logical_path.startswith("rf/"):
+        relative = logical_path
+    else:
+        raise ValueError("Expected a registered RF input path")
     rf_root = (Path(root) / "rf").resolve()
-    physical = repository_file(root, "rf/" + logical_path[len("data/"):])
+    physical = repository_file(root, relative)
     if not physical.is_relative_to(rf_root):
         raise ValueError("RF input path escapes rf/")
     return physical
@@ -61,10 +67,11 @@ def validate_registry(*, root=ROOT):
         for cid, entry in entries.items():
             if not re.fullmatch(prefix + r"[0-9]{3}", cid) or not isinstance(entry, dict):
                 raise ValueError(f"Invalid {kind} registration: {cid}")
-            expected = f"data/constraints/{kind}/{cid}.json"
-            if entry.get("file") != expected:
+            allowed = {f"data/constraints/{kind}/{cid}.json",
+                       f"rf/constraints/{kind}/{cid}.json"}
+            if entry.get("file") not in allowed:
                 raise ValueError(f"Constraint path/identity mismatch: {cid}")
-            payload = _read(rf_input_file(root, expected))
+            payload = _read(rf_input_file(root, entry["file"]))
             if kind == "formal":
                 if entry.get("state") != "approved":
                     raise ValueError(f"Formal version not approved: {cid}")

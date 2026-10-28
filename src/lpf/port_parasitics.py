@@ -20,7 +20,7 @@ def _file_under_repo(root, relative):
     root = Path(root).resolve()
     if not isinstance(relative, str) or not relative:
         raise ValueError("Missing parasitic S2P path")
-    if not relative.startswith("data/parasitics/"):
+    if not relative.startswith(("data/parasitics/", "rf/parasitics/")):
         raise ValueError("Expected registered fixed S2P path")
     return rf_input_file(root, relative)
 

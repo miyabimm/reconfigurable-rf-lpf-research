@@ -1,5 +1,6 @@
 """Formal/trial constraint identity, immutable snapshots and cost Pareto guardrails."""
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,34 @@ class VersionedConstraintsTests(unittest.TestCase):
         self.assertEqual(active["active_constraint_status"], "formal")
         self.assertIsNone(active["area_budget"]["hard_cap"])
         self.assertEqual(len(constraint_fingerprint(active)), 64)
+
+    def test_new_formal_id_uses_rf_path_and_preserves_previous(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            shutil.copytree(ROOT / "rf/constraints", root / "rf/constraints")
+            registry_path = root / "rf/constraints/registry.json"
+            registry = json.loads(registry_path.read_text())
+            previous = json.loads(
+                (root / "rf/constraints/formal/RF-F003.json").read_text())
+            candidate = dict(previous)
+            candidate["active_constraint_id"] = "RF-F004"
+            candidate["bands_file"] = "rf/bands/versioned.csv"
+            (root / "rf/bands").mkdir(parents=True)
+            shutil.copyfile(ROOT / "rf/bands.csv", root / "rf/bands/versioned.csv")
+            (root / "rf/constraints/formal/RF-F004.json").write_text(
+                json.dumps(candidate))
+            registry["formal"]["RF-F004"] = {
+                "file": "rf/constraints/formal/RF-F004.json",
+                "state": "approved",
+                "effective_constraint_sha256": constraint_fingerprint(candidate),
+            }
+            registry["active_formal_id"] = "RF-F004"
+            registry_path.write_text(json.dumps(registry))
+            self.assertEqual(load_constraint(root=root)["active_constraint_id"], "RF-F004")
+            self.assertEqual(load_constraint("RF-F003", root=root), previous)
+            self.assertEqual(
+                constraint_fingerprint(load_constraint(root=root)),
+                registry["formal"]["RF-F004"]["effective_constraint_sha256"])
 
     def test_cost_is_not_an_rf_feasibility_limit(self):
         self.assertGreater(chip_area(n_lqp02=8), 6)

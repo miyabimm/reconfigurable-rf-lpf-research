@@ -47,7 +47,7 @@ def _identity(circuit, vector):
     source = {}
     for path in sorted((ROOT / 'src/lpf').rglob('*.py')):
         source[str(path.relative_to(ROOT))] = _file_hash(path)
-    inputs = {'data/bands.csv': _file_hash(ROOT / 'rf/bands.csv')}
+    inputs = {policy['bands_file']: _file_hash(rf_input_file(ROOT, policy['bands_file']))}
     for role in ('input_parasitic', 'output_parasitic'):
         spec = policy['external_port_parasitics'][role]
         path = rf_input_file(ROOT, spec['path'])
