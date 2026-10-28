@@ -16,6 +16,42 @@ from lpf.phase2_models.independent_rf import evaluate_independent_sample
 
 
 class IndependentRFTests(unittest.TestCase):
+    def test_candidate_audit_never_promotes_on_component_pass(self):
+        from lpf.phase2_models.candidate_audit import audit_candidate
+        _, x = exp042.policy_and_seed()
+        config = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
+                            ('GJM01','GJM01','GJM01','PCB_PATTERN_C'),
+                            ('shunt_to_ground','shunt_to_ground','bridge'))
+        circuit = build_nominal_circuit(load_constraint('RF-T005', allow_trial=True), config)
+        report = audit_candidate(circuit, x)
+        self.assertTrue(report['component_policy_pass'])
+        self.assertEqual(report['constraint_fingerprint'], circuit.policy_fingerprint)
+        self.assertTrue(report['connection_role_evidence_complete'])
+        self.assertFalse(report['independent_mna_checked'])
+        self.assertFalse(report['rf_dense_evaluation_completed'])
+        self.assertIsNone(report['optimization_converged'])
+        self.assertFalse(report['rf_compliance_certified'])
+        self.assertTrue(report['candidate_promotion_blocked'])
+        self.assertIn('independent_mna_not_checked', report['promotion_blockers'])
+        self.assertIn('dense_rf_not_checked', report['promotion_blockers'])
+        with self.assertRaises(TypeError):
+            audit_candidate(circuit, x, independent_mna_checked=True)
+
+    def test_candidate_audit_preserves_role_and_adapter_blockers(self):
+        from lpf.phase2_models.candidate_audit import audit_candidate
+        circuit = SimpleNamespace(policy_id='RF-T005', policy_fingerprint='test',
+            validate_components=lambda x: {'component_policy_pass': False,
+                                           'promotion_blockers': ('custom_blocker',)},
+            connection_role_audit=lambda: {'all_declared_roles_supported_by_l_tree': False})
+        report = audit_candidate(circuit, None)
+        self.assertIn('component_policy_failed', report['promotion_blockers'])
+        self.assertIn('declared_role_not_proven_by_l_tree', report['promotion_blockers'])
+        self.assertIn('custom_blocker', report['promotion_blockers'])
+        self.assertFalse(report['eligible_for_owner_review'])
+        with patch.object(circuit, 'validate_components', side_effect=ValueError('invalid')):
+            with self.assertRaisesRegex(ValueError, 'invalid'):
+                audit_candidate(circuit, None)
+
     def test_scan_coverage_and_refinement(self):
         policy = load_constraint('RF-T005', allow_trial=True)
         circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',
