@@ -71,7 +71,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - name: Verify exact checked-out HEAD
-        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}" # EXP-050+ provenance checks the actual origin/main reservation
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -119,6 +121,8 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_topology_enumeration.py -v
           python -m unittest discover -s tests -p test_phase2_candidate_records.py -v
           python -m unittest discover -s tests -p test_phase2_synthetic_runner.py -v
+          python -m unittest discover -s tests -p test_phase2_shared_entry.py -v
+          python scripts/run_phase2_shared.py synthetic --mock --policy RF-T005 --inductors 3 > /dev/null
           LPF_EVIDENCE_ROOT="$GITHUB_WORKSPACE" python -m unittest discover -s tests -p test_phase2_candidate_records_frozen.py -v
 
       - name: Guard unique RF and project sources with read-only legacy aliases
