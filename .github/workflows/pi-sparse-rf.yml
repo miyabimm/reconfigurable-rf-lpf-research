@@ -69,7 +69,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for test_file in test_constraint_versioning.py test_phase2_s2p_grid_cache.py test_phase2_branch_mna.py test_phase2_sampled_epigraph.py test_phase2_problem_seed.py test_phase2_staged_optimization.py test_phase2_topology_enumeration.py test_phase2_candidate_records.py test_phase2_synthetic_runner.py test_phase2_shared_entry.py test_slsqp_budget.py; do
+          for test_file in test_constraint_versioning.py test_phase2_s2p_grid_cache.py test_phase2_branch_mna.py test_phase2_sampled_epigraph.py test_phase2_problem_seed.py test_phase2_staged_optimization.py test_phase2_real_scipy_smoke.py test_phase2_topology_enumeration.py test_phase2_candidate_records.py test_phase2_synthetic_runner.py test_phase2_shared_entry.py test_slsqp_budget.py; do
             uv run --frozen python -m unittest discover -s tests -p "$test_file" -v
           done
           uv run --frozen python scripts/run_phase2_shared.py synthetic --mock --policy RF-T005 --inductors 3 > /dev/null
