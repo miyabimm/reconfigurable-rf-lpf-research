@@ -9,6 +9,7 @@
 - **ローカル環境:** [Pi Codeの取得・実行環境](project/README.md)。
 - **現行RF入力:** [制約レジストリ](rf/constraints/registry.json)のactive正式JSON、[bands.csv](rf/bands.csv)、[固定S2P](rf/parasitics/)。必要な場合のみ[設計仕様](project/specification.md)を参照する。
 - **実装とテスト:** [src/lpf](src/lpf/)、[scripts](scripts/)、[tests](tests/)。
+- **研究の現況・代表結果:** [ロードマップ](project/roadmap.md)／[保存結果](project/results.md)。正式activeはRF-F003（試験条件とは区別）。
 
 当面の開発はPi Codeのローカル実装・検証を中心に進めます。利用可能な探索機能は現行コードで確認し、未実装の実行器や未検証のRF性能を既成事実としません。
 
