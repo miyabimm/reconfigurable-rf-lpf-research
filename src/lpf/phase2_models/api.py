@@ -73,6 +73,11 @@ class NominalCircuit:
         return self._adapter.policy_fingerprint
 
     @property
+    def resolved_policy(self):
+        """Return a defensive copy of the approved trial policy snapshot."""
+        return self._adapter.policy
+
+    @property
     def topology(self):
         return self._adapter.topology
 
