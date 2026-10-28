@@ -10,7 +10,7 @@ from .independent_rf import evaluate_independent_sample
 
 
 def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canonical",
-                        refine=False, tolerance_hz=1.0):
+                        refine=False, tolerance_hz=1.0, _sample_observer=None):
     """Evaluate canonical case settings or the diagnostic six-setting cross product.
 
     Local refinement only examines interior sampled extrema. It cannot guarantee
@@ -34,7 +34,10 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         for setting in (range(6) if coverage == "cross" else (canonical,)):
             frequencies = np.linspace(low * 1e6, high * 1e6, points_per_interval)
             def sample(frequency):
-                value = float(evaluate_independent_sample(circuit, vector, frequency, setting)["il_db"])
+                result = evaluate_independent_sample(circuit, vector, frequency, setting)
+                if _sample_observer is not None:
+                    _sample_observer(index, setting, float(frequency), result)
+                value = float(result["il_db"])
                 if not math.isfinite(value):
                     raise ValueError("Non-finite independent IL")
                 return value
@@ -76,8 +79,30 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         ('pass_il', ('UL', 'DL'), True), ('UL', ('UL',), True), ('DL', ('DL',), True),
         ('H2', ('H2',), False), ('H3', ('H3',), False))}
         for key in ('grid_worst', 'refined_worst')}
+    # These comparisons describe only the selected finite samples. A trial
+    # result, even one meeting every numerical target, is not formal compliance.
+    observed = summary['refined_worst'] if refine else summary['grid_worst']
+    def observation(value, threshold, meets):
+        return {"value_db": value, "threshold_db": threshold,
+                "status": "sampled_numeric_observation" if meets else "failed"}
+    thresholds = {
+        region: observation(observed[region]['il_db'], full['nominal_max_il_db'],
+                            observed[region]['il_db'] <= full['nominal_max_il_db'])
+        for region in ('UL', 'DL')
+    }
+    for region in ('H2', 'H3'):
+        value = observed[region]['il_db']
+        thresholds[region] = {
+            'mandatory': observation(value, full['minimum_h2_h3_db'],
+                                     value >= full['minimum_h2_h3_db']),
+            'nominal': observation(value, full['nominal_h2_h3_target_db'],
+                                   value >= full['nominal_h2_h3_target_db']),
+        }
     return {"constraint_id": circuit.policy_id, "constraint_fingerprint": circuit.policy_fingerprint,
             "coverage": coverage, "summary": summary,
+            "threshold_observations": thresholds,
+            "threshold_policy_scope": "full_lpf",
+            "threshold_evidence_scope": "finite_grid_with_local_refinement" if refine else "finite_grid",
             "component_policy_pass": component['component_policy_pass'],
             "component_policy": component, "forward_sampled_checked": False,
             "points_per_interval": points_per_interval, "segments": results,
