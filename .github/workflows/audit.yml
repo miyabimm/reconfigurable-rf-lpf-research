@@ -120,6 +120,12 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
           python scripts/verify_phase2_cleanup_w1_links.py --active-only
+      - name: Verify active RF registry and historical candidate audits
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p test_audit.py -v
+          python -m unittest discover -s tests -p test_rf_f002_t004.py -v
+          python -m unittest discover -s tests -p test_research_catalog.py -v
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
       # These deterministic tests are cheap and their dependencies include policy,
