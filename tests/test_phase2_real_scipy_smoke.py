@@ -25,6 +25,9 @@ import scipy.optimize
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from test_phase2_problem_seed import make, seed
+from lpf.phase2_models.candidate_records import (
+    CandidateRecord, record_candidate, recheck_record, pareto_report,
+)
 from lpf.phase2_models.problem_seed import definition_fingerprint
 from lpf.phase2_models.staged_optimization import (
     minimize, run_c1_staged, scipy_slsqp_stage,
@@ -52,7 +55,11 @@ class RealScipySmoke(unittest.TestCase):
         patch = git("diff", "HEAD", "--binary")
         untracked = git("ls-files", "--others", "--exclude-standard").splitlines()
         provenance = {
-            "head": git("rev-parse", "HEAD").strip(),
+            "kind": "recorded", "optimizer_kind": "reported_slsqp",
+            "git_head": git("rev-parse", "HEAD").strip(),
+            "input_source_sha256": hashlib.sha256(
+                (ROOT / "tests/test_phase2_problem_seed.py").read_bytes()).hexdigest(),
+            "input_source_path": "tests/test_phase2_problem_seed.py",
             "status": git("status", "--porcelain"),
             "dirty_patch": patch,
             "dirty_patch_sha256": hashlib.sha256(patch.encode()).hexdigest(),
@@ -106,6 +113,44 @@ class RealScipySmoke(unittest.TestCase):
             self.assertIsNone(stage["exception"])
             self.assertGreater(stage["status"]["nfev"], 0)
             self.assertEqual(stage["observation"]["sampled_rf"]["state"], "observed")
+
+        final = result["stage_calls"][-1]["output_vector"][:-1]
+        record = record_candidate("real-scipy", problem.circuit, final,
+                                  staged_record=result, source_provenance=provenance)
+        body = record.as_dict()
+        self.assertEqual(body["vector"], final)
+        self.assertEqual(body["policy_sha256"], problem.policy_fingerprint)
+        self.assertEqual(body["identity"]["git_head"], provenance["git_head"])
+        inputs = body["identity"]["input_sha256"]
+        policy = problem.circuit.resolved_policy
+        self.assertEqual(inputs[policy["bands_file"]], result["bands_sha256"])
+        for role, digest in result["s2p_sha256"].items():
+            self.assertEqual(inputs[policy["external_port_parasitics"][role]["path"]], digest)
+        self.assertEqual(body["source_provenance"]["value"], provenance)
+        self.assertEqual(body["staged_record"]["source_provenance"]["value"], provenance)
+        self.assertEqual(body["numerical"]["state"], result["numerical_state"])
+        self.assertEqual(body["numerical"]["vector_binding"], "final_c2_output")
+        self.assertEqual(body["rf"]["state"], "observed")
+        self.assertEqual(body["rf"]["evidence_class"], "forward_only")
+        self.assertTrue(all(v == "not_run" for v in body["validation"].values()))
+        self.assertTrue(body["candidate_promotion_blocked"])
+        self.assertFalse(body["rf_compliance_certified"])
+        checked = recheck_record(CandidateRecord.from_json(record.to_json()))
+        self.assertEqual(checked.to_json(), record.to_json())
+        report = pareto_report([checked])
+        row = report["candidates"][0]
+        if body["component"]["state"] == "fail":
+            self.assertIn("component_not_verified", row["reasons"])
+        if not row["threshold_observations"]["mandatory_harmonics_met"]:
+            self.assertIn("mandatory_harmonics_failed_on_grid", row["reasons"])
+        if row["reasons"]:
+            self.assertIsNone(row["comparison_key"])
+            self.assertEqual(report["groups"], [])
+        self.assertTrue(report["candidate_promotion_blocked"])
+        self.assertFalse(report["rf_compliance_certified"])
+        print("CANDIDATE " + json.dumps({"numerical": body["numerical"],
+              "component": body["component"], "rf": body["rf"],
+              "validation": body["validation"], "report": report}, allow_nan=False), flush=True)
 
 
 if __name__ == "__main__":
