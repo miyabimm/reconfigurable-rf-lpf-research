@@ -77,7 +77,7 @@ class SampledExternalEvaluator:
     def __init__(self, policy, points):
         if type(points) is not int or points < 1:
             raise ValueError("points must be an integer >= 1")
-        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as f:
+        with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as f:
             records = list(csv.DictReader(f))
         frequency, setting, role, segment = [], [], [], []
         for seg, (case_index, role_index, low, high) in enumerate(

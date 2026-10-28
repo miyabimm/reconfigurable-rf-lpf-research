@@ -10,6 +10,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .constraint_versions import rf_input_file
+
 ROOT = Path(__file__).resolve().parents[2]
 Z0 = 50.0
 
@@ -18,10 +20,9 @@ def _file_under_repo(root, relative):
     root = Path(root).resolve()
     if not isinstance(relative, str) or not relative:
         raise ValueError("Missing parasitic S2P path")
-    path = (root / relative).resolve()
-    if not path.is_relative_to(root):
-        raise ValueError("Parasitic S2P path escapes repository")
-    return path
+    if not relative.startswith("data/parasitics/"):
+        raise ValueError("Expected registered fixed S2P path")
+    return rf_input_file(root, relative)
 
 
 @lru_cache(maxsize=8)
