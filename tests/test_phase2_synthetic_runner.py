@@ -133,6 +133,37 @@ class SyntheticRunnerTests(unittest.TestCase):
                             self.assertTrue(staged['attempts'])
                             self.assertTrue(candidate['candidate_promotion_blocked'])
 
+
+    def test_failed_checkpoint_rechecks_stage_history(self):
+        p, x = make('RF-T008', 4)
+        plan = plan_for(p.circuit, x, count=1)
+        def fail_on_fine(problem, vector, budget, target):
+            if budget == 120:
+                raise RuntimeError('synthetic fine failure')
+            return vector, status(0)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'checkpoint.json'
+            run_synthetic(p.circuit, plan, path, optimize_stage=fail_on_fine)
+            saved = json.loads(path.read_text())
+            self.assertEqual(saved['body']['completed'][0]['numerical']['state'], 'failed')
+            # A recomputed envelope hash does not validate internal failed-call history.
+            for idx, field, replacement in (
+                (0, 'maxiter', 1),
+                (0, 'input_vector', [0.0]),
+                (1, 'maxiter', 1),
+            ):
+                altered = copy.deepcopy(saved)
+                altered['body']['completed'][0]['staged_record']['stage_calls'][idx][field] = replacement
+                altered['sha256'] = canonical_config_hash(altered['body'])
+                atomic_write_json(path, altered)
+                with self.assertRaises(ValueError):
+                    run_synthetic(p.circuit, plan, path,
+                                  optimize_stage=lambda *args: self.fail('rerun'))
+            atomic_write_json(path, saved)
+            final = run_synthetic(p.circuit, plan, path,
+                                  optimize_stage=lambda *args: self.fail('rerun'))
+            self.assertEqual(len(final['completed']), 1)
+
     def test_rejects_other_git_worktree(self):
         p, x = make('RF-T008', 4)
         plan = plan_for(p.circuit, x, count=1)

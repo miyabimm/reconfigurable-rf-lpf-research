@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           filter: blob:none
           sparse-checkout: |
             project
@@ -37,6 +38,8 @@ jobs:
             scripts
             tests
             .github
+      - name: Verify exact checked-out HEAD
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
       - name: Assert historical directories are absent
         shell: bash
         run: |

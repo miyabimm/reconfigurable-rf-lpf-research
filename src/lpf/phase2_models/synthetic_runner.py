@@ -9,9 +9,14 @@ import tempfile
 from pathlib import Path
 
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
+from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, run_termination_aware_slsqp
+import numpy as np
 from ._grid import ROOT
 from .candidate_records import CandidateRecord, record_candidate, recheck_record
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage
+from .problem_seed import vector_fingerprint
+from .sampled_epigraph import SampledEpigraph
+from .staged_optimization import _grid, _observe
 from .synthetic_plan import make_synthetic_plan
 
 
@@ -56,6 +61,86 @@ def _validate_plan(circuit, envelope):
     return plan
 
 
+
+def _recheck_failed_calls(circuit, plan, record):
+    """Replay failed-start call scheduling against v2, without retrying the start.
+
+    Failed outputs are diagnostics, not solver evidence. Completed preceding
+    calls must still have consistent inputs, budgets, status and observations.
+    """
+    staged = record['staged_record']
+    if staged['numerical_state'] != 'failed':
+        return
+    calls = staged['stage_calls']
+    if (not 1 <= len(calls) <= 4 or staged['controller'] is not None or
+            not calls[-1]['exception'] or
+            any(c['exception'] for c in calls[:-1]) or
+            staged['exception'] != calls[-1]['exception']):
+        raise ValueError('Failed-start call/exception history mismatch')
+    expected_attempts = []
+    for a in range(1 + (len(calls) > 2)):
+        group = [c for c in calls if c['attempt_index'] == a]
+        expected_attempts.append({
+            'tier': 'controller_not_returned',
+            'stage_call_indices': [c['call_index'] for c in group],
+            'state': ('interrupted' if any(c['exception'] for c in group)
+                      or len(group) < 2 else 'completed_unclassified')})
+    if staged['attempts'] != expected_attempts:
+        raise ValueError('Failed-start attempts mismatch')
+
+    coarse = SampledEpigraph(circuit, plan['grids']['coarse']['points_per_interval'])
+    fine = SampledEpigraph(circuit, plan['grids']['fine']['points_per_interval'])
+    index = 0
+
+    class ExpectedAbort(Exception):
+        pass
+
+    def replay(problem, vector, maxiter, target):
+        nonlocal index
+        if index >= len(calls):
+            raise ValueError('Unexpected v2 stage call')
+        call = calls[index]
+        name = 'coarse' if problem is coarse else 'fine'
+        if (target is not None or
+                call['call_index'] != index or
+                call['attempt_index'] != (0 if index < 2 else 1) or
+                call['stage'] != name or
+                call['grid'] != _grid(problem) or
+                call['maxiter'] != maxiter or
+                call['warm_start_source'] !=
+                    ('seed' if index == 0 else f'stage_call_{index-1}') or
+                call['input_vector'] != vector.tolist() or
+                call['input_vector_sha256'] != vector_fingerprint(vector)):
+            raise ValueError('Failed-start stage input/budget/grid mismatch')
+        index += 1
+        if index == len(calls):
+            raise ExpectedAbort()
+        status = call['status']
+        output = np.asarray(call['output_vector'], dtype=float)
+        if (output.shape != vector.shape or not np.all(np.isfinite(output)) or
+                not isinstance(status, dict) or
+                type(status.get('success')) is not bool or
+                type(status.get('status')) is not int or
+                status['success'] != (status['status'] == 0) or
+                not isinstance(status.get('message'), str) or
+                any(type(status.get(k)) is not int or status[k] < 0 for k in ('nit', 'nfev')) or
+                call['exit_cause'] !=
+                    ('success' if status['success'] else f"status_{status['status']}") or
+                call['observation'] != _observe(problem, output)):
+            raise ValueError('Failed-start preceding stage mismatch')
+        return output, {**status, 'converged': status['success'], 'stage_call_index': index - 1}
+
+    try:
+        run_termination_aware_slsqp(
+            coarse, fine, np.asarray(staged['seed']['vector'], dtype=float),
+            None, replay, budget=STANDARD_SLSQP_BUDGET)
+    except ExpectedAbort:
+        if index != len(calls):
+            raise ValueError('Incomplete failed-start stage replay')
+    else:
+        raise ValueError('Failed start did not terminate at recorded stage')
+
+
 def run_synthetic(circuit, envelope, checkpoint, *, optimize_stage, max_new_starts=None):
     """Execute an explicit mock callback; checkpoint only under system temp.
 
@@ -95,6 +180,7 @@ def run_synthetic(circuit, envelope, checkpoint, *, optimize_stage, max_new_star
             raise ValueError('Checkpoint start order mismatch')
         for index, record in enumerate(completed):
             checked = recheck_record(CandidateRecord.from_json(json.dumps(record, allow_nan=False))).as_dict()
+            _recheck_failed_calls(circuit, plan, checked)
             if (checked['seed_record'] != plan['starts'][index]['seed_record'] or
                     checked['source_provenance']['value'] != _provenance(plan) or
                     checked['staged_record']['grids'] != plan['grids'] or
