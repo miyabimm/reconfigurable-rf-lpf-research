@@ -13,4 +13,10 @@ Active historical evidence retained in this directory includes the [original 46-
 
 Original B/C review of 225 experiment/validation paths (128 preserve originals, 81 numeric equivalence not verified, 16 consolidation-review candidates): [historical CSV](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/214cbb21e87d3f3e99177d4a7c9eaf741a74394b/data/repository_reviews/phase2_Bc_evidence_screening_225_20261018.csv). It is a dated, non-numerical *review classification*, not a substitute for any of the 225 retained original files or modern RF validation. For the original per-path SHAs and gates use this immutable CSV.
 
+## Issue #170: all-data path classification (read-only)
+
+The [2026-10-28 353-path inventory](issue170_data_path_classification_20261028.csv) classifies **every tracked `data/` blob at fixed main `abd17302b9e5fda20f697e60e691add8514a0f9a`** by functional role and Git blob SHA-1. The inventory itself was created later on the Draft PR branch and is not among those 353 original files. The [data entrypoint](../README.md) explains all 10 groups, formal/trial versus dated report semantics, and exact blob duplicates.
+
+The inventory lists byte-identical Git blobs without treating them as disposable replicas. In particular, preserved EXP-042 ZIP/member bytes, EXP-046/047 source crosswalk, old validation logs, source/checkpoint SHA, and immutable formal inputs **remain unchanged**. Every row explicitly indicates that a complete per-path consumer/manifest/workflow/dynamic-reference audit is **not yet performed**; neither byte identity nor this classification authorizes any deletion, file migration or new RF conclusion. Recheck the baseline tree and individual evidence before proposing retirement. Follow the owner-approval gates in [Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170).
+
 Phase 2 continues; Phase 3 requires explicit owner approval.
