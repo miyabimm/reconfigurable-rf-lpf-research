@@ -1,6 +1,7 @@
 """Synthetic only; mock callbacks, no production solver or EXP storage."""
 import copy
 import json
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -131,6 +132,16 @@ class SyntheticRunnerTests(unittest.TestCase):
                             self.assertEqual([call['status']['status'] for call in staged['stage_calls']], list(codes))
                             self.assertTrue(staged['attempts'])
                             self.assertTrue(candidate['candidate_promotion_blocked'])
+
+    def test_rejects_other_git_worktree(self):
+        p, x = make('RF-T008', 4)
+        plan = plan_for(p.circuit, x, count=1)
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(['git', 'init', '-q', tmp], check=True)
+            path = Path(tmp) / 'checkpoint.json'
+            with self.assertRaisesRegex(ValueError, 'Git worktree'):
+                run_synthetic(p.circuit, plan, path, optimize_stage=lambda *args: self.fail('called'))
+            self.assertFalse(path.exists())
 
     def test_interrupted_start_fails_closed(self):
         p, x = make('RF-T008', 4)

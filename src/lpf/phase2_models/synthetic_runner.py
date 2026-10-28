@@ -4,6 +4,7 @@ Not an EXP runner. Interrupted starts require manual investigation and are
 never automatically retried. Only an explicitly supplied mock callback is used.
 """
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -68,6 +69,13 @@ def run_synthetic(circuit, envelope, checkpoint, *, optimize_stage, max_new_star
     path = Path(checkpoint).resolve()
     if not path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or path.is_relative_to(ROOT.resolve()):
         raise ValueError('Checkpoint must be outside the repository in system temp')
+    parent = path.parent
+    while not parent.exists():
+        parent = parent.parent
+    probe = subprocess.run(['git', '-C', str(parent), 'rev-parse', '--is-inside-work-tree'],
+                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    if probe.returncode == 0 and probe.stdout.strip() == 'true':
+        raise ValueError('Checkpoint must not be in any Git worktree')
     plan = _validate_plan(circuit, envelope)
     ids = [s['id'] for s in plan['starts']]
     if path.exists():
