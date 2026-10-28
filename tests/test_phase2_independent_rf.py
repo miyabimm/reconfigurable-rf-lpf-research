@@ -52,6 +52,119 @@ class IndependentRFTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'invalid'):
                 audit_candidate(circuit, None)
 
+    def test_candidate_audit_recomputes_bound_limited_evidence(self):
+        from lpf.phase2_models.candidate_audit import audit_candidate
+        _, x = exp042.policy_and_seed()
+        config = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
+                            ('GJM01','GJM01','GJM01','PCB_PATTERN_C'),
+                            ('shunt_to_ground','shunt_to_ground','bridge'))
+        circuit = build_nominal_circuit(load_constraint('RF-T005', allow_trial=True), config)
+        report = audit_candidate(circuit, x, limited_points_per_interval=2)
+        self.assertEqual(report['independent_mna_state'], 'passed_limited')
+        self.assertEqual(report['power_accounting_state'], 'passed_limited')
+        evidence = report['limited_evidence']
+        self.assertEqual(len(evidence['grid']), 56)
+        self.assertEqual(len(evidence['segments']), 28)
+        self.assertEqual(evidence['coverage'], 'canonical')
+        self.assertEqual(evidence['identity']['constraint_fingerprint'], circuit.policy_fingerprint)
+        self.assertEqual(len(evidence['identity']['git_head']), 40)
+        self.assertEqual(len(evidence['identity']['input_sha256']), 3)
+        self.assertLess(evidence['max_abs_power_residual_w'], 1e-12)
+        self.assertLess(evidence['max_forward_il_error_db'], 1e-9)
+        self.assertIn('UL', evidence['threshold_observations'])
+        self.assertFalse(report['rf_dense_evaluation_completed'])
+        self.assertEqual(report['dense_rf_state'], 'not_checked')
+        self.assertFalse(report['rf_compliance_certified'])
+        self.assertTrue(report['candidate_promotion_blocked'])
+        self.assertFalse(report['eligible_for_owner_review'])
+        changed = list(x)
+        changed[-1] += 0.001
+        second = audit_candidate(circuit, changed, limited_points_per_interval=2)
+        self.assertEqual(second['independent_mna_state'], 'passed_limited')
+        self.assertNotEqual(evidence['identity']['vector_fingerprint'],
+                            second['limited_evidence']['identity']['vector_fingerprint'])
+        self.assertEqual(audit_candidate(circuit, x, limited_points_per_interval=4)
+                         ['independent_mna_state'], 'failed')
+
+    def test_prior_evidence_requires_recomputation_and_exact_match(self):
+        from copy import deepcopy
+        from lpf.phase2_models.candidate_audit import audit_candidate
+        from lpf.phase2_models.limited_candidate_evidence import compare_recomputed_evidence, EvidenceFailure
+        _, x = exp042.policy_and_seed()
+        config = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
+                            ('GJM01','GJM01','GJM01','PCB_PATTERN_C'),
+                            ('shunt_to_ground','shunt_to_ground','bridge'))
+        circuit = build_nominal_circuit(load_constraint('RF-T005', allow_trial=True), config)
+        prior = audit_candidate(circuit, x, limited_points_per_interval=2)['limited_evidence']
+        rerun = audit_candidate(circuit, x, limited_points_per_interval=2, prior_evidence=prior)
+        self.assertEqual(rerun['independent_mna_state'], 'passed_limited')
+        self.assertEqual(audit_candidate(circuit, x, prior_evidence=prior)['independent_mna_state'], 'failed')
+        mutations = [
+            (('identity', 'constraint_fingerprint'), 'bad', 'policy_mismatch'),
+            (('identity', 'vector_fingerprint'), 'bad', 'vector_mismatch'),
+            (('identity', 'definition_fingerprint'), 'bad', 'circuit_definition_mismatch'),
+            (('identity', 'git_head'), 'bad', 'source_mismatch'),
+            (('identity', 'input_sha256'), {}, 'input_mismatch'),
+            (('coverage',), 'cross', 'grid_or_coverage_mismatch'),
+            (('points_per_interval',), 1001, 'grid_or_coverage_mismatch'),
+            (('grid',), prior['grid'][:-1], 'grid_or_coverage_mismatch'),
+            (('max_abs_power_residual_w',), 0.0, 'observation_mismatch'),
+        ]
+        for path, value, reason in mutations:
+            bad = deepcopy(prior)
+            obj = bad
+            for key in path[:-1]:
+                obj = obj[key]
+            obj[path[-1]] = value
+            with self.subTest(reason=reason), self.assertRaisesRegex(EvidenceFailure, reason):
+                compare_recomputed_evidence(bad, prior)
+        for key, value in (('subband', 'wrong'), ('case', 'B8'), ('setting', 5)):
+            bad = deepcopy(prior)
+            bad['segments'][0][key] = value
+            with self.subTest(key=key), self.assertRaisesRegex(EvidenceFailure, 'grid_or_coverage_mismatch'):
+                compare_recomputed_evidence(bad, prior)
+        report = audit_candidate(circuit, x, limited_points_per_interval=2, prior_evidence=bad)
+        self.assertEqual(report['limited_evidence_failure_reason'], 'grid_or_coverage_mismatch')
+        self.assertIsNone(report['limited_evidence'])
+        self.assertTrue(report['candidate_promotion_blocked'])
+
+    def test_candidate_evidence_rejects_definition_and_policy_mismatch(self):
+        from dataclasses import replace
+        from lpf.phase2_models.limited_candidate_evidence import _identity, EvidenceFailure
+        _, x = exp042.policy_and_seed()
+        config = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
+                            ('GJM01','GJM01','GJM01','PCB_PATTERN_C'),
+                            ('shunt_to_ground','shunt_to_ground','bridge'))
+        circuit = build_nominal_circuit(load_constraint('RF-T005', allow_trial=True), config)
+        forged = replace(circuit, definition=replace(config, physical_order=tuple(reversed(config.physical_order))))
+        with self.assertRaisesRegex(EvidenceFailure, 'circuit_definition_mismatch'):
+            _identity(forged, x)
+        forged = replace(circuit, _adapter=replace(circuit._adapter, policy_fingerprint='0' * 64))
+        with self.assertRaisesRegex(EvidenceFailure, 'policy_mismatch'):
+            _identity(forged, x)
+
+    def test_candidate_audit_rejects_bad_power_samples(self):
+        from lpf.phase2_models.candidate_audit import audit_candidate
+        _, x = exp042.policy_and_seed()
+        config = definition(exp042.C_EDGES[:4], exp042.C_EDGES[4:],
+                            ('GJM01','GJM01','GJM01','PCB_PATTERN_C'),
+                            ('shunt_to_ground','shunt_to_ground','bridge'))
+        circuit = build_nominal_circuit(load_constraint('RF-T005', allow_trial=True), config)
+        for key, value, reason in (('input_s2p_loss_w', -1.0, 'non_passive_power'),
+                                   ('power_residual_w', 1e-6, 'power_balance_failed'),
+                                   ('gain', float('nan'), 'sample_nonfinite')):
+            def corrupt(*args, **kwargs):
+                result = evaluate_independent_sample(*args, **kwargs)
+                result[key] = value
+                return result
+            with self.subTest(reason=reason), patch(
+                    'lpf.phase2_models.independent_scan.evaluate_independent_sample', side_effect=corrupt):
+                report = audit_candidate(circuit, x, limited_points_per_interval=2)
+            self.assertEqual(report['independent_mna_state'], 'failed')
+            self.assertEqual(report['limited_evidence_failure_reason'], reason)
+            self.assertIsNone(report['limited_evidence'])
+            self.assertTrue(report['candidate_promotion_blocked'])
+
     def test_scan_coverage_and_refinement(self):
         policy = load_constraint('RF-T005', allow_trial=True)
         circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',

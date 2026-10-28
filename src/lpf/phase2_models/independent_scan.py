@@ -10,7 +10,7 @@ from .independent_rf import evaluate_independent_sample
 
 
 def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canonical",
-                        refine=False, tolerance_hz=1.0):
+                        refine=False, tolerance_hz=1.0, _sample_observer=None):
     """Evaluate canonical case settings or the diagnostic six-setting cross product.
 
     Local refinement only examines interior sampled extrema. It cannot guarantee
@@ -34,7 +34,10 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         for setting in (range(6) if coverage == "cross" else (canonical,)):
             frequencies = np.linspace(low * 1e6, high * 1e6, points_per_interval)
             def sample(frequency):
-                value = float(evaluate_independent_sample(circuit, vector, frequency, setting)["il_db"])
+                result = evaluate_independent_sample(circuit, vector, frequency, setting)
+                if _sample_observer is not None:
+                    _sample_observer(index, setting, float(frequency), result)
+                value = float(result["il_db"])
                 if not math.isfinite(value):
                     raise ValueError("Non-finite independent IL")
                 return value

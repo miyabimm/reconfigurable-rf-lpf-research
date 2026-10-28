@@ -6,11 +6,13 @@ function cannot certify or promote any candidate.
 """
 
 
-def audit_candidate(circuit, vector):
-    """Re-run the component and L-tree role checks; leave other checks not run.
+def audit_candidate(circuit, vector, *, limited_points_per_interval=None, prior_evidence=None):
+    """Re-run component/role checks and optionally a limited canonical grid.
 
     Exceptions from the policy adapter are propagated rather than converted to
     a passing report. A supported electrical role is not a physical proof.
+    A prior record is compared only after a complete recomputation; it cannot
+    supply a PASS by itself. No grid is a certification.
     """
     component = circuit.validate_components(vector)
     roles = circuit.connection_role_audit()
@@ -31,6 +33,25 @@ def audit_candidate(circuit, vector):
                      "physical_validation_not_checked", "owner_approval_not_recorded"):
         if blocker not in blockers:
             blockers.append(blocker)
+    evidence = None
+    state = "not_checked"
+    reason = None
+    if limited_points_per_interval is not None or prior_evidence is not None:
+        # Never trust a prior record: compare it to a new calculation.
+        from .limited_candidate_evidence import (EvidenceFailure, compare_recomputed_evidence,
+                                                  recompute_limited_evidence)
+        import subprocess
+        try:
+            evidence = recompute_limited_evidence(circuit, vector, limited_points_per_interval)
+            if prior_evidence is not None:
+                compare_recomputed_evidence(prior_evidence, evidence)
+            state = "passed_limited"
+        except (ValueError, OSError, subprocess.SubprocessError) as exc:
+            evidence = None
+            state = "failed"
+            reason = (exc.reason if isinstance(exc, EvidenceFailure)
+                      else getattr(exc, "code", "limited_evidence_failed"))
+            blockers.append("limited_evidence_" + reason)
     return {
         "constraint_id": circuit.policy_id,
         "constraint_fingerprint": circuit.policy_fingerprint,
@@ -38,8 +59,24 @@ def audit_candidate(circuit, vector):
         "component_policy": component,
         "connection_role_evidence_complete": role_complete,
         "connection_role_audit": roles,
-        "forward_sampled_checked": False,
-        "independent_mna_checked": False,
+        "forward_sampled_checked": state == "passed_limited",
+        "independent_mna_checked": state == "passed_limited",
+        "forward_sampled_state": state,
+        "independent_mna_state": state,
+        "power_accounting_state": state,
+        "limited_evidence_failure_reason": reason,
+        "limited_evidence": evidence,
+        "rf_threshold_state": "not_checked" if evidence is None else (
+            "failed" if any(
+                item["status"] == "failed"
+                for region, group in evidence["threshold_observations"].items()
+                for item in ([group] if region in ("UL", "DL") else group.values())
+            ) else "sampled_numeric_observation"),
+        "dense_rf_state": "not_checked",
+        "local_extrema_state": "not_checked",
+        "optimization_state": "not_checked",
+        "physical_validation_state": "not_checked",
+        "owner_approval_state": "not_checked",
         "rf_dense_evaluation_completed": False,
         "local_extrema_checked": False,
         "optimization_converged": None,
