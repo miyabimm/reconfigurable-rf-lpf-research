@@ -32,7 +32,7 @@ def git(*args, check=True):
 
 
 def valid_constraint(id_string):
-    registry = json.loads((ROOT / "data/constraints/registry.json")
+    registry = json.loads((ROOT / "rf/constraints/registry.json")
                           .read_text(encoding="utf-8"))
     if id_string == registry["active_formal_id"]:
         return True

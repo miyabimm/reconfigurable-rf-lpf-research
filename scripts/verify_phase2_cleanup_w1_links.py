@@ -154,9 +154,13 @@ def verify_status():
     original_sha = "055b222c79c73c7fbeacb19383f21c1da0625195"
     # The registry changes when Phase 2 trial policies are approved;
     # unlike the snapshots below, its bytes are not immutable.
-    registry = json.loads((ROOT / "data/constraints/registry.json").read_text(encoding="utf-8"))
-    if registry["active_formal_id"] != "RF-F003" or registry["trial"]["RF-T008"]["state"] != "study_authorized":
-        raise ValueError("Unexpected current formal or trial registry status")
+    registry = json.loads((ROOT / "rf/constraints/registry.json").read_text(encoding="utf-8"))
+    active = registry["active_formal_id"]
+    if (active not in registry["formal"]
+            or registry["formal"][active]["state"] != "approved"):
+        raise ValueError("Missing approved active formal registry entry")
+    if registry["trial"]["RF-T008"]["state"] != "study_authorized":
+        raise ValueError("Expected authorized historical RF-T008 trial")
     untouched = ["data/bands.csv",
                  "data/constraints/formal/RF-F003.json",
                  "data/constraints/trial/RF-T005.json",
