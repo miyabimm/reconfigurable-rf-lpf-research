@@ -336,8 +336,10 @@ def recheck_record(record):
         staged_record=b["staged_record"], source_provenance=b["source_provenance"].get("value"),
         sampled_points=b["rf"]["requested_sampled_points"], limited_points=b["rf"]["requested_limited_points"])
     if b["audit"] and b["audit"].get("limited_evidence"):
-        compare_recomputed_evidence(b["audit"]["limited_evidence"],
-                                    fresh.as_dict()["audit"]["limited_evidence"])
+        actual_audit = fresh.as_dict()["audit"]
+        if not actual_audit or actual_audit.get("limited_evidence") is None:
+            raise ValueError("Limited evidence failed during record recheck")
+        compare_recomputed_evidence(b["audit"]["limited_evidence"], actual_audit["limited_evidence"])
     if fresh.as_dict() != b:
         raise ValueError("Saved record differs from fresh recomputation")
     return fresh

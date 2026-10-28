@@ -68,6 +68,9 @@ class CandidateRecordTests(unittest.TestCase):
             self.assertEqual(b["validation"][key], "not_run")
         self.assertEqual(b["rf"]["metrics"]["worst_il_db"],
                          s["stage_calls"][-1]["observation"]["sampled_rf"]["worst_il_db"])
+        default = record_candidate("c2_default_grid", p.circuit, x, staged_record=s).as_dict()
+        self.assertEqual(default["rf"], b["rf"])
+        self.assertEqual(default["validation"]["independent_mna"], "not_run")
 
     def test_restored_observations_never_supply_pass_without_recompute(self):
         p, x = make("RF-T008", 4)
@@ -178,6 +181,8 @@ class CandidateRecordTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             recheck_record(CandidateRecord.from_json(json.dumps(corrupted)))
         with patch("lpf.phase2_models.limited_candidate_evidence.recompute_limited_evidence", side_effect=ValueError("synthetic audit failure")):
+            with self.assertRaises(ValueError):
+                recheck_record(restored)
             failed = record_candidate("failure", p.circuit, x, limited_points=2)
         self.assertEqual(failed.as_dict()["validation"]["independent_mna"], "failed")
         self.assertIn("independent_validation_failed", pareto_report([failed])["candidates"][0]["reasons"])
