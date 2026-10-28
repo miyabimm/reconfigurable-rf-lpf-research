@@ -70,7 +70,7 @@ class RealScipySmoke(unittest.TestCase):
             "seed_record": initial,
             "starts": 1, "coarse_points_per_interval": 1, "fine_points_per_interval": 2,
             "iteration_policy_id": "slsqp-staged-v2",
-            "budget": STANDARD_SLSQP_BUDGET.as_dict(),
+            "budget": {**STANDARD_SLSQP_BUDGET.as_dict(), "policy_id": "slsqp-staged-v2"},
             "python": sys.version, "scipy": scipy.__version__, "numpy": np.__version__,
             "platform": platform.platform(), "source_provenance": provenance,
             "threads": {k: os.environ.get(k) for k in
