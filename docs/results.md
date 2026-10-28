@@ -32,27 +32,15 @@ EXP-048/049の当時の要約は[固定履歴版のステータス記録](https:
 
 [EXP-062～065の独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)では合計264試行のうち249収束・15非収束を記録し、選別10解の部品・SPD・既存MNA記録との照合を実施しています。**全28区間の独立RF解法でこのPRから再計算したものではなく、連続帯域・EM・実測は未検証**です。元の試行条件と個別結果は[実験索引](../data/experiment_index.csv)、[当時の統合スナップショット](../data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)から追跡してください。各段階の元文書も[Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)に固定Git blob付きで記録します。
 
-## 旧条件・原本復元・訂正の証拠入口（Issue #170）
+## 旧条件・原本復元の参照先（Issue #170）
 
-以下は**履歴監査の出典索引**であり、2026-10-28現在のRF-F003達成値や元の最適化を再実行した結果ではありません。原EXPのmanifest・checkpoint・原ソースの版と、後から作成された索引・復元コピー・監査報告を区別します。
+以下は**履歴の逆引き**です。現在のRF-F003達成候補、実験再実行、製作・EM検証ではありません。
 
-| 対象 | 元証拠と監査 | 保全・解釈上の注意 |
+| 対象 | 参照すべき証拠 | 判定の注意 |
 |---|---|---|
-| **EXP-017（旧RF-F002）** | [回収候補](../experiments/chatgpt_topology_search/runs/EXP-017/EXP017-LQW4-H30-NEAR.recovered.json)／[独立MNA追試の保存値](../data/validation/exp017_rf_f002_recovered_20261015/summary.json)／[回収経緯](phase2_exp017_checkpoint_provenance_review_20261015.md)／[訂正記録](result_record_corrections_20261014.md) | 元ZIPのSHA・内部member SHAを記録。**元ZIP自体はGitに収録されていない**。Gitの正規化コピーは元ZIPとバイト同一ではない。旧30dB試験点のIL 0.301248245dBは0.30dB目標未達であり、35dB公称達成でもRF-F003成果でもない。 |
-| **EXP-042（RF-T005）** | [元ZIP保存](../data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)／[元ZIPの保全方法](phase2_w4_exp042_artifact_preservation_20261018.md)／[ZIP・checkpoint対応](phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md)／[対応判定JSON](../data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json) | 元ZIP10件・19 member。既存Gitファイルと**バイト同一だったmemberは1件**。値・ベクトルの一致だけで残りを重複原本として削除しない。 |
-| **EXP-042 未選別3変種** | [6件の元member復元結果](../data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json)／[復元監査](phase2_w4_exp042_missing_variant_recovery_20261018.md)／[実行スクリプト](../scripts/audit_w4_exp042_missing_variants.py) | 復元したJSONは元Actionsの原文コピー。選別済みcheckpointを新規に作った、または新たな独立RF計算をしたとは扱わない。 |
-| **EXP-046/047（試験／正式を分離）** | [131ファイル対応CSV](../data/repository_reviews/w4_exp046_exp047_131_20261018.csv)／[監査JSON](../data/repository_reviews/w4_exp046_exp047_summary_20261018.json)／[原典レビュー](phase2_w4_exp046_exp047_source_review_20261018.md) | 35件（EXP-046、RF-T005）と96件（EXP-047、RF-F003）。EXP-047のQ割当訂正前5ファイルを正式性能順位へ昇格しない。[旧manifestの索引用adapter](../data/validation/exp047_legacy_manifest_adapter_20261017.json)は実行の完全再現ではない。 |
-| **EXP-046の旧バッチ原文** | [元バイト可逆アーカイブ](../data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json)／[統合監査](phase2_bc_wave1_consolidation_20261018.md)／[バイト復旧検証器](../scripts/verify_phase2_bc_exp046_lossless.py) | 圧縮表現は元3 JSONの置換承認ではない。元ファイルを残し、出典SHAと復元互換を守る。 |
-| **W4/W5の履歴監査** | [W4原本・削除ゲート](phase2_cleanup_w4_evidence_workflow_review_20261017.md)／[225原本の再実行依存](phase2_cleanup_w4_replay_dependencies_20261018.md)／[W5監査記録](phase2_w5_readonly_closure_20261018.md)／[W5保存JSON](../data/repository_reviews/w5_phase2_readonly_closure_20261018.json) | W4/W5のworkflow件数・削除未承認は**当時の監査状態**。監査成功はEXP原本削除や現行CIの完全代替を認めるものではない。 |
-| **R2 / EXP-015（旧RF-F001）** | [保存済み独立モデル監査JSON](r2/EXP015_COMMON_MODEL_AUDIT.json)／[当時の実装引継ぎ](r2_handoff.md) | 当時のQ・k・可変C接続・旧正式版での追試結果であり、現行RF-F003への合格や再最適化を意味しない。 |
+| EXP-017／旧RF-F002 | [回収元の追跡](phase2_exp017_checkpoint_provenance_review_20261015.md)、[独立MNA追試記録](../data/validation/exp017_rf_f002_recovered_20261015/summary.json)、[結果訂正](result_record_corrections_20261014.md) | 元ZIP本体はGitに未収録。IL 0.301248245dBは旧30dB有限格子の記録であり、0.30dB目標未達 |
+| EXP-042／RF-T005 | [Actions元ZIP保全](phase2_w4_exp042_artifact_preservation_20261018.md)、[対応照合](phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md)、[未選別3変種の復元](phase2_w4_exp042_missing_variant_recovery_20261018.md) | ZIP内部19件と既存Gitファイルのバイト同一は1件。元ZIPとcheckpointを統合削除しない |
+| EXP-046/047 | [131ファイル出典監査](phase2_w4_exp046_exp047_source_review_20261018.md)、[元バイト可逆保全](phase2_bc_wave1_consolidation_20261018.md) | RF-T005と正式RF-F003を分離。EXP-047の訂正前Q割当を合格候補にしない |
+| W4/W5の保全判断 | [225ファイル再実行依存](phase2_cleanup_w4_replay_dependencies_20261018.md)、[W5監査時点の記録](phase2_w5_readonly_closure_20261018.md) | 監査完了は原本削除許可ではない |
 
-### 旧条件の候補報告（C群、出典へ戻るための導線）
-
-- **RF-F001 / RF-T003の有限探索:** [2可変C・30dBの実行報告](rft003_30db_study.md)、[損失分解と電力収支](rft003_loss_analysis_20261012.md)、[7L初回成立点](rft003_7l_030_trial_20261013.md)、[5L面積6⅓](rft003_5l_cost6p33_study_20261013.md)、[6L面積6⅔](rft003_six_L_one_GJM_cost_6p67_20261013.md)。残る日付別RF-T003報告も独自の探索数・未収束・パレートを含むため、**計12件を一括退出させず**、出典コード・全ベクトル・独立検証・旧制約の一致を個別に調べる。
-- **EXP-016/017とRF-F002の履歴:** [EXP-016初期探索](exp016_initial_screening.md)、[PCB-CのQ区分を修正した追試](exp016_pcb_followup.md)、[EXP-017初期2可変C仮説](exp017_two_varc_merge_study.md)、[RF-F002のFull-LPF長形式報告](rf_f002_full_lpf_phase2_20261013.md)、[RF制約群別の損失分解](constraint_group_loss_summary.md)。各文書の元試行条件・承認時点・結果訂正と別途保全したEXP-017 RF-F002の復元結果を混同しない。旧時点の公称35dB・30dB、Q・k・S2Pの条件差を現在の達成状況へ繰り上げない。
-- **日付固定の結果表示:** [2026-10-17 RF-T005/RF-F003パレート](pareto_rf_t005_rf_f003_20261017.md)、[当時の24件カタログ](results/phase2_candidate_catalog_20261017.md)／[結合符号索引](results/phase2_topology_search_20261017.md)、[EXP-062～065独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)。表示用派生物と凍結した数値証拠は分けて扱う。
-
-
-- **古い証拠管理・Pareto分類:** [2026-10-15の保管・証拠逆引き監査](phase2_storage_pareto_review_20261015.md)は、当時の13登録候補・8条件群の暫定Pareto、過去のGit追跡ファイルの分類、旧CI Artifactを記した**保存時点の監査原典**です。退役した旧索引生成コードを現在の実行入口と誤解せず、[固定原文ソース](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py)から復元可能であることと、現在の検証コードが別物であることを区別する。
-
-原本を動かす前に、各pathのGit blob SHA、出典EXPと実効制約、コード／テスト／workflow／manifestからの参照、ZIP/member SHA・CRC、動的読込、必要なら元環境からの復元を調べます。特に[現存データの位置付け](../data/README.md)にある `validation/` の266件と `repository_reviews/` の29件は、ファイル件数だけで再生成可能と判断しません。**この索引はData削除・移動・元実験の書換えを承認するものではありません。**
+その他の旧RF-F001/T003、R2/EXP-015、EXP-016および日付固定カタログは、[Issue #170の原典分類](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170#issuecomment-6464898096)から原文へ戻って確認します。特に[旧RF-F002探索報告](rf_f002_full_lpf_phase2_20261013.md)と[2026-10-15保管Paretoの監査](phase2_storage_pareto_review_20261015.md)を現行RF適合と読み替えないでください。
