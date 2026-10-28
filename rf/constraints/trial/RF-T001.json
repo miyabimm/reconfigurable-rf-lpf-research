@@ -1,0 +1,21 @@
+{
+  "constraint_id": "RF-T001",
+  "status": "trial",
+  "base_constraint_id": "RF-F001",
+  "study_authorized": true,
+  "approved_scope": "Phase 2 numerical comparison only; not formal RF feasibility or production approval",
+  "description": "Three independent variable-C branches, all shunt to GND. Other RF-F001 component/coupling/Q/harmonic/area policies unchanged.",
+  "study_variable_c_layout": {
+    "branch_count": 3,
+    "shunt_to_ground": 3,
+    "non_ground_bridge": 0
+  },
+  "overrides": {
+    "components": {
+      "IC_VARIABLE_C": {
+        "max_branches_principle": 3
+      }
+    }
+  },
+  "validation_notes": "Trial scope requires exactly three ground-shunt variable capacitors per topology, all settings use the same connections and only values may change (0..4 pF, Q80)."
+}
