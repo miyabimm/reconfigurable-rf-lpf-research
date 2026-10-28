@@ -237,8 +237,10 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
                      source_provenance=None, sampled_points=None, limited_points=None):
     """Capture a finite complete vector and existing C1/C2 records without mutation.
 
-    Default: component/role checks only; RF/MNA/power not_run. Optional forward
-    diagnostic grids are restricted to 1/2/3 points per separate interval. Only
+    Without C1/C2 input, default is component/role only; RF/MNA/power not_run.
+    Seed/C2 replay includes finite forward checks; completed C2 input defaults
+    the record's forward summary to its final stage grid. Forward diagnostic
+    grids are restricted to 1/2/3 points per separate interval. Only
     explicit limited_points=2/3 invokes the existing independent audit. No saved
     PASS flag is accepted. A failed attempt can be attached to a finite anchor
     vector; its actual invalid output stays verbatim in staged_record.
@@ -264,6 +266,8 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
                 raise ValueError("Conflicting execution source provenance")
             source_provenance = old["value"]
     numerical = _numerical(circuit, x, staged, seed)
+    if staged is not None and numerical["state"] != "failed" and sampled_points is None and limited_points is None:
+        sampled_points = staged["stage_calls"][-1]["grid"]["points_per_interval"]
     source = _provenance(source_provenance)
     # Invalid components are recorded rather than losing failed candidate data.
     try:
@@ -311,6 +315,8 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
             "seed_record": seed, "staged_record": staged, "component": component,
             "rf": rf, "validation": validation, "audit": audit,
             "candidate_promotion_blocked": True, "rf_compliance_certified": False}
+    if _identity(circuit, x) != identity:
+        raise ValueError("Source/input identity changed during candidate recording")
     body = _copy(body)
     _validate_payload(body)
     return CandidateRecord(_json(body), True)

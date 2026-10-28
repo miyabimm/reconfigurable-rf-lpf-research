@@ -48,10 +48,13 @@ seedだけを添付する場合、候補vectorはseed出力（epigraphを除く�
 
 ## 観測と未実施ゲート
 
-既定はcomponent／roleチェックのみ。部品範囲やSPDが不適合の有限vectorも失敗記録として
-残せるが、比較対象にはしない。非有限・不完全な主vectorは拒否する。
+C1/C2入力を添付しない既定呼出しはcomponent／roleチェックのみ。
+C1/C2を添付すると上述のリプレイに有限forward計算が含まれる。完了C2記録について
+格子引数を省略した場合は、最終stageの格子を記録用summaryにも採用する。
+部品範囲やSPDが不適合の有限vectorも失敗記録として残せるが、比較対象にはしない。
+非有限・不完全な主vectorは拒否する。
 
-- `sampled_points=1/2/3`を明示した場合のみ、canonical 28個の**別々の**区間・全6設定の
+- `sampled_points=1/2/3`（または完了C2最終格子）で、canonical 28個の**別々の**区間・全6設定の
   forward観測を行う。`forward_only`クラスで、独立MNA／電力は`not_run`。
 - `limited_points=2/3`を明示した場合のみ、既存限定auditがforward／独立MNA／受動電力を
   再計算する。既存の1e-9 dB／1e-12 Wの照合を再利用し、成功時は
