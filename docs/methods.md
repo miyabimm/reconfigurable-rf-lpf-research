@@ -13,8 +13,30 @@
 | 対象 | 元ファイル | 読み方 |
 |---|---|---|
 | 共通回路モデルとR2作業 | [R2引継ぎ](r2_handoff.md)、[R2独立確認JSON](r2/EXP015_COMMON_MODEL_AUDIT.json) | 旧RF-F001／試験条件に関する保存検証。現行RF-F003性能実績ではない |
-| コイル系列ルール | [inductor_series_policy](inductor_series_policy.md) | Q仮定・LQP02HV/HQ系列の当時の設計方針 |
+| コイル系列の過去の設計仮定 | 下記「過去のLQP02HV/HQ設計仮定」を参照 | 2026-10-12時点の承認・数値モデルの履歴。現在の正式制約はregistryが優先 |
 | 探索手法から得た知見 | [topology_search_lessons](topology_search_lessons.md) | 過去時点の探索改善・制約上の限界 |
+
+## 過去のLQP02HV/HQ設計仮定と出典
+
+2026-10-12の当時の承認ルールは、LQP02HVの定数Q=25・0.4～27 nH・チップ面積コスト1を優先し、必要な場合にLQP02HQの定数Q=20・0.2～56 nH・コスト1を追加するというもの。HVのみとHQ併用を分け、HQの本数・最大L・総L・全6設定の最悪ILとH2/H3を比較する方針だった。**これは当時の計算モデル・探索方針であり、現行RF-F003の数値正本でも、Q(f)・SRF・部品実測の保証でもない。** 現行の制約ID・物理範囲は必ず[active registry](../data/constraints/registry.json)の指定JSONから解決する。
+
+旧チェックポイントEXP011-01（L1=56 nHをQ25と扱う）およびEXP014-02（L1=28.56046 nHをQ25と扱う）等は旧仮定の履歴として維持し、現条件への性能達成実績に読み替えない。[EXP-015](../experiments/chatgpt_topology_search/runs/EXP-015/README.md)を後続の当時の検証記録として区別する。当時の優先順位・留保事項を含む[原文（main固定コミット、Git blob `6eb073fc1b1a27e2bc45433e6d238d54e6606857`）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/52a57cd5fe2e598267e9116fb78131d237f6f711/docs/inductor_series_policy.md)は読み取り専用で復元可能。
+
+## 凍結EXPから共通評価器への移行（実装履歴）
+
+[PR #162](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/162)の共通forward評価器は、以下の凍結ソースを**変更せず**に再利用するための実装。現行の共通回路公開API・接続制約は本ページ冒頭および[PR #164](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/164)を参照。
+
+| 凍結EXPソース | 共通評価器 |
+|---|---|
+| EXP-042 `optimize.py` | `lpf.phase2_models.exp042` |
+| EXP-055 `adapt_f003_4l.py` | `lpf.phase2_models.exp055` |
+| EXP-058 `sweep_area3.py` | `lpf.phase2_models.exp058_area3` |
+| EXP-058 `sweep_area4.py` | `lpf.phase2_models.exp058_area4` |
+| EXP-058 `sweep_area4l_gjm.py` | `lpf.phase2_models.exp058_area4l_gjm` |
+
+当時の検証は保存ベクトルと28不連続区間×3点・全6設定、固定入出力S2P、RF-T007の接地DTC付属0.5 pF/Q40、RF-T008 v3のIC固定Q60・可変Q35を区別する有限サンプルの数値パリティと、別経路の7×7/9×9枝電流MNA。PR #162の記録はこの比較範囲を超えた高密度帯域保証を意味しない。
+
+EXP-050、056/057、059～067の保存済みスクリプトに残るEXP間直接importは**SHA固定された歴史原本**であり、新規EXPの実装入口として許可しない。実験ソースの書換えはmanifestの出典SHAを破壊し得る。共有モジュールのforward一致は独立MNA・電力収支の代替ではなく、元の最適化の再実行、RF-F003正式適合、EM・SRF・Q(f)・製作可能性を証明しない。[実装メモ原文（main固定コミット、Git blob `6b9ce1382a94ebb208059eafd7129a2fd74bb4c7`）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/52a57cd5fe2e598267e9116fb78131d237f6f711/docs/phase2_shared_evaluator_imports_20261027.md)と[凍結比較テスト](../tests/test_phase2_shared_exp_evaluators.py)を併せて参照する。
 
 ## 磁気結合と伝送零点の基礎研究
 
