@@ -31,3 +31,16 @@ EXP-048/049の当時の要約は[固定履歴版のステータス記録](https:
 | 6 | 0.827841148 | EXP-062、4L/3GJMの保存記録 |
 
 [EXP-062～065の独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)では合計264試行のうち249収束・15非収束を記録し、選別10解の部品・SPD・既存MNA記録との照合を実施しています。**全28区間の独立RF解法でこのPRから再計算したものではなく、連続帯域・EM・実測は未検証**です。元の試行条件と個別結果は[実験索引](../data/experiment_index.csv)、[当時の統合スナップショット](../data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)から追跡してください。各段階の元文書も[Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)に固定Git blob付きで記録します。
+
+## 旧条件・原本復元の参照先（Issue #170）
+
+以下は**履歴の逆引き**です。現在のRF-F003達成候補、実験再実行、製作・EM検証ではありません。
+
+| 対象 | 参照すべき証拠 | 判定の注意 |
+|---|---|---|
+| EXP-017／旧RF-F002 | [回収元の追跡](phase2_exp017_checkpoint_provenance_review_20261015.md)、[独立MNA追試記録](../data/validation/exp017_rf_f002_recovered_20261015/summary.json)、[結果訂正](result_record_corrections_20261014.md) | 元ZIP本体はGitに未収録。IL 0.301248245dBは旧30dB有限格子の記録であり、0.30dB目標未達 |
+| EXP-042／RF-T005 | [Actions元ZIP保全](phase2_w4_exp042_artifact_preservation_20261018.md)、[対応照合](phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md)、[未選別3変種の復元](phase2_w4_exp042_missing_variant_recovery_20261018.md) | ZIP内部19件と既存Gitファイルのバイト同一は1件。元ZIPとcheckpointを統合削除しない |
+| EXP-046/047 | [131ファイル出典監査](phase2_w4_exp046_exp047_source_review_20261018.md)、[元バイト可逆保全](phase2_bc_wave1_consolidation_20261018.md) | RF-T005と正式RF-F003を分離。EXP-047の訂正前Q割当を合格候補にしない |
+| W4/W5の保全判断 | [225ファイル再実行依存](phase2_cleanup_w4_replay_dependencies_20261018.md)、[W5監査時点の記録](phase2_w5_readonly_closure_20261018.md) | 監査完了は原本削除許可ではない |
+
+その他の旧RF-F001/T003、R2/EXP-015、EXP-016および日付固定カタログは、[Issue #170の原典分類](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170#issuecomment-6464898096)から原文へ戻って確認します。特に[旧RF-F002探索報告](rf_f002_full_lpf_phase2_20261013.md)と[2026-10-15保管Paretoの監査](phase2_storage_pareto_review_20261015.md)を現行RF適合と読み替えないでください。
