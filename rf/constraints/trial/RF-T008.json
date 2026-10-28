@@ -1,0 +1,74 @@
+{
+  "constraint_id": "RF-T008",
+  "status": "trial",
+  "base_constraint_id": "RF-F003",
+  "study_authorized": true,
+  "approved_at": "2026-10-20",
+  "approved_scope": "Owner-authorized Phase 2 trial only; RF-F003, RF-T005, RF-T006, RF-T007 unchanged. Phase 3 not approved.",
+  "description": "RF-F003-based Phase 2 RF-T008 rev3: at most TWO composite IC var-C branches, each with a setting-common IC fixed C in parallel (hot-hot 0.2..3pF/Q60; hot-GND 0.5..3pF/Q60) and variable 0..3pF/Q35; fixed PCB-C grounded 0.02..1pF/Q60, non-ground 0.02..0.2pF/Q40, total max three. No old RF-T007 0.5pF/Q40 ground-DTC parasite. All other RF-F003 and T008 rev2 conditions retained.",
+  "study_variable_c_layout": {
+    "branch_count": 2,
+    "count_policy": "up_to",
+    "connection_policy": "any_allowed"
+  },
+  "overrides": {},
+  "study_pcb_pattern_c_by_connection": {
+    "ground_node": 0,
+    "grounded": {
+      "min_pf_per_component": 0.02,
+      "max_pf_per_component": 1,
+      "q": 60
+    },
+    "non_ground": {
+      "min_pf_per_component": 0.02,
+      "max_pf_per_component": 0.2,
+      "q": 40
+    },
+    "max_count": 3,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "fixed_components_only": true,
+    "setting_invariant": true,
+    "nominal_only": true
+  },
+  "validation_notes": "RF-T008 revision3: Model EVERY installed IC variable capacitor branch as two separate passive parallel admittances on identical terminals (a,b). Choose a single setting-invariant fixed IC capacitor per branch: hot-hot/series/bridge Cfix in [0.2,3.0]pF Q60; hot-GND/shunt Cfix in [0.5,3.0]pF Q60. Independently choose 6 setting-dependent variable capacities Cvar in [0,3.0]pF Q35. Ctot is [0.2,6.0]pF hot-hot and [0.5,6.0]pF hot-GND. Treat Cfix and Cvar losses independently Y=omega*Cfix/(1/60-j)+omega*Cvar/(1/35-j). At Cvar=0 the fixed IC capacitor still exists; never model the series branch as an open circuit. Do not ADD the former RF-T008/Q40 shunt DTC 0.5pF parasitic (replaced by chosen Cfix Q60); that old parasitic stays only in separate RF-T007. IC-fixed C is tied to one installed DTC and not independently placeable. IC fixed C is not a PCB_PATTERN_C, consumes none of 3 PCB-C positions; provisional 0 additional chip area cost is NOT zero real silicon area. Fixed PCB_PATTERN_C limits stay grounded 0.02..1pF/Q60, non-ground 0.02..0.2pF/Q40, count total<=3. Variable C maximum 2 branches (0..2 installed), fixed IC C accompanies each installed DTC so also <=2; Q35, Cvar<=3pF, no composite 3pF upper cap; all fixed original external S2Ps, 50ohm source, 60-j40ohm load, six modes, 30dB mandatory H2/H3, 35dB nominal target, IL 0.3dB target, chip L/k, chip area objective unchanged. Do NOT merge RF-T006 3-6GHz requirement. Require explicit trial-aware stamping, pre-run EXP ID reservation, independent MNA, and new performance checks; old T008 numbers are historical, not validated for revision3; rev2's three-DTC result is not allowed as a rev3 candidate. Phase 2; no Phase 3.",
+  "revision": 3,
+  "revised_at": "2026-10-20",
+  "previous_version": {
+    "main_merge_commit": "e70264726156512a0c7c9c0bf2e601799911a1cb",
+    "prior_trial_file_blob_sha": "9bcccc93d0d65e129bc569e44309f2686d59777c",
+    "meaning": "Previous Phase2 trial with fixed 0.5pF/Q40 grounded DTC-only parasitic; superseded in RF-T008, still available by Git history. RF-T007 remains unchanged."
+  },
+  "study_ic_fixed_c_by_connection": {
+    "ground_node": 0,
+    "grounded": {
+      "min_pf_per_branch": 0.5,
+      "max_pf_per_branch": 3
+    },
+    "non_ground": {
+      "min_pf_per_branch": 0.2,
+      "max_pf_per_branch": 3
+    },
+    "fixed_c_q": 60,
+    "variable_c_q": 35,
+    "variable_capacitance_pf_range": [
+      0,
+      3
+    ],
+    "fixed_c_stays_at_variable_C_zero": true,
+    "fixed_c_setting_invariant": true,
+    "fixed_c_frequency_invariant": true,
+    "fixed_c_only_in_parallel_with_installed_variable_C": true,
+    "fixed_c_count_per_installed_variable_C": 1,
+    "max_composite_branches": 2,
+    "fixed_c_counts_toward_pcb_pattern_C": 0,
+    "additional_chip_area_units": 0,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "physical_chip_footprint_status": "not_modeled_nominal_phase2_only",
+    "tolerance_status": "nominal_only_not_evaluated"
+  },
+  "previous_revision_2": {
+    "main_merge_commit": "2a6374cd6bc871873eac5cfa43eed4a8a0c68719",
+    "prior_trial_file_blob_sha": "1ac8360967d3f481ca2b9271d41f8784054899d1",
+    "meaning": "Prior RF-T008 v2 used maximum three composite IC DTC branches; retained in Git history without retrospective change."
+  }
+}

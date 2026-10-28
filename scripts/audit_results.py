@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.lpf.experiment_manifest import audit_provenance
+from src.lpf.constraint_versions import load_constraint, validate_registry, rf_input_file
 CASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")
 REQUIRED_BASELINES = {"LPF-007", "LPF-008"}
 
@@ -26,32 +27,27 @@ def read_csv(path):
 
 def audit(detail=False):
     issues = []
-    policy = json.loads((ROOT / "data/design_constraints.json").read_text(encoding="utf-8"))
+    policy = load_constraint()
     if policy.get("phase3") != "paused_until_explicit_owner_approval":
         issues.append("Phase 3 unexpectedly enabled")
     if policy["area_budget"]["hard_cap"] is not None:
         issues.append("Formal RF policy unexpectedly imposes a chip-area cap")
-    registry_path = ROOT / "data/constraints/registry.json"
-    if not registry_path.is_file():
-        issues.append("Constraint version registry missing")
-    else:
-        registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        active_id = registry["active_formal_id"]
-        record = registry["formal"].get(active_id)
-        if active_id != policy.get("active_constraint_id") or record is None:
-            issues.append("Active formal constraint version mismatch")
-        elif json.loads((ROOT / record["file"]).read_text(encoding="utf-8")) != policy:
-            issues.append("Active snapshot does not match compatibility constraints")
-    if policy["components"]["IC_VARIABLE_C"]["max_branches_principle"] != 2:
-        issues.append("Variable C branch limit changed")
-    if policy.get("canonical_docs") != "docs/specification.md":
-        issues.append("Specification link is not canonical")
-    if not (ROOT / "docs/specification.md").is_file():
-        issues.append("Specification document missing")
-    if not (ROOT / "docs/historical_results.md").is_file():
-        issues.append("Historical research index missing")
+    registry = validate_registry()
+    if registry["active_formal_id"] != policy.get("active_constraint_id"):
+        issues.append("Active formal constraint version mismatch")
+    if policy.get("canonical_docs") not in {
+        "docs/specification.md", "project/specification.md"
+    }:
+        issues.append("Unrecognized specification reference in immutable RF policy")
+    if not (ROOT / "project/specification.md").is_file():
+        issues.append("Current specification document missing")
+    # The retired historical index is recoverable from pinned Git history;
+    # only the current results entrypoint belongs in the active working tree.
+    if not (ROOT / "project/results.md").is_file():
+        issues.append("Current results document missing")
 
-    bands = read_csv("data/bands.csv")
+    with rf_input_file(ROOT, policy["bands_file"]).open(newline="", encoding="utf-8") as handle:
+        bands = list(csv.DictReader(handle))
     for case in CASES:
         for region in ("UL", "DL", "H2", "H3"):
             if not any(x["case"] == case and x["region"] == region for x in bands):
@@ -102,7 +98,10 @@ def audit(detail=False):
                     continue
                 expected_spec = registry["historical"][historical_key]["policy_version"]
             else:
-                expected_spec = policy["active_constraint_id"]
+                expected_spec = row["constraint_id"]
+                if not expected_spec:
+                    issues.append("Versioned candidate has no constraint ID: " + name)
+                    continue
             if item["spec_id"] != expected_spec or row["spec_id"] != expected_spec:
                 issues.append(f"Candidate spec mismatch: {name}")
             perf = item["performance"]
@@ -116,8 +115,10 @@ def audit(detail=False):
             if not math.isfinite(area) or area < 0:
                 issues.append(f"Candidate area cap exceeded: {name}")
             variable_caps = item["topology"]["variable_caps"]
-            cpolicy = (json.loads((ROOT / "data/constraints/formal/RF-F001.json").read_text(encoding="utf-8"))
-                       if row.get("constraint_class") == "historical" else policy)["components"]["IC_VARIABLE_C"]
+            bound_policy = (load_constraint("RF-F001") if row.get("constraint_class") == "historical"
+                            else load_constraint(row["constraint_id"],
+                                                 allow_trial=row.get("constraint_class") == "trial"))
+            cpolicy = bound_policy["components"]["IC_VARIABLE_C"]
             if len(variable_caps) > cpolicy["max_branches_principle"]:
                 issues.append(f"Candidate variable C count exceeded: {name}")
             for cap in variable_caps:

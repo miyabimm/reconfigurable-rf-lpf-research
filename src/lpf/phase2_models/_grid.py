@@ -7,6 +7,7 @@ from pathlib import Path
 import csv
 import numpy as np
 from lpf.port_parasitics import get_two_port_s, s_to_abcd
+from lpf.constraint_versions import rf_input_file
 
 ROOT = Path(__file__).resolve().parents[3]
 CASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")
@@ -77,7 +78,7 @@ class SampledExternalEvaluator:
     def __init__(self, policy, points):
         if type(points) is not int or points < 1:
             raise ValueError("points must be an integer >= 1")
-        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as f:
+        with rf_input_file(ROOT, policy["bands_file"]).open(newline="", encoding="utf-8") as f:
             records = list(csv.DictReader(f))
         frequency, setting, role, segment = [], [], [], []
         for seg, (case_index, role_index, low, high) in enumerate(

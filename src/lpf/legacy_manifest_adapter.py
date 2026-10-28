@@ -82,7 +82,7 @@ def legacy_exp047_index_view(root=ROOT):
     if (resolved["active_constraint_status"] != "formal" or
             m.get("active_formal_constraint_sha256") != digest or
             m.get("bands_sha256") != hashlib.sha256(
-                (root / "data/bands.csv").read_bytes()).hexdigest()):
+                (root / "rf/bands.csv").read_bytes()).hexdigest()):
         raise ValueError("EXP-047 formal policy or frequency-band source mismatch")
     ports = resolved["external_port_parasitics"]
     for kind in ("input_parasitic", "output_parasitic"):

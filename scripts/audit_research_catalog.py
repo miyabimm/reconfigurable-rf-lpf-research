@@ -103,7 +103,7 @@ def audit_catalog(root=ROOT):
                            _csv(root / "data/experiment_index.csv")}
         legacy_rows = {row["candidate_id"]: row for row in
                        _csv(root / "data/candidate_index.csv")}
-        registry = _json(root / "data/constraints/registry.json")
+        registry = _json(root / "rf/constraints/registry.json")
     except (OSError, ValueError, KeyError) as exc:
         return ["Cannot load catalog/registry: " + str(exc)]
     ids = set()

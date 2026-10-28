@@ -22,11 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 class RFF003T005Tests(unittest.TestCase):
     def test_formal_registry_and_compat(self):
         registry = validate_registry()
-        self.assertEqual(registry["active_formal_id"], "RF-F003")
-        formal = load_constraint()
+        self.assertIn("RF-F003", registry["formal"])
+        formal = load_constraint("RF-F003")
         self.assertEqual(formal["active_constraint_id"], "RF-F003")
         self.assertEqual(formal, json.loads(
-            (ROOT/"data/design_constraints.json").read_text("utf-8")))
+            (ROOT/"rf/constraints/formal/RF-F003.json").read_text("utf-8")))
         self.assertEqual(constraint_fingerprint(formal),
                          registry["formal"]["RF-F003"]["effective_constraint_sha256"])
         self.assertEqual(formal["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
@@ -49,7 +49,7 @@ class RFF003T005Tests(unittest.TestCase):
         for key in ("trial_base_constraint_id","trial_variable_c_layout"):
             trial.pop(key, None)
         self.assertEqual(trial, copy)
-        self.assertFalse(check_counts(n_var=3))
+        self.assertFalse(check_counts(n_var=3, resolved_policy=formal))
         resolved = load_constraint("RF-T005", allow_trial=True)
         self.assertTrue(check_counts(n_var=3, resolved_policy=resolved))
         self.assertFalse(check_counts(n_var=4, resolved_policy=resolved))
@@ -85,7 +85,7 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertEqual(resolved_without_metadata, original_without_identity)
         self.assertNotEqual(constraint_fingerprint(trial), constraint_fingerprint(formal))
         self.assertNotIn("trial_additional_stopband", load_constraint("RF-T005", allow_trial=True))
-        self.assertNotIn("trial_additional_stopband", load_constraint())
+        self.assertNotIn("trial_additional_stopband", formal)
 
     def test_t006_wideband_sweep_and_full_lpf_gate(self):
         trial = load_constraint("RF-T006", allow_trial=True)
@@ -121,7 +121,7 @@ class RFF003T005Tests(unittest.TestCase):
             additional_stopband=failed)
         self.assertFalse(summary["mandatory_finite_grid_pass"])
         with self.assertRaisesRegex(ValueError, "No authorized"):
-            evaluate_trial_additional_stopband(load_constraint(), lambda c, f: eye)
+            evaluate_trial_additional_stopband(load_constraint("RF-F003"), lambda c, f: eye)
 
     def test_legacy_RF_F002_stays_frozen(self):
         previous = load_constraint("RF-F002")
@@ -130,13 +130,13 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertEqual(previous["coupling_limits"]["pcb_pcb_abs_k_max_default"],0.15)
 
     def test_s2p_files_and_cached_cascade(self):
-        formal = load_constraint()
+        formal = load_constraint("RF-F003")
         cfg = formal["external_port_parasitics"]
         self.assertTrue(cfg["runtime"]["load_once_per_worker"])
         self.assertFalse(cfg["runtime"]["recompute_RLC_per_objective_call"])
         for role in ("input_parasitic","output_parasitic"):
             spec = cfg[role]
-            path = ROOT/spec["path"]
+            path = ROOT/"rf"/spec["path"][len("data/"):]
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),spec["sha256"])
             self.assertEqual(len(path.read_text("ascii").splitlines()),6004)
             for f in (0.0,0.5e6,3e9,6e9):

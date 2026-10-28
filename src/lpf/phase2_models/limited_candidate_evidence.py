@@ -13,7 +13,7 @@ import subprocess
 import numpy as np
 import scipy
 
-from lpf.constraint_versions import constraint_fingerprint, load_constraint
+from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_input_file
 from ._grid import ROOT
 from .api import NominalCircuit, build_nominal_circuit
 from .independent_scan import scan_independent_rf
@@ -47,10 +47,10 @@ def _identity(circuit, vector):
     source = {}
     for path in sorted((ROOT / 'src/lpf').rglob('*.py')):
         source[str(path.relative_to(ROOT))] = _file_hash(path)
-    inputs = {'data/bands.csv': _file_hash(ROOT / 'data/bands.csv')}
+    inputs = {policy['bands_file']: _file_hash(rf_input_file(ROOT, policy['bands_file']))}
     for role in ('input_parasitic', 'output_parasitic'):
         spec = policy['external_port_parasitics'][role]
-        path = (ROOT / spec['path']).resolve()
+        path = rf_input_file(ROOT, spec['path'])
         if not path.is_relative_to(ROOT.resolve()):
             raise EvidenceFailure('s2p_path_invalid')
         actual = _file_hash(path)

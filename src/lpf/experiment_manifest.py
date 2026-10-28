@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 
 from .constraint_versions import (
-    ROOT, constraint_fingerprint, load_constraint, repository_file, validate_registry,
+    ROOT, constraint_fingerprint, load_constraint, repository_file, rf_input_file, validate_registry,
 )
 
 RUNS = "experiments/chatgpt_topology_search/runs"
@@ -72,7 +72,7 @@ def new_manifest(experiment_id, purpose, search_scope, *, objective, seed,
         },
         "code": {"execution_sha": sha, "working_tree_dirty": dirty, "archive_sha": None},
         "random_seed": seed, "environment": _environment(), "search_scope": search_scope,
-        "bands_sha256": file_sha256(root / "data/bands.csv"),
+        "bands_sha256": file_sha256(rf_input_file(root, resolved["bands_file"])),
         "execution": {"status": "planned", "elapsed_seconds": None, "evaluation_count": None},
         "validation": {
             "numerical": "not_run", "independent": "not_run", "implementation": "not_run",
@@ -128,7 +128,7 @@ def validate_manifest(manifest, *, root=ROOT, verify_evidence=True):
                 c["effective_constraint_sha256"] != constraint_fingerprint(resolved) or
                 c["legacy_policy_version"] != resolved.get("policy_version")):
             raise ValueError("Manifest resolved RF constraints/fingerprint mismatch")
-        if not _sha(manifest["bands_sha256"]) or manifest["bands_sha256"] != file_sha256(Path(root) / "data/bands.csv"):
+        if not _sha(manifest["bands_sha256"]) or manifest["bands_sha256"] != file_sha256(rf_input_file(root, resolved["bands_file"])):
             raise ValueError("Manifest band definitions mismatch")
     else:
         raise ValueError("Invalid constraint classification")

@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-REGISTRY = ROOT / "data/constraints/registry.json"
+REGISTRY = ROOT / "rf/constraints/registry.json"
 
 
 def _read(path):
@@ -33,10 +33,31 @@ def repository_file(root, relative):
     return path
 
 
+def rf_input_file(root, logical_path):
+    """Resolve immutable 'data/...' RF references to the canonical rf/ tree.
+
+    Historical RF JSON, manifest paths and effective fingerprints stay unchanged.
+    Never fall back to data/: a sparse Pi checkout must fail on missing RF inputs.
+    """
+    if not isinstance(logical_path, str):
+        raise ValueError("Expected an RF input path")
+    if logical_path.startswith("data/"):
+        relative = "rf/" + logical_path[len("data/"):]
+    elif logical_path.startswith("rf/"):
+        relative = logical_path
+    else:
+        raise ValueError("Expected a registered RF input path")
+    rf_root = (Path(root) / "rf").resolve()
+    physical = repository_file(root, relative)
+    if not physical.is_relative_to(rf_root):
+        raise ValueError("RF input path escapes rf/")
+    return physical
+
+
 def validate_registry(*, root=ROOT):
     """Check registered identities/approvals; never register or promote a version."""
     root = Path(root)
-    registry = _read(root / "data/constraints/registry.json")
+    registry = _read(root / "rf/constraints/registry.json")
     if type(registry.get("schema_version")) is not int or registry["schema_version"] != 1:
         raise ValueError("Unsupported constraint registry schema")
     for kind, prefix in (("formal", "RF-F"), ("trial", "RF-T")):
@@ -46,10 +67,11 @@ def validate_registry(*, root=ROOT):
         for cid, entry in entries.items():
             if not re.fullmatch(prefix + r"[0-9]{3}", cid) or not isinstance(entry, dict):
                 raise ValueError(f"Invalid {kind} registration: {cid}")
-            expected = f"data/constraints/{kind}/{cid}.json"
-            if entry.get("file") != expected:
+            allowed = {f"data/constraints/{kind}/{cid}.json",
+                       f"rf/constraints/{kind}/{cid}.json"}
+            if entry.get("file") not in allowed:
                 raise ValueError(f"Constraint path/identity mismatch: {cid}")
-            payload = _read(repository_file(root, expected))
+            payload = _read(rf_input_file(root, entry["file"]))
             if kind == "formal":
                 if entry.get("state") != "approved":
                     raise ValueError(f"Formal version not approved: {cid}")
@@ -73,7 +95,7 @@ def validate_registry(*, root=ROOT):
                 overrides = payload.get("overrides")
                 if not isinstance(overrides, dict) or reserved.intersection(overrides):
                     raise ValueError("Trial may not override constraint identity, legacy policy or phase")
-                base_payload = _read(repository_file(root, registry["formal"][base]["file"]))
+                base_payload = _read(rf_input_file(root, registry["formal"][base]["file"]))
                 resolved = _merge(base_payload, overrides)
                 if "study_additional_stopband" in payload:
                     _validate_trial_additional_stopband(
@@ -331,7 +353,7 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     registry = validate_registry(root=root)
     cid = constraint_id or registry["active_formal_id"]
     if cid in registry["formal"]:
-        payload = _read(repository_file(root, registry["formal"][cid]["file"]))
+        payload = _read(rf_input_file(root, registry["formal"][cid]["file"]))
         if payload.get("active_constraint_id") != cid:
             raise ValueError("Formal snapshot identity mismatch")
         return payload
@@ -340,7 +362,7 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     entry = registry["trial"][cid]
     if entry.get("state") != "study_authorized":
         raise ValueError(f"Trial not authorized: {cid}")
-    trial = _read(repository_file(root, entry["file"]))
+    trial = _read(rf_input_file(root, entry["file"]))
     if trial.get("constraint_id") != cid or trial.get("status") != "trial":
         raise ValueError("Trial snapshot identity mismatch")
     base_id = trial["base_constraint_id"]

@@ -59,7 +59,7 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
 
     def test_28_segments_six_settings_and_frequency_endpoints(self):
         grid = SampledExternalEvaluator(self.policy, 3)
-        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as file:
+        with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
             bands = list(csv.DictReader(file))
         self.assertEqual(len(bands), 28)
         self.assertEqual(len(CASES), 6)
@@ -83,7 +83,7 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(a.post)))
 
     def test_band_csv_validation_fails_closed_instead_of_reclassifying_h3(self):
-        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as file:
+        with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
             original = list(csv.DictReader(file))
         segments = validated_band_segments(original)
         self.assertEqual(len(segments), 28)
@@ -114,7 +114,7 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
             validated_band_segments(rows)
 
     def test_band_coverage_rejects_missing_or_duplicated_regions_subbands(self):
-        with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as file:
+        with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
             original = list(csv.DictReader(file))
         self.assertEqual(len(validated_band_segments(original)), 28)
         scenarios = (

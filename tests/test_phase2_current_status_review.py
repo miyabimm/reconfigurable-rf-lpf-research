@@ -18,7 +18,7 @@ def read_csv(relpath):
 
 class Phase2CurrentStatusTests(unittest.TestCase):
     def test_current_roadmap_identifies_active_development_gates(self):
-        roadmap = (ROOT / "docs/roadmap.md").read_text(encoding="utf-8")
+        roadmap = (ROOT / "project/roadmap.md").read_text(encoding="utf-8")
         self.assertIn("Stage 1", roadmap)
         self.assertIn("Stage 2", roadmap)
         self.assertIn("PR #164", roadmap)
@@ -82,7 +82,7 @@ class Phase2CurrentStatusTests(unittest.TestCase):
             cwd=ROOT)
         self.assertIn("issues/170",
                       (ROOT / "docs/README.md").read_text(encoding="utf-8"))
-        results = (ROOT / "docs/results.md").read_text(encoding="utf-8")
+        results = (ROOT / "project/results.md").read_text(encoding="utf-8")
         self.assertIn("EXP-048", results)
         self.assertIn("EXP-049", results)
 

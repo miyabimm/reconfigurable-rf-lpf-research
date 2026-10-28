@@ -1,5 +1,6 @@
 """Formal/trial constraint identity, immutable snapshots and cost Pareto guardrails."""
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,14 +12,44 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class VersionedConstraintsTests(unittest.TestCase):
-    def test_formal_snapshot_matches_compatibility_file(self):
+    def test_formal_snapshot_matches_active_rf_file(self):
         active = load_constraint()
-        legacy_access = json.loads((ROOT / "data/design_constraints.json").read_text())
-        self.assertEqual(active, legacy_access)
-        self.assertEqual(active["active_constraint_id"], "RF-F003")
+        registry = json.loads((ROOT / "rf/constraints/registry.json").read_text())
+        snapshot_path = ROOT / "rf/constraints/formal" / (
+            registry["active_formal_id"] + ".json")
+        self.assertEqual(active, json.loads(snapshot_path.read_text()))
+        self.assertEqual(active["active_constraint_id"], registry["active_formal_id"])
         self.assertEqual(active["active_constraint_status"], "formal")
         self.assertIsNone(active["area_budget"]["hard_cap"])
         self.assertEqual(len(constraint_fingerprint(active)), 64)
+
+    def test_new_formal_id_uses_rf_path_and_preserves_previous(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            shutil.copytree(ROOT / "rf/constraints", root / "rf/constraints")
+            registry_path = root / "rf/constraints/registry.json"
+            registry = json.loads(registry_path.read_text())
+            previous = json.loads(
+                (root / "rf/constraints/formal/RF-F003.json").read_text())
+            candidate = dict(previous)
+            candidate["active_constraint_id"] = "RF-F004"
+            candidate["bands_file"] = "rf/bands/versioned.csv"
+            (root / "rf/bands").mkdir(parents=True)
+            shutil.copyfile(ROOT / "rf/bands.csv", root / "rf/bands/versioned.csv")
+            (root / "rf/constraints/formal/RF-F004.json").write_text(
+                json.dumps(candidate))
+            registry["formal"]["RF-F004"] = {
+                "file": "rf/constraints/formal/RF-F004.json",
+                "state": "approved",
+                "effective_constraint_sha256": constraint_fingerprint(candidate),
+            }
+            registry["active_formal_id"] = "RF-F004"
+            registry_path.write_text(json.dumps(registry))
+            self.assertEqual(load_constraint(root=root)["active_constraint_id"], "RF-F004")
+            self.assertEqual(load_constraint("RF-F003", root=root), previous)
+            self.assertEqual(
+                constraint_fingerprint(load_constraint(root=root)),
+                registry["formal"]["RF-F004"]["effective_constraint_sha256"])
 
     def test_cost_is_not_an_rf_feasibility_limit(self):
         self.assertGreater(chip_area(n_lqp02=8), 6)
@@ -29,11 +60,11 @@ class VersionedConstraintsTests(unittest.TestCase):
     def test_authorized_trial_is_explicit_and_resolved_from_fixed_formal(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            directory = root / "data/constraints/formal"
+            directory = root / "rf/constraints/formal"
             directory.mkdir(parents=True)
             (directory / "RF-F001.json").write_text(
-                (ROOT / "data/constraints/formal/RF-F001.json").read_text())
-            trial_dir = root / "data/constraints/trial"
+                (ROOT / "rf/constraints/formal/RF-F001.json").read_text())
+            trial_dir = root / "rf/constraints/trial"
             trial_dir.mkdir(parents=True)
             trial = {
                 "constraint_id": "RF-T001", "status": "trial",
@@ -54,7 +85,7 @@ class VersionedConstraintsTests(unittest.TestCase):
                     "file": "data/constraints/trial/RF-T001.json",
                     "state": "study_authorized", "base_constraint_id": "RF-F001"}}
             }
-            (root / "data/constraints/registry.json").write_text(
+            (root / "rf/constraints/registry.json").write_text(
                 json.dumps(registry))
             with self.assertRaises(ValueError):
                 load_constraint("RF-T001", root=root)
@@ -97,7 +128,8 @@ class VersionedConstraintsTests(unittest.TestCase):
         self.assertEqual(load_constraint("RF-T002", allow_trial=True)["active_constraint_status"], "trial")
         with self.assertRaises(ValueError):
             load_constraint("RF-F000")
-        self.assertEqual(load_constraint()["active_constraint_id"], "RF-F003")
+        self.assertEqual(load_constraint()["active_constraint_id"],
+                         json.loads((ROOT / "rf/constraints/registry.json").read_text())["active_formal_id"])
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ def matrices(x):
     return BL @ np.linalg.solve(H,BL.T),eig
 
 def rows():
-    with (ROOT/"data/bands.csv").open(newline="",encoding="utf-8") as f:
+    with (ROOT/"rf/bands.csv").open(newline="",encoding="utf-8") as f:
         data=list(csv.DictReader(f))
     assert len(data)==28
     return data
@@ -112,10 +112,10 @@ class Evaluator:
                 "M_min_eig_nH":matrices(x)[1]}
 
 def policy_and_seed():
-    reg=json.loads((ROOT/"data/constraints/registry.json").read_text())
+    reg=json.loads((ROOT/"rf/constraints/registry.json").read_text())
     assert reg["active_formal_id"]=="RF-F003"
     assert reg["trial"]["RF-T005"]["base_constraint_id"]=="RF-F003"
-    p=json.loads((ROOT/"data/constraints/formal/RF-F003.json").read_text())
+    p=json.loads((ROOT/"rf/constraints/formal/RF-F003.json").read_text())
     assert p["components"]["IC_VARIABLE_C"]["q"]==35
     assert p["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"]==3
     assert p["coupling_limits"]["chip_chip_strong_adjacent_abs_k_max"]==.1

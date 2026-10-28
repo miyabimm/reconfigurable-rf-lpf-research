@@ -27,7 +27,7 @@
 
 ## 新規EXP保存ゲート（main運用中）
 
-EXP-050以降の開始前・保存完了・PR監査は [保存ポリシー](../docs/governance/phase2_experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象はEXP-050以降の新規runのmanifestとstorage_record。EXP-001～049（完了済みEXP-048/049を含む）は既存のまま保護し、書き換えない。
+EXP-050以降の開始前・保存完了・PR監査は [保存ポリシー](../project/experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象はEXP-050以降の新規runのmanifestとstorage_record。EXP-001～049（完了済みEXP-048/049を含む）は既存のまま保護し、書き換えない。
 
 ~~~bash
 python scripts/audit_new_experiment_storage.py preflight EXP-NNN
@@ -51,4 +51,4 @@ uv run --frozen python -m unittest discover -s tests -v
 
 探索・検証スクリプトの変更に伴って原checkpointや実行済み結果を改変しない。新条件の数値を算出する場合は、コードSHA・制約SHA・bandsと固定S2P・格子・独立検証を記録する。Phase 3は明示承認まで停止。
 
-[全体README](../README.md) ／ [実験原本の案内](../experiments/README.md) ／ [結果の入口](../docs/results.md)
+[全体README](../README.md) ／ [実験原本の案内](../experiments/README.md) ／ [結果の入口](../project/results.md)
