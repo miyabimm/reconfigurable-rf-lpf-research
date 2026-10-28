@@ -15,4 +15,4 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさず、実行前承認を別に取得する。
 - Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
 
-**移行中の注意:** このPRでは `docs/`・`data/` に旧正本が残り、`project/`・`rf/` へ非破壊に仮配置している。現行mainの正本切替・旧原本移動/削除・外部プロジェクト運用指示URLの切替は未実施。独立レビューと所有者の必要な承認が済むまで本構成を完成・マージ可能と判定しない。
+**移行中の注意:** Draft PR #186では `project/`・`rf/` を現役正本とし、旧 `docs/`・`data/` の現役パスは移転案内／シンボリックリンクとしてのみ保持しています。過去の実験原本と重要台帳は元の場所に残します。外部ChatGPTプロジェクト設定の正本URLの変更、独立レビュー、mainマージは未実施です。歴史監査の再現手順は [旧Gitパス検証](legacy_git_replay.md) を参照。

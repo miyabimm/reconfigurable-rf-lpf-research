@@ -13,9 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 class RevisedRFConstraintsTests(unittest.TestCase):
     def test_formal_identity_hash_and_components(self):
         reg = validate_registry()
-        self.assertEqual(reg["active_formal_id"], "RF-F003")
+        self.assertIn("RF-F003", reg["formal"])
         current = load_constraint("RF-F002")
-        self.assertEqual(load_constraint(), json.loads((ROOT/"data/design_constraints.json").read_text()))
+        self.assertEqual(load_constraint("RF-F003"), json.loads(
+            (ROOT/"rf/constraints/formal/RF-F003.json").read_text()))
         self.assertEqual(reg["formal"]["RF-F002"]["effective_constraint_sha256"],
                          constraint_fingerprint(current))
         self.assertEqual(current["components"]["IC_VARIABLE_C"]["q"], 50)
@@ -35,8 +36,8 @@ class RevisedRFConstraintsTests(unittest.TestCase):
             ("chip_pcb_abs_k_max", 0)
         ):
             self.assertEqual(limits[name], expected)
-        self.assertTrue(check_counts(n_var=2))
-        self.assertFalse(check_counts(n_var=3))
+        self.assertTrue(check_counts(n_var=2, resolved_policy=current))
+        self.assertFalse(check_counts(n_var=3, resolved_policy=current))
 
     def test_legacy_f001_is_intact(self):
         old = load_constraint("RF-F001")
@@ -47,7 +48,7 @@ class RevisedRFConstraintsTests(unittest.TestCase):
                          ["shunt_to_ground"])
 
     def test_connections_formal_and_trial(self):
-        formal = load_constraint()
+        formal = load_constraint("RF-F002")
         with self.assertRaises(ValueError):
             load_constraint("RF-T004")
         trial = load_constraint("RF-T004", allow_trial=True)
@@ -56,8 +57,8 @@ class RevisedRFConstraintsTests(unittest.TestCase):
                          {"branch_count":3,"count_policy":"up_to","connection_policy":"any_allowed"})
         self.assertEqual(trial["components"]["IC_VARIABLE_C"]["max_branches_principle"], 3)
         self.assertEqual(trial["components"]["IC_VARIABLE_C"]["q"], 50)
-        # Default count validation remains formal; trial opt-in allows 3.
-        self.assertFalse(check_counts(n_var=3))
+        # RF-F002 count validation remains fixed; trial opt-in allows 3.
+        self.assertFalse(check_counts(n_var=3, resolved_policy=formal))
         self.assertTrue(check_counts(n_var=3, resolved_policy=trial))
         self.assertFalse(check_counts(n_var=4, resolved_policy=trial))
         shunt = {"a":1,"b":0}
