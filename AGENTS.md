@@ -27,6 +27,8 @@ Research stays in **Phase 2** until the owner explicitly authorizes Phase 3. Sof
 
 For substantial changes use **Issue with scope/acceptance criteria → focused implementation and verification → Draft PR → ChatGPT independent review → fix/re-review → merge within delegated scope → check `main`**. Reuse an existing Issue for small related fixes.
 
+**Continue authorized multi-step implementation:** After essential inspection, begin coding in small, testable increments. A requirement for one complete Draft PR does not prohibit incremental edits, tests, or commits. Do not stop after investigation or baseline tests merely because the scope seems large or a time/token budget *might* be insufficient. If an actual blocker or execution limit prevents completion, preserve work and report its exact status; never present partial work as meeting the full acceptance criteria.
+
 Prefer the smallest correct change (KISS/YAGNI), existing code, and risk-based regression checks. Add a RED test when it demonstrates a relevant defect or contract, then make the minimum GREEN change. Do not create speculative frameworks, blanket test suites, or unrelated refactors. Review the actual pushed diff and check outputs: self-tests, CI PASS, design approval, permission to run, and scientific acceptance are different decisions.
 
 ## Scientific invariants
