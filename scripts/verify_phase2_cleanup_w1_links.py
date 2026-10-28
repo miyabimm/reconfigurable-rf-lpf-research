@@ -23,10 +23,12 @@ ACTIVE_ENTRYPOINTS = (
     "README.md",
     "docs/README.md",
     "docs/chatgpt_project_instructions.md",
-    "docs/roadmap.md",
-    "docs/results.md",
-    "docs/specification.md",
-    "docs/governance/phase2_experiment_storage_policy.md",
+    "project/README.md",
+    "project/instructions.md",
+    "project/roadmap.md",
+    "project/results.md",
+    "project/specification.md",
+    "project/experiment_storage_policy.md",
     "data/README.md",
     "experiments/README.md",
 )
@@ -101,11 +103,13 @@ def all_links(md, known):
 
 def verify_status():
     required = {
-        "README.md": ["RF-F003", "docs/roadmap.md", "docs/results.md"],
-        "docs/roadmap.md": ["Stage 1", "Stage 2", "#163", "IL≤0.30dB"],
-        "docs/results.md": ["RF-T005", "RF-F003", "experiment_index.csv"],
-        "data/README.md": ["constraints/registry.json", "experiment_index.csv"],
-        "docs/README.md": ["chatgpt_project_instructions.md", "roadmap.md"],
+        "README.md": ["RF-F003", "project/roadmap.md", "project/results.md"],
+        "project/instructions.md": ["rf/constraints/registry.json", "承認"],
+        "project/roadmap.md": ["Stage 1", "Stage 2", "#163", "IL≤0.30dB"],
+        "project/results.md": ["RF-T005", "RF-F003", "experiment_index.csv"],
+        "docs/chatgpt_project_instructions.md": ["project/instructions.md", "唯一の正本"],
+        "data/README.md": ["rf/constraints/registry.json", "experiment_index.csv"],
+        "docs/README.md": ["project/", "issues/170"],
         "experiments/README.md": ["experiment_index.csv", "EXP-NNN"],
         "scripts/README.md": ["--catalog", "build_phase2_candidate_catalog.py", "39028160775"],
     }
