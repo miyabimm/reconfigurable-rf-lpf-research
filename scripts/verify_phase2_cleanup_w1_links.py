@@ -29,6 +29,7 @@ ACTIVE_ENTRYPOINTS = (
     "project/results.md",
     "project/specification.md",
     "project/experiment_storage_policy.md",
+    "project/legacy_git_replay.md",
     "data/README.md",
     "experiments/README.md",
 )

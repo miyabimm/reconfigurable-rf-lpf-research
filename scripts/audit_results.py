@@ -41,8 +41,10 @@ def audit(detail=False):
         issues.append("Unrecognized specification reference in immutable RF policy")
     if not (ROOT / "project/specification.md").is_file():
         issues.append("Current specification document missing")
-    if not (ROOT / "docs/historical_results.md").is_file():
-        issues.append("Historical research index missing")
+    # The retired historical index is recoverable from pinned Git history;
+    # only the current results entrypoint belongs in the active working tree.
+    if not (ROOT / "project/results.md").is_file():
+        issues.append("Current results document missing")
 
     with rf_input_file(ROOT, policy["bands_file"]).open(newline="", encoding="utf-8") as handle:
         bands = list(csv.DictReader(handle))
