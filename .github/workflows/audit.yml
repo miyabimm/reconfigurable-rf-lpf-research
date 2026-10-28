@@ -2,6 +2,7 @@ name: Phase 2 smoke (lightweight)
 
 # Code and research-data changes only. Docs-only edits do not run routine CI.
 # Deep historical audits and dense RF numerical checks are run manually as needed.
+# SLSQP policy and RF-T008 trial regressions are included in this smoke suite.
 on:
   push:
     branches:
@@ -81,6 +82,9 @@ jobs:
             test_circuit.py \
             test_evaluate.py \
             test_rf_f003_t005.py \
+            test_trial_pcb_pattern_c_t008.py \
+            test_trial_ic_fixed_c_t008.py \
+            test_trial_shunt_dtc.py \
             test_phase2_candidate_catalog.py \
             test_exp047_legacy_manifest_adapter.py \
             test_github_actions_yaml_keys.py; do
