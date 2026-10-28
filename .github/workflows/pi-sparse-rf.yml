@@ -5,6 +5,9 @@ on:
     paths:
       - '.github/workflows/pi-sparse-rf.yml'
       - 'rf/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'scripts/**'
       - 'project/**'
       - 'src/**'
       - 'tests/**'
