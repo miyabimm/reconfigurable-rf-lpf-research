@@ -67,6 +67,11 @@ def _complete_checkout(root):
                             capture_output=True, text=True)
     if sparse.stdout.strip() == 'true':
         raise ValueError('Full checkout required; sparse checkout is not sufficient')
+    tracked = subprocess.check_output(['git', 'ls-files', '-z', '--', 'data', 'experiments'], cwd=root)
+    for name in filter(None, tracked.split(b'\0')):
+        path = root / name.decode('utf-8')
+        if not path.exists():
+            raise ValueError('Full checkout required; missing tracked evidence: ' + name.decode('utf-8'))
 
 
 def _fresh_main(root):

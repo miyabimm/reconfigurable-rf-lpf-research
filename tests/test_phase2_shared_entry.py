@@ -1,4 +1,5 @@
 """Shared entry tests: isolated mock diagnostics and temporary Git evidence only."""
+import hashlib
 import json
 import shutil
 import os
@@ -33,6 +34,8 @@ class SharedEntryTests(unittest.TestCase):
                 candidate = result['result']['completed'][0]
                 self.assertEqual(candidate['numerical']['state'], 'converged')
                 self.assertEqual(candidate['validation']['independent_mna'], 'not_run')
+                again = json.loads(subprocess.check_output(cmd, env=env))
+                self.assertEqual(result['plan_fingerprint'], again['plan_fingerprint'])
 
     def test_preview_is_only_in_memory(self):
         result = manifest_preview(ROOT, 'EXP-999', 'fixture only', {}, policy_id='RF-T005', seed=1, allow_trial=True)
@@ -113,6 +116,29 @@ class SharedEntryTests(unittest.TestCase):
             git('update-ref', 'refs/remotes/origin/main', source)
             with self.assertRaisesRegex(ValueError, 'stale'):
                 exp_preflight(repo, ident, **args)
+            git('fetch', '-q', 'origin', 'main')
+            # Complete preservation in this throw-away fixture, then verify actual HEAD readback.
+            summary_path = run / 'run_summary.json'
+            summary = {'experiment_id': ident, 'attempts': {'planned': 1, 'attempted': 1,
+                'converged': 0, 'nonconverged': 0, 'failed': 1, 'not_started': 0},
+                'selected_candidate_count': 0, 'no_candidate_reason': 'fixture failed', 'limitations': ['fixture']}
+            summary_path.write_text(json.dumps(summary))
+            summary_ref = {'path': str(summary_path.relative_to(repo)),
+                           'sha256': hashlib.sha256(summary_path.read_bytes()).hexdigest()}
+            manifest['execution']['status'] = 'failed'
+            manifest['evidence'] = [summary_ref]
+            record.update(stage='complete', summary=summary_ref, git_readback='passed')
+            (run / 'manifest.json').write_text(json.dumps(manifest))
+            (run / 'storage_record.json').write_text(json.dumps(record))
+            git('add', str(run.relative_to(repo)))
+            git('commit', '-qm', 'fixture preserved')
+            git('push', '-q', 'origin', 'main')
+            preserved = storage_audit(repo, 'finalize', ident)
+            self.assertTrue(preserved['result']['committed_readback'])
+            self.assertEqual(preserved['result']['independent_validation'], 'not_run')
+            summary_path.write_text('tampered')
+            with self.assertRaises(ValueError):
+                storage_audit(repo, 'finalize', ident)
 
 
 if __name__ == '__main__':
