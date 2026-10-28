@@ -62,6 +62,14 @@ class IndependentRFTests(unittest.TestCase):
         report = audit_candidate(circuit, x, limited_points_per_interval=2)
         self.assertEqual(report['independent_mna_state'], 'passed_limited')
         self.assertEqual(report['power_accounting_state'], 'passed_limited')
+        # The component-only report still records its original Stage-1 limit;
+        # the aggregate gate must not claim MNA is both checked and unchecked.
+        self.assertIn('independent_mna_not_checked',
+                      report['component_policy']['promotion_blockers'])
+        self.assertNotIn('independent_mna_not_checked', report['promotion_blockers'])
+        self.assertNotIn('forward_sampled_not_checked', report['promotion_blockers'])
+        self.assertIn('dense_rf_not_checked', report['promotion_blockers'])
+        self.assertIn('owner_approval_not_recorded', report['promotion_blockers'])
         evidence = report['limited_evidence']
         self.assertEqual(len(evidence['grid']), 56)
         self.assertEqual(len(evidence['segments']), 28)
