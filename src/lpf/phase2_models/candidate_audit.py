@@ -52,6 +52,14 @@ def audit_candidate(circuit, vector, *, limited_points_per_interval=None, prior_
             reason = (exc.reason if isinstance(exc, EvidenceFailure)
                       else getattr(exc, "code", "limited_evidence_failed"))
             blockers.append("limited_evidence_" + reason)
+    # Stage-1 component validation cannot know about this limited recompute.
+    # Keep its original report intact, but do not contradict verified limited
+    # forward/MNA evidence in the aggregate blockers. Dense/physical/owner
+    # gates remain blocked independently.
+    if state == "passed_limited":
+        blockers = [blocker for blocker in blockers
+                    if blocker not in ("forward_sampled_not_checked",
+                                       "independent_mna_not_checked")]
     threshold_failures = []
     if evidence is not None:
         for region, group in evidence["threshold_observations"].items():
