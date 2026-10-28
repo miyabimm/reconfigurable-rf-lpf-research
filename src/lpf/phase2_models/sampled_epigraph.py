@@ -1,14 +1,15 @@
 """Finite-grid RF portion of the Stage 3 minimax problem (not an optimizer).
 
-This deliberately does not supply component bounds, initialization or an
-optimization runner. The complete circuit vector precedes one epigraph in dB.
+No optimization runner is supplied. The complete circuit vector precedes
+one epigraph in dB.
 Residuals are nonnegative when satisfied: t - IL on UL/DL and attenuation
 minus the mandatory minimum on H2/H3. Nominal targets are not hard constraints.
 All values refer to the external-port cascade and a finite sampling grid only.
 """
 import numpy as np
 
-from .api import NominalCircuit
+from .api import NominalCircuit, build_nominal_circuit
+from .problem_seed import circuit_box, make_seed
 
 
 class SampledEpigraph:
@@ -19,8 +20,13 @@ class SampledEpigraph:
             raise TypeError("Expected an approved NominalCircuit")
         self.circuit = circuit
         policy = circuit.resolved_policy
+        checked = build_nominal_circuit(policy, circuit.definition)
+        if (checked.policy_fingerprint != circuit.policy_fingerprint or
+                checked.schema != circuit.schema or checked.topology != circuit.topology):
+            raise ValueError("Circuit policy, definition or schema mismatch")
         if circuit.policy_id not in ("RF-T005", "RF-T007", "RF-T008"):
             raise ValueError("Unsupported trial policy")
+        self.box = circuit_box(circuit)
         self.mandatory_stop_db = float(
             policy["evaluation"]["full_phase2"]["minimum_h2_h3_db"]
         )
@@ -30,6 +36,9 @@ class SampledEpigraph:
         self.points_per_interval = points_per_interval
         self.policy_id = circuit.policy_id
         self.policy_fingerprint = circuit.policy_fingerprint
+
+    def seed(self, vector, **provenance):
+        return make_seed(self, vector, **provenance)
 
     def _split(self, vector):
         x = np.asarray(vector, dtype=float)

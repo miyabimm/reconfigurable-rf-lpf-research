@@ -10,6 +10,7 @@ RF-F003 and RF-T006 are intentionally rejected until their own policy
 adapters are reviewed; never silently reinterpret them as another trial.
 """
 from dataclasses import dataclass
+from copy import deepcopy
 
 from .circuit_layout import InductorTree, CapacitorPlacement
 from .rft005_t007_policy_circuit import PolicyBoundRFT005T007Circuit
@@ -75,7 +76,7 @@ class NominalCircuit:
     @property
     def resolved_policy(self):
         """Return a defensive copy of the approved trial policy snapshot."""
-        return self._adapter.policy
+        return deepcopy(self._adapter.policy)
 
     @property
     def topology(self):
