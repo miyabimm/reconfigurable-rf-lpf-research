@@ -114,6 +114,8 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
           python -m unittest discover -s tests -p test_phase2_zero_branch_projection.py -v
           python -m unittest discover -s tests -p test_phase2_topology_enumeration.py -v
+          python -m unittest discover -s tests -p test_phase2_candidate_records.py -v
+          LPF_EVIDENCE_ROOT="$GITHUB_WORKSPACE" python -m unittest discover -s tests -p test_phase2_candidate_records_frozen.py -v
 
       - name: Guard unique RF and project sources with read-only legacy aliases
         run: python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
