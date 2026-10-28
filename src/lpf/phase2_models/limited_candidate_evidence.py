@@ -70,6 +70,11 @@ def _identity(circuit, vector):
             'git_head': head, 'source_tree_sha256': _digest(source),
             'source_worktree_dirty': bool(dirty),
             'input_sha256': inputs,
+            # The vector is identified by content, not asserted to originate
+            # from any historical EXP/checkpoint. Python sources only; this
+            # does not attest imported in-memory code or historical execution.
+            'source_provenance_scope': 'current_src_lpf_python_files',
+            'historical_fixture_provenance': 'not_checked',
             'environment': {'python': platform.python_version(),
                             'numpy': np.__version__, 'scipy': scipy.__version__}}
 
@@ -89,7 +94,8 @@ def compare_recomputed_evidence(saved, actual):
         (('constraint_id', 'constraint_status', 'constraint_fingerprint'), 'policy_mismatch'),
         (('definition_fingerprint',), 'circuit_definition_mismatch'),
         (('vector_fingerprint',), 'vector_mismatch'),
-        (('git_head', 'source_tree_sha256', 'source_worktree_dirty', 'environment'), 'source_mismatch'),
+        (('git_head', 'source_tree_sha256', 'source_worktree_dirty', 'environment',
+          'source_provenance_scope', 'historical_fixture_provenance'), 'source_mismatch'),
         (('input_sha256',), 'input_mismatch'),
     ):
         if any(old[key] != new[key] for key in fields):

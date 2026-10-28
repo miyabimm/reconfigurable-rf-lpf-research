@@ -71,7 +71,20 @@ class IndependentRFTests(unittest.TestCase):
         self.assertEqual(len(evidence['identity']['input_sha256']), 3)
         self.assertLess(evidence['max_abs_power_residual_w'], 1e-12)
         self.assertLess(evidence['max_forward_il_error_db'], 1e-9)
-        self.assertIn('UL', evidence['threshold_observations'])
+        observations = evidence['threshold_observations']
+        self.assertIn('UL', observations)
+        expected_failures = {}
+        for region, group in observations.items():
+            for limit, item in ({'nominal': group} if region in ('UL', 'DL') else group).items():
+                if item['status'] == 'failed':
+                    expected_failures[f'rf_sampled_{region.lower()}_{limit}_failed'] = item
+        self.assertTrue(expected_failures)
+        self.assertEqual(report['rf_threshold_state'], 'failed')
+        self.assertEqual({x['reason']: x['observation'] for x in report['rf_threshold_failures']},
+                         expected_failures)
+        self.assertTrue(set(expected_failures).issubset(report['promotion_blockers']))
+        self.assertEqual(evidence['identity']['source_provenance_scope'], 'current_src_lpf_python_files')
+        self.assertEqual(evidence['identity']['historical_fixture_provenance'], 'not_checked')
         self.assertFalse(report['rf_dense_evaluation_completed'])
         self.assertEqual(report['dense_rf_state'], 'not_checked')
         self.assertFalse(report['rf_compliance_certified'])
@@ -104,6 +117,7 @@ class IndependentRFTests(unittest.TestCase):
             (('identity', 'vector_fingerprint'), 'bad', 'vector_mismatch'),
             (('identity', 'definition_fingerprint'), 'bad', 'circuit_definition_mismatch'),
             (('identity', 'git_head'), 'bad', 'source_mismatch'),
+            (('identity', 'source_worktree_dirty'), not prior['identity']['source_worktree_dirty'], 'source_mismatch'),
             (('identity', 'input_sha256'), {}, 'input_mismatch'),
             (('coverage',), 'cross', 'grid_or_coverage_mismatch'),
             (('points_per_interval',), 1001, 'grid_or_coverage_mismatch'),

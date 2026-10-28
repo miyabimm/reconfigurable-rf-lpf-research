@@ -52,6 +52,17 @@ def audit_candidate(circuit, vector, *, limited_points_per_interval=None, prior_
             reason = (exc.reason if isinstance(exc, EvidenceFailure)
                       else getattr(exc, "code", "limited_evidence_failed"))
             blockers.append("limited_evidence_" + reason)
+    threshold_failures = []
+    if evidence is not None:
+        for region, group in evidence["threshold_observations"].items():
+            limits = {"nominal": group} if region in ("UL", "DL") else group
+            for limit, observation in limits.items():
+                if observation["status"] == "failed":
+                    code = f"rf_sampled_{region.lower()}_{limit}_failed"
+                    threshold_failures.append({"reason": code, "region": region,
+                                               "limit": limit, "observation": observation})
+                    if code not in blockers:
+                        blockers.append(code)
     return {
         "constraint_id": circuit.policy_id,
         "constraint_fingerprint": circuit.policy_fingerprint,
@@ -67,11 +78,8 @@ def audit_candidate(circuit, vector, *, limited_points_per_interval=None, prior_
         "limited_evidence_failure_reason": reason,
         "limited_evidence": evidence,
         "rf_threshold_state": "not_checked" if evidence is None else (
-            "failed" if any(
-                item["status"] == "failed"
-                for region, group in evidence["threshold_observations"].items()
-                for item in ([group] if region in ("UL", "DL") else group.values())
-            ) else "sampled_numeric_observation"),
+            "failed" if threshold_failures else "sampled_numeric_observation"),
+        "rf_threshold_failures": threshold_failures,
         "dense_rf_state": "not_checked",
         "local_extrema_state": "not_checked",
         "optimization_state": "not_checked",
