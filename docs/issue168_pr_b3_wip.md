@@ -22,6 +22,12 @@ Base: `52a57cd5fe2e598267e9116fb78131d237f6f711`. This is an **incomplete draft*
 
 Six further existing modules (public API, branch MNA, connection roles, S2P cache, T005/T007 and T008 policy circuits): 40 tests pass locally. Full CI and historical audits have not been run for this draft. No EXP, source data, policy, checkpoint or RF limits were modified; no optimization, production dense run or Phase 3 transition was performed.
 
+## Incremental review response (working tree)
+
+`scan_independent_rf` now reports UL/DL nominal and H2/H3 mandatory and nominal comparisons from the resolved full-LPF policy. Equality meets the specified limits; a successful comparison is only `sampled_numeric_observation`, never certification. The report records canonical versus cross coverage and finite-grid versus locally refined scope. This is not a matching-only assessment and does not establish continuous-band compliance. The candidate gate does **not** yet ingest or bind these observations; identity, power/passivity acceptance and provenance remain open.
+
+Local regression on this working tree: `OPENBLAS_NUM_THREADS=1 uv run --frozen python -m unittest discover -s tests -p test_phase2_independent_rf.py -v` — 7 tests passed, including exact 0.30/30/35 boundary comparisons. This is not exact-head CI or an independent review.
+
 ## Remaining before review/merge
 
 - Bind results to vector, definition, effective policy, code SHA, and exact canonical coverage; reject mismatches, stale/missing evidence, non-passivity and power imbalance. Do not equate cross or reduced grids to dense evidence.

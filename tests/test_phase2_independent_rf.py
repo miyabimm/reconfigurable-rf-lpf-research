@@ -97,6 +97,31 @@ class IndependentRFTests(unittest.TestCase):
         self.assertFalse(report['rf_compliance_certified'])
         self.assertTrue(report['candidate_promotion_blocked'])
 
+    def test_scan_threshold_boundaries_are_observations_not_certification(self):
+        policy = load_constraint('RF-T005', allow_trial=True)
+        circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',
+                                  policy_fingerprint='synthetic',
+                                  validate_components=lambda x: {'component_policy_pass': True})
+        for value in (0.3, 30.0, 35.0):
+            with self.subTest(value=value), patch(
+                    'lpf.phase2_models.independent_scan.evaluate_independent_sample',
+                    return_value={'il_db': value}):
+                report = scan_independent_rf(circuit, None, points_per_interval=2)
+            obs = report['threshold_observations']
+            self.assertEqual(obs['UL']['status'],
+                             'sampled_numeric_observation' if value <= 0.3 else 'failed')
+            self.assertEqual(obs['DL']['status'], obs['UL']['status'])
+            for region in ('H2', 'H3'):
+                self.assertEqual(obs[region]['mandatory']['status'],
+                                 'sampled_numeric_observation' if value >= 30 else 'failed')
+                self.assertEqual(obs[region]['nominal']['status'],
+                                 'sampled_numeric_observation' if value >= 35 else 'failed')
+            self.assertEqual(report['threshold_policy_scope'], 'full_lpf')
+            self.assertEqual(report['threshold_evidence_scope'], 'finite_grid')
+            self.assertFalse(report['rf_compliance_certified'])
+            self.assertFalse(report['rf_dense_evaluation_completed'])
+            self.assertTrue(report['candidate_promotion_blocked'])
+
     def test_scan_failure_and_stop_refinement(self):
         policy = load_constraint('RF-T005', allow_trial=True)
         circuit = SimpleNamespace(_adapter=SimpleNamespace(policy=policy), policy_id='RF-T005',

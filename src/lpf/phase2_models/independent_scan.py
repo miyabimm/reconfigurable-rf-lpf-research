@@ -76,8 +76,30 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         ('pass_il', ('UL', 'DL'), True), ('UL', ('UL',), True), ('DL', ('DL',), True),
         ('H2', ('H2',), False), ('H3', ('H3',), False))}
         for key in ('grid_worst', 'refined_worst')}
+    # These comparisons describe only the selected finite samples. A trial
+    # result, even one meeting every numerical target, is not formal compliance.
+    observed = summary['refined_worst'] if refine else summary['grid_worst']
+    def observation(value, threshold, meets):
+        return {"value_db": value, "threshold_db": threshold,
+                "status": "sampled_numeric_observation" if meets else "failed"}
+    thresholds = {
+        region: observation(observed[region]['il_db'], full['nominal_max_il_db'],
+                            observed[region]['il_db'] <= full['nominal_max_il_db'])
+        for region in ('UL', 'DL')
+    }
+    for region in ('H2', 'H3'):
+        value = observed[region]['il_db']
+        thresholds[region] = {
+            'mandatory': observation(value, full['minimum_h2_h3_db'],
+                                     value >= full['minimum_h2_h3_db']),
+            'nominal': observation(value, full['nominal_h2_h3_target_db'],
+                                   value >= full['nominal_h2_h3_target_db']),
+        }
     return {"constraint_id": circuit.policy_id, "constraint_fingerprint": circuit.policy_fingerprint,
             "coverage": coverage, "summary": summary,
+            "threshold_observations": thresholds,
+            "threshold_policy_scope": "full_lpf",
+            "threshold_evidence_scope": "finite_grid_with_local_refinement" if refine else "finite_grid",
             "component_policy_pass": component['component_policy_pass'],
             "component_policy": component, "forward_sampled_checked": False,
             "points_per_interval": points_per_interval, "segments": results,
