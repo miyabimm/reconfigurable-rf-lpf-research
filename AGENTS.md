@@ -6,10 +6,10 @@ Research a passive reconfigurable RF low-pass filter for six LTE settings, balan
 
 Read only the **documents relevant to the task**, using the latest available `main` version for material scientific or development decisions:
 
-- **Operating authority and approvals:** [`docs/chatgpt_project_instructions.md`](docs/chatgpt_project_instructions.md).
-- **Formal RF numbers:** the immutable JSON selected by `active_formal_id` in [`data/constraints/registry.json`](data/constraints/registry.json); trial constraints require explicit opt-in. **Bands:** [`data/bands.csv`](data/bands.csv). **Fixed S2P:** files and hashes specified by the active constraint.
-- **Scientific interpretation:** [`docs/specification.md`](docs/specification.md) (not a separate numeric authority). **Current work and gates:** [`docs/roadmap.md`](docs/roadmap.md), Issues, and PRs.
-- **Experiment evidence:** [`data/experiment_index.csv`](data/experiment_index.csv) and `experiments/.../EXP-NNN/`. **For new EXP:** [`docs/governance/phase2_experiment_storage_policy.md`](docs/governance/phase2_experiment_storage_policy.md). **For staged SLSQP:** [`docs/slsqp_iteration_policy.md`](docs/slsqp_iteration_policy.md).
+- **Operating authority and approvals:** [`project/instructions.md`](project/instructions.md).
+- **Formal RF numbers:** the immutable JSON selected by `active_formal_id` in [`rf/constraints/registry.json`](rf/constraints/registry.json); trial constraints require explicit opt-in. **Bands:** [`rf/bands.csv`](rf/bands.csv). **Fixed S2P:** files and hashes specified by the active constraint.
+- **Scientific interpretation:** [`project/specification.md`](project/specification.md) (not a separate numeric authority). **Current work and gates:** [`project/roadmap.md`](project/roadmap.md), Issues, and PRs.
+- **Experiment evidence:** [`data/experiment_index.csv`](data/experiment_index.csv) and `experiments/.../EXP-NNN/`. **For new EXP:** [`project/experiment_storage_policy.md`](project/experiment_storage_policy.md). **For staged SLSQP:** [`project/slsqp_iteration_policy.md`](project/slsqp_iteration_policy.md).
 
 Do not duplicate changing RF limits, results, or Stage status here. If source access fails, report what remains unverified. A roadmap item is not an implemented API or available runner.
 
@@ -31,7 +31,7 @@ Prefer the smallest correct change (KISS/YAGNI), existing code, and risk-based r
 
 ## Scientific invariants
 
-- Use **all six settings and all 28 separate UL/DL/H2/H3 intervals** from `data/bands.csv`: worst-case passband IL and minimum stopband attenuation; do not bridge frequency gaps.
+- Use **all six settings and all 28 separate UL/DL/H2/H3 intervals** from `rf/bands.csv`: worst-case passband IL and minimum stopband attenuation; do not bridge frequency gaps.
 - Respect the active condition's source/load, complete fixed-S2P external-port cascade and hashes, component/Q/layout limits, variable-C settings, couplings, and area objective. Do not silently reuse legacy limits.
 - Validate full inductance-matrix **SPD**, circuit connectivity, passivity, power balance, and independent **MNA** at the validation level required by the task. Distinguish a bare-LPF result from external-port system performance.
 - Compare only like-for-like constraint ID/effective SHA, reference planes, evaluation grids, and validation depth. Keep formal/trial/historical and `matching_only`/`full_lpf` results separate.
@@ -42,6 +42,10 @@ Prefer the smallest correct change (KISS/YAGNI), existing code, and risk-based r
 New scientific EXPs require **separate owner approval plus an EXP number reserved and verified on `main` before execution**. Routine deterministic software tests are not new scientific EXPs. Follow the applicable storage policy; do not retrospectively rewrite historical manifests, vectors, findings, or validation status.
 
 Preserve reproducibility: constraint ID/SHA, bands/S2P fingerprints, commit/dirty patch, environment and seed, complete circuit and all six variable-C settings, search budget/grid, termination state, and independent-validation evidence. Distinguish planned, run, converged, nonconverged, failed, unverified, and preserved states. Never delete or migrate historical research evidence as routine cleanup.
+
+## Pi sparse workspace
+
+Pi Code's normal working tree excludes `docs/`, `data/` and `experiments/`. Read `project/README.md` and use the `project/` and `rf/` inputs. Immutable RF snapshots contain historical logical `data/...` paths; the RF loader resolves them to the byte-identical `rf/` files and must fail rather than fall back to missing legacy files. Full historical EXP audits, source recovery and EXP-number reservation require a separately obtained complete evidence checkout; do not label an incomplete sparse audit as PASS. This repository migration remains Draft/unfinished until the owner-approved cutover.
 
 ## Environment and handoff
 
