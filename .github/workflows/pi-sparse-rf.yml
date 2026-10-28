@@ -64,6 +64,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for test_file in test_constraint_versioning.py test_phase2_s2p_grid_cache.py test_phase2_branch_mna.py test_phase2_sampled_epigraph.py test_phase2_problem_seed.py test_phase2_staged_optimization.py test_slsqp_budget.py; do
+          for test_file in test_constraint_versioning.py test_phase2_s2p_grid_cache.py test_phase2_branch_mna.py test_phase2_sampled_epigraph.py test_phase2_problem_seed.py test_phase2_staged_optimization.py test_phase2_topology_enumeration.py test_slsqp_budget.py; do
             uv run --frozen python -m unittest discover -s tests -p "$test_file" -v
           done

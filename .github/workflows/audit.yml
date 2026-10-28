@@ -113,6 +113,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_s2p_grid_cache.py -v
           python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
           python -m unittest discover -s tests -p test_phase2_zero_branch_projection.py -v
+          python -m unittest discover -s tests -p test_phase2_topology_enumeration.py -v
 
       - name: Guard unique RF and project sources with read-only legacy aliases
         run: python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
