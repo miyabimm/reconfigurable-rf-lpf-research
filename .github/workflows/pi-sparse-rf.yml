@@ -1,0 +1,66 @@
+name: Pi sparse RF smoke
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pi-sparse-rf.yml'
+      - 'rf/**'
+      - 'project/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sparse-rf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            project
+            rf
+            src
+            scripts
+            tests
+            .github
+      - name: Assert historical directories are absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in docs data experiments; do
+            if test -e "$d"; then
+              echo "Unexpected Pi sparse path: $d" >&2
+              exit 1
+            fi
+          done
+          test -f rf/constraints/registry.json
+          test -f rf/bands.csv
+          test -f rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p
+          test -f rf/parasitics/circuit2_poc_through_0_6ghz.s2p
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.23"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: Validate RF registry and sparse model regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in test_constraint_versioning.py test_phase2_s2p_grid_cache.py test_phase2_branch_mna.py; do
+            uv run --frozen python -m unittest discover -s tests -p "$test_file" -v
+          done
