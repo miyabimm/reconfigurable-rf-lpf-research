@@ -12,9 +12,9 @@
 
 | 対象 | 元ファイル | 読み方 |
 |---|---|---|
-| 共通回路モデルとR2作業 | [R2引継ぎ](r2_handoff.md)、[R2独立確認JSON](r2/EXP015_COMMON_MODEL_AUDIT.json) | 旧RF-F001／試験条件に関する保存検証。現行RF-F003性能実績ではない |
+| 共通回路モデルとR2作業 | [R2引継ぎ](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/r2_handoff.md)、[R2独立確認JSON](r2/EXP015_COMMON_MODEL_AUDIT.json) | 旧RF-F001／試験条件に関する保存検証。現行RF-F003性能実績ではない |
 | コイル系列の過去の設計仮定 | 下記「過去のLQP02HV/HQ設計仮定」を参照 | 2026-10-12時点の承認・数値モデルの履歴。現在の正式制約はregistryが優先 |
-| 探索手法から得た知見 | [topology_search_lessons](topology_search_lessons.md) | 過去時点の探索改善・制約上の限界 |
+| 探索手法から得た知見 | [topology_search_lessons](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/topology_search_lessons.md) | 過去時点の探索改善・制約上の限界 |
 
 ## 過去のLQP02HV/HQ設計仮定と出典
 
@@ -42,15 +42,15 @@ EXP-050、056/057、059～067の保存済みスクリプトに残るEXP間直接
 
 これらの文書は2026-10-16時点の理論検討です。**正式RF-F003全系の数値最適化・製作・3D EM検証とは区別**してください。
 
-- [T型3コイルの磁気結合とQの基礎](phase2_t_coupled_inductor_q_foundations_20261016.md)
-- [T型の一様モードと固有モード](phase2_t_coupled_inductor_uniform_mode_20261016.md)
-- [T型の平面配置・幾何学的結合](phase2_t_coupled_inductor_planar_geometry_20261016.md)
-- [T型結合ペアの検討](phase2_t_two_pair_coupling_20261016.md)
-- [T型高電流モード](phase2_t_shunt_high_current_modes_20261016.md)
-- [T型の通過帯シャント電流比較](phase2_t_shunt_current_matched_passband_20261016.md)
-- [π型伝送零点の再配置](phase2_pi_notch_retarget_20261016.md)
-- [π型2組結合の検討](phase2_pi_two_pair_coupling_20261016.md)
-- [T/π型の共通条件損失比較](phase2_t_pi_common_conditions_loss_comparison_20261016.md)
+- [T型3コイルの磁気結合とQの基礎](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_coupled_inductor_q_foundations_20261016.md)
+- [T型の一様モードと固有モード](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_coupled_inductor_uniform_mode_20261016.md)
+- [T型の平面配置・幾何学的結合](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_coupled_inductor_planar_geometry_20261016.md)
+- [T型結合ペアの検討](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_two_pair_coupling_20261016.md)
+- [T型高電流モード](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_shunt_high_current_modes_20261016.md)
+- [T型の通過帯シャント電流比較](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_shunt_current_matched_passband_20261016.md)
+- [π型伝送零点の再配置](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_pi_notch_retarget_20261016.md)
+- [π型2組結合の検討](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_pi_two_pair_coupling_20261016.md)
+- [T/π型の共通条件損失比較](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/phase2_t_pi_common_conditions_loss_comparison_20261016.md)
 
 ## BSF合成・旧試験トポロジーの理論／探索出典
 
@@ -58,17 +58,17 @@ EXP-050、056/057、059～067の保存済みスクリプトに残るEXP間直接
 
 | 原典 | 記録の性質と確認境界 |
 |---|---|
-| [RF-T004のトポロジー文献調査](research/rf_t004_literature_survey_2026-10-14.md) | 文献からの設計仮説・探索計画。**数値最適化や独立RF検証は未実行** |
-| [BSF/Cameron結合行列法の文献調査](research/bsf_cameron_synthesis_literature_2026-10-14.md) | 文献上の合成法、パッシビティと実現可能なLCへの変換条件。研究モデルでの実証とは区別 |
-| [EXP-021の二重BSF解釈](research/exp021_dual_bandstop_review_2026-10-14.md) | 保存EXPに対する応答上の解釈と次の合成仮説。提案した系統探索の**実行済み報告ではない** |
-| [RF-T004/EXP-022の面積6探索索引](research/rf_t004_exp022_area6_discovery_index.md) | 旧条件での数値訂正・全格子／独立MNA追試とIL未達を含む歴史索引。旧ID衝突と元EXPの区別を維持 |
+| [RF-T004のトポロジー文献調査](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/research/rf_t004_literature_survey_2026-10-14.md) | 文献からの設計仮説・探索計画。**数値最適化や独立RF検証は未実行** |
+| [BSF/Cameron結合行列法の文献調査](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/research/bsf_cameron_synthesis_literature_2026-10-14.md) | 文献上の合成法、パッシビティと実現可能なLCへの変換条件。研究モデルでの実証とは区別 |
+| [EXP-021の二重BSF解釈](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/research/exp021_dual_bandstop_review_2026-10-14.md) | 保存EXPに対する応答上の解釈と次の合成仮説。提案した系統探索の**実行済み報告ではない** |
+| [RF-T004/EXP-022の面積6探索索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/research/rf_t004_exp022_area6_discovery_index.md) | 旧条件での数値訂正・全格子／独立MNA追試とIL未達を含む歴史索引。旧ID衝突と元EXPの区別を維持 |
 
 固有の式・実験条件・引用文献・訂正経緯は各原文に残します。T/π型とBSF型の研究を名称だけで統合せず、受動性・結合行列SPD・電力保存・独立MNAなどの検証範囲を分けて読む必要があります。
 
 ## 正本と証拠に戻る
 
 - [現行正式RF-F003 JSON](../rf/constraints/formal/RF-F003.json)、[試験RF-T005](../rf/constraints/trial/RF-T005.json)。
-- [2026-10-17の3L/4L保存候補・制約別パレート](pareto_rf_t005_rf_f003_20261017.md)。
-- [旧資料の分類・処置](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170) と [W3固有情報の保全](archive/w3_consolidated_documents_20261017.md)。
+- [2026-10-17の3L/4L保存候補・制約別パレート](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/pareto_rf_t005_rf_f003_20261017.md)。
+- [旧資料の分類・処置](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170) と [W3固有情報の保全](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)。
 
 **本索引は研究の新たな数値解析や実験結果を提供しません。**

@@ -1,6 +1,6 @@
 # 設計仕様 / Specification — RF-F003（2026-10-16正式承認）
 
-現行正式正本は [RF-F003](../rf/constraints/formal/RF-F003.json)、[台帳](../rf/constraints/registry.json) の active_formal_id が指すものとする。`data/design_constraints.json`は現行正式版の完全一致コピー。旧 [RF-F001](../rf/constraints/formal/RF-F001.json)・[RF-F002](../rf/constraints/formal/RF-F002.json) は変更不可の履歴として保持。
+現行正式正本は [RF-F003](../rf/constraints/formal/RF-F003.json)、[台帳](../rf/constraints/registry.json) の active_formal_id が指すものとする。`data/design_constraints.json`は旧APIのためのRF-F003固定互換参照（正本ではない）。現行正式版は常に台帳のactive IDで決定する。旧 [RF-F001](../rf/constraints/formal/RF-F001.json)・[RF-F002](../rf/constraints/formal/RF-F002.json) は変更不可の履歴として保持。
 
 ## RF評価・性能目標
 
