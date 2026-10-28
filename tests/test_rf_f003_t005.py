@@ -26,7 +26,7 @@ class RFF003T005Tests(unittest.TestCase):
         formal = load_constraint()
         self.assertEqual(formal["active_constraint_id"], "RF-F003")
         self.assertEqual(formal, json.loads(
-            (ROOT/"data/design_constraints.json").read_text("utf-8")))
+            (ROOT/"rf/constraints/formal/RF-F003.json").read_text("utf-8")))
         self.assertEqual(constraint_fingerprint(formal),
                          registry["formal"]["RF-F003"]["effective_constraint_sha256"])
         self.assertEqual(formal["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
@@ -136,7 +136,7 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertFalse(cfg["runtime"]["recompute_RLC_per_objective_call"])
         for role in ("input_parasitic","output_parasitic"):
             spec = cfg[role]
-            path = ROOT/spec["path"]
+            path = ROOT/"rf"/spec["path"][len("data/"):]
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),spec["sha256"])
             self.assertEqual(len(path.read_text("ascii").splitlines()),6004)
             for f in (0.0,0.5e6,3e9,6e9):

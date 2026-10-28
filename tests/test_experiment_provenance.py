@@ -18,8 +18,8 @@ class ConstraintRegistryTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        shutil.copytree(ROOT / "data/constraints", self.root / "data/constraints")
-        self.registry_path = self.root / "data/constraints/registry.json"
+        shutil.copytree(ROOT / "rf/constraints", self.root / "rf/constraints")
+        self.registry_path = self.root / "rf/constraints/registry.json"
         self.registry = json.loads(self.registry_path.read_text())
         self.trial = {
             "constraint_id": "RF-T001", "status": "trial", "base_constraint_id": "RF-F001",
@@ -32,7 +32,7 @@ class ConstraintRegistryTests(unittest.TestCase):
             "file": "data/constraints/trial/RF-T001.json", "state": "study_authorized",
             "base_constraint_id": "RF-F001",
         }
-        self.trial_path = self.root / "data/constraints/trial/RF-T001.json"
+        self.trial_path = self.root / "rf/constraints/trial/RF-T001.json"
         self.trial_path.parent.mkdir(exist_ok=True)
         self.save()
 
@@ -41,7 +41,7 @@ class ConstraintRegistryTests(unittest.TestCase):
         self.trial_path.write_text(json.dumps(self.trial))
 
     def test_trial_does_not_change_approved_bytes_or_default(self):
-        path = self.root / "data/constraints/formal/RF-F001.json"
+        path = self.root / "rf/constraints/formal/RF-F001.json"
         before = path.read_bytes()
         formal = load_constraint(root=self.root)
         with self.assertRaises(ValueError):
@@ -58,7 +58,7 @@ class ConstraintRegistryTests(unittest.TestCase):
             load_constraint(root=self.root)
         self.registry["formal"]["RF-F001"]["state"] = "approved"
         self.save()
-        path = self.root / "data/constraints/formal/RF-F001.json"
+        path = self.root / "rf/constraints/formal/RF-F001.json"
         payload = json.loads(path.read_text())
         payload["components"]["LQP02"]["series"]["LQP02HV"]["q"] = 99
         path.write_text(json.dumps(payload))

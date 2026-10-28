@@ -1,13 +1,11 @@
 """Canonical policy access, component count limits, and fixed PCB-C checks."""
-import json
 import math
-from pathlib import Path
 
-POLICY_PATH = Path(__file__).resolve().parents[2] / 'data' / 'design_constraints.json'
+from .constraint_versions import load_constraint
 
 
 def load_policy():
-    return json.loads(POLICY_PATH.read_text(encoding='utf-8'))
+    return load_constraint()
 
 
 def chip_area(n_lqp02=0, n_lqp01=0, n_lqw04=0, n_gjm01=0,

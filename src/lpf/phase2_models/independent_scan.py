@@ -24,7 +24,7 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         raise ValueError("coverage must be canonical or cross")
     if not math.isfinite(tolerance_hz) or tolerance_hz <= 0:
         raise ValueError("tolerance_hz must be positive and finite")
-    with (ROOT / "data/bands.csv").open(newline="", encoding="utf-8") as f:
+    with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     segments = validated_band_segments(rows)
     full = circuit._adapter.policy["evaluation"]["full_phase2"]
