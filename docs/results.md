@@ -49,7 +49,10 @@ EXP-048/049の当時の要約は[固定履歴版のステータス記録](https:
 ### 旧条件の候補報告（C群、出典へ戻るための導線）
 
 - **RF-F001 / RF-T003の有限探索:** [2可変C・30dBの実行報告](rft003_30db_study.md)、[損失分解と電力収支](rft003_loss_analysis_20261012.md)、[7L初回成立点](rft003_7l_030_trial_20261013.md)、[5L面積6⅓](rft003_5l_cost6p33_study_20261013.md)、[6L面積6⅔](rft003_six_L_one_GJM_cost_6p67_20261013.md)。残る日付別RF-T003報告も独自の探索数・未収束・パレートを含むため、**計12件を一括退出させず**、出典コード・全ベクトル・独立検証・旧制約の一致を個別に調べる。
-- **EXP-016とRF-F002の履歴:** [EXP-016初期探索](exp016_initial_screening.md)、[PCB-CのQ区分を修正した追試](exp016_pcb_followup.md)、[RF-F002のFull-LPF長形式報告](rf_f002_full_lpf_phase2_20261013.md)、[RF制約群別の損失分解](constraint_group_loss_summary.md)。旧時点の公称35dB・30dB、Q・k・S2Pの条件差を現在の達成状況へ繰り上げない。
+- **EXP-016/017とRF-F002の履歴:** [EXP-016初期探索](exp016_initial_screening.md)、[PCB-CのQ区分を修正した追試](exp016_pcb_followup.md)、[EXP-017初期2可変C仮説](exp017_two_varc_merge_study.md)、[RF-F002のFull-LPF長形式報告](rf_f002_full_lpf_phase2_20261013.md)、[RF制約群別の損失分解](constraint_group_loss_summary.md)。各文書の元試行条件・承認時点・結果訂正と別途保全したEXP-017 RF-F002の復元結果を混同しない。旧時点の公称35dB・30dB、Q・k・S2Pの条件差を現在の達成状況へ繰り上げない。
 - **日付固定の結果表示:** [2026-10-17 RF-T005/RF-F003パレート](pareto_rf_t005_rf_f003_20261017.md)、[当時の24件カタログ](results/phase2_candidate_catalog_20261017.md)／[結合符号索引](results/phase2_topology_search_20261017.md)、[EXP-062～065独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)。表示用派生物と凍結した数値証拠は分けて扱う。
+
+
+- **古い証拠管理・Pareto分類:** [2026-10-15の保管・証拠逆引き監査](phase2_storage_pareto_review_20261015.md)は、当時の13登録候補・8条件群の暫定Pareto、過去のGit追跡ファイルの分類、旧CI Artifactを記した**保存時点の監査原典**です。退役した旧索引生成コードを現在の実行入口と誤解せず、[固定原文ソース](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py)から復元可能であることと、現在の検証コードが別物であることを区別する。
 
 原本を動かす前に、各pathのGit blob SHA、出典EXPと実効制約、コード／テスト／workflow／manifestからの参照、ZIP/member SHA・CRC、動的読込、必要なら元環境からの復元を調べます。特に[現存データの位置付け](../data/README.md)にある `validation/` の266件と `repository_reviews/` の29件は、ファイル件数だけで再生成可能と判断しません。**この索引はData削除・移動・元実験の書換えを承認するものではありません。**
