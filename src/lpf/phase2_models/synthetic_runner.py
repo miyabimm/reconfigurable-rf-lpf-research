@@ -126,7 +126,7 @@ def _recheck_failed_calls(circuit, plan, record):
                 any(type(status.get(k)) is not int or status[k] < 0 for k in ('nit', 'nfev')) or
                 call['exit_cause'] !=
                     ('success' if status['success'] else f"status_{status['status']}") or
-                call['observation'] != _observe(problem, output)):
+                call['observation'] != json.loads(json.dumps(_observe(problem, output), allow_nan=False))):
             raise ValueError('Failed-start preceding stage mismatch')
         return output, {**status, 'converged': status['success'], 'stage_call_index': index - 1}
 
