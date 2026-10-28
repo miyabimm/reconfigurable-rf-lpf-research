@@ -46,4 +46,10 @@ EXP-048/049の当時の要約は[固定履歴版のステータス記録](https:
 | **W4/W5の履歴監査** | [W4原本・削除ゲート](phase2_cleanup_w4_evidence_workflow_review_20261017.md)／[225原本の再実行依存](phase2_cleanup_w4_replay_dependencies_20261018.md)／[W5監査記録](phase2_w5_readonly_closure_20261018.md)／[W5保存JSON](../data/repository_reviews/w5_phase2_readonly_closure_20261018.json) | W4/W5のworkflow件数・削除未承認は**当時の監査状態**。監査成功はEXP原本削除や現行CIの完全代替を認めるものではない。 |
 | **R2 / EXP-015（旧RF-F001）** | [保存済み独立モデル監査JSON](r2/EXP015_COMMON_MODEL_AUDIT.json)／[当時の実装引継ぎ](r2_handoff.md) | 当時のQ・k・可変C接続・旧正式版での追試結果であり、現行RF-F003への合格や再最適化を意味しない。 |
 
+### 旧条件の候補報告（C群、出典へ戻るための導線）
+
+- **RF-F001 / RF-T003の有限探索:** [2可変C・30dBの実行報告](rft003_30db_study.md)、[損失分解と電力収支](rft003_loss_analysis_20261012.md)、[7L初回成立点](rft003_7l_030_trial_20261013.md)、[5L面積6⅓](rft003_5l_cost6p33_study_20261013.md)、[6L面積6⅔](rft003_six_L_one_GJM_cost_6p67_20261013.md)。残る日付別RF-T003報告も独自の探索数・未収束・パレートを含むため、**計12件を一括退出させず**、出典コード・全ベクトル・独立検証・旧制約の一致を個別に調べる。
+- **EXP-016とRF-F002の履歴:** [EXP-016初期探索](exp016_initial_screening.md)、[PCB-CのQ区分を修正した追試](exp016_pcb_followup.md)、[RF-F002のFull-LPF長形式報告](rf_f002_full_lpf_phase2_20261013.md)、[RF制約群別の損失分解](constraint_group_loss_summary.md)。旧時点の公称35dB・30dB、Q・k・S2Pの条件差を現在の達成状況へ繰り上げない。
+- **日付固定の結果表示:** [2026-10-17 RF-T005/RF-F003パレート](pareto_rf_t005_rf_f003_20261017.md)、[当時の24件カタログ](results/phase2_candidate_catalog_20261017.md)／[結合符号索引](results/phase2_topology_search_20261017.md)、[EXP-062～065独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)。表示用派生物と凍結した数値証拠は分けて扱う。
+
 原本を動かす前に、各pathのGit blob SHA、出典EXPと実効制約、コード／テスト／workflow／manifestからの参照、ZIP/member SHA・CRC、動的読込、必要なら元環境からの復元を調べます。特に[現存データの位置付け](../data/README.md)にある `validation/` の266件と `repository_reviews/` の29件は、ファイル件数だけで再生成可能と判断しません。**この索引はData削除・移動・元実験の書換えを承認するものではありません。**
