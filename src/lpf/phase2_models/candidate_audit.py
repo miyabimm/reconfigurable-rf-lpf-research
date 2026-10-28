@@ -1,8 +1,8 @@
-"""Conservative candidate-audit starting point for Stage 2.
+"""Limited, fail-closed Stage 2 candidate audit.
 
-This deliberately does not accept caller-supplied evidence flags. Evidence
-binding and dense/physical/owner gates require further review; until then this
-function cannot certify or promote any candidate.
+Only fresh, bound 2/3-point canonical recomputation can verify the limited
+forward/MNA/power scope. Caller-provided flags and saved reports cannot supply
+PASS. Dense RF, physical validation, approval and certification remain blocked.
 """
 
 
