@@ -31,3 +31,19 @@ EXP-048/049の当時の要約は[固定履歴版のステータス記録](https:
 | 6 | 0.827841148 | EXP-062、4L/3GJMの保存記録 |
 
 [EXP-062～065の独立クロスレビュー](results/rf_t008_pr148_151_independent_review_20261020.md)では合計264試行のうち249収束・15非収束を記録し、選別10解の部品・SPD・既存MNA記録との照合を実施しています。**全28区間の独立RF解法でこのPRから再計算したものではなく、連続帯域・EM・実測は未検証**です。元の試行条件と個別結果は[実験索引](../data/experiment_index.csv)、[当時の統合スナップショット](../data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)から追跡してください。各段階の元文書も[Issue #170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)に固定Git blob付きで記録します。
+
+## 旧条件・原本復元・訂正の証拠入口（Issue #170）
+
+以下は**履歴監査の出典索引**であり、2026-10-28現在のRF-F003達成値や元の最適化を再実行した結果ではありません。原EXPのmanifest・checkpoint・原ソースの版と、後から作成された索引・復元コピー・監査報告を区別します。
+
+| 対象 | 元証拠と監査 | 保全・解釈上の注意 |
+|---|---|---|
+| **EXP-017（旧RF-F002）** | [回収候補](../experiments/chatgpt_topology_search/runs/EXP-017/EXP017-LQW4-H30-NEAR.recovered.json)／[独立MNA追試の保存値](../data/validation/exp017_rf_f002_recovered_20261015/summary.json)／[回収経緯](phase2_exp017_checkpoint_provenance_review_20261015.md)／[訂正記録](result_record_corrections_20261014.md) | 元ZIPのSHA・内部member SHAを記録。**元ZIP自体はGitに収録されていない**。Gitの正規化コピーは元ZIPとバイト同一ではない。旧30dB試験点のIL 0.301248245dBは0.30dB目標未達であり、35dB公称達成でもRF-F003成果でもない。 |
+| **EXP-042（RF-T005）** | [元ZIP保存](../data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)／[元ZIPの保全方法](phase2_w4_exp042_artifact_preservation_20261018.md)／[ZIP・checkpoint対応](phase2_w4_exp042_artifact_checkpoint_crosswalk_20261018.md)／[対応判定JSON](../data/repository_reviews/w4_exp042_crosswalk_summary_20261018.json) | 元ZIP10件・19 member。既存Gitファイルと**バイト同一だったmemberは1件**。値・ベクトルの一致だけで残りを重複原本として削除しない。 |
+| **EXP-042 未選別3変種** | [6件の元member復元結果](../data/repository_reviews/w4_exp042_missing_variant_source_review_20261018.json)／[復元監査](phase2_w4_exp042_missing_variant_recovery_20261018.md)／[実行スクリプト](../scripts/audit_w4_exp042_missing_variants.py) | 復元したJSONは元Actionsの原文コピー。選別済みcheckpointを新規に作った、または新たな独立RF計算をしたとは扱わない。 |
+| **EXP-046/047（試験／正式を分離）** | [131ファイル対応CSV](../data/repository_reviews/w4_exp046_exp047_131_20261018.csv)／[監査JSON](../data/repository_reviews/w4_exp046_exp047_summary_20261018.json)／[原典レビュー](phase2_w4_exp046_exp047_source_review_20261018.md) | 35件（EXP-046、RF-T005）と96件（EXP-047、RF-F003）。EXP-047のQ割当訂正前5ファイルを正式性能順位へ昇格しない。[旧manifestの索引用adapter](../data/validation/exp047_legacy_manifest_adapter_20261017.json)は実行の完全再現ではない。 |
+| **EXP-046の旧バッチ原文** | [元バイト可逆アーカイブ](../data/repository_reviews/phase2_bc_exp046_bridge_lossless_archive_20261018.json)／[統合監査](phase2_bc_wave1_consolidation_20261018.md)／[バイト復旧検証器](../scripts/verify_phase2_bc_exp046_lossless.py) | 圧縮表現は元3 JSONの置換承認ではない。元ファイルを残し、出典SHAと復元互換を守る。 |
+| **W4/W5の履歴監査** | [W4原本・削除ゲート](phase2_cleanup_w4_evidence_workflow_review_20261017.md)／[225原本の再実行依存](phase2_cleanup_w4_replay_dependencies_20261018.md)／[W5監査記録](phase2_w5_readonly_closure_20261018.md)／[W5保存JSON](../data/repository_reviews/w5_phase2_readonly_closure_20261018.json) | W4/W5のworkflow件数・削除未承認は**当時の監査状態**。監査成功はEXP原本削除や現行CIの完全代替を認めるものではない。 |
+| **R2 / EXP-015（旧RF-F001）** | [保存済み独立モデル監査JSON](r2/EXP015_COMMON_MODEL_AUDIT.json)／[当時の実装引継ぎ](r2_handoff.md) | 当時のQ・k・可変C接続・旧正式版での追試結果であり、現行RF-F003への合格や再最適化を意味しない。 |
+
+原本を動かす前に、各pathのGit blob SHA、出典EXPと実効制約、コード／テスト／workflow／manifestからの参照、ZIP/member SHA・CRC、動的読込、必要なら元環境からの復元を調べます。特に[現存データの位置付け](../data/README.md)にある `validation/` の266件と `repository_reviews/` の29件は、ファイル件数だけで再生成可能と判断しません。**この索引はData削除・移動・元実験の書換えを承認するものではありません。**
