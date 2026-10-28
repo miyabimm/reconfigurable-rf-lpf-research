@@ -18,9 +18,9 @@
 
 ## 過去のLQP02HV/HQ設計仮定と出典
 
-2026-10-12の当時の承認ルールは、LQP02HVの定数Q=25・0.4～27 nH・チップ面積コスト1を優先し、必要な場合にLQP02HQの定数Q=20・0.2～56 nH・コスト1を追加するというもの。HVのみとHQ併用を分け、HQの本数・最大L・総L・全6設定の最悪ILとH2/H3を比較する方針だった。**これは当時の計算モデル・探索方針であり、現行RF-F003の数値正本でも、Q(f)・SRF・部品実測の保証でもない。** 現行の制約ID・物理範囲は必ず[active registry](../data/constraints/registry.json)の指定JSONから解決する。
+2026-10-12の当時の承認ルールは、LQP02HVの定数Q=25・0.4～27 nH・チップ面積コスト1を優先し、必要な場合にLQP02HQの定数Q=20・0.2～56 nH・コスト1を追加するというもの。HVのみとHQ併用を分け、HQの本数・最大L・総L・全6設定の最悪ILとH2/H3を比較する方針だった。**これは当時の計算モデル・探索方針であり、現行RF-F003の数値正本でも、Q(f)・SRF・部品実測の保証でもない。** 現行の制約ID・物理範囲は必ず[active registry](../rf/constraints/registry.json)の指定JSONから解決する。
 
-旧チェックポイントEXP011-01（L1=56 nHをQ25と扱う）およびEXP014-02（L1=28.56046 nHをQ25と扱う）等は旧仮定の履歴として維持し、現条件への性能達成実績に読み替えない。[EXP-015](../experiments/chatgpt_topology_search/runs/EXP-015/README.md)を後続の当時の検証記録として区別する。当時の優先順位・留保事項を含む[原文（main固定コミット、Git blob `6eb073fc1b1a27e2bc45433e6d238d54e6606857`）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/52a57cd5fe2e598267e9116fb78131d237f6f711/docs/inductor_series_policy.md)は読み取り専用で復元可能。
+旧チェックポイントEXP011-01（L1=56 nHをQ25と扱う）およびEXP014-02（L1=28.56046 nHをQ25と扱う）等は旧仮定の履歴として維持し、現条件への性能達成実績に読み替えない。[EXP-015](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/experiments/chatgpt_topology_search/runs/EXP-015/README.md)を後続の当時の検証記録として区別する。当時の優先順位・留保事項を含む[原文（main固定コミット、Git blob `6eb073fc1b1a27e2bc45433e6d238d54e6606857`）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/52a57cd5fe2e598267e9116fb78131d237f6f711/docs/inductor_series_policy.md)は読み取り専用で復元可能。
 
 ## 凍結EXPから共通評価器への移行（実装履歴）
 
@@ -67,7 +67,7 @@ EXP-050、056/057、059～067の保存済みスクリプトに残るEXP間直接
 
 ## 正本と証拠に戻る
 
-- [現行正式RF-F003 JSON](../data/constraints/formal/RF-F003.json)、[試験RF-T005](../data/constraints/trial/RF-T005.json)。
+- [現行正式RF-F003 JSON](../rf/constraints/formal/RF-F003.json)、[試験RF-T005](../rf/constraints/trial/RF-T005.json)。
 - [2026-10-17の3L/4L保存候補・制約別パレート](pareto_rf_t005_rf_f003_20261017.md)。
 - [旧資料の分類・処置](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170) と [W3固有情報の保全](archive/w3_consolidated_documents_20261017.md)。
 

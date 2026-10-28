@@ -1,6 +1,6 @@
 # RF-LPF研究ロードマップ
 
-現在の開発ゲートだけを管理します。日付別の経過はIssue・PR、実験結果と独立検証はEXP原本を参照します。正式数値制約は[registry.json](../data/constraints/registry.json)のactive ID、帯域は[bands.csv](../data/bands.csv)です。
+現在の開発ゲートだけを管理します。日付別の経過はIssue・PR、実験結果と独立検証はEXP原本を参照します。正式数値制約は[registry.json](../rf/constraints/registry.json)のactive ID、帯域は[bands.csv](../rf/bands.csv)です。
 
 ## 現在地（2026-10-27）
 
@@ -18,4 +18,4 @@
 3. 回路理論による新トポロジー発案と有限グラフ探索を併用する。面積–ILの比較では、H2/H3減衰、収束、物理実現リスクを確認する。
 4. SPD・受動性・電力保存・独立MNA・再現性を省略しない。Q(f)、SRF、EM、公差、実測が未確認なら未確認と記録する。
 
-新しいEXPと大規模計算は別途承認とmain事前予約を必要とします。代表候補は[結果の入口](results.md)と[実験索引](../data/experiment_index.csv)で確認してください。**IL≤0.30dB、公称H2/H3≥35dBの達成を、本ロードマップから推定しません。**
+新しいEXPと大規模計算は別途承認とmain事前予約を必要とします。代表候補は[結果の入口](results.md)と[実験索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/experiment_index.csv)で確認してください。**IL≤0.30dB、公称H2/H3≥35dBの達成を、本ロードマップから推定しません。**

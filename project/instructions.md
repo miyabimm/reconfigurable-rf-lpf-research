@@ -6,10 +6,10 @@
 
 複数LTEバンドに対応する受動再構成可能RF-LPFで、低IL・高調波抑圧・小型化・実装性・再現性を追求します。ChatGPT主導の新回路トポロジー考案と、スクリプトによる体系的な有限探索を相互利用します。
 
-- 正式RF制約は`data/constraints/registry.json`の`active_formal_id`が指す不変JSON。試験条件は明示的opt-inの別IDで、正式版へ自動昇格しません。
-- 周波数区間は`data/bands.csv`、外部寄生は正式JSONでSHA固定されたS2P。解説は`docs/specification.md`であり、数値の独立した正本ではありません。
-- 現況・未解決事項は`docs/roadmap.md`とGitHub Issues、実験原本は`experiments/.../EXP-NNN/`、実行と検証の索引は`data/experiment_index.csv`。
-- 二段階SLSQPの現行手順は`docs/slsqp_iteration_policy.md`、新規実験の選別証拠は`docs/governance/phase2_experiment_storage_policy.md`。既存の識別子・ファイル名を説明上の簡素化だけで改名しません。
+- 正式RF制約は`rf/constraints/registry.json`の`active_formal_id`が指す不変JSON。試験条件は明示的opt-inの別IDで、正式版へ自動昇格しません。
+- 周波数区間は`rf/bands.csv`、外部寄生は正式JSONでSHA固定されたS2P。解説は`project/specification.md`であり、数値の独立した正本ではありません。
+- 現況・未解決事項は`project/roadmap.md`とGitHub Issues、実験原本は`experiments/.../EXP-NNN/`、実行と検証の索引はGitHub上の`data/experiment_index.csv`（通常Piでは非取得）。
+- 二段階SLSQPの現行手順は`project/slsqp_iteration_policy.md`、新規実験の選別証拠は`project/experiment_storage_policy.md`。既存の識別子・ファイル名を説明上の簡素化だけで改名しません。
 
 ## 役割・承認境界
 
