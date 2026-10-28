@@ -82,7 +82,7 @@ def check_invalid():
         CircuitNumericalError, "mutual_not_spd"
     ) as caught:
         solve_branch_mna(c, values(c, 1.1), 1e9, 0, **kwargs)
-    assert caught.exception.code == "mutual_not_spd"
+    unittest.TestCase().assertEqual(caught.exception.code, "mutual_not_spd")
     for f, setting in [(float('nan'), 0), (0, 0), (1e9, True), (1e9, 6)]:
         with unittest.TestCase().assertRaises(ValueError):
             solve_branch_mna(c, values(c), f, setting, **kwargs)
