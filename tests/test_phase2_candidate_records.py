@@ -8,6 +8,8 @@ import sys
 import unittest
 from unittest.mock import patch
 
+import numpy as np
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from test_phase2_problem_seed import make, seed
 from test_phase2_staged_optimization import status
@@ -72,6 +74,48 @@ class CandidateRecordTests(unittest.TestCase):
         self.assertEqual(default["rf"], b["rf"])
         self.assertEqual(default["validation"]["independent_mna"], "not_run")
 
+    def test_epigraph_only_violation_is_recordable_but_not_pareto_eligible(self):
+        p, x = make("RF-T008", 4)
+
+        def synthetic_il(evaluator, vector):
+            # Deterministic forward boundary, NOT simulated RF performance.
+            return np.where(evaluator.role == 0, .25, 36.)
+
+        with patch("lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il", synthetic_il):
+            for final_t in (0., .25, .5):
+                def callback(problem, vector, maxiter, target):
+                    # Coarse is always infeasible; only the final output qualifies.
+                    vector[-1] = 0. if problem.points_per_interval == 1 else final_t
+                    return vector, status(0)
+
+                s = run_c1_staged(p.circuit, seed(p, x), coarse_points=1, fine_points=2,
+                    optimize_stage=callback, source_provenance=provenance())
+                self.assertEqual(s["numerical_state"], "converged")
+                self.assertTrue(all(c["status"]["success"] for c in s["stage_calls"]))
+                observed = s["stage_calls"][-1]["observation"]["sampled_rf"]
+                self.assertEqual(observed["passband_epigraph_min_residual_db"], final_t - .25)
+                self.assertEqual(observed["h2_min_residual_db"], 6.)
+                self.assertEqual(observed["h3_min_residual_db"], 6.)
+                self.assertEqual(observed["all_sampled_inequalities_nonnegative"], final_t >= .25)
+                r = record_candidate("epigraph", p.circuit, x, staged_record=s)
+                checked = recheck_record(CandidateRecord.from_json(r.to_json()))
+                self.assertEqual(checked.to_json(), r.to_json())
+                self.assertEqual(checked.as_dict()["component"]["state"], "pass")
+                report = pareto_report([checked])
+                row = report["candidates"][0]
+                self.assertEqual(row["metrics"]["worst_il_db"], .25)  # Never t.
+                self.assertTrue(row["threshold_observations"]["mandatory_harmonics_met"])
+                if final_t < .25:
+                    self.assertEqual(row["reasons"], ["final_c2_epigraph_inequality_failed_on_grid"])
+                    self.assertIsNone(row["pareto_within_group"])
+                    self.assertEqual(report["groups"], [])
+                else:
+                    self.assertEqual(row["reasons"], [])
+                    self.assertTrue(row["pareto_within_group"])
+                    self.assertEqual(report["groups"][0]["front"], ["epigraph"])
+                self.assertTrue(report["candidate_promotion_blocked"])
+                self.assertFalse(report["rf_compliance_certified"])
+
     def test_restored_observations_never_supply_pass_without_recompute(self):
         p, x = make("RF-T008", 4)
         r = record_candidate("roundtrip", p.circuit, x, staged_record=staged(p, x), sampled_points=2)
@@ -108,10 +152,12 @@ class CandidateRecordTests(unittest.TestCase):
         p, x = make(trial, n)
         if n == 3:
             x[6] = 0.  # Non-neighbor nominal slot, not a k relaxation.
-        s = staged(p, x, source=source)
-        # Synthetic summary boundary for testing ordering only; no RF result.
-        with patch("lpf.phase2_models.coupled_lc.CoupledLCEvaluator.summary", return_value={
-                "worst_IL_db": il, "min_H2_db": stop, "min_H3_db": stop, "locations": ()}):
+        # Synthetic forward boundary for ordering only; keep C2 residuals and
+        # recomputed summary consistent, with feasible t on both stage grids.
+        def synthetic_il(evaluator, vector):
+            return np.where(evaluator.role == 0, il, stop)
+        with patch("lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il", synthetic_il):
+            s = staged(p, x, source=source)
             return record_candidate(cid, p.circuit, x, staged_record=s, sampled_points=points)
 
     def test_pareto_equals_tradeoffs_dominance_and_legacy_formula_agree(self):
