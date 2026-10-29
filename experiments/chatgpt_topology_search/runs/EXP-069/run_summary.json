@@ -1,0 +1,1259 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 1,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 1
+  },
+  "best_found": [],
+  "callback_returns": [
+    [
+      [
+        0.4,
+        13.073282447793837,
+        4.466118276514957,
+        6.060068702147291e-13,
+        0.15097599501415881,
+        -0.09999999999998299,
+        -0.0,
+        3.0,
+        0.5017628365078725,
+        2.728277977223956,
+        0.4526047286686186,
+        2.6738587858789615,
+        0.4215041487759939,
+        2.231121798777432,
+        0.3544752913737255,
+        0.8447260366748686,
+        0.7161964552965024,
+        1.710858473855355,
+        0.2714515909993127,
+        1.6469438141555692
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 715,
+        "nit": 36,
+        "status": 0,
+        "success": true
+      }
+    ],
+    [
+      [
+        0.4,
+        15.658085426388954,
+        4.326882913675135,
+        0.0,
+        0.2,
+        -0.1,
+        -0.0,
+        2.999999999999754,
+        0.3920025032941568,
+        2.728162557012504,
+        0.37404715543338984,
+        2.68481988284908,
+        0.30630443376975264,
+        2.2310605866878133,
+        0.30162722178473983,
+        0.826984167592844,
+        0.583540101830693,
+        1.7108797698603377,
+        0.23231372543275972,
+        2.7576957760856007
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 120,
+        "nit": 6,
+        "status": 0,
+        "success": true
+      }
+    ]
+  ],
+  "elapsed_seconds": 0.8703563270028098,
+  "excluded_records": [
+    {
+      "audit": null,
+      "candidate_id": "start-0",
+      "candidate_promotion_blocked": true,
+      "component": {
+        "error": {
+          "message": "GJM fixed C must be positive and <= approved max",
+          "type": "ValueError"
+        },
+        "state": "fail"
+      },
+      "context": {
+        "finite_grid_only": true,
+        "objective": "full_lpf_worst_six_setting_UL_DL_external_port_IL",
+        "reference_planes": "external_input_to_external_output",
+        "thresholds": {
+          "minimum_h2_h3_db": 30,
+          "nominal_h2_h3_target_db": 35,
+          "nominal_max_il_db": 0.3
+        }
+      },
+      "definition": {
+        "capacitor_placement": {
+          "fixed_edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              -1
+            ]
+          ],
+          "ic_fixed_edges": [],
+          "node_count": 4,
+          "variable_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              0,
+              2
+            ]
+          ]
+        },
+        "coupling_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "fixed_c_types": [
+          "GJM01",
+          "PCB_PATTERN_C"
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 4,
+          "source_node": 0
+        },
+        "inductor_types": [
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV"
+        ],
+        "physical_order": [
+          0,
+          1,
+          2
+        ],
+        "variable_roles": [
+          "shunt_to_ground",
+          "bridge"
+        ]
+      },
+      "definition_sha256": "cd85fac3c2b325c04c2187f78975eead66d38e401dc111e26072df8687fbfef4",
+      "identity": {
+        "constraint_fingerprint": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+        "constraint_id": "RF-T005",
+        "constraint_status": "trial",
+        "definition_fingerprint": "cd85fac3c2b325c04c2187f78975eead66d38e401dc111e26072df8687fbfef4",
+        "environment": {
+          "numpy": "2.5.4",
+          "python": "3.12.15",
+          "scipy": "1.18.1"
+        },
+        "git_head": "0271ed4a2bef02ab9df7a2e46df515ce2f707748",
+        "historical_fixture_provenance": "not_checked",
+        "input_sha256": {
+          "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+          "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "source_provenance_scope": "current_src_lpf_python_files",
+        "source_tree_sha256": "26530c56ea4d81d80a49f57ef3ad9353da9a9a10a98a937958e89888683aa871",
+        "source_worktree_dirty": false,
+        "vector_fingerprint": "729dd7396d4211b3093497caa0b763337acf10472d5c989007a549ea5bfdf5c0"
+      },
+      "nominal_area": {
+        "area_fraction": "11/3",
+        "area_unit": "one_LQP02_package_footprint",
+        "area_units": 3.6666666666666665,
+        "counts": {
+          "GJM01": 1,
+          "IC_FIXED_C": 0,
+          "IC_VARIABLE_C": 2,
+          "LQP02HV": 3,
+          "PCB_PATTERN_C": 1,
+          "SHUNT_DTC_PARASITIC": 0
+        },
+        "fixed_external_s2p_area_included": false,
+        "ic_zero_area_is_nominal_only": true,
+        "physical_area_verified": false,
+        "policy_id": "RF-T005",
+        "policy_sha256": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+        "terms": [
+          {
+            "count": 1,
+            "part": "GJM01",
+            "policy_path": "components.GJM01.area_units_fraction",
+            "unit_area_fraction": "2/3"
+          },
+          {
+            "count": 2,
+            "part": "IC_VARIABLE_C",
+            "policy_path": "components.IC_VARIABLE_C.area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 3,
+            "part": "LQP02HV",
+            "policy_path": "components.LQP02.series.LQP02HV.area_units",
+            "unit_area_fraction": "1"
+          },
+          {
+            "count": 1,
+            "part": "PCB_PATTERN_C",
+            "policy_path": "components.PCB_PATTERN_C.area_units",
+            "unit_area_fraction": "0"
+          }
+        ]
+      },
+      "numerical": {
+        "meaning": "reported_optimizer_status_consistent_with_v2; not_solver_attestation",
+        "state": "converged",
+        "vector_binding": "final_c2_output"
+      },
+      "parameter_schema": {
+        "constant_caps_pf": [],
+        "n_coupling": 2,
+        "n_fixed": 2,
+        "n_ic_fixed": 0,
+        "n_inductors": 3,
+        "n_variable": 2
+      },
+      "policy_id": "RF-T005",
+      "policy_sha256": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+      "rf": {
+        "evidence_class": "forward_only",
+        "grid": {
+          "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+          "points_per_interval": 2,
+          "sample_count": 56,
+          "segment_count": 28
+        },
+        "locations": [
+          {
+            "case": "B26",
+            "frequency_mhz": 894.0,
+            "segment": 21
+          },
+          {
+            "case": "B26",
+            "frequency_mhz": 1628.0,
+            "segment": 22
+          },
+          {
+            "case": "B26",
+            "frequency_mhz": 2547.0,
+            "segment": 23
+          }
+        ],
+        "metrics": {
+          "min_h2_db": 29.9999999928082,
+          "min_h3_db": 30.00000000024013,
+          "worst_il_db": 2.7576957758408644
+        },
+        "requested_limited_points": null,
+        "requested_sampled_points": 2,
+        "state": "observed"
+      },
+      "rf_compliance_certified": false,
+      "schema": "s4b-candidate-record-v1",
+      "seed_record": {
+        "candidate_promotion_blocked": true,
+        "changes": [],
+        "definition_sha256": "cd85fac3c2b325c04c2187f78975eead66d38e401dc111e26072df8687fbfef4",
+        "input_vector": [
+          2.0,
+          2.0,
+          2.0,
+          1.0,
+          0.1,
+          0.02,
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0
+        ],
+        "input_vector_sha256": "02f9161469314ed1ccffbf5039005b1275250b9f672cd10f41a8e50e84d33d3c",
+        "jitter_fraction": 0.0,
+        "points_per_interval": 1,
+        "policy_fingerprint": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+        "policy_id": "RF-T005",
+        "seed": 23,
+        "vector": [
+          2.0,
+          2.0,
+          2.0,
+          1.0,
+          0.1,
+          0.02,
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.0,
+          3.0,
+          0.9049113054716762
+        ]
+      },
+      "source_provenance": {
+        "state": "provided",
+        "value": {
+          "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "execution_kind": "scipy_slsqp",
+          "git_head": "ce6e51233a5d9860edb9a28480de91250c5bed90",
+          "input_source_sha256": "1d5390575dea76762eeb29ce4c2d93196bce9cce0e558a2d3d010c3ad52eddd8",
+          "kind": "recorded",
+          "optimizer_kind": "reported_slsqp"
+        }
+      },
+      "staged_record": {
+        "attempts": [
+          {
+            "coarse": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 715,
+              "nit": 36,
+              "stage_call_index": 0,
+              "status": 0,
+              "success": true
+            },
+            "coarse_maxiter": 240,
+            "converged": true,
+            "fine": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 120,
+              "nit": 6,
+              "stage_call_index": 1,
+              "status": 0,
+              "success": true
+            },
+            "fine_maxiter": 120,
+            "tier": "primary",
+            "vector": [
+              0.4,
+              15.658085426388954,
+              4.326882913675135,
+              0.0,
+              0.2,
+              -0.1,
+              -0.0,
+              2.999999999999754,
+              0.3920025032941568,
+              2.728162557012504,
+              0.37404715543338984,
+              2.68481988284908,
+              0.30630443376975264,
+              2.2310605866878133,
+              0.30162722178473983,
+              0.826984167592844,
+              0.583540101830693,
+              1.7108797698603377,
+              0.23231372543275972,
+              2.7576957760856007
+            ],
+            "warm_start_source": "supplied_initial_vector"
+          }
+        ],
+        "bands_file": "data/bands.csv",
+        "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "budget": {
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "candidate_promotion_blocked": true,
+        "controller": {
+          "iteration_policy": {
+            "max_continuations": 1,
+            "max_stage_calls_per_initial_start": 4,
+            "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+            "policy_id": "slsqp-staged-v2",
+            "primary": {
+              "coarse": 240,
+              "fine": 120
+            },
+            "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+            "recovery": {
+              "coarse": 500,
+              "fine": 280
+            },
+            "retries_on_iteration_limit": 1
+          },
+          "recovery_cause": null,
+          "recovery_invoked": false
+        },
+        "definition": {
+          "capacitor_placement": {
+            "fixed_edges": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                -1
+              ]
+            ],
+            "ic_fixed_edges": [],
+            "node_count": 4,
+            "variable_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                0,
+                2
+              ]
+            ]
+          },
+          "coupling_pairs": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "fixed_c_types": [
+            "GJM01",
+            "PCB_PATTERN_C"
+          ],
+          "inductor_tree": {
+            "edges": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            "load_node": 2,
+            "node_count": 4,
+            "source_node": 0
+          },
+          "inductor_types": [
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV"
+          ],
+          "physical_order": [
+            0,
+            1,
+            2
+          ],
+          "variable_roles": [
+            "shunt_to_ground",
+            "bridge"
+          ]
+        },
+        "definition_sha256": "cd85fac3c2b325c04c2187f78975eead66d38e401dc111e26072df8687fbfef4",
+        "elapsed_seconds": 0.5289502800005721,
+        "environment": {
+          "numpy": "2.5.4",
+          "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+          "scipy": "1.18.1"
+        },
+        "exception": null,
+        "grids": {
+          "coarse": {
+            "grid_sha256": "3c02d046a1e97b6db7afd12b5c3b9935222219f347edf2c416152a571f208020",
+            "points_per_interval": 1,
+            "sample_count": 28,
+            "segment_count": 28
+          },
+          "fine": {
+            "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+            "points_per_interval": 2,
+            "sample_count": 56,
+            "segment_count": 28
+          }
+        },
+        "iteration_policy_id": "slsqp-staged-v2",
+        "numerical_state": "converged",
+        "policy_fingerprint": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+        "policy_id": "RF-T005",
+        "rf_compliance_certified": false,
+        "s2p_sha256": {
+          "input_parasitic": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "output_parasitic": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "schema": "c1-staged-v2-record-1",
+        "seed": {
+          "candidate_promotion_blocked": true,
+          "changes": [],
+          "definition_sha256": "cd85fac3c2b325c04c2187f78975eead66d38e401dc111e26072df8687fbfef4",
+          "input_vector": [
+            2.0,
+            2.0,
+            2.0,
+            1.0,
+            0.1,
+            0.02,
+            0.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0
+          ],
+          "input_vector_sha256": "02f9161469314ed1ccffbf5039005b1275250b9f672cd10f41a8e50e84d33d3c",
+          "jitter_fraction": 0.0,
+          "points_per_interval": 1,
+          "policy_fingerprint": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+          "policy_id": "RF-T005",
+          "seed": 23,
+          "vector": [
+            2.0,
+            2.0,
+            2.0,
+            1.0,
+            0.1,
+            0.02,
+            0.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.0,
+            3.0,
+            0.9049113054716762
+          ]
+        },
+        "source_provenance": {
+          "state": "provided",
+          "value": {
+            "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "execution_kind": "scipy_slsqp",
+            "git_head": "ce6e51233a5d9860edb9a28480de91250c5bed90",
+            "input_source_sha256": "1d5390575dea76762eeb29ce4c2d93196bce9cce0e558a2d3d010c3ad52eddd8",
+            "kind": "recorded",
+            "optimizer_kind": "reported_slsqp"
+          }
+        },
+        "stage_calls": [
+          {
+            "attempt_index": 0,
+            "call_index": 0,
+            "elapsed_seconds": 0.4068005559965968,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "3c02d046a1e97b6db7afd12b5c3b9935222219f347edf2c416152a571f208020",
+              "points_per_interval": 1,
+              "sample_count": 28,
+              "segment_count": 28
+            },
+            "input_vector": [
+              2.0,
+              2.0,
+              2.0,
+              1.0,
+              0.1,
+              0.02,
+              0.0,
+              0.0,
+              3.0,
+              0.0,
+              3.0,
+              0.0,
+              3.0,
+              0.0,
+              3.0,
+              0.0,
+              3.0,
+              0.0,
+              3.0,
+              0.9049113054716762
+            ],
+            "input_vector_sha256": "929e1fc9074d6cc8b507b3d9ede73f0c0afa15a3bfb554f5fc35e3da57e4cb35",
+            "maxiter": 240,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "bridge",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          0,
+                          2
+                        ],
+                        "electrical_class": "inductor_tree_chord",
+                        "evidence": "verified_L_path_between_terminals"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+                  "constraint_id": "RF-T005",
+                  "independent_mna_checked": false,
+                  "installed_shunt_parasites": 0,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 3.9587509272783133e-10,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -1.8771660847960447e-07,
+                "h3_min_residual_db": -2.510871865979425e-08,
+                "min_h2_db": 29.99999981228339,
+                "min_h3_db": 29.99999997489128,
+                "minimum_residual_db": -1.8771660847960447e-07,
+                "passband_epigraph_min_residual_db": -5.8386471213367486e-09,
+                "residuals_db": [
+                  0.16950605665967755,
+                  0.3052949764134676,
+                  -3.0020430585864233e-12,
+                  7.609912699990673e-12,
+                  0.2230045112696446,
+                  0.09531260668501251,
+                  0.9578448225922074,
+                  0.14963722811134517,
+                  0.24962656526103322,
+                  -5.8386471213367486e-09,
+                  -1.8771660847960447e-07,
+                  3.7875498842582758,
+                  0.2893733619375467,
+                  0.2429643475184382,
+                  0.39974520282833614,
+                  0.36036180295797293,
+                  1.7525739682175931,
+                  3.0572470905007805,
+                  3.1070770436205635,
+                  1.3989585484792855,
+                  0.30690147025327597,
+                  -6.568301458287351e-12,
+                  8.135714324453147e-12,
+                  -2.510871865979425e-08,
+                  0.26373531112806137,
+                  0.020483627961400463,
+                  1.0011215781048755,
+                  5.423233993866347
+                ],
+                "state": "observed",
+                "worst_il_db": 1.6469438199942164
+              }
+            },
+            "output_vector": [
+              0.4,
+              13.073282447793837,
+              4.466118276514957,
+              6.060068702147291e-13,
+              0.15097599501415881,
+              -0.09999999999998299,
+              -0.0,
+              3.0,
+              0.5017628365078725,
+              2.728277977223956,
+              0.4526047286686186,
+              2.6738587858789615,
+              0.4215041487759939,
+              2.231121798777432,
+              0.3544752913737255,
+              0.8447260366748686,
+              0.7161964552965024,
+              1.710858473855355,
+              0.2714515909993127,
+              1.6469438141555692
+            ],
+            "stage": "coarse",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 715,
+              "nit": 36,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "seed"
+          },
+          {
+            "attempt_index": 0,
+            "call_index": 1,
+            "elapsed_seconds": 0.08428582699707476,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+              "points_per_interval": 2,
+              "sample_count": 56,
+              "segment_count": 28
+            },
+            "input_vector": [
+              0.4,
+              13.073282447793837,
+              4.466118276514957,
+              6.060068702147291e-13,
+              0.15097599501415881,
+              -0.09999999999998299,
+              -0.0,
+              3.0,
+              0.5017628365078725,
+              2.728277977223956,
+              0.4526047286686186,
+              2.6738587858789615,
+              0.4215041487759939,
+              2.231121798777432,
+              0.3544752913737255,
+              0.8447260366748686,
+              0.7161964552965024,
+              1.710858473855355,
+              0.2714515909993127,
+              1.6469438141555692
+            ],
+            "input_vector_sha256": "3c1c5f2df6453569ebde4bdcf78b5fdd70e316c835c07197730e22dd4ffe9609",
+            "maxiter": 120,
+            "observation": {
+              "box": {
+                "open_lower_indices": [
+                  3
+                ],
+                "outside_indices": [],
+                "state": "fail"
+              },
+              "component_policy": {
+                "error": {
+                  "code": null,
+                  "message": "GJM fixed C must be positive and <= approved max",
+                  "sample_index": null,
+                  "type": "ValueError"
+                },
+                "state": "fail"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -7.19180093256e-09,
+                "h3_min_residual_db": 2.4013147026380466e-10,
+                "min_h2_db": 29.9999999928082,
+                "min_h3_db": 30.00000000024013,
+                "minimum_residual_db": -7.19180093256e-09,
+                "passband_epigraph_min_residual_db": 2.4473623128073996e-10,
+                "residuals_db": [
+                  1.2306578289370225,
+                  0.9976218753405699,
+                  1.446035283931352,
+                  1.2905553117764492,
+                  -1.3217444916335808e-09,
+                  4.433732814156706,
+                  5.61003136052647,
+                  3.3216451811313163e-09,
+                  1.207017694406635,
+                  1.0927996812864855,
+                  0.9944692342572492,
+                  0.8502065222502377,
+                  1.2879404830077732,
+                  4.827005062902707,
+                  2.9819256505842944,
+                  0.015633846434212728,
+                  1.2560178184319981,
+                  0.9482728425484854,
+                  0.864640862967458,
+                  0.4074306597172148,
+                  -1.476937683264623e-09,
+                  1.6150369211185343,
+                  0.26335643715050594,
+                  5.8476111930832175,
+                  1.1083144473653728,
+                  1.0345601135624378,
+                  1.0269099834276778,
+                  0.9475782564684256,
+                  1.3071465846364443,
+                  1.2476965602480097,
+                  1.2352870462344536,
+                  1.1705470291696287,
+                  2.3811191042912228,
+                  4.306071761396417,
+                  4.4705510361977545,
+                  5.566330508561094,
+                  4.0050708762185465,
+                  2.422700791776016,
+                  2.2687302344980225,
+                  0.803914844057644,
+                  0.8702200192221168,
+                  0.5284642370516579,
+                  0.419923612494824,
+                  2.4473623128073996e-10,
+                  -7.19180093256e-09,
+                  4.516706158597408,
+                  1.847418218403618e-09,
+                  2.4013147026380466e-10,
+                  0.8500846266602926,
+                  0.5418030593675378,
+                  0.44392359483245913,
+                  0.06520733627116115,
+                  1.5497634054254732,
+                  6.124181897475957,
+                  6.046913761264818,
+                  1.5908881061142033
+                ],
+                "state": "observed",
+                "worst_il_db": 2.7576957758408644
+              }
+            },
+            "output_vector": [
+              0.4,
+              15.658085426388954,
+              4.326882913675135,
+              0.0,
+              0.2,
+              -0.1,
+              -0.0,
+              2.999999999999754,
+              0.3920025032941568,
+              2.728162557012504,
+              0.37404715543338984,
+              2.68481988284908,
+              0.30630443376975264,
+              2.2310605866878133,
+              0.30162722178473983,
+              0.826984167592844,
+              0.583540101830693,
+              1.7108797698603377,
+              0.23231372543275972,
+              2.7576957760856007
+            ],
+            "stage": "fine",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 120,
+              "nit": 6,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "stage_call_0"
+          }
+        ],
+        "validation": {
+          "continuous_frequency": "not_run",
+          "dense_rf": "not_run",
+          "independent_mna": "not_run",
+          "owner_approval": "not_run",
+          "physical": "not_run",
+          "power_balance": "not_run"
+        }
+      },
+      "stamped_topology": {
+        "capacitor_edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "capacitor_q": [
+          80.0,
+          40.0,
+          35.0,
+          35.0
+        ],
+        "coupling_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "inductor_q": [
+          25.0,
+          25.0,
+          25.0
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 4,
+          "source_node": 0
+        }
+      },
+      "topology_key": "34ada6f089e6e4c1ec99b4ddb144b55c851fd1fb6a4cd3f5e9a0f9d076464968",
+      "validation": {
+        "continuous_frequency": "not_run",
+        "dense_rf": "not_run",
+        "independent_mna": "not_run",
+        "owner_approval": "not_run",
+        "physical": "not_run",
+        "power_balance": "not_run"
+      },
+      "values": {
+        "capacitors_pf_by_setting": [
+          [
+            0.0,
+            0.2,
+            2.999999999999754,
+            0.3920025032941568
+          ],
+          [
+            0.0,
+            0.2,
+            2.728162557012504,
+            0.37404715543338984
+          ],
+          [
+            0.0,
+            0.2,
+            2.68481988284908,
+            0.30630443376975264
+          ],
+          [
+            0.0,
+            0.2,
+            2.2310605866878133,
+            0.30162722178473983
+          ],
+          [
+            0.0,
+            0.2,
+            0.826984167592844,
+            0.583540101830693
+          ],
+          [
+            0.0,
+            0.2,
+            1.7108797698603377,
+            0.23231372543275972
+          ]
+        ],
+        "coupling_k": [
+          -0.1,
+          -0.0
+        ],
+        "inductances_nh": [
+          0.4,
+          15.658085426388954,
+          4.326882913675135
+        ]
+      },
+      "vector": [
+        0.4,
+        15.658085426388954,
+        4.326882913675135,
+        0.0,
+        0.2,
+        -0.1,
+        -0.0,
+        2.999999999999754,
+        0.3920025032941568,
+        2.728162557012504,
+        0.37404715543338984,
+        2.68481988284908,
+        0.30630443376975264,
+        2.2310605866878133,
+        0.30162722178473983,
+        0.826984167592844,
+        0.583540101830693,
+        1.7108797698603377,
+        0.23231372543275972
+      ],
+      "vector_key": "117edfd0cb9785f0e235202254816a768abd983c45a0ab99f33b8fb424c008b2",
+      "vector_sha256": "82c04ca442b9a6f1500a7d4f1dcd9afe433d4ddabd8b04698429c8527049434a"
+    }
+  ],
+  "experiment_id": "EXP-069",
+  "input_source": {
+    "budget": {
+      "policy_id": "slsqp-staged-v2",
+      "primary": {
+        "coarse": 240,
+        "fine": 120
+      },
+      "recovery": {
+        "coarse": 500,
+        "fine": 280
+      },
+      "retries_on_iteration_limit": 1
+    },
+    "definition": {
+      "capacitor_placement": {
+        "fixed_edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            -1
+          ]
+        ],
+        "ic_fixed_edges": [],
+        "node_count": 4,
+        "variable_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      "coupling_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "fixed_c_types": [
+        "GJM01",
+        "PCB_PATTERN_C"
+      ],
+      "inductor_tree": {
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "load_node": 2,
+        "node_count": 4,
+        "source_node": 0
+      },
+      "inductor_types": [
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV"
+      ],
+      "physical_order": [
+        0,
+        1,
+        2
+      ],
+      "variable_roles": [
+        "shunt_to_ground",
+        "bridge"
+      ]
+    },
+    "grids": {
+      "coarse_points": 1,
+      "fine_points": 2
+    },
+    "jitter_fraction": 0.0,
+    "seed": 23,
+    "vector": [
+      2.0,
+      2.0,
+      2.0,
+      1.0,
+      0.1,
+      0.02,
+      0.0,
+      0.0,
+      3.0,
+      0.0,
+      3.0,
+      0.0,
+      3.0,
+      0.0,
+      3.0,
+      0.0,
+      3.0,
+      0.0,
+      3.0
+    ],
+    "vector_sha256": "02f9161469314ed1ccffbf5039005b1275250b9f672cd10f41a8e50e84d33d3c"
+  },
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "no_candidate_reason": "No eligible Pareto candidate: start-0: component_not_verified, mandatory_harmonics_failed_on_grid",
+  "pareto": {
+    "candidate_promotion_blocked": true,
+    "candidates": [
+      {
+        "area_units": 3.6666666666666665,
+        "candidate_id": "start-0",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.9999999928082,
+          "min_h3_db": 30.00000000024013,
+          "worst_il_db": 2.7576957758408644
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "component_not_verified",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      }
+    ],
+    "global_optimum_proven": false,
+    "groups": [],
+    "rf_compliance_certified": false
+  },
+  "partial_staged_record": null,
+  "selected": [],
+  "selected_candidate_count": 0,
+  "selection_before_run": {
+    "estimated_curated_bytes": 200000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints; preserve all excluded/failed/nonconverged/STOP diagnostics and reasons in run_summary.",
+    "top_k": 0
+  },
+  "source_provenance": {
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "ce6e51233a5d9860edb9a28480de91250c5bed90",
+    "input_source_sha256": "1d5390575dea76762eeb29ce4c2d93196bce9cce0e558a2d3d010c3ad52eddd8",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "termination": {
+    "message": "converged",
+    "type": "completed"
+  },
+  "timeout_seconds": 300
+}

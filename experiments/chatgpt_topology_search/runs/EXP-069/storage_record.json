@@ -1,28 +1,30 @@
 {
-  "schema_version": 1,
-  "policy": "phase2-git-only-v1",
+  "checkpoints": [],
   "experiment_id": "EXP-069",
+  "git_readback": "not_run",
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
   "phase": "Phase 2",
-  "stage": "planned",
+  "policy": "phase2-git-only-v1",
+  "schema_version": 1,
   "selection": {
-    "top_k": 0,
+    "estimated_curated_bytes": 200000,
     "retain": [
       "pareto"
     ],
     "rule": "Retain checked Pareto checkpoints; preserve all excluded/failed/nonconverged/STOP diagnostics and reasons in run_summary.",
-    "estimated_curated_bytes": 200000
+    "top_k": 0
   },
-  "summary": null,
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
-  "git_readback": "not_run",
   "size_exception": null,
-  "limitations": [
-    "Planned evidence only; real SciPy execution not_run. G1 requires independent plan-PR review, main merge/CI and fresh-checkout preflight/prepare_one_start before G2.",
-    "Diagnostic coarse1/fine2 samples per each of 28 separate intervals across all six settings, not dense or continuous-frequency RF validation.",
-    "SciPy status=0, finite sampled values and Git readback do not certify RF-T005 or RF-F003 compliance or physical feasibility.",
-    "Independent MNA/power/dense/continuous/SRF/Q(f)/EM/tolerance/measurement validation not_run; no candidate promotion or Phase 3 transition.",
-    "200000-byte storage selection is a pre-run estimate, not measured result size; existing 512KiB/EXP and 1MiB/file limits remain in force."
-  ]
+  "stage": "preservation_incomplete",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-069/run_summary.json",
+    "sha256": "c76c45669303e3dfc112d5b3e6cb82bf05e31daa6881845694150f48338ed96f"
+  },
+  "supporting_evidence": [],
+  "validation_overlays": []
 }
