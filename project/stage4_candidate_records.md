@@ -109,6 +109,39 @@ JSON読み戻しは過去の計測・出典を認証する操作ではないた�
 照合する。commit／source／入力が変わった場合は旧記録を書換えず、新規観測として別記録を作る。
 この型は暗号署名・不正なPython呼出側に対するセキュリティ境界ではない。
 
+## 1-start 非EXPプレビュー（Issue #207 / Stage 6A）
+
+`synthetic_runner.run_synthetic_preview` は **1 startのみ**を対象に、既存の
+synthetic plan → `run_synthetic`（明示mock、v2）→ 一時checkpoint再読込・照合 →
+`recheck_record` → `pareto_report` を接続する。共通入口も同じ経路を使う：
+
+```bash
+uv run --frozen python scripts/run_phase2_shared.py synthetic --mock --policy RF-T005 --inductors 3
+```
+
+出力はメモリ／stdoutの非EXPプレビューであり、repo外のsystem tempに置いた
+`synthetic-checkpoint-v1` を実験証拠へ改称しない。既存候補schemaは変更しない。
+`result.completed` に全候補・完全vector・6設定・C2履歴を保持し、`pareto` に全除外理由、
+`selected` に比較group内の非劣点IDと既存の `selection_reason=pareto` を出す。
+不適合・負epigraph残差・H2/H3違反・未収束・例外は捨てず、収束と選別資格を分離する。
+
+`run_summary` と `selection` のフィールドは
+[保存ポリシー](experiment_storage_policy.md)の既存契約を参照する。
+`experiment_id=null` は **EXPでない**ことを示し、実EXP manifest／storage_recordの代替ではない。
+`best_found` は診断的な選抜IDのみ。`top_k=0`、`retain=[pareto]` で全recordを別途保持し、
+Git出力しないため予測Git保存量は0。候補ゼロは `no_candidate_reason` を必ず付ける。
+件数はstart単位で、C2内部の再始動・stage call・関数評価を重複計数しない。
+`max_new_starts=0` によるcheckpoint境界停止は `not_started=1`、再開後は二重実行しない。
+実行中断で結果不明のin-progress markerは既存runnerがfail-closedで拒否し、
+失敗件数を捏造したり自動再試行したりしない。
+
+ソース・dirty差分・入力SHA・policy SHA・RF入力／環境identity・格子・予算をplanと候補に
+結び付ける。再読込照合は **synthetic checkpointのみ**。
+EXP実行、manifest作成、Git保存、本物のGit HEAD readback／storage監査は `not_run`、
+本物の予約・owner承認は `not_verified`、`execution_allowed=false` のまま。
+`candidate_promotion_blocked=true`／`rf_compliance_certified=false` を維持し、
+数値収束や診断Pareto点をRF科学的PASSへ昇格しない。
+
 ## 検証範囲
 
 `test_phase2_candidate_records.py`はsynthetic callback／小規模回路の回帰。
