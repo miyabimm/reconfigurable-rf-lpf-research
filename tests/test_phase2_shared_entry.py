@@ -94,6 +94,8 @@ class SharedEntryTests(unittest.TestCase):
     def test_preview_is_only_in_memory(self):
         result = manifest_preview(ROOT, 'EXP-999', 'fixture only', {}, policy_id='RF-T005', seed=1, allow_trial=True)
         self.assertEqual(result['manifest']['execution']['status'], 'planned')
+        self.assertEqual(result['execution'], 'not_run')
+        self.assertNotIn('owner_approval', result)
         self.assertFalse(result['execution_allowed'])
         with self.assertRaises(ValueError):
             manifest_preview(ROOT, 'EXP-999', 'fixture', {}, policy_id='RF-F003', seed=1, allow_trial=True)
@@ -170,16 +172,28 @@ class SharedEntryTests(unittest.TestCase):
                         policy_sha256=manifest['constraints']['effective_constraint_sha256'],
                         source_sha=source, bands_sha256=manifest['bands_sha256'],
                         input_sha256=input_sha, allow_trial=True)
-            result = exp_preflight(repo, ident, **args)
-            self.assertEqual(result['owner_approval'], 'not_verified')
-            self.assertFalse(result['execution_allowed'])
             with patch('lpf.phase2_models.staged_optimization.minimize',
-                       side_effect=AssertionError('solver must not run')) as minimize:
+                       side_effect=AssertionError('solver must not run')) as minimize, \
+                 patch('lpf.phase2_models.staged_optimization.run_c1_staged',
+                       side_effect=AssertionError('staged driver must not run')) as staged:
+                result = exp_preflight(repo, ident, **args)
+                prepared = prepare_one_start(repo, ident, **args, **start_args)
                 gate = one_start_gate(repo, ident, **args, **start_args)
-                self.assertEqual(gate['rejection'], 'owner_approval_not_verified')
-                self.assertEqual(gate['execution'], 'not_run')
-                self.assertFalse(gate['execution_allowed'])
+                for report in (result, prepared, gate):
+                    self.assertEqual(report['status'], 'preflight_ready')
+                    self.assertEqual(report['execution'], 'not_run')
+                    # False describes this read-only API, not missing owner authentication.
+                    self.assertFalse(report['execution_allowed'])
+                    self.assertNotIn('owner_approval', report)
+                    self.assertNotIn('rejection', report)
+                self.assertEqual(result['reservation']['owner'], 'fixture')
+                self.assertEqual(prepared['preflight'], result)
+                self.assertEqual(gate['preflight'], result)
+                for field in ('finite_grid_rf', 'independent_mna', 'dense_rf', 'git_readback'):
+                    self.assertEqual(gate[field], 'not_run')
+                self.assertTrue(gate['candidate_promotion_blocked'])
                 minimize.assert_not_called()
+                staged.assert_not_called()
             # A fixture-only adapter links the *same* checked manifest input to
             # the existing C1/C2 and #207 classifier. It is not a production entry.
             from lpf.phase2_models.staged_optimization import run_c1_staged
@@ -189,6 +203,8 @@ class SharedEntryTests(unittest.TestCase):
             from scripts.audit_new_experiment_storage import validate_selection, validate_summary
             def fixture_preview(params, callback, *, stopped=False, preflight_args=args):
                 prepared = prepare_one_start(repo, ident, **preflight_args, **params)
+                self.assertEqual(prepared['status'], 'preflight_ready')
+                self.assertEqual(prepared['execution'], 'not_run')
                 self.assertFalse(prepared['execution_allowed'])
                 selection = diagnostic_selection()
                 result = {'completed': [], 'not_started': int(stopped)}
@@ -210,7 +226,7 @@ class SharedEntryTests(unittest.TestCase):
                 validate_selection(selection)
                 validate_summary(preview['run_summary'], None, len(preview['selected']))
                 return {**preview, 'result': result, 'mode': 'isolated_fixture_mock_non_exp',
-                        'reservation': 'fixture_only', 'owner_approval': 'not_verified',
+                        'reservation': 'fixture_only',
                         'execution_allowed': False, 'experiment_execution': 'not_run',
                         'finite_grid_rf': 'synthetic_observation_not_certified',
                         'independent_mna': 'not_run', 'dense_rf': 'not_run',
@@ -244,7 +260,7 @@ class SharedEntryTests(unittest.TestCase):
                         preview = fixture_preview(start_args, callback, stopped=not codes)
                         previews.append(preview)
                         self.assertEqual(preview['run_summary']['attempts'][state], 1)
-                        self.assertEqual(preview['owner_approval'], 'not_verified')
+                        self.assertNotIn('owner_approval', preview)
                         self.assertFalse(preview['execution_allowed'])
                         for field in ('experiment_execution', 'independent_mna', 'dense_rf', 'git_readback'):
                             self.assertEqual(preview[field], 'not_run')
@@ -304,7 +320,7 @@ class SharedEntryTests(unittest.TestCase):
                 minimize.assert_not_called()
 
             for change in ({'owner': 'wrong'}, {'request_id': 'wrong'}, {'policy_id': 'RF-T007'},
-                           {'policy_id': 'RF-F003'}, {'allow_trial': False},
+                           {'policy_id': 'RF-F003'}, {'policy_id': 'RF-T006'}, {'allow_trial': False},
                            {'policy_sha256': '0' * 64}, {'bands_sha256': '0' * 64},
                            {'input_sha256': '0' * 64}, {'source_sha': '0' * 40}):
                 with self.subTest(change=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
@@ -348,7 +364,7 @@ class SharedEntryTests(unittest.TestCase):
                     excluded_records=[r for cid, r in rows.items()
                                       if cid not in actual['run_summary']['best_found']])
                 summary['limitations'] = [
-                    'Temporary isolated Git fixture only; not a real EXP or owner approval.',
+                    'Temporary isolated Git fixture only; not a real EXP.',
                     'Mock finite-grid observations, not RF certification or real SciPy execution.',
                     'Independent MNA/power/dense RF/continuous frequency/physical validation not_run.']
                 validate_summary(summary, ident, len(checkpoints))

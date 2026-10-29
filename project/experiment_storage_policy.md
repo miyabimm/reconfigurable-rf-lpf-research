@@ -85,7 +85,7 @@ converged + nonconverged + failed = attempted、attempted + not_started = planne
 
 ## 3. 運用ゲート（EXPを開始するたびに実施）
 
-**G0 予約確定。** 最新mainの中央台帳へ先にEXP番号を予約し、照合PASSを確認。番号の予測・PRブランチ上の仮番号では計算を開始しない。
+**G0 予約確定。** 最新mainの中央台帳へ先にEXP番号を予約し、照合PASSを確認。番号の予測・PRブランチ上の仮番号では計算を開始しない。台帳予約と `owner` の照合はID・provenance整合の検査であり、外部承認認証APIではない。着手指示の扱いは[運用正本](instructions.md)に従う。
 
 ~~~bash
 git fetch origin main
