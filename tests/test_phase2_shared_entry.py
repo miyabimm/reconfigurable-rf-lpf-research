@@ -18,7 +18,10 @@ sys.path.insert(0, str(ROOT / 'src'))
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.experiment_manifest import new_manifest
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation
-from scripts.run_phase2_shared import exp_preflight, manifest_preview, one_start_gate, prepare_one_start, storage_audit
+from scripts.run_phase2_shared import (
+    exp_preflight, manifest_preview, one_start_gate, prepare_one_start, storage_audit,
+    one_start_approval_request, mock_one_start_approval,
+)
 from lpf.phase2_models.problem_seed import vector_fingerprint
 from lpf.phase2_models._grid import CASES
 from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
@@ -97,6 +100,97 @@ class SharedEntryTests(unittest.TestCase):
         self.assertFalse(result['execution_allowed'])
         with self.assertRaises(ValueError):
             manifest_preview(ROOT, 'EXP-999', 'fixture', {}, policy_id='RF-F003', seed=1, allow_trial=True)
+
+    def check_mock_approval_proposal(self, repo, ident, args, start_args, git):
+        """Reuse the complete isolated Git preflight, never a real approval API."""
+        issue_url = 'https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/214'
+        owner = {'login': 'fixture-owner', 'id': 123}
+        url = issue_url + '#issuecomment-456'
+        def request(**changes):
+            return one_start_approval_request(repo, ident, issue_url=issue_url,
+                owner_actor=owner, **(args | start_args | changes))
+        with patch('lpf.phase2_models.staged_optimization.minimize',
+                   side_effect=AssertionError('solver must not run')) as minimize:
+            planned = request()
+            self.assertEqual(planned['binding']['checkout_head'], git('rev-parse', 'HEAD'))
+            self.assertNotEqual(planned['binding']['checkout_head'], args['source_sha'])
+            self.assertEqual(planned['binding']['input_sha256'], args['input_sha256'])
+            self.assertEqual(planned['binding']['reservation']['owner'], 'fixture')
+            self.assertEqual(planned['binding']['owner_actor'], owner)  # not inferred from ledger
+            stamp = '2026-10-29T00:00:00Z'
+            comment = {'id': 456, 'url': url, 'actor': owner, 'body': planned['approval_body'],
+                       'created_at': stamp, 'updated_at': stamp}
+            review = {'issue_url': issue_url, 'complete': True, 'comments': [comment]}
+            def check(snapshot=review, approval_url=url, req=planned):
+                result = mock_one_start_approval(req, approval_url=approval_url, mock_review=snapshot)
+                self.assertEqual(result['owner_approval'], 'not_verified')
+                self.assertFalse(result['execution_allowed'])
+                self.assertEqual(result['execution'], 'not_run')
+                self.assertTrue(result['candidate_promotion_blocked'])
+                return result
+            self.assertTrue(check()['mock_match'])  # forged fixture is NOT authentic approval
+            for snapshot in (None, {}, review | {'complete': False},
+                             review | {'issue_url': issue_url + '0'},
+                             review | {'comments': []}, review | {'comments': [comment, comment]},
+                             review | {'comments': [None]}):
+                with self.subTest(snapshot=snapshot):
+                    self.assertFalse(check(snapshot)['mock_match'])
+            for change in ({'actor': {'login': 'fixture', 'id': 123}},
+                           {'actor': owner | {'id': 999}}, {'url': url + '0'},
+                           {'body': '--approve'}, {'body': 'approved by fixture-owner'},
+                           {'created_at': None}, {'updated_at': stamp + 'edited'},
+                           {'body': planned['approval_body'] + '\n'}):
+                with self.subTest(comment=change):
+                    self.assertFalse(check(review | {'comments': [comment | change]})['mock_match'])
+            for wrong_url in (url.replace('/issues/', '/pull/'), url.replace('github.com', 'example.org'),
+                              url.replace('/214#', '/215#'), url + '0'):
+                self.assertFalse(check(approval_url=wrong_url)['mock_match'])
+            revoke_body = json.loads(planned['approval_body']) | {'action': 'revoke_one_start'}
+            revoke = comment | {'id': 457, 'url': issue_url + '#issuecomment-457',
+                                'body': json.dumps(revoke_body, sort_keys=True, separators=(',', ':'))}
+            self.assertEqual(check(review | {'comments': [comment, revoke]})['rejection'],
+                             'mock_approval_revoked')
+            # A third party cannot revoke on the owner's behalf in this proposal.
+            self.assertTrue(check(review | {'comments': [comment, revoke | {
+                'actor': {'login': 'other', 'id': 999}}]})['mock_match'])
+            for field in ('experiment_id', 'source_sha', 'checkout_head', 'main_sha',
+                          'policy_id', 'policy_sha256', 'bands_sha256', 'input_sha256',
+                          'manifest_sha256', 'storage_record_sha256', 'lock_sha256'):
+                changed = deepcopy(planned)
+                changed['binding'][field] += '-changed'
+                with self.subTest(binding=field):
+                    self.assertEqual(check(req=changed)['rejection'], 'request_binding_mismatch')
+            # Read-only: no files changed by either request construction or checking.
+            self.assertEqual(git('status', '--porcelain', '--untracked-files=all'), '')
+            # A clean evidence-only commit changes actual HEAD/selection, not code SHA.
+            baseline = git('rev-parse', 'HEAD')
+            storage_path = repo / 'experiments/chatgpt_topology_search/runs' / ident / 'storage_record.json'
+            storage = json.loads(storage_path.read_text())
+            storage['selection']['top_k'] = 1
+            storage_path.write_text(json.dumps(storage))
+            with self.assertRaises(ValueError):
+                request()  # dirty checkout is never an approval request
+            git('add', str(storage_path.relative_to(repo)))
+            git('commit', '-qm', 'fixture changed planned selection')
+            changed = request()
+            self.assertEqual(changed['binding']['source_sha'], planned['binding']['source_sha'])
+            for field in ('checkout_head', 'storage_record_sha256', 'binding_sha256'):
+                before = planned.get(field, planned['binding'].get(field))
+                after = changed.get(field, changed['binding'].get(field))
+                self.assertNotEqual(before, after)
+            self.assertFalse(check(req=changed)['mock_match'])  # original comment is stale
+            git('reset', '--hard', baseline)
+            self.assertEqual(request(), planned)
+            # All existing preflight bindings remain mandatory for this proposal path.
+            for change in ({'owner': 'wrong'}, {'request_id': 'wrong'}, {'source_sha': '0' * 40},
+                           {'policy_sha256': '0' * 64}, {'input_sha256': '0' * 64},
+                           {'allow_trial': False}, {'seed': 24}, {'fine_points': 3}):
+                with self.subTest(preflight=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                    request(**change)
+            gate = one_start_gate(repo, ident, **args, **start_args)
+            self.assertFalse(gate['execution_allowed'])
+            self.assertEqual(gate['rejection'], 'owner_approval_not_verified')
+            minimize.assert_not_called()
 
     def test_temporary_full_checkout_preflight_and_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -180,6 +274,7 @@ class SharedEntryTests(unittest.TestCase):
                 self.assertEqual(gate['execution'], 'not_run')
                 self.assertFalse(gate['execution_allowed'])
                 minimize.assert_not_called()
+            self.check_mock_approval_proposal(repo, ident, args, start_args, git)
             # A fixture-only adapter links the *same* checked manifest input to
             # the existing C1/C2 and #207 classifier. It is not a production entry.
             from lpf.phase2_models.staged_optimization import run_c1_staged

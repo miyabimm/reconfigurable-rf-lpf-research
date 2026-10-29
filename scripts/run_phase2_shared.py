@@ -212,6 +212,99 @@ def one_start_gate(root, experiment_id, **kwargs):
             'candidate_promotion_blocked': True}
 
 
+def one_start_approval_request(root, experiment_id, *, issue_url, owner_actor, **kwargs):
+    """Unapproved proposal: read-only binding, NOT an owner identity verifier.
+
+    owner_actor is supplied for proposal/mock review only, never trusted as
+    authority. No GitHub client, solver callback or execution CLI is provided.
+    """
+    from lpf.checkpoint_io import canonical_config_hash
+    from lpf.experiment_manifest import file_sha256
+    from scripts.audit_new_experiment_storage import find_run, read_json
+
+    repository = 'miyabimm/reconfigurable-rf-lpf-research'
+    if not re.fullmatch(r'https://github\.com/' + re.escape(repository) + r'/issues/[1-9][0-9]*', issue_url):
+        raise ValueError('Canonical repository Issue URL required')
+    if (not isinstance(owner_actor, dict) or set(owner_actor) != {'login', 'id'} or
+            not isinstance(owner_actor['login'], str) or not owner_actor['login'].strip() or
+            type(owner_actor['id']) is not int or owner_actor['id'] <= 0):
+        raise ValueError('Proposed owner login and numeric actor ID required')
+    prepared = prepare_one_start(root, experiment_id, **kwargs)
+    root = Path(root).resolve()
+    report = prepared['preflight']
+    storage = read_json(find_run(root, experiment_id) / 'storage_record.json')
+    binding = {'repository': repository, 'issue_url': issue_url,
+               'owner_actor': dict(owner_actor), 'experiment_id': experiment_id,
+               'reservation': report['reservation'], 'main_sha': report['main_sha'],
+               'source_sha': kwargs['source_sha'],
+               'checkout_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(),
+               'policy_id': kwargs['policy_id'], 'policy_sha256': kwargs['policy_sha256'],
+               'bands_sha256': kwargs['bands_sha256'], 'input_sha256': kwargs['input_sha256'],
+               'manifest_sha256': report['manifest_sha256'],
+               'storage_record_sha256': canonical_config_hash(storage),
+               'lock_sha256': file_sha256(root / 'uv.lock')}
+    fingerprint = canonical_config_hash(binding)
+    body = {'proposal': 'one-start-owner-comment-v0', 'action': 'approve_one_start',
+            'binding_sha256': fingerprint}
+    return {'mode': 'one_start_approval_request_proposal', 'binding': binding,
+            'binding_sha256': fingerprint,
+            'approval_body': json.dumps(body, sort_keys=True, separators=(',', ':')),
+            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'execution': 'not_run', 'candidate_promotion_blocked': True}
+
+
+def mock_one_start_approval(request, *, approval_url, mock_review):
+    """Check an UNTRUSTED normalized mock snapshot, never GitHub authenticity.
+
+    Even a forged matching snapshot is only mock_match, not authorization.
+    Revisions/deletion/revocation require a fresh review; missing/incomplete
+    snapshots are rejected. See project/one_start_approval_proposal.md.
+    """
+    from lpf.checkpoint_io import canonical_config_hash
+
+    rejection = 'mock_evidence_missing_or_incomplete'
+    binding = request['binding']
+    fingerprint = canonical_config_hash(binding)
+    expected_body = json.dumps({'proposal': 'one-start-owner-comment-v0',
+        'action': 'approve_one_start', 'binding_sha256': fingerprint},
+        sort_keys=True, separators=(',', ':'))
+    if request['binding_sha256'] != fingerprint or request['approval_body'] != expected_body:
+        rejection = 'request_binding_mismatch'
+    elif (isinstance(mock_review, dict) and mock_review.get('complete') is True and
+          mock_review.get('issue_url') == binding['issue_url'] and
+          isinstance(mock_review.get('comments'), list)):
+        comments = mock_review['comments']
+        match = re.fullmatch(re.escape(binding['issue_url']) + r'#issuecomment-([1-9][0-9]*)', approval_url)
+        ids = [c.get('id') for c in comments if isinstance(c, dict)]
+        if (len(ids) != len(comments) or any(type(i) is not int or i <= 0 for i in ids) or
+                len(set(ids)) != len(ids)):
+            rejection = 'mock_comment_identity_invalid'
+        elif not match:
+            rejection = 'approval_url_mismatch'
+        else:
+            selected = next((c for c in comments if c['id'] == int(match[1])), None)
+            revoke = json.dumps({'proposal': 'one-start-owner-comment-v0',
+                'action': 'revoke_one_start', 'binding_sha256': fingerprint},
+                sort_keys=True, separators=(',', ':'))
+            if any(c.get('actor') == binding['owner_actor'] and c.get('body') == revoke for c in comments):
+                rejection = 'mock_approval_revoked'
+            elif selected is None:
+                rejection = 'mock_approval_missing_or_deleted'
+            elif selected.get('url') != approval_url or selected.get('actor') != binding['owner_actor']:
+                rejection = 'mock_approval_identity_mismatch'
+            elif (not selected.get('created_at') or
+                  selected.get('created_at') != selected.get('updated_at')):
+                rejection = 'mock_approval_edited_or_undated'
+            elif selected.get('body') != expected_body:
+                rejection = 'mock_approval_body_mismatch'
+            else:
+                rejection = None
+    return {'mode': 'mock_one_start_approval_proposal', 'mock_match': rejection is None,
+            'rejection': rejection, 'binding_sha256': fingerprint,
+            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'execution': 'not_run', 'candidate_promotion_blocked': True}
+
+
 def manifest_preview(root, experiment_id, purpose, scope, *, policy_id, seed, allow_trial):
     from lpf.experiment_manifest import new_manifest, validate_manifest
     if policy_id not in ('RF-T005', 'RF-T007', 'RF-T008') or not allow_trial:
