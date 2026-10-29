@@ -118,9 +118,98 @@ def exp_preflight(root, experiment_id, *, owner, request_id, policy_id, policy_s
             or len(input_sha256) != 64 or any(c not in '0123456789abcdef' for c in input_sha256)):
         raise ValueError('Source, policy, bands or input fingerprint mismatch')
     return {'mode': 'exp_preflight_read_only', 'main_sha': main_sha, 'reservation': row,
-            'storage': report, 'owner_approval': 'not_verified', 'execution_allowed': False,
+            'storage': report, 'manifest_sha256': canonical_config_hash(manifest),
+            'owner_approval': 'not_verified', 'execution_allowed': False,
             'candidate_promotion_blocked': True,
             'next_gate': 'Owner must independently verify GitHub approval before any EXP start.'}
+
+
+def prepare_one_start(root, experiment_id, *, circuit, vector, seed, jitter_fraction,
+                      coarse_points, fine_points, budget, **preflight_args):
+    """Bind one C1 start to a read-only preflight and planned manifest, not approval.
+
+    The input_source is the complete one-start description, not a new manifest
+    schema. No solver callback is accepted here. A seed is generated once and
+    returned for the caller's diagnostic use. Imported code is not authenticated
+    in memory; tracked working files are compared to the preflight checkout.
+    """
+    from dataclasses import asdict
+    from lpf.checkpoint_io import canonical_config_hash
+    from lpf.experiment_manifest import _environment, file_sha256
+    from lpf.constraint_versions import rf_input_file
+    from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
+    from lpf.phase2_models.api import build_nominal_circuit
+    from lpf.phase2_models.problem_seed import definition_fingerprint, vector_fingerprint
+    from lpf.phase2_models.sampled_epigraph import SampledEpigraph
+    from scripts.audit_new_experiment_storage import find_run, read_json
+
+    root = Path(root).resolve()
+    report = exp_preflight(root, experiment_id, **preflight_args)
+    manifest = read_json(find_run(root, experiment_id) / 'manifest.json')
+    if canonical_config_hash(manifest) != report['manifest_sha256']:
+        raise ValueError('Manifest changed after preflight')
+    if manifest['objective'] != 'full_lpf' or manifest['execution']['status'] != 'planned':
+        raise ValueError('Planned full_lpf manifest required')
+    paths = ('src', 'scripts', 'project', 'rf', 'pyproject.toml', 'uv.lock')
+    def tracked(repo):
+        return subprocess.check_output(['git', 'ls-files', '-z', '--', *paths], cwd=repo).split(b'\0')[:-1]
+    names = tracked(ROOT)
+    if names != tracked(root) or any(file_sha256(ROOT / n.decode()) != file_sha256(root / n.decode())
+                                     for n in names):
+        raise ValueError('Executing source/input files differ from preflight checkout')
+    if manifest['environment'] != _environment():
+        raise ValueError('Manifest environment mismatch')
+    c = manifest['constraints']
+    if (c['constraint_id'] != circuit.policy_id or
+            c['effective_constraint_sha256'] != circuit.policy_fingerprint or
+            build_nominal_circuit(c['effective_constraints'], circuit.definition) != circuit):
+        raise ValueError('Circuit/policy mismatch')
+    if file_sha256(rf_input_file(ROOT, c['effective_constraints']['bands_file'])) != manifest['bands_sha256']:
+        raise ValueError('Executing bands mismatch')
+    if (type(seed) is not int or seed < 0 or manifest['random_seed'] != seed or
+            type(coarse_points) is not int or type(fine_points) is not int or
+            coarse_points not in (1, 2, 3) or fine_points not in (1, 2, 3) or fine_points < coarse_points):
+        raise ValueError('Seed or diagnostic grid mismatch')
+    expected_budget = {**STANDARD_SLSQP_BUDGET.as_dict(), 'policy_id': TERMINATION_AWARE_POLICY_ID}
+    if budget != expected_budget:
+        raise ValueError('SLSQP v2 budget mismatch')
+    vector = list(map(float, vector))
+    start = {'definition': asdict(circuit.definition), 'vector': vector,
+             'vector_sha256': vector_fingerprint(vector), 'seed': seed,
+             'jitter_fraction': jitter_fraction,
+             'grids': {'coarse_points': coarse_points, 'fine_points': fine_points},
+             'budget': budget}
+    # Normalize tuple/list representation and reject NaN/Infinity.
+    start = json.loads(json.dumps(start, allow_nan=False))
+    scope = manifest['search_scope']
+    if (scope['input_source'] != start or
+            canonical_config_hash(start) != preflight_args['input_sha256']):
+        raise ValueError('Manifest one-start input mismatch')
+    circuit.validate_components(vector)
+    problem = SampledEpigraph(circuit, coarse_points)
+    seed_record = problem.seed(vector, policy_id=circuit.policy_id,
+        policy_fingerprint=circuit.policy_fingerprint,
+        definition_sha256=definition_fingerprint(circuit.definition),
+        input_sha256=start['vector_sha256'], seed=seed, jitter_fraction=jitter_fraction)
+    return {'preflight': report, 'input_source': start, 'seed_record': seed_record,
+            'seed_preparation': 'coarse_forward_observed_not_rf_validation',
+            'owner_approval': 'not_verified', 'execution_allowed': False}
+
+
+def one_start_gate(root, experiment_id, **kwargs):
+    """Production is unconditionally blocked; no callback or dispatch exists.
+
+    A future separately approved gate may dispatch to the existing
+    staged_optimization.scipy_slsqp_stage. This issue never does so.
+    """
+    prepared = prepare_one_start(root, experiment_id, **kwargs)
+    return {'mode': 'one_start_gate', 'preflight': prepared['preflight'],
+            'seed_preparation': prepared['seed_preparation'],
+            'execution': 'not_run', 'rejection': 'owner_approval_not_verified',
+            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'finite_grid_rf': 'not_run', 'independent_mna': 'not_run',
+            'dense_rf': 'not_run', 'git_readback': 'not_run',
+            'candidate_promotion_blocked': True}
 
 
 def manifest_preview(root, experiment_id, purpose, scope, *, policy_id, seed, allow_trial):

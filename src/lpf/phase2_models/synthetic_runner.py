@@ -218,28 +218,16 @@ def run_synthetic(circuit, envelope, checkpoint, *, optimize_stage, max_new_star
     return body
 
 
-def run_synthetic_preview(circuit, envelope, checkpoint, *, optimize_stage, max_new_starts=None):
-    """One-start mock -> durable checkpoint -> checked selection, in memory only.
+def diagnostic_selection():
+    """Declare the non-EXP retention rule before a diagnostic start."""
+    return {'top_k': 0, 'retain': ['pareto'],
+            'rule': 'Select checked within-group Pareto points for diagnostic preview only; '
+                    'retain all excluded/failed records separately in result. No Git export.',
+            'estimated_curated_bytes': 0}
 
-    Reuse the checkpoint reader (including failed-call replay) with zero new
-    starts before ranking. This is local synthetic readback, NOT Git HEAD
-    readback, EXP evidence, an execution approval or scientific certification.
-    The summary/selection fields follow phase2-git-only-v1; no manifest or new
-    candidate/checkpoint schema is created. An unknown in-progress outcome
-    still fails closed in run_synthetic, never becoming a fabricated count.
-    """
-    if len(envelope['plan']['starts']) != 1:
-        raise ValueError('Result preview requires exactly one synthetic start')
-    # Declare the diagnostic retention rule before the mock is called. All
-    # records and exclusions remain in result, whether selected or not.
-    selection = {'top_k': 0, 'retain': ['pareto'],
-                 'rule': 'Select checked within-group Pareto points for diagnostic preview only; '
-                         'retain all excluded/failed records separately in result. No Git export.',
-                 'estimated_curated_bytes': 0}
-    run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
-                  max_new_starts=max_new_starts)
-    result = run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
-                           max_new_starts=0)
+
+def checked_one_start_selection(result):
+    """Shared in-memory classification for one diagnostic start, never approval."""
     checked = [recheck_record(CandidateRecord.from_json(json.dumps(r, allow_nan=False)))
                for r in result['completed']]
     report = pareto_report(checked)
@@ -253,6 +241,7 @@ def run_synthetic_preview(circuit, envelope, checkpoint, *, optimize_stage, max_
     if (counts['converged'] + counts['nonconverged'] + counts['failed'] != counts['attempted']
             or counts['attempted'] + counts['not_started'] != counts['planned']):
         raise ValueError('Synthetic attempt counts do not balance')
+    selection = diagnostic_selection()
     summary = {'experiment_id': None, 'attempts': counts,
                'selected_candidate_count': len(selected),
                'best_found': [item['candidate_id'] for item in selected],
@@ -267,13 +256,36 @@ def run_synthetic_preview(circuit, envelope, checkpoint, *, optimize_stage, max_
             'No eligible Pareto candidate: ' + '; '.join(
                 row['candidate_id'] + ': ' + ', '.join(row['reasons'])
                 for row in report['candidates']))
+    return {'pareto': report, 'selected': selected, 'selection': selection, 'run_summary': summary}
+
+
+def run_synthetic_preview(circuit, envelope, checkpoint, *, optimize_stage, max_new_starts=None):
+    """One-start mock -> durable checkpoint -> checked selection, in memory only.
+
+    Reuse the checkpoint reader (including failed-call replay) with zero new
+    starts before ranking. This is local synthetic readback, NOT Git HEAD
+    readback, EXP evidence, an execution approval or scientific certification.
+    The summary/selection fields follow phase2-git-only-v1; no manifest or new
+    candidate/checkpoint schema is created. An unknown in-progress outcome
+    still fails closed in run_synthetic, never becoming a fabricated count.
+    """
+    if len(envelope['plan']['starts']) != 1:
+        raise ValueError('Result preview requires exactly one synthetic start')
+    selection = diagnostic_selection()  # Declare retention before the callback.
+    run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
+                  max_new_starts=max_new_starts)
+    result = run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
+                           max_new_starts=0)
+    preview = checked_one_start_selection(result)
+    if preview['selection'] != selection:
+        raise ValueError('Diagnostic selection changed during execution')
     plan = envelope['plan']
     return {'mode': 'synthetic_mock', 'plan_fingerprint': envelope['fingerprint'],
             'policy_id': plan['policy_id'], 'policy_sha256': plan['policy_sha256'],
             'source': plan['source'], 'input_source': plan['input_source'],
             'input_source_sha256': plan['input_source_sha256'], 'identity': plan['identity'],
             'grids': plan['grids'], 'budget': plan['budget'], 'result': result,
-            'pareto': report, 'selection': selection, 'selected': selected, 'run_summary': summary,
+            **preview,
             'storage_policy': 'phase2-git-only-v1',
             'contract_references': ['project/experiment_storage_policy.md',
                                     'src/lpf/experiment_manifest.py'],
