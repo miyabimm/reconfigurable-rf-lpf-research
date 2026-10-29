@@ -123,6 +123,23 @@ def exp_preflight(root, experiment_id, *, owner, request_id, policy_id, policy_s
             'next_gate': 'Owner must independently verify GitHub approval before any EXP start.'}
 
 
+def one_start_gate(root, experiment_id, **preflight_args):
+    """Read-only production gate, deliberately without an optimizer dispatch.
+
+    Even a successful storage preflight is not evidence of owner approval.
+    Until that approval can be independently verified this entry cannot accept
+    a callback or start a solver. Exceptions retain the underlying rejection
+    reason; no EXP evidence or partial success is written.
+    """
+    report = exp_preflight(root, experiment_id, **preflight_args)
+    return {'mode': 'one_start_gate', 'preflight': report,
+            'execution': 'not_run', 'rejection': 'owner_approval_not_verified',
+            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'finite_grid_rf': 'not_run', 'independent_mna': 'not_run',
+            'dense_rf': 'not_run', 'git_readback': 'not_run',
+            'candidate_promotion_blocked': True}
+
+
 def manifest_preview(root, experiment_id, purpose, scope, *, policy_id, seed, allow_trial):
     from lpf.experiment_manifest import new_manifest, validate_manifest
     if policy_id not in ('RF-T005', 'RF-T007', 'RF-T008') or not allow_trial:

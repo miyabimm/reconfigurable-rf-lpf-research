@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from test_phase2_problem_seed import make, seed
+from lpf.phase2_models.candidate_records import record_candidate, recheck_record, pareto_report
 from lpf.phase2_models.staged_optimization import run_c1_staged, scipy_slsqp_stage
 
 
@@ -114,6 +115,51 @@ class StageTests(unittest.TestCase):
         self.assertEqual(stages[0]["output_vector"], stages[1]["input_vector"])
         self.assertEqual(result["attempts"][0]["vector"], stages[1]["output_vector"])
         self.assertEqual(result["seed"]["input_vector_sha256"], self.seed["input_vector_sha256"])
+
+    def test_isolated_one_start_to_checked_pareto_without_solver(self):
+        # Direct C1/C2 integration fixture, never a production authorization.
+        problem, vector = make('RF-T008', 3)
+        vector[6] = 0.0
+        from lpf.phase2_models.synthetic_plan import _source
+        source = _source()
+        provenance = {'kind': 'synthetic', 'optimizer_kind': 'synthetic_callback',
+                      'git_head': source['git_head'], 'dirty_patch_sha256': source['dirty_patch_sha256'],
+                      'input_source_sha256': '0' * 64}  # isolated fixture, not an EXP input
+        for codes, state, reason in [((0, 0), 'converged', None),
+                                     ((4, 9), 'not_converged', 'numerical_not_converged'),
+                                     ((8, 9), 'not_converged', 'numerical_not_converged'),
+                                     ((9, 0, 0, 0), 'converged', None)]:
+            with self.subTest(codes=codes):
+                def fake_il(evaluator, x):
+                    return np.where(evaluator.role == 0, .25, 36.)
+                calls = []
+                def mock(p, x, budget, target):
+                    code = codes[len(calls)]
+                    calls.append(budget)
+                    x[-1] = .5
+                    return x, status(code)
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', fake_il), \
+                     patch('lpf.phase2_models.staged_optimization.minimize',
+                           side_effect=AssertionError('solver forbidden')) as minimize:
+                    initial = seed(problem, vector)
+                    staged = run_c1_staged(problem.circuit, initial, coarse_points=1,
+                                           fine_points=2, optimize_stage=mock,
+                                           source_provenance=provenance)
+                    candidate = record_candidate('fixture', problem.circuit,
+                        staged['stage_calls'][-1]['output_vector'][:-1],
+                        staged_record=staged, source_provenance=provenance)
+                    checked = recheck_record(candidate)
+                    row = pareto_report([checked])['candidates'][0]
+                    minimize.assert_not_called()
+                self.assertEqual(staged['numerical_state'], state)
+                self.assertEqual(len(calls), len(codes))
+                self.assertTrue(row['candidate_promotion_blocked'])
+                if reason:
+                    self.assertIn(reason, row['reasons'])
+                else:
+                    self.assertEqual(row['reasons'], [])
+                    self.assertTrue(row['pareto_within_group'])
+                self.assertEqual(checked.as_dict()['validation']['independent_mna'], 'not_run')
 
     def test_scipy_callback_wiring_without_running_solver(self):
         x = np.asarray(self.seed["vector"])

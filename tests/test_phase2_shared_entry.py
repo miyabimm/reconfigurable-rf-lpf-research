@@ -8,13 +8,14 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.experiment_manifest import new_manifest
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
-from scripts.run_phase2_shared import exp_preflight, manifest_preview, storage_audit
+from scripts.run_phase2_shared import exp_preflight, manifest_preview, one_start_gate, storage_audit
 
 
 class SharedEntryTests(unittest.TestCase):
@@ -106,23 +107,35 @@ class SharedEntryTests(unittest.TestCase):
             result = exp_preflight(repo, ident, **args)
             self.assertEqual(result['owner_approval'], 'not_verified')
             self.assertFalse(result['execution_allowed'])
+            with patch('lpf.phase2_models.staged_optimization.minimize',
+                       side_effect=AssertionError('solver must not run')) as minimize:
+                gate = one_start_gate(repo, ident, **args)
+                self.assertEqual(gate['rejection'], 'owner_approval_not_verified')
+                self.assertEqual(gate['execution'], 'not_run')
+                self.assertFalse(gate['execution_allowed'])
+                minimize.assert_not_called()
             for change in ({'owner': 'wrong'}, {'request_id': 'wrong'}, {'policy_id': 'RF-T007'},
                            {'policy_id': 'RF-F003'}, {'allow_trial': False},
                            {'policy_sha256': '0' * 64}, {'bands_sha256': '0' * 64},
                            {'input_sha256': '0' * 64}, {'source_sha': '0' * 40}):
                 with self.subTest(change=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
-                    exp_preflight(repo, ident, **(args | change))
+                    one_start_gate(repo, ident, **(args | change))
             with self.assertRaises(ValueError):
-                exp_preflight(repo, 'EXP-999', **args)
+                one_start_gate(repo, 'EXP-999', **args)
             with self.assertRaises(ValueError):
                 storage_audit(repo, 'finalize', ident)
             git('config', 'core.sparseCheckout', 'true')
             with self.assertRaisesRegex(ValueError, 'sparse'):
-                exp_preflight(repo, ident, **args)
+                one_start_gate(repo, ident, **args)
             git('config', 'core.sparseCheckout', 'false')
+            evidence = repo / 'experiments/README'
+            evidence.unlink()
+            with self.assertRaisesRegex(ValueError, 'missing tracked evidence'):
+                one_start_gate(repo, ident, **args)
+            git('restore', 'experiments/README')
             git('update-ref', 'refs/remotes/origin/main', source)
             with self.assertRaisesRegex(ValueError, 'stale'):
-                exp_preflight(repo, ident, **args)
+                one_start_gate(repo, ident, **args)
             git('fetch', '-q', 'origin', 'main')
             # Complete preservation in this throw-away fixture, then verify actual HEAD readback.
             summary_path = run / 'run_summary.json'
