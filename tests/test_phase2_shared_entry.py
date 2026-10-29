@@ -1,5 +1,6 @@
 """Shared entry tests: isolated mock diagnostics and temporary Git evidence only."""
 import hashlib
+from dataclasses import asdict
 import json
 import shutil
 import os
@@ -9,13 +10,18 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.experiment_manifest import new_manifest
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
-from scripts.run_phase2_shared import exp_preflight, manifest_preview, one_start_gate, storage_audit
+from scripts.run_phase2_shared import exp_preflight, manifest_preview, one_start_gate, prepare_one_start, storage_audit
+from lpf.phase2_models.problem_seed import vector_fingerprint
+from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
+from test_phase2_problem_seed import make
+from test_phase2_staged_optimization import status
 
 
 class SharedEntryTests(unittest.TestCase):
@@ -63,7 +69,13 @@ class SharedEntryTests(unittest.TestCase):
             git('config', 'user.email', 'fixture@example.invalid')
             git('init', '--bare', '-q', remote, cwd=tmp)
             git('remote', 'add', 'origin', remote)
-            shutil.copytree(ROOT / 'rf', repo / 'rf')
+            # Copy exactly the executing tracked inputs into the isolated source commit.
+            names = subprocess.check_output(['git', 'ls-files', '-z', '--', 'src', 'scripts',
+                'project', 'rf', 'pyproject.toml', 'uv.lock'], cwd=ROOT).split(b'\0')
+            for name in filter(None, names):
+                path = Path(name.decode())
+                (repo / path).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / path, repo / path)
             (repo / 'experiments').mkdir()
             (repo / 'experiments/README').write_text('isolated fixture')
             ledger = repo / PATH
@@ -82,10 +94,20 @@ class SharedEntryTests(unittest.TestCase):
             git('commit', '-qm', 'fixture reservation')
             git('push', '-q', '-u', 'origin', 'main')
             source = git('rev-parse', 'HEAD')
-            input_source = {'fixture': 'synthetic-only'}
+            problem, vector = make('RF-T005', 3)
+            vector[6] = 0.
+            vector = vector.tolist()
+            budget = {**STANDARD_SLSQP_BUDGET.as_dict(), 'policy_id': TERMINATION_AWARE_POLICY_ID}
+            start_args = {'circuit': problem.circuit, 'vector': vector, 'seed': 23,
+                          'jitter_fraction': 0.0, 'coarse_points': 1, 'fine_points': 2,
+                          'budget': budget}
+            input_source = json.loads(json.dumps({'definition': asdict(problem.circuit.definition),
+                'vector': vector, 'vector_sha256': vector_fingerprint(vector), 'seed': 23,
+                'jitter_fraction': 0.0, 'grids': {'coarse_points': 1, 'fine_points': 2},
+                'budget': budget}))
             input_sha = canonical_config_hash(input_source)
             scope = {'input_source': input_source, 'input_source_sha256': input_sha}
-            manifest = new_manifest(ident, 'fixture only', scope, objective='full_lpf', seed=1,
+            manifest = new_manifest(ident, 'fixture only', scope, objective='full_lpf', seed=23,
                                     root=repo, constraint_id='RF-T005', allow_trial=True)
             run = repo / 'experiments/chatgpt_topology_search/runs' / ident
             run.mkdir(parents=True)
@@ -109,33 +131,153 @@ class SharedEntryTests(unittest.TestCase):
             self.assertFalse(result['execution_allowed'])
             with patch('lpf.phase2_models.staged_optimization.minimize',
                        side_effect=AssertionError('solver must not run')) as minimize:
-                gate = one_start_gate(repo, ident, **args)
+                gate = one_start_gate(repo, ident, **args, **start_args)
                 self.assertEqual(gate['rejection'], 'owner_approval_not_verified')
                 self.assertEqual(gate['execution'], 'not_run')
                 self.assertFalse(gate['execution_allowed'])
                 minimize.assert_not_called()
+            # A fixture-only adapter links the *same* checked manifest input to
+            # the existing C1/C2 and #207 classifier. It is not a production entry.
+            from lpf.phase2_models.staged_optimization import run_c1_staged
+            from lpf.phase2_models.candidate_records import record_candidate
+            from lpf.phase2_models.synthetic_runner import checked_one_start_selection, diagnostic_selection
+            from lpf.phase2_models.synthetic_plan import _source
+            from scripts.audit_new_experiment_storage import validate_selection, validate_summary
+            def fixture_preview(params, callback, *, stopped=False, preflight_args=args):
+                prepared = prepare_one_start(repo, ident, **preflight_args, **params)
+                self.assertFalse(prepared['execution_allowed'])
+                selection = diagnostic_selection()
+                result = {'completed': [], 'not_started': int(stopped)}
+                if not stopped:
+                    local_source = _source()
+                    provenance = {'kind': 'synthetic', 'optimizer_kind': 'synthetic_callback',
+                        'git_head': local_source['git_head'],
+                        'dirty_patch_sha256': local_source['dirty_patch_sha256'],
+                        'input_source_sha256': canonical_config_hash(prepared['input_source'])}
+                    staged = run_c1_staged(params['circuit'], prepared['seed_record'],
+                        coarse_points=params['coarse_points'], fine_points=params['fine_points'],
+                        optimize_stage=callback, source_provenance=provenance)
+                    final = (prepared['seed_record']['vector'][:-1] if staged['numerical_state'] == 'failed'
+                             else staged['stage_calls'][-1]['output_vector'][:-1])
+                    result['completed'].append(record_candidate('fixture', params['circuit'], final,
+                        staged_record=staged, source_provenance=provenance).as_dict())
+                preview = checked_one_start_selection(result)
+                self.assertEqual(selection, preview['selection'])
+                validate_selection(selection)
+                validate_summary(preview['run_summary'], None, len(preview['selected']))
+                return {**preview, 'mode': 'isolated_fixture_mock_non_exp',
+                        'reservation': 'fixture_only', 'owner_approval': 'not_verified',
+                        'execution_allowed': False, 'experiment_execution': 'not_run',
+                        'finite_grid_rf': 'synthetic_observation_not_certified',
+                        'independent_mna': 'not_run', 'dense_rf': 'not_run',
+                        'git_readback': 'not_run', 'candidate_promotion_blocked': True}
+
+            harmonic_failure = [False]
+            def fake_il(evaluator, vector):
+                il = np.where(evaluator.role == 0, .25, 36.)
+                if harmonic_failure[0]:
+                    il[evaluator.role == 1] = 29.
+                return il
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', fake_il), \
+                 patch('lpf.phase2_models.staged_optimization.minimize',
+                       side_effect=AssertionError('solver forbidden')) as minimize:
+                for codes, state, reason in (((0, 0), 'converged', None),
+                    ((4, 9), 'nonconverged', 'numerical_not_converged'),
+                    ((8, 9), 'nonconverged', 'numerical_not_converged'),
+                    ((9, 0, 0, 0), 'converged', None),
+                    (('error',), 'failed', 'numerical_failed'),
+                    ((), 'not_started', None)):
+                    with self.subTest(codes=codes):
+                        calls = []
+                        def callback(p, x, maxiter, target):
+                            code = codes[len(calls)]
+                            calls.append(maxiter)
+                            if code == 'error':
+                                raise RuntimeError('fixture failure')
+                            x[-1] = .5
+                            return x, status(code)
+                        preview = fixture_preview(start_args, callback, stopped=not codes)
+                        self.assertEqual(preview['run_summary']['attempts'][state], 1)
+                        self.assertEqual(preview['owner_approval'], 'not_verified')
+                        self.assertFalse(preview['execution_allowed'])
+                        for field in ('experiment_execution', 'independent_mna', 'dense_rf', 'git_readback'):
+                            self.assertEqual(preview[field], 'not_run')
+                        self.assertEqual(len(calls), len(codes))
+                        if codes:
+                            row = preview['pareto']['candidates'][0]
+                            if reason:
+                                self.assertIn(reason, row['reasons'])
+                            else:
+                                self.assertEqual(row['reasons'], [])
+                                self.assertTrue(row['pareto_within_group'])
+                            self.assertTrue(row['candidate_promotion_blocked'])
+                        else:
+                            self.assertEqual(preview['selected'], [])
+                harmonic_failure[0] = True
+                def success(p, x, budget, target):
+                    x[-1] = .5
+                    return x, status(0)
+                infeasible = fixture_preview(start_args, success)
+                self.assertEqual(infeasible['run_summary']['attempts']['converged'], 1)
+                self.assertIn('mandatory_harmonics_failed_on_grid',
+                              infeasible['pareto']['candidates'][0]['reasons'])
+                self.assertEqual(infeasible['run_summary']['selected_candidate_count'], 0)
+                harmonic_failure[0] = False
+                calls = []
+                def interrupted(*args):
+                    calls.append(1)
+                    raise KeyboardInterrupt()
+                with self.assertRaises(KeyboardInterrupt):
+                    fixture_preview(start_args, interrupted)
+                self.assertEqual(calls, [1])  # no automatic retry or invented outcome
+                bad_circuit = make('RF-T007', 3)[0].circuit
+                other_definition = make('RF-T005', 4)[0].circuit
+                for change in ({'circuit': bad_circuit}, {'circuit': other_definition}, {'vector': vector[:-1]},
+                               {'vector': [2.1] + vector[1:]}, {'seed': 24},
+                               {'jitter_fraction': .01}, {'coarse_points': 2},
+                               {'fine_points': 3}, {'budget': budget | {'policy_id': 'invalid'}}):
+                    with self.subTest(change=change), self.assertRaises((ValueError, TypeError)):
+                        fixture_preview(start_args | change, lambda *a: self.fail('callback called'))
+                with patch('lpf.experiment_manifest._environment', return_value={}):
+                    with self.assertRaisesRegex(ValueError, 'environment'):
+                        fixture_preview(start_args, lambda *a: self.fail('callback called'))
+                from lpf.experiment_manifest import file_sha256
+                def wrong_source(path):
+                    return '0' * 64 if path == ROOT / 'scripts/run_phase2_shared.py' else file_sha256(path)
+                with patch('lpf.experiment_manifest.file_sha256', side_effect=wrong_source):
+                    with self.assertRaisesRegex(ValueError, 'source/input files'):
+                        fixture_preview(start_args, lambda *a: self.fail('callback called'))
+                for change in ({'owner': 'wrong'}, {'request_id': 'wrong'},
+                               {'allow_trial': False}, {'source_sha': '0' * 40},
+                               {'policy_sha256': '0' * 64}, {'bands_sha256': '0' * 64},
+                               {'input_sha256': '0' * 64}):
+                    with self.subTest(preflight=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                        fixture_preview(start_args, lambda *a: self.fail('callback called'),
+                                        preflight_args=args | change)
+                minimize.assert_not_called()
+
             for change in ({'owner': 'wrong'}, {'request_id': 'wrong'}, {'policy_id': 'RF-T007'},
                            {'policy_id': 'RF-F003'}, {'allow_trial': False},
                            {'policy_sha256': '0' * 64}, {'bands_sha256': '0' * 64},
                            {'input_sha256': '0' * 64}, {'source_sha': '0' * 40}):
                 with self.subTest(change=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
-                    one_start_gate(repo, ident, **(args | change))
+                    one_start_gate(repo, ident, **(args | change), **start_args)
             with self.assertRaises(ValueError):
-                one_start_gate(repo, 'EXP-999', **args)
+                one_start_gate(repo, 'EXP-999', **args, **start_args)
             with self.assertRaises(ValueError):
                 storage_audit(repo, 'finalize', ident)
             git('config', 'core.sparseCheckout', 'true')
             with self.assertRaisesRegex(ValueError, 'sparse'):
-                one_start_gate(repo, ident, **args)
+                one_start_gate(repo, ident, **args, **start_args)
             git('config', 'core.sparseCheckout', 'false')
             evidence = repo / 'experiments/README'
             evidence.unlink()
             with self.assertRaisesRegex(ValueError, 'missing tracked evidence'):
-                one_start_gate(repo, ident, **args)
+                one_start_gate(repo, ident, **args, **start_args)
             git('restore', 'experiments/README')
             git('update-ref', 'refs/remotes/origin/main', source)
             with self.assertRaisesRegex(ValueError, 'stale'):
-                one_start_gate(repo, ident, **args)
+                one_start_gate(repo, ident, **args, **start_args)
             git('fetch', '-q', 'origin', 'main')
             # Complete preservation in this throw-away fixture, then verify actual HEAD readback.
             summary_path = run / 'run_summary.json'
