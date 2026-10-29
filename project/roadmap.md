@@ -13,7 +13,7 @@
 | Stage 5A/5B：共通実行入口・保存／監査ゲート | **完了（synthetic/mock・隔離fixture）** | [#192](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/192) / [PR #193](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/193)、[#194](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/194) / [PR #195](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/195)。#195はmain `8eb25f0` に統合、PR最終HEAD通常CI 305件・Pi sparse 79件PASS、main smoke 305件PASS |
 | 文書・実験証拠の整理 | **継続** | [#170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)。[PR #201](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/201)で不足21行を追記してinventory66行へ整合。完全checkoutのinventory監査PASSは#201で記録済み（科学的RF検証とは別） |
 
-**開発DoDと科学的成果は別判定。** Stage 1〜5の完了は限定コード・回帰の完了であり、新規EXPの番号予約、実SciPyの**本番探索**、本番dense/独立RF計算、RF-F003適合認定、候補昇格、連続帯域保証や実装成立を意味しません。Stage 5Bの共通入口はsynthetic/mock診断とEXP事前検査・証拠監査の接続までで、実EXP runnerではありません。実EXP開始は所有者承認とmain事前番号予約を別途要します。
+**開発DoDと科学的成果は別判定。** Stage 1〜5の完了は限定コード・回帰の完了であり、新規EXPの番号予約、実SciPyの**本番探索**、本番dense/独立RF計算、RF-F003適合認定、候補昇格、連続帯域保証や実装成立を意味しません。Stage 5Bの共通入口はsynthetic/mock診断とEXP事前検査・証拠監査の接続までで、実EXP runnerではありません。実EXP開始は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、main事前番号予約G0と技術検査G1を要します（追加のowner認証は不要）。
 
 [親Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)の57項目は棚卸し一覧であり、Stage完了により全項目を一括消化しません。次工程は[Issue #202](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/202)の実SciPy出力→候補記録・不適合除外の限定接続検証（未着手）。少なくともD05（RF-T006追加停止帯域対応）・D07（一般感度／モード解析）は未実装の後続課題です。正式activeはRF-F003、現nominal adapterの限定対象は明示trial RF-T005/T007/T008（F003/T006はfail-closed）です。
 
@@ -24,4 +24,4 @@
 3. 回路理論による新トポロジー発案と有限グラフ探索を併用する。面積–ILの比較では、H2/H3減衰、収束、物理実現リスクを確認する。
 4. SPD・受動性・電力保存・独立MNA・再現性を省略しない。Q(f)、SRF、EM、公差、実測が未確認なら未確認と記録する。
 
-新しいEXPと大規模計算は別途承認とmain事前予約を必要とします。代表候補は[結果の入口](results.md)と[実験索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/experiment_index.csv)で確認してください。**IL≤0.30dB、公称H2/H3≥35dBの達成を、本ロードマップから推定しません。**
+新しいEXPと大規模計算もIssueで定義した範囲とユーザーの着手指示に従い、main事前予約を必要とします。範囲外の作業・大幅な条件や予算の拡張は別途ユーザーの意思決定と記録を要します。代表候補は[結果の入口](results.md)と[実験索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/experiment_index.csv)で確認してください。**IL≤0.30dB、公称H2/H3≥35dBの達成を、本ロードマップから推定しません。**

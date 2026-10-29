@@ -41,7 +41,7 @@ Prefer the smallest correct change (KISS/YAGNI), existing code, and risk-based r
 
 ## Experiments and evidence
 
-New scientific EXPs require **separate owner approval plus an EXP number reserved and verified on `main` before execution**. Routine deterministic software tests are not new scientific EXPs. Follow the applicable storage policy; do not retrospectively rewrite historical manifests, vectors, findings, or validation status.
+For new scientific EXPs, follow `project/instructions.md`: **a concrete ChatGPT-filed Issue scope plus the user's Pi Code launch is the work/experiment instruction; no duplicate owner authentication is required**. An open Issue alone never triggers unattended execution. **An EXP number reserved and verified on `main` and technical G1 checks remain required before execution**. Out-of-scope work, material RF/evaluation changes, major budget expansion and important evidence changes still require a separate owner decision and record. Routine deterministic software tests are not new scientific EXPs. Follow the applicable storage policy; do not retrospectively rewrite historical manifests, vectors, findings, or validation status.
 
 Preserve reproducibility: constraint ID/SHA, bands/S2P fingerprints, commit/dirty patch, environment and seed, complete circuit and all six variable-C settings, search budget/grid, termination state, and independent-validation evidence. Distinguish planned, run, converged, nonconverged, failed, unverified, and preserved states. Never delete or migrate historical research evidence as routine cleanup.
 

@@ -78,7 +78,11 @@ def _fresh_main(root):
 
 def exp_preflight(root, experiment_id, *, owner, request_id, policy_id, policy_sha256,
                   source_sha, bands_sha256, input_sha256, allow_trial):
-    """Read-only future-run preflight; it never authorizes or starts an EXP."""
+    """Check technical readiness, not Issue scope or user launch; never start an EXP.
+
+    execution_allowed=False describes this read-only entrypoint, not an owner
+    authentication failure. Reservation owner is provenance, not authentication.
+    """
     from scripts.experiment_id_registry import is_reserved_on_main
     from scripts.audit_new_experiment_storage import find_run, read_json, reservation_on_main, validate_run
     from lpf.checkpoint_io import canonical_config_hash
@@ -119,14 +123,15 @@ def exp_preflight(root, experiment_id, *, owner, request_id, policy_id, policy_s
         raise ValueError('Source, policy, bands or input fingerprint mismatch')
     return {'mode': 'exp_preflight_read_only', 'main_sha': main_sha, 'reservation': row,
             'storage': report, 'manifest_sha256': canonical_config_hash(manifest),
-            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'status': 'preflight_ready', 'execution': 'not_run', 'execution_allowed': False,
             'candidate_promotion_blocked': True,
-            'next_gate': 'Owner must independently verify GitHub approval before any EXP start.'}
+            'next_gate': 'Use a separate driver within the explicit Issue scope and user launch; '
+                         'no additional owner authentication is required.'}
 
 
 def prepare_one_start(root, experiment_id, *, circuit, vector, seed, jitter_fraction,
                       coarse_points, fine_points, budget, **preflight_args):
-    """Bind one C1 start to a read-only preflight and planned manifest, not approval.
+    """Bind one C1 start to a read-only technical preflight and planned manifest.
 
     The input_source is the complete one-start description, not a new manifest
     schema. No solver callback is accepted here. A seed is generated once and
@@ -193,20 +198,21 @@ def prepare_one_start(root, experiment_id, *, circuit, vector, seed, jitter_frac
         input_sha256=start['vector_sha256'], seed=seed, jitter_fraction=jitter_fraction)
     return {'preflight': report, 'input_source': start, 'seed_record': seed_record,
             'seed_preparation': 'coarse_forward_observed_not_rf_validation',
-            'owner_approval': 'not_verified', 'execution_allowed': False}
+            'status': 'preflight_ready', 'execution': 'not_run', 'execution_allowed': False}
 
 
 def one_start_gate(root, experiment_id, **kwargs):
-    """Production is unconditionally blocked; no callback or dispatch exists.
+    """Return read-only readiness; no callback or solver dispatch exists here.
 
-    A future separately approved gate may dispatch to the existing
-    staged_optimization.scipy_slsqp_stage. This issue never does so.
+    Under the explicit Issue scope and user launch, a separate driver may use
+    this checked preparation for run_c1_staged(... optimize_stage=scipy_slsqp_stage).
+    G0/G1 remain required; no additional owner authentication gate is needed.
+    Readiness is not execution, RF validation or completed evidence preservation.
     """
     prepared = prepare_one_start(root, experiment_id, **kwargs)
     return {'mode': 'one_start_gate', 'preflight': prepared['preflight'],
             'seed_preparation': prepared['seed_preparation'],
-            'execution': 'not_run', 'rejection': 'owner_approval_not_verified',
-            'owner_approval': 'not_verified', 'execution_allowed': False,
+            'status': 'preflight_ready', 'execution': 'not_run', 'execution_allowed': False,
             'finite_grid_rf': 'not_run', 'independent_mna': 'not_run',
             'dense_rf': 'not_run', 'git_readback': 'not_run',
             'candidate_promotion_blocked': True}
@@ -220,7 +226,7 @@ def manifest_preview(root, experiment_id, purpose, scope, *, policy_id, seed, al
                             root=root, constraint_id=policy_id, allow_trial=True)
     validate_manifest(manifest, root=root)
     return {'mode': 'manifest_preview_not_saved', 'manifest': manifest,
-            'owner_approval': 'not_verified', 'execution_allowed': False}
+            'execution': 'not_run', 'execution_allowed': False}
 
 
 def storage_audit(root, mode, experiment_id=None):
@@ -246,7 +252,7 @@ def main(argv=None):
     diag.add_argument('--mock', action='store_true', required=True)
     diag.add_argument('--policy', required=True, choices=('RF-T005', 'RF-T007', 'RF-T008'))
     diag.add_argument('--inductors', required=True, type=int, choices=(3, 4))
-    pre = sub.add_parser('exp-preflight', help='read-only future-run checks, not approval')
+    pre = sub.add_parser('exp-preflight', help='read-only technical readiness checks; never execute')
     for arg in ('experiment-id', 'owner', 'request-id', 'policy', 'policy-sha256',
                 'source-sha', 'bands-sha256', 'input-sha256'):
         pre.add_argument('--' + arg, required=True)
