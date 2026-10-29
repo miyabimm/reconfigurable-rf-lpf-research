@@ -97,10 +97,15 @@ class FrozenCandidateRecordTests(unittest.TestCase):
         source = {"kind": "frozen", "optimizer_kind": "synthetic_callback",
                   "git_head": "831e9e56754e81d69b583893181c350396acc8f5",
                   "dirty_patch_sha256": hashlib.sha256(b"").hexdigest(), "input_source_sha256": digest}
+        def callback(problem, vector, maxiter, target):
+            # Recompute t for each stage grid; coarse t need not bound fine IL.
+            # Only synthetic epigraph metadata changes, never the frozen circuit.
+            il = problem.evaluator.il(vector[:-1])
+            vector[-1] = float(np.max(il[problem.evaluator.role == 0]))
+            return vector, {"success": True, "status": 0,
+                "message": "synthetic callback; not historical convergence", "nit": 0, "nfev": 0}
         staged = run_c1_staged(c, initial, coarse_points=1, fine_points=2,
-            optimize_stage=lambda p, v, m, t: (v, {"success": True, "status": 0,
-                "message": "synthetic callback; not historical convergence", "nit": 0, "nfev": 0}),
-            source_provenance=source)
+            optimize_stage=callback, source_provenance=source)
         forward = record_candidate("forward", c, x, staged_record=staged, sampled_points=2)
         independent = record_candidate("independent", c, x, staged_record=staged, limited_points=2)
         report = pareto_report([forward, independent])
