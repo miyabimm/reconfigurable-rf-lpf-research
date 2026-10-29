@@ -357,6 +357,14 @@ def _classification(record):
         reasons.append("execution_provenance_missing")
     if b["numerical"]["state"] != "converged":
         reasons.append("numerical_" + b["numerical"]["state"])
+    elif b["staged_record"]:
+        # C2 replay checks reported status consistency, not feasibility. Use
+        # its final output/grid, not t as the Pareto IL or an earlier attempt.
+        sampled = b["staged_record"]["stage_calls"][-1]["observation"]["sampled_rf"]
+        if sampled["state"] != "observed":
+            reasons.append("final_c2_epigraph_not_verified")
+        elif not sampled["passband_epigraph_min_residual_db"] >= 0:
+            reasons.append("final_c2_epigraph_inequality_failed_on_grid")
     optimizer_kind = b["source_provenance"].get("value", {}).get("optimizer_kind")
     if b["numerical"]["state"] == "converged" and optimizer_kind not in ("synthetic_callback", "reported_slsqp"):
         reasons.append("optimizer_evidence_class_missing")
@@ -397,6 +405,10 @@ def _classification(record):
 def pareto_report(records):
     """Small area–IL non-dominance report, never a promotion decision.
 
+    Eligibility requires consistent reported convergence and nonnegative final
+    C2 passband epigraph residuals, in addition to the component/harmonic gates.
+    This is a comparison of checked optimization candidates, not arbitrary
+    circuits. The IL axis remains the recomputed finite-grid worst IL, never t.
     Keep equal points. Dominance means <= on both axes and < on at least one,
     as in scripts/report_research_pareto.py. Excluded records/reasons remain in
     output. Different conditions/depths have different groups, never ranks.
