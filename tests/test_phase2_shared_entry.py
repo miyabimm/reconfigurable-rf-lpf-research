@@ -26,42 +26,8 @@ from test_phase2_problem_seed import make
 from test_phase2_staged_optimization import status
 
 
-def fixture_checkpoint(circuit, row):
-    """Map the checked T005 fixture to the existing storage fields, not RF PASS.
-
-    No inferred parts/default values: Q, terminals and order come from the
-    stamped model, types from its definition and values from its full vector.
-    Other trial layouts require their own explicit mapping, not substitution.
-    """
-    from lpf.phase2_models.candidate_records import CandidateRecord, recheck_record
-    from scripts.audit_new_experiment_storage import validate_checkpoint
-    checked = recheck_record(CandidateRecord.from_json(json.dumps(row))).as_dict()
-    d, t, s = circuit.definition, circuit.topology, circuit.schema
-    if (circuit.policy_id != 'RF-T005' or s.n_ic_fixed or s.constant_caps_pf or
-            checked['policy_sha256'] != circuit.policy_fingerprint or
-            checked['definition'] != json.loads(json.dumps(asdict(d)))):
-        raise ValueError('Unsupported/mismatched fixture circuit')
-    values = circuit.decode(checked['vector'])
-    components = [dict(id=f'L{i}', L_nH=value, Q=t.inductor_q[i],
-                       series=d.inductor_types[i], terminals=list(d.inductor_tree.edges[i]))
-                  for i, value in enumerate(values.inductances_nh)]
-    for i, edge in enumerate(t.capacitor_edges):
-        components.append(dict(id=f'C{i}', Q=t.capacitor_q[i], terminals=list(edge),
-            series=d.fixed_c_types[i] if i < s.n_fixed else 'IC_VARIABLE_C',
-            C_pf_by_setting={case: values.capacitors_pf_by_setting[j][i]
-                             for j, case in enumerate(CASES)}))
-    payload = dict(candidate_id=checked['candidate_id'], topology=checked['stamped_topology'],
-        components=components,
-        couplings=[dict(inductor_indices=list(pair), signed_k=k)
-                   for pair, k in zip(t.coupling_pairs, values.coupling_k)],
-        chip_row=[f'L{i}' for i in d.physical_order],
-        fixed_values=dict(inductances_nh=list(values.inductances_nh),
-                          capacitors_pf=list(values.capacitors_pf_by_setting[0][:s.n_fixed])),
-        ic_variable_C_pf_by_setting={case: list(values.capacitors_pf_by_setting[j][
-            s.n_fixed:s.n_fixed + s.n_variable]) for j, case in enumerate(CASES)},
-        candidate_record=checked)
-    validate_checkpoint(payload, checked['candidate_id'])
-    return payload
+from scripts.run_phase2_one_start import (
+    candidate_checkpoint as fixture_checkpoint, run_one_start, finalize_one_start)
 
 
 class SharedEntryTests(unittest.TestCase):
@@ -118,6 +84,7 @@ class SharedEntryTests(unittest.TestCase):
                 path = Path(name.decode())
                 (repo / path).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / path, repo / path)
+            (repo / '.gitignore').write_text('results/\n__pycache__/\n*.pyc\n')
             (repo / 'experiments').mkdir()
             (repo / 'experiments/README').write_text('isolated fixture')
             ledger = repo / PATH
@@ -194,6 +161,120 @@ class SharedEntryTests(unittest.TestCase):
                 self.assertTrue(gate['candidate_promotion_blocked'])
                 minimize.assert_not_called()
                 staged.assert_not_called()
+            # Exercise the actual explicit driver, with real isolated commits.
+            planned_head = git('rev-parse', 'HEAD')
+            def forward(evaluator, x):
+                return np.where(evaluator.role == 0, .25,
+                                np.where(evaluator.role == 1, 29. if h2_bad[0] else 36., 36.))
+            h2_bad = [False]
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', forward), \
+                 patch('lpf.phase2_models.staged_optimization.minimize',
+                       side_effect=AssertionError('real SciPy forbidden')) as minimize:
+                for codes, expected in (((0, 0), 'converged'), ((4, 9), 'nonconverged'),
+                    ((8, 9), 'nonconverged'), ((4, 0, 0, 0), 'converged'),
+                    ((9, 0, 0, 0), 'converged'), ((0, 9, 0), 'converged'),
+                    ((0, 'error'), 'failed'), ((0, 'interrupt'), 'failed'),
+                    ((0, 'timeout'), 'failed'), ((0, 'stop'), 'failed'),
+                    ((0, 'source'), 'failed'),
+                    ((0, 'parts'), 'converged'), ((0, 'h2'), 'converged'),
+                    ((), 'not_started')):
+                    with self.subTest(driver=codes):
+                        calls = []
+                        h2_bad[0] = bool(codes and codes[-1] == 'h2')
+                        def solver(p, x, maxiter, target):
+                            self.assertTrue((repo / 'results' / ident / 'run.json').is_file())
+                            code = codes[len(calls)]
+                            calls.append(maxiter)
+                            if code == 'error':
+                                raise RuntimeError('fixture exception')
+                            if code == 'interrupt':
+                                raise KeyboardInterrupt('fixture interruption')
+                            if code == 'timeout':
+                                raise TimeoutError('fixture timeout')
+                            if code == 'stop':
+                                (repo / 'results' / ident / 'STOP').touch()
+                            if code == 'source':
+                                (repo / 'rf/bands.csv').write_text('changed during execution')
+                            if code == 'parts':
+                                x[3] = 0.  # excluded GJM boundary, status0 is not RF PASS
+                            x[-1] = .5
+                            return x, status(0 if isinstance(code, str) else code)
+                        if not codes:
+                            # Stop after preflight, before any dispatch.
+                            with patch('scripts.run_phase2_one_start.time.monotonic',
+                                       side_effect=[0., 2., 3.]):
+                                outcome = run_one_start(repo, ident, **args, **start_args,
+                                    optimize_stage=solver, timeout_seconds=1.)
+                        else:
+                            outcome = run_one_start(repo, ident, **args, **start_args,
+                                                    optimize_stage=solver)
+                        self.assertEqual(len(calls), len(codes))
+                        saved = json.loads((run / 'run_summary.json').read_text())
+                        self.assertEqual(saved['attempts'][expected], 1)
+                        self.assertEqual(saved['selection_before_run'], record['selection'])
+                        self.assertEqual(saved['source_provenance']['kind'], 'recorded')
+                        self.assertEqual(saved['source_provenance']['execution_kind'], 'injected_callback')
+                        self.assertFalse(outcome['rf_compliance_certified'])
+                        self.assertEqual(outcome['preservation'],
+                            'awaiting_git_readback' if codes and codes[-1] != 'source'
+                            else 'preservation_incomplete')
+                        if codes:
+                            staged = outcome['staged_record']
+                            self.assertEqual(len(staged['stage_calls']), len(codes))
+                            self.assertEqual(staged['stage_calls'][0]['input_vector'],
+                                             list(outcome['seed_record']['vector']))
+                            self.assertIn('grid_sha256', staged['grids']['fine'])
+                            self.assertGreaterEqual(staged['elapsed_seconds'], 0)
+                            if codes[-1] == 'interrupt':
+                                self.assertEqual(saved['termination']['type'], 'KeyboardInterrupt')
+                            if codes[-1] in ('parts', 'h2'):
+                                self.assertEqual(saved['selected_candidate_count'], 0)
+                            if codes == (0, 'stop'):
+                                self.assertEqual(saved['termination']['type'], '_Stopped')
+                                self.assertEqual(len(saved['callback_returns']), 2)
+                            if codes == (0, 0):
+                                with patch('scripts.run_phase2_one_start.tracked_file',
+                                           side_effect=ValueError('fixture readback failure')):
+                                    with self.assertRaisesRegex(ValueError, 'readback failure'):
+                                        finalize_one_start(repo, ident)
+                                incomplete = json.loads((run / 'storage_record.json').read_text())
+                                self.assertEqual(incomplete['stage'], 'preservation_incomplete')
+                                self.assertEqual(incomplete['git_readback'], 'not_run')
+                                self.assertTrue((repo / 'results' / ident / 'run.json').exists())
+                            if codes[-1] == 'source':
+                                self.assertEqual(saved['attempts']['not_started'], 0)
+                                self.assertIsNotNone(saved['partial_staged_record'])
+                                with self.assertRaises(ValueError):
+                                    finalize_one_start(repo, ident)
+                            else:
+                                report = finalize_one_start(repo, ident)
+                                self.assertTrue(report['committed_readback'])
+                                self.assertEqual(report['independent_validation'], 'not_run')
+                                final_head = git('rev-parse', 'HEAD')
+                                self.assertEqual(finalize_one_start(repo, ident), report)
+                                self.assertEqual(git('rev-parse', 'HEAD'), final_head)
+                            for ref in json.loads((run / 'manifest.json').read_text())['evidence']:
+                                if codes[-1] != 'source':
+                                    self.assertEqual(subprocess.check_output(['git', 'show', 'HEAD:' + ref['path']],
+                                        cwd=repo), (repo / ref['path']).read_bytes())
+                        else:
+                            with self.assertRaises(ValueError):
+                                finalize_one_start(repo, ident)
+                        self.assertTrue((repo / 'results' / ident / 'run.json').exists())
+                        with self.assertRaises(ValueError):
+                            run_one_start(repo, ident, **args, **start_args, optimize_stage=solver)
+                        git('reset', '--hard', planned_head)
+                        # Only disposable TemporaryDirectory fixture outputs are removed.
+                        shutil.rmtree(repo / 'results')
+                        git('clean', '-fd', '--', str(run.relative_to(repo)))
+                        h2_bad[0] = False
+                for change in ({'seed': 24}, {'vector': vector[:-1]}, {'fine_points': 3},
+                               {'budget': budget | {'policy_id': 'bad'}}, {'owner': 'wrong'},
+                               {'source_sha': '0' * 40}, {'input_sha256': '0' * 64}):
+                    with self.subTest(driver_rejection=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                        run_one_start(repo, ident, **(args | start_args | change),
+                                      optimize_stage=lambda *a: self.fail('solver called'))
+                minimize.assert_not_called()
             # A fixture-only adapter links the *same* checked manifest input to
             # the existing C1/C2 and #207 classifier. It is not a production entry.
             from lpf.phase2_models.staged_optimization import run_c1_staged

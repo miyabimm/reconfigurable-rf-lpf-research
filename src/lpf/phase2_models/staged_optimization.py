@@ -124,7 +124,7 @@ class _StageAbort(Exception):
 
 
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
-                  optimize_stage=scipy_slsqp_stage, source_provenance=None):
+                  optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -136,6 +136,9 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     start predecessor, even if the v2 run aborts partway through an attempt.
     ``source_provenance`` is caller-supplied source revision/dirty patch metadata;
     missing metadata is explicitly not supplied, never inferred as clean.
+    ``record_sink``, when supplied, receives snapshots before dispatch and after
+    every stage (including interruption), then the final record. Sink failures
+    propagate: callers must not claim durable preservation after a write fails.
     This API runs one start only; no EXP storage, multistart or dense checks.
     """
     if not callable(optimize_stage):
@@ -182,6 +185,12 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     calls = record["stage_calls"]
     started = time.monotonic()
 
+    def persist():
+        if record_sink is not None:
+            record_sink(deepcopy(record))
+
+    persist()
+
     def wrapped(problem, vector, maxiter, target):
         index = len(calls)
         name = "coarse" if problem is coarse else "fine"
@@ -194,6 +203,7 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                  "output_vector": None, "status": None, "observation": None,
                  "exception": None, "elapsed_seconds": None}
         calls.append(stage)
+        persist()
         tick = time.monotonic()
         try:
             raw_vector, raw_status = optimize_stage(problem, x.copy(), maxiter, target)
@@ -225,6 +235,7 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
             raise _StageAbort(str(exc)) from exc
         finally:
             stage["elapsed_seconds"] = time.monotonic() - tick
+            persist()
 
     try:
         result = run_termination_aware_slsqp(coarse, fine, initial, None, wrapped)
@@ -248,4 +259,5 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                          or len(group) < 2 else "completed_unclassified"})
     finally:
         record["elapsed_seconds"] = time.monotonic() - started
+        persist()
     return record
