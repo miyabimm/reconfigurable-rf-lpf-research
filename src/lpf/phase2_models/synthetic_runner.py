@@ -12,7 +12,7 @@ from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, run_termination_aware_slsqp
 import numpy as np
 from ._grid import ROOT
-from .candidate_records import CandidateRecord, record_candidate, recheck_record
+from .candidate_records import CandidateRecord, record_candidate, recheck_record, pareto_report
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage
 from .problem_seed import vector_fingerprint
 from .sampled_epigraph import SampledEpigraph
@@ -216,6 +216,73 @@ def run_synthetic(circuit, envelope, checkpoint, *, optimize_stage, max_new_star
         _write(path, body)
         count += 1
     return body
+
+
+def run_synthetic_preview(circuit, envelope, checkpoint, *, optimize_stage, max_new_starts=None):
+    """One-start mock -> durable checkpoint -> checked selection, in memory only.
+
+    Reuse the checkpoint reader (including failed-call replay) with zero new
+    starts before ranking. This is local synthetic readback, NOT Git HEAD
+    readback, EXP evidence, an execution approval or scientific certification.
+    The summary/selection fields follow phase2-git-only-v1; no manifest or new
+    candidate/checkpoint schema is created. An unknown in-progress outcome
+    still fails closed in run_synthetic, never becoming a fabricated count.
+    """
+    if len(envelope['plan']['starts']) != 1:
+        raise ValueError('Result preview requires exactly one synthetic start')
+    # Declare the diagnostic retention rule before the mock is called. All
+    # records and exclusions remain in result, whether selected or not.
+    selection = {'top_k': 0, 'retain': ['pareto'],
+                 'rule': 'Select checked within-group Pareto points for diagnostic preview only; '
+                         'retain all excluded/failed records separately in result. No Git export.',
+                 'estimated_curated_bytes': 0}
+    run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
+                  max_new_starts=max_new_starts)
+    result = run_synthetic(circuit, envelope, checkpoint, optimize_stage=optimize_stage,
+                           max_new_starts=0)
+    checked = [recheck_record(CandidateRecord.from_json(json.dumps(r, allow_nan=False)))
+               for r in result['completed']]
+    report = pareto_report(checked)
+    selected = [{'candidate_id': row['candidate_id'], 'selection_reason': 'pareto'}
+                for row in report['candidates'] if row['pareto_within_group'] is True]
+    counts = {'planned': 1, 'attempted': len(checked), 'converged': 0,
+              'nonconverged': 0, 'failed': 0, 'not_started': result['not_started']}
+    for record in checked:
+        state = record.as_dict()['numerical']['state']
+        counts['nonconverged' if state == 'not_converged' else state] += 1
+    if (counts['converged'] + counts['nonconverged'] + counts['failed'] != counts['attempted']
+            or counts['attempted'] + counts['not_started'] != counts['planned']):
+        raise ValueError('Synthetic attempt counts do not balance')
+    summary = {'experiment_id': None, 'attempts': counts,
+               'selected_candidate_count': len(selected),
+               'best_found': [item['candidate_id'] for item in selected],
+               'limitations': ['Non-EXP synthetic mock; reported convergence is not solver attestation.',
+                               'Diagnostic finite grids only; independent MNA/power, dense RF, '
+                               'continuous frequency, Q(f)/SRF/EM/tolerance not verified.',
+                               'Selection is not RF scientific PASS or candidate promotion.',
+                               'No EXP reservation, manifest, Git evidence export or real readback audit.']}
+    if not selected:
+        summary['no_candidate_reason'] = (
+            'Start not_started at checkpoint boundary.' if counts['not_started'] else
+            'No eligible Pareto candidate: ' + '; '.join(
+                row['candidate_id'] + ': ' + ', '.join(row['reasons'])
+                for row in report['candidates']))
+    plan = envelope['plan']
+    return {'mode': 'synthetic_mock', 'plan_fingerprint': envelope['fingerprint'],
+            'policy_id': plan['policy_id'], 'policy_sha256': plan['policy_sha256'],
+            'source': plan['source'], 'input_source': plan['input_source'],
+            'input_source_sha256': plan['input_source_sha256'], 'identity': plan['identity'],
+            'grids': plan['grids'], 'budget': plan['budget'], 'result': result,
+            'pareto': report, 'selection': selection, 'selected': selected, 'run_summary': summary,
+            'storage_policy': 'phase2-git-only-v1',
+            'contract_references': ['project/experiment_storage_policy.md',
+                                    'src/lpf/experiment_manifest.py'],
+            'synthetic_checkpoint_readback': 'passed', 'experiment_execution': 'not_run',
+            'manifest': 'not_run', 'reservation': 'not_verified', 'git_export': 'not_run',
+            'git_readback': 'not_run', 'storage_audit': 'not_run', 'owner_approval': 'not_verified',
+            'execution_allowed': False,
+            'validation_scope': 'diagnostic mock only; independent RF validation not run',
+            'candidate_promotion_blocked': True, 'rf_compliance_certified': False}
 
 
 def _provenance(plan):

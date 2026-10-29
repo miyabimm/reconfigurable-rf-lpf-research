@@ -20,7 +20,7 @@ def synthetic(policy_id, inductors):
     from lpf.phase2_models.topology_enumeration import TopologySpace, enumerate_topologies
     from lpf.phase2_models.problem_seed import vector_fingerprint
     from lpf.phase2_models.synthetic_plan import make_synthetic_plan
-    from lpf.phase2_models.synthetic_runner import run_synthetic
+    from lpf.phase2_models.synthetic_runner import run_synthetic_preview
 
     policy = load_constraint(policy_id, allow_trial=True)
     space = TopologySpace(
@@ -46,15 +46,8 @@ def synthetic(policy_id, inductors):
                         'nit': 0, 'nfev': 0}
 
     with tempfile.TemporaryDirectory(prefix='lpf-synthetic-') as tmp:
-        result = run_synthetic(circuit, envelope, Path(tmp) / 'checkpoint.json', optimize_stage=mock)
-    plan = envelope['plan']
-    return {'mode': 'synthetic_mock', 'plan_fingerprint': envelope['fingerprint'],
-            'policy_id': plan['policy_id'], 'policy_sha256': plan['policy_sha256'],
-            'source': plan['source'], 'input_source': plan['input_source'],
-            'input_source_sha256': plan['input_source_sha256'], 'grids': plan['grids'],
-            'budget': plan['budget'], 'result': result,
-            'validation_scope': 'diagnostic mock only; independent RF validation not run',
-            'candidate_promotion_blocked': True}
+        return run_synthetic_preview(circuit, envelope, Path(tmp) / 'checkpoint.json',
+                                     optimize_stage=mock)
 
 
 def _complete_checkout(root):

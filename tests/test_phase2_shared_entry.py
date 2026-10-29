@@ -31,6 +31,13 @@ class SharedEntryTests(unittest.TestCase):
                 self.assertEqual(result['mode'], 'synthetic_mock')
                 self.assertEqual(result['policy_id'], policy)
                 self.assertTrue(result['candidate_promotion_blocked'])
+                self.assertFalse(result['rf_compliance_certified'])
+                self.assertEqual(result['run_summary']['attempts'], {
+                    'planned': 1, 'attempted': 1, 'converged': 1,
+                    'nonconverged': 0, 'failed': 0, 'not_started': 0})
+                self.assertEqual(len(result['pareto']['candidates']), 1)
+                self.assertEqual(result['run_summary']['experiment_id'], None)
+                self.assertEqual(result['git_readback'], 'not_run')
                 candidate = result['result']['completed'][0]
                 self.assertEqual(candidate['numerical']['state'], 'converged')
                 self.assertEqual(candidate['validation']['independent_mna'], 'not_run')
