@@ -1,185 +1,299 @@
 {
-  "schema_version": 1,
-  "experiment_id": "EXP-072",
-  "phase": "Phase 2",
-  "purpose": "Issue226 Round1 group D RF-T008 rev3 4L chain GJM 1-start diagnostic",
-  "objective": "full_lpf",
+  "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+  "code": {
+    "archive_sha": null,
+    "execution_sha": "c4e45d631082f0cf5c82c025a0b9788d5e7e1b4a",
+    "working_tree_dirty": false
+  },
   "constraints": {
+    "base_constraint_id": "RF-F003",
     "class": "trial",
     "constraint_id": "RF-T008",
-    "base_constraint_id": "RF-F003",
     "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
     "effective_constraints": {
-      "policy_version": "2026-10-16",
-      "canonical_docs": "docs/specification.md",
+      "active_constraint_id": "RF-T008",
+      "active_constraint_status": "trial",
       "applicability": "all_new_Phase2_matching_only_and_full_lpf_explorations; historical_saved_numeric_checkpoints_preserved_with_prior_assumptions",
-      "historical_results_require_revalidation": true,
-      "source_ohms": {
-        "real": 50,
-        "imag": 0
-      },
-      "load_ohms": {
-        "real": 60,
-        "imag": -40,
-        "frequency_dependent": false
-      },
-      "bands_file": "data/bands.csv",
-      "passband_policy": "six_setting_UL_and_DL_B13B14_shared_setting",
-      "chip_area_unit": "one_LQP02_package_footprint",
-      "area_formula": "N_LQP02+(2/3)*N_LQP01+3*N_LQW04+(2/3)*N_GJM01+0*N_PCB_PATTERN_C",
       "area_budget": {
         "hard_cap": null,
-        "policy": "unconstrained_chip_area_pareto_objective",
         "historical_hard_cap": 6,
         "legacy_area_sweep": "0_to_6_in_1_over_3_units",
+        "policy": "unconstrained_chip_area_pareto_objective",
         "search_upper_bounds": "experiment_specific_computational_scope_only"
       },
+      "area_formula": "N_LQP02+(2/3)*N_LQP01+3*N_LQW04+(2/3)*N_GJM01+0*N_PCB_PATTERN_C",
+      "bands_file": "data/bands.csv",
+      "canonical_docs": "docs/specification.md",
+      "chip_area_unit": "one_LQP02_package_footprint",
+      "chip_inductor_placement": {
+        "all_pair_k_equal_0_4": "historical_idealized_outside_current_layout_constraints",
+        "approved_layout": "single_linear_row",
+        "chip_orientation": "same magnetic-axis orientation for aiding strong coupling, signed coupling determined by electrical current reference and dot convention",
+        "inductance_matrix_requirement": "positive_definite_full_chip_plus_PCB_mutual_inductance_matrix",
+        "layout_two_dimensional": "not_approved",
+        "model_notes": "Upper bounds do not imply simultaneous physical realizability; variable coupling coefficients require physical justification",
+        "nominal_k_for_nonstrong": 0,
+        "nonstrong_abs_k_max_weak_coupling_sensitivity": 0.03,
+        "nonstrong_includes": "all physically nonadjacent pairs and any adjacent pair not designated strongly coupled",
+        "placement_and_fixed_coupling_common_across_all_six_band_settings": true,
+        "strength_grouping": "selected subset of consecutive physical neighbor edges",
+        "strong_abs_k_max": 0.1,
+        "strong_neighbor_degree_max": 2,
+        "strong_pair_count_max_expression": "max(0, N_chip_inductors - 1)"
+      },
       "components": {
-        "LQP02": {
-          "category": "chip_inductor_family",
-          "q": null,
-          "q_policy": "select_from_explicit_series_not_single_package_Q",
-          "area_units": 1,
-          "common_across_settings": true,
-          "series": {
-            "LQP02HV": {
-              "q": 25,
-              "min_inductance_nH": 0.4,
-              "max_inductance_nH": 27,
-              "area_units": 1,
-              "priority": "preferred",
-              "q_is_design_assumption": true
-            },
-            "LQP02HQ": {
-              "q": 20,
-              "min_inductance_nH": 0.2,
-              "max_inductance_nH": 56,
-              "area_units": 1,
-              "priority": "fallback_only_as_justified",
-              "q_is_design_assumption": true
-            }
-          },
-          "preferred_series": "LQP02HV",
-          "preferred_max_inductance_nH": 27,
-          "require_explicit_series_for_new_candidates": true,
-          "default_series_assignment": "HV_if_0p4_to_27nH; HQ_if_above_27_up_to_56nH; explicit_HQ_below_27_allowed_with_Q20",
-          "strongly_discourage_large_inductance": true,
-          "high_inductance_risk": "Inductor SRF approaches RF operating/harmonic bands as L rises; constant-Q/lumped results can diverge from physical characteristics.",
-          "srf_and_parasitic_validation": "part_number_specific_SRF_and_S_parameter_review_before_implementation",
-          "historical_uniform_Q25_56nH_model": "legacy_numerical_only_requires_new_series_reoptimization",
-          "active_rule_since": "2026-10-12",
-          "manufacturer_range_source": "https://www.murata.com/ja-jp/products/inductor/chip/overview/lineup/rf1",
-          "legacy_baseline_q": 25,
-          "legacy_baseline_q_usage": "for_immutable_LPF007_LPF008_regression_only_not_for_new_candidates"
-        },
-        "LQP01": {
-          "category": "chip_inductor",
-          "q": 15,
-          "area_units_fraction": "2/3",
-          "common_across_settings": true,
-          "inductance_range_confirmed": false
-        },
-        "LQW04": {
-          "category": "chip_inductor",
-          "q": 33,
-          "area_units": 3,
-          "common_across_settings": true,
-          "q_is_assumption": true
-        },
         "GJM01": {
-          "category": "fixed_chip_capacitor",
-          "q": 80,
-          "max_pf_per_component": 100,
-          "area_units_fraction": "2/3",
-          "common_across_settings": true,
           "allowed_positions": [
             "shunt",
             "series",
             "bridge"
           ],
-          "q_is_assumption": true,
-          "area_cost_distinct_from_PCB_PATTERN_C": true
+          "area_cost_distinct_from_PCB_PATTERN_C": true,
+          "area_units_fraction": "2/3",
+          "category": "fixed_chip_capacitor",
+          "common_across_settings": true,
+          "max_pf_per_component": 100,
+          "q": 80,
+          "q_is_assumption": true
         },
         "IC_VARIABLE_C": {
-          "category": "IC_switched_capacitor_abstract_continuous",
-          "q": 35,
           "area_units": 0,
+          "category": "IC_switched_capacitor_abstract_continuous",
           "max_branches_principle": 2,
           "max_total_variable_pf_per_branch": 3,
           "min_total_variable_pf_per_branch": 0,
+          "parallel_with_fixed_GJM01_allowed": true,
+          "physical_switch_design_phase3_paused": true,
           "positions_allowed_by_default": [
             "shunt_to_ground",
             "non_ground_bridge",
             "series"
           ],
+          "q": 35,
+          "q_is_assumption": true,
           "series_requires_separate_approval": false,
-          "parallel_with_fixed_GJM01_allowed": true,
-          "setting_dependent": true,
-          "physical_switch_design_phase3_paused": true,
+          "setting_dependent": true
+        },
+        "LQP01": {
+          "area_units_fraction": "2/3",
+          "category": "chip_inductor",
+          "common_across_settings": true,
+          "inductance_range_confirmed": false,
+          "q": 15
+        },
+        "LQP02": {
+          "active_rule_since": "2026-10-12",
+          "area_units": 1,
+          "category": "chip_inductor_family",
+          "common_across_settings": true,
+          "default_series_assignment": "HV_if_0p4_to_27nH; HQ_if_above_27_up_to_56nH; explicit_HQ_below_27_allowed_with_Q20",
+          "high_inductance_risk": "Inductor SRF approaches RF operating/harmonic bands as L rises; constant-Q/lumped results can diverge from physical characteristics.",
+          "historical_uniform_Q25_56nH_model": "legacy_numerical_only_requires_new_series_reoptimization",
+          "legacy_baseline_q": 25,
+          "legacy_baseline_q_usage": "for_immutable_LPF007_LPF008_regression_only_not_for_new_candidates",
+          "manufacturer_range_source": "https://www.murata.com/ja-jp/products/inductor/chip/overview/lineup/rf1",
+          "preferred_max_inductance_nH": 27,
+          "preferred_series": "LQP02HV",
+          "q": null,
+          "q_policy": "select_from_explicit_series_not_single_package_Q",
+          "require_explicit_series_for_new_candidates": true,
+          "series": {
+            "LQP02HQ": {
+              "area_units": 1,
+              "max_inductance_nH": 56,
+              "min_inductance_nH": 0.2,
+              "priority": "fallback_only_as_justified",
+              "q": 20,
+              "q_is_design_assumption": true
+            },
+            "LQP02HV": {
+              "area_units": 1,
+              "max_inductance_nH": 27,
+              "min_inductance_nH": 0.4,
+              "priority": "preferred",
+              "q": 25,
+              "q_is_design_assumption": true
+            }
+          },
+          "srf_and_parasitic_validation": "part_number_specific_SRF_and_S_parameter_review_before_implementation",
+          "strongly_discourage_large_inductance": true
+        },
+        "LQW04": {
+          "area_units": 3,
+          "category": "chip_inductor",
+          "common_across_settings": true,
+          "q": 33,
           "q_is_assumption": true
         },
         "PCB_L": {
-          "category": "embedded_inductor",
-          "q": 12,
           "area_units": 0,
-          "max_count_principle": 3,
-          "max_inductance_nh_approx": 2,
+          "category": "embedded_inductor",
           "common_across_settings": true,
+          "max_count_principle": 3,
+          "max_inductance_nh": 2,
+          "max_inductance_nh_approx": 2,
           "pcb_footprint_unmodeled": true,
-          "max_inductance_nh": 2
+          "q": 12
         },
         "PCB_PATTERN_C": {
-          "category": "fixed_pcb_pattern_capacitor",
-          "q": 40,
-          "q_is_assumption": true,
-          "min_pf_per_component": 0.02,
-          "max_pf_per_component": 0.2,
-          "max_count": 3,
-          "area_units": 0,
-          "common_across_settings": true,
           "allowed_positions": [
             "shunt",
             "series",
             "bridge"
           ],
+          "area_units": 0,
+          "category": "fixed_pcb_pattern_capacitor",
+          "common_across_settings": true,
           "footprint_and_routing_area_unmodeled": true,
+          "max_count": 3,
+          "max_pf_per_component": 0.2,
+          "min_pf_per_component": 0.02,
           "parasitic_and_EM_validation_required": true,
           "physical_implementation_notes": "Chip area cost is zero, not actual PCB area; 0.02 to 0.2 pF has not been verified by EM or manufacturing tolerance.",
+          "q": 40,
+          "q_is_assumption": true,
           "upper_limit_status": "owner_approved_2026-10-11"
         }
       },
+      "cost_performance_policy": {
+        "comparison": "best_found_non_dominated_candidates_under_identical_RF_conditions",
+        "full_lpf_harmonics": "minimum_30dB_required_nominal_35dB_target",
+        "objectives": [
+          "minimize_chip_area_cost",
+          "minimize_worst_six_setting_UL_DL_IL_db"
+        ],
+        "physical_implementation": "PCB_and_IC_resources_separately_reported",
+        "recommendation": "final_tradeoff_selection_after_pareto_analysis"
+      },
       "coupling_limits": {
-        "chip_pcb_abs_k_max": 0,
-        "pcb_pcb_theoretical_model": "full_inductance_matrix_positive_definite_required_and_abs_k_le_0_10",
-        "pcb_pcb_0_98_physical_feasibility": "historical_theoretical_only_out_of_new_default_policy",
-        "mixed_chip_package_mutual_feasibility": "unverified",
-        "pcb_pcb_abs_k_max_default": 0.1,
-        "legacy_chip_chip_major_two_pairs_abs_k_max": 0.25,
-        "legacy_chip_chip_other_pairs_abs_k_max": 0.16,
         "chip_chip_all_pair_0_4_physical_feasibility": "unverified",
-        "full_L_inductance_matrix_positive_definite_required": true,
-        "legacy_chip_chip_all_pairs_abs_k_max_default": 0.4,
-        "chip_chip_strong_adjacent_abs_k_max": 0.1,
+        "chip_chip_allow_2d_layout": false,
         "chip_chip_nonstrong_abs_k_max": 0.03,
         "chip_chip_nonstrong_nominal_k": 0,
+        "chip_chip_strong_adjacent_abs_k_max": 0.1,
         "chip_chip_strong_allowed_only_for_physical_neighbors": true,
-        "chip_chip_allow_2d_layout": false
+        "chip_pcb_abs_k_max": 0,
+        "full_L_inductance_matrix_positive_definite_required": true,
+        "legacy_chip_chip_all_pairs_abs_k_max_default": 0.4,
+        "legacy_chip_chip_major_two_pairs_abs_k_max": 0.25,
+        "legacy_chip_chip_other_pairs_abs_k_max": 0.16,
+        "mixed_chip_package_mutual_feasibility": "unverified",
+        "pcb_pcb_0_98_physical_feasibility": "historical_theoretical_only_out_of_new_default_policy",
+        "pcb_pcb_abs_k_max_default": 0.1,
+        "pcb_pcb_theoretical_model": "full_inductance_matrix_positive_definite_required_and_abs_k_le_0_10"
       },
       "evaluation": {
-        "il_db": "-10*log10(Pload/Pavs)",
-        "matching_only_phase2": {
-          "h2_h3_constraints": false,
-          "minimize": "worst_case_IL_over_six_settings_and_all_UL_DL_ranges"
-        },
+        "external_fixed_parasitics_included": true,
         "full_phase2": {
           "minimum_h2_h3_db": 30,
           "nominal_h2_h3_target_db": 35,
           "nominal_max_il_db": 0.3
         },
         "full_results_not_yet_revalidated_under_new_policy": true,
-        "external_fixed_parasitics_included": true
+        "il_db": "-10*log10(Pload/Pavs)",
+        "matching_only_phase2": {
+          "h2_h3_constraints": false,
+          "minimize": "worst_case_IL_over_six_settings_and_all_UL_DL_ranges"
+        }
       },
-      "phase3": "paused_until_explicit_owner_approval",
+      "external_port_parasitics": {
+        "cascade_order": [
+          "external_input",
+          "input_parasitic_Port1",
+          "input_parasitic_Port2",
+          "LPF_IN",
+          "LPF_OUT",
+          "output_parasitic_Port1",
+          "output_parasitic_Port2",
+          "external_output"
+        ],
+        "fixed_all_six_settings": true,
+        "format": {
+          "column_order": "frequency_Hz, S11_RI, S21_RI, S12_RI, S22_RI",
+          "f_start_hz": 0,
+          "f_step_hz": 1000000,
+          "f_stop_hz": 6000000000,
+          "header": "# Hz S RI R 50",
+          "points": 6001,
+          "touchstone_version": 1,
+          "z0_ohms": 50
+        },
+        "input_parasitic": {
+          "path": "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
+          "port1": "external input (Ant.)",
+          "port2": "LPF IN (Coupler)",
+          "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"
+        },
+        "known_source_components": "Circuit1 input R1=9.8963ohm C1=0.7057pF; series R2=2.2367ohm L=0.9443nH; output C2=0.4237pF R3=5601.2ohm. Circuit2 shunt R1=8.00411kohm C1=0.601157pF series C2=0.334903pF+R2=24.891529kohm; series R3=1.57537ohm.",
+        "optimized_lpf_chip_area_excludes_fixed_parasitic_area": true,
+        "optimized_lpf_component_counts_exclude_parasitic_components": true,
+        "output_parasitic": {
+          "path": "data/parasitics/circuit2_poc_through_0_6ghz.s2p",
+          "port1": "LPF OUT (POC)",
+          "port2": "external output (Through)",
+          "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "provenance": "Ideal lumped RLC model extracted from handwritten circuit images, not VNA/EM measurement; input circuit C1/C2 and reference plane require physical confirmation.",
+        "runtime": {
+          "internal_50ohm_terminations": false,
+          "invalid_or_hash_mismatch": "fail_closed",
+          "load_once_per_worker": true,
+          "off_grid_interpolation": "linear_real_and_imag_parts_of_each_complex_Sij",
+          "outside_range": "error_no_extrapolation",
+          "recompute_RLC_per_objective_call": false,
+          "use_cached_S_parameters": true
+        },
+        "status": "mandatory_fixed_precomputed_touchstone_S2P",
+        "system_evaluation": {
+          "cascade": "input_S2P @ LPF_2port @ output_S2P (ABCD or stable equivalent)",
+          "harmonic_attenuation": "same 50ohm-source and complex-load transducer-power convention as insertion loss; positive attenuation=-10log10(GT)",
+          "insertion_loss": "-10log10(Pload/Pavs) for complete externally terminated network",
+          "load_ohms": {
+            "imag": -40,
+            "real": 60
+          },
+          "metrics_reference_planes": "external_input_to_external_output",
+          "nominal_S_parameter_reference_ohms": 50,
+          "rf_bands": "data/bands.csv",
+          "source_ohms": {
+            "imag": 0,
+            "real": 50
+          }
+        }
+      },
+      "historical_results_require_revalidation": true,
+      "inductor_series_optimization_policy": {
+        "compare_as_pareto_axes": [
+          "worst_IL_dB",
+          "minimum_H2_H3_margin_dB",
+          "chip_area_cost",
+          "HQ_count",
+          "max_L_nH",
+          "series_srf_risk"
+        ],
+        "conditional_fallback": "allow_LQP02HQ_Q20_0.2_to_56nH_when_HV_only_is_infeasible_or_substantially_worse_in_observed_local_search",
+        "do_not_replace_IL_objective_with_unapproved_fixed_penalty": true,
+        "fallback_priority": [
+          "minimize_number_of_HQ_inductors",
+          "minimize_largest_HQ_inductance_nH",
+          "minimize_sum_of_HQ_inductances_nH"
+        ],
+        "frequency_dependence": "use_fixed_approved_Q_per_series_for_Phase2_optimization; real_Qf_and_SRF_check_separately",
+        "historical_candidate_rule": "retain_original_historical_metrics_but_do_not_label_new_policy_verified_without_reoptimization_and_independent_check",
+        "if_unspecified_series": "do_not_assume_Q25_for_L_over_27nH",
+        "maximum_approved_HQ_nH": 56,
+        "phase": "Phase 2",
+        "preferred_first_pass": "optimize_with_all_LQP02HV_in_0.4_to_27nH_Q25",
+        "primary_Rf_constraints_unchanged": false,
+        "primary_objective": "minimize_six_setting_full_UL_DL_worst_IL_with_H2_H3_requirements_and_chip_area_pareto_reporting",
+        "srf_gate": "do_not_claim_measured_feasibility_without_selected_part_srf_and_parasitic_evidence"
+      },
+      "latest_owner_approved_extension_date": "2026-10-16",
+      "load_ohms": {
+        "frequency_dependent": false,
+        "imag": -40,
+        "real": 60
+      },
       "overrides_require_owner_approval": [
         "more_than_2_independent_variable_C_branches",
         "more_than_3_PCB_inductors",
@@ -193,398 +307,192 @@
         "PCB_L_above_2_nH",
         "IC_variable_C_per_branch_above_3p0_pF"
       ],
+      "passband_policy": "six_setting_UL_and_DL_B13B14_shared_setting",
+      "phase3": "paused_until_explicit_owner_approval",
       "policy_revision": "2026-10-16_RF-F003_owner_approved_external_fixed_S2P_k0p10_IC_variable_3pF_Q35",
-      "chip_inductor_placement": {
-        "approved_layout": "single_linear_row",
-        "strength_grouping": "selected subset of consecutive physical neighbor edges",
-        "strong_pair_count_max_expression": "max(0, N_chip_inductors - 1)",
-        "strong_neighbor_degree_max": 2,
-        "nonstrong_includes": "all physically nonadjacent pairs and any adjacent pair not designated strongly coupled",
-        "nominal_k_for_nonstrong": 0,
-        "nonstrong_abs_k_max_weak_coupling_sensitivity": 0.03,
-        "strong_abs_k_max": 0.1,
-        "chip_orientation": "same magnetic-axis orientation for aiding strong coupling, signed coupling determined by electrical current reference and dot convention",
-        "placement_and_fixed_coupling_common_across_all_six_band_settings": true,
-        "all_pair_k_equal_0_4": "historical_idealized_outside_current_layout_constraints",
-        "layout_two_dimensional": "not_approved",
-        "inductance_matrix_requirement": "positive_definite_full_chip_plus_PCB_mutual_inductance_matrix",
-        "model_notes": "Upper bounds do not imply simultaneous physical realizability; variable coupling coefficients require physical justification"
-      },
-      "latest_owner_approved_extension_date": "2026-10-16",
+      "policy_version": "2026-10-16",
       "policy_version_semantics": "Formal RF-F003 approved 2026-10-16; immutable RF-F002 preserved; trial RF-T005 uses RF-F003 as fixed base.",
-      "inductor_series_optimization_policy": {
-        "phase": "Phase 2",
-        "primary_Rf_constraints_unchanged": false,
-        "primary_objective": "minimize_six_setting_full_UL_DL_worst_IL_with_H2_H3_requirements_and_chip_area_pareto_reporting",
-        "preferred_first_pass": "optimize_with_all_LQP02HV_in_0.4_to_27nH_Q25",
-        "conditional_fallback": "allow_LQP02HQ_Q20_0.2_to_56nH_when_HV_only_is_infeasible_or_substantially_worse_in_observed_local_search",
-        "fallback_priority": [
-          "minimize_number_of_HQ_inductors",
-          "minimize_largest_HQ_inductance_nH",
-          "minimize_sum_of_HQ_inductances_nH"
-        ],
-        "do_not_replace_IL_objective_with_unapproved_fixed_penalty": true,
-        "compare_as_pareto_axes": [
-          "worst_IL_dB",
-          "minimum_H2_H3_margin_dB",
-          "chip_area_cost",
-          "HQ_count",
-          "max_L_nH",
-          "series_srf_risk"
-        ],
-        "if_unspecified_series": "do_not_assume_Q25_for_L_over_27nH",
-        "historical_candidate_rule": "retain_original_historical_metrics_but_do_not_label_new_policy_verified_without_reoptimization_and_independent_check",
-        "frequency_dependence": "use_fixed_approved_Q_per_series_for_Phase2_optimization; real_Qf_and_SRF_check_separately",
-        "maximum_approved_HQ_nH": 56,
-        "srf_gate": "do_not_claim_measured_feasibility_without_selected_part_srf_and_parasitic_evidence"
-      },
-      "active_constraint_id": "RF-T008",
-      "active_constraint_status": "trial",
-      "cost_performance_policy": {
-        "objectives": [
-          "minimize_chip_area_cost",
-          "minimize_worst_six_setting_UL_DL_IL_db"
-        ],
-        "full_lpf_harmonics": "minimum_30dB_required_nominal_35dB_target",
-        "comparison": "best_found_non_dominated_candidates_under_identical_RF_conditions",
-        "recommendation": "final_tradeoff_selection_after_pareto_analysis",
-        "physical_implementation": "PCB_and_IC_resources_separately_reported"
-      },
-      "external_port_parasitics": {
-        "status": "mandatory_fixed_precomputed_touchstone_S2P",
-        "cascade_order": [
-          "external_input",
-          "input_parasitic_Port1",
-          "input_parasitic_Port2",
-          "LPF_IN",
-          "LPF_OUT",
-          "output_parasitic_Port1",
-          "output_parasitic_Port2",
-          "external_output"
-        ],
-        "input_parasitic": {
-          "path": "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
-          "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
-          "port1": "external input (Ant.)",
-          "port2": "LPF IN (Coupler)"
-        },
-        "output_parasitic": {
-          "path": "data/parasitics/circuit2_poc_through_0_6ghz.s2p",
-          "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da",
-          "port1": "LPF OUT (POC)",
-          "port2": "external output (Through)"
-        },
-        "format": {
-          "touchstone_version": 1,
-          "header": "# Hz S RI R 50",
-          "z0_ohms": 50,
-          "f_start_hz": 0,
-          "f_stop_hz": 6000000000,
-          "f_step_hz": 1000000,
-          "points": 6001,
-          "column_order": "frequency_Hz, S11_RI, S21_RI, S12_RI, S22_RI"
-        },
-        "runtime": {
-          "load_once_per_worker": true,
-          "use_cached_S_parameters": true,
-          "recompute_RLC_per_objective_call": false,
-          "off_grid_interpolation": "linear_real_and_imag_parts_of_each_complex_Sij",
-          "outside_range": "error_no_extrapolation",
-          "invalid_or_hash_mismatch": "fail_closed",
-          "internal_50ohm_terminations": false
-        },
-        "system_evaluation": {
-          "cascade": "input_S2P @ LPF_2port @ output_S2P (ABCD or stable equivalent)",
-          "source_ohms": {
-            "real": 50,
-            "imag": 0
-          },
-          "load_ohms": {
-            "real": 60,
-            "imag": -40
-          },
-          "insertion_loss": "-10log10(Pload/Pavs) for complete externally terminated network",
-          "harmonic_attenuation": "same 50ohm-source and complex-load transducer-power convention as insertion loss; positive attenuation=-10log10(GT)",
-          "rf_bands": "data/bands.csv",
-          "metrics_reference_planes": "external_input_to_external_output",
-          "nominal_S_parameter_reference_ohms": 50
-        },
-        "fixed_all_six_settings": true,
-        "optimized_lpf_component_counts_exclude_parasitic_components": true,
-        "optimized_lpf_chip_area_excludes_fixed_parasitic_area": true,
-        "provenance": "Ideal lumped RLC model extracted from handwritten circuit images, not VNA/EM measurement; input circuit C1/C2 and reference plane require physical confirmation.",
-        "known_source_components": "Circuit1 input R1=9.8963ohm C1=0.7057pF; series R2=2.2367ohm L=0.9443nH; output C2=0.4237pF R3=5601.2ohm. Circuit2 shunt R1=8.00411kohm C1=0.601157pF series C2=0.334903pF+R2=24.891529kohm; series R3=1.57537ohm."
+      "source_ohms": {
+        "imag": 0,
+        "real": 50
       },
       "trial_base_constraint_id": "RF-F003",
-      "trial_variable_c_layout": {
-        "branch_count": 2,
-        "count_policy": "up_to",
-        "connection_policy": "any_allowed"
-      },
-      "trial_pcb_pattern_c_by_connection": {
-        "ground_node": 0,
-        "grounded": {
-          "min_pf_per_component": 0.02,
-          "max_pf_per_component": 1,
-          "q": 60
-        },
-        "non_ground": {
-          "min_pf_per_component": 0.02,
-          "max_pf_per_component": 0.2,
-          "q": 40
-        },
-        "max_count": 3,
-        "q_model": "omega_C_over_1_over_Q_minus_j",
-        "fixed_components_only": true,
-        "setting_invariant": true,
-        "nominal_only": true
-      },
       "trial_ic_fixed_c_by_connection": {
+        "additional_chip_area_units": 0,
+        "fixed_c_count_per_installed_variable_C": 1,
+        "fixed_c_counts_toward_pcb_pattern_C": 0,
+        "fixed_c_frequency_invariant": true,
+        "fixed_c_only_in_parallel_with_installed_variable_C": true,
+        "fixed_c_q": 60,
+        "fixed_c_setting_invariant": true,
+        "fixed_c_stays_at_variable_C_zero": true,
         "ground_node": 0,
         "grounded": {
-          "min_pf_per_branch": 0.5,
-          "max_pf_per_branch": 3
+          "max_pf_per_branch": 3,
+          "min_pf_per_branch": 0.5
         },
+        "max_composite_branches": 2,
         "non_ground": {
-          "min_pf_per_branch": 0.2,
-          "max_pf_per_branch": 3
+          "max_pf_per_branch": 3,
+          "min_pf_per_branch": 0.2
         },
-        "fixed_c_q": 60,
+        "physical_chip_footprint_status": "not_modeled_nominal_phase2_only",
+        "q_model": "omega_C_over_1_over_Q_minus_j",
+        "tolerance_status": "nominal_only_not_evaluated",
         "variable_c_q": 35,
         "variable_capacitance_pf_range": [
           0,
           3
-        ],
-        "fixed_c_stays_at_variable_C_zero": true,
-        "fixed_c_setting_invariant": true,
-        "fixed_c_frequency_invariant": true,
-        "fixed_c_only_in_parallel_with_installed_variable_C": true,
-        "fixed_c_count_per_installed_variable_C": 1,
-        "max_composite_branches": 2,
-        "fixed_c_counts_toward_pcb_pattern_C": 0,
-        "additional_chip_area_units": 0,
+        ]
+      },
+      "trial_pcb_pattern_c_by_connection": {
+        "fixed_components_only": true,
+        "ground_node": 0,
+        "grounded": {
+          "max_pf_per_component": 1,
+          "min_pf_per_component": 0.02,
+          "q": 60
+        },
+        "max_count": 3,
+        "nominal_only": true,
+        "non_ground": {
+          "max_pf_per_component": 0.2,
+          "min_pf_per_component": 0.02,
+          "q": 40
+        },
         "q_model": "omega_C_over_1_over_Q_minus_j",
-        "physical_chip_footprint_status": "not_modeled_nominal_phase2_only",
-        "tolerance_status": "nominal_only_not_evaluated"
+        "setting_invariant": true
+      },
+      "trial_variable_c_layout": {
+        "branch_count": 2,
+        "connection_policy": "any_allowed",
+        "count_policy": "up_to"
       }
     },
     "legacy_policy_version": "2026-10-16"
   },
-  "code": {
-    "execution_sha": "c4e45d631082f0cf5c82c025a0b9788d5e7e1b4a",
-    "working_tree_dirty": false,
-    "archive_sha": null
-  },
-  "random_seed": 23,
   "environment": {
-    "python": "3.12.15",
-    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
     "dependencies": {
       "numpy": "2.5.4",
       "scipy": "1.18.1"
-    }
-  },
-  "search_scope": {
-    "issue_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/226",
-    "group": "D",
-    "starts": 1,
-    "purpose_boundary": "RF-T008 rev3 diagnostic screening only; not formal RF certification or global optimum.",
-    "input_source": {
-      "definition": {
-        "inductor_tree": {
-          "node_count": 5,
-          "edges": [
-            [
-              0,
-              1
-            ],
-            [
-              1,
-              2
-            ],
-            [
-              2,
-              3
-            ],
-            [
-              3,
-              4
-            ]
-          ],
-          "source_node": 0,
-          "load_node": 2
-        },
-        "inductor_types": [
-          "LQP02HV",
-          "LQP02HV",
-          "LQP02HV",
-          "LQP02HV"
-        ],
-        "physical_order": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "coupling_pairs": [
-          [
-            0,
-            1
-          ],
-          [
-            1,
-            2
-          ],
-          [
-            2,
-            3
-          ]
-        ],
-        "capacitor_placement": {
-          "node_count": 5,
-          "fixed_edges": [
-            [
-              0,
-              1
-            ],
-            [
-              3,
-              -1
-            ],
-            [
-              4,
-              -1
-            ]
-          ],
-          "variable_edges": [
-            [
-              4,
-              -1
-            ],
-            [
-              0,
-              3
-            ]
-          ],
-          "ic_fixed_edges": [
-            [
-              4,
-              -1
-            ],
-            [
-              0,
-              3
-            ]
-          ]
-        },
-        "fixed_c_types": [
-          "GJM01",
-          "PCB_PATTERN_C",
-          "PCB_PATTERN_C"
-        ],
-        "variable_roles": [
-          "shunt_to_ground",
-          "bridge"
-        ]
-      },
-      "vector": [
-        2.0,
-        2.0,
-        2.0,
-        2.0,
-        0.5,
-        0.1,
-        0.1,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.5,
-        0.5,
-        1.75,
-        0.75,
-        1.5,
-        1.0,
-        1.25,
-        1.25,
-        1.0,
-        1.5,
-        0.75,
-        1.75,
-        0.5
-      ],
-      "vector_sha256": "3b9891f02aa4baada64840f9594cc47da25716ad392d72574ffbb537b18e609b",
-      "seed": 23,
-      "jitter_fraction": 0.0,
-      "grids": {
-        "coarse_points": 2,
-        "fine_points": 3
-      },
-      "budget": {
-        "policy_id": "slsqp-staged-v2",
-        "primary": {
-          "coarse": 240,
-          "fine": 120
-        },
-        "recovery": {
-          "coarse": 500,
-          "fine": 280
-        },
-        "retries_on_iteration_limit": 1
-      }
     },
-    "input_source_sha256": "57f093d93d7ce5174c83d1c3cf4af98be6eddb75205a79bb1d345b2cf339b76e",
-    "input_source_origin": {
-      "definition": "Issue #226 fixed Round 1 table; ordered L edges, chip row and adjacent coupling slots unchanged.",
-      "vector": "Issue #226 deterministic rule encoded using circuit.schema from typed CircuitValues; no historical projection or warm start.",
-      "vector_order": "L[nH] -> fixedC[pF] -> signed k -> IC-fixedC[pF] -> six settings Cv[pF], B71/B12/B28/B13+B14/B26/B8.",
-      "vector_sha256_encoding": "SHA256 contiguous little-endian float64 bytes (vector_fingerprint).",
-      "input_source_sha256_encoding": "canonical_config_hash: sorted-key compact JSON."
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.15"
+  },
+  "evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-072/run_summary.json",
+      "sha256": "e370f13cd17bfc4585721e51f14191e01b6da48b8918dadd667ea73eed404acd"
+    }
+  ],
+  "execution": {
+    "elapsed_seconds": 1.8507884620048571,
+    "evaluation_count": 2046,
+    "status": "completed"
+  },
+  "experiment_id": "EXP-072",
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "objective": "full_lpf",
+  "phase": "Phase 2",
+  "purpose": "Issue226 Round1 group D RF-T008 rev3 4L chain GJM 1-start diagnostic",
+  "random_seed": 23,
+  "schema_version": 1,
+  "search_scope": {
+    "diagnostic_grid": {
+      "coarse_total_samples": 56,
+      "fine_total_samples": 84,
+      "gap_bridging": false,
+      "limitations": "2/3 points per separate interval; not comparable to historical 7/17/1001 grids as equal-depth RF evidence.",
+      "separate_intervals": 28,
+      "settings": 6,
+      "source": "rf/bands.csv"
+    },
+    "execution_plan": {
+      "cleanup": "G5 not authorized; retain raw.",
+      "driver": "scripts.run_phase2_one_start.run_one_start",
+      "existing_raw_action": "STOP; preserve raw; no rerun.",
+      "finalize": "Inspect evidence then explicitly finalize_one_start for local Git HEAD byte audit.",
+      "mandatory_stop": "Issue #226 major STOP conditions apply; evidence mismatch/partial/timeout/exception blocks next group.",
+      "maximum_stage_calls": 4,
+      "optimize_stage": "Omit argument; real scipy_slsqp_stage default, no callback/mock.",
+      "order": "A -> B -> C -> D, each result independently reviewed, merged and main CI/remote byte checked before next group.",
+      "raw_path": "results/EXP-072/run.json",
+      "recovery": "Existing slsqp-staged-v2 status-dependent recovery only. No extra starts, reruns, seeds, or budget change.",
+      "round_maximum_stage_calls": 16,
+      "round_maximum_starts": 4,
+      "timeout_seconds": 300,
+      "timeout_semantics": "Cooperative stage-boundary timeout, not hard wall-clock limit."
+    },
+    "group": "D",
+    "historical_context": {
+      "comparison_limit": "Same T008 rev3 SHA observed, but different vectors/topology/physical chip row/coupling slots and grid/validation depth; no direct performance ranking or warm-start reuse.",
+      "reference_experiments": [
+        "EXP-058",
+        "EXP-059",
+        "EXP-063",
+        "EXP-064",
+        "EXP-065",
+        "EXP-067",
+        "EXP-068"
+      ],
+      "review_depth": "Read historical manifest purpose, trial fingerprint and search_scope only; no historical RF audit or re-evaluation.",
+      "structural_context": "A/B: 3L cost tiers related to EXP-058/063. C: 4L zero-GJM/PCB placement related to EXP-058/064. D: 4L1GJM related to EXP-059/067/068. EXP-065 varied L trees and 2GJM at a different area. These are structural context, not exact equivalence."
     },
     "initial_input_checks": {
-      "component": {
-        "component_policy_pass": true,
-        "constraint_id": "RF-T008",
-        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
-        "min_L_eigenvalue_H": 2e-09,
-        "checked_settings": 6,
-        "installed_variable_c_branches": 2,
-        "rf_performance_checked": false,
-        "independent_mna_checked": false,
-        "physical_q_srf_em_checked": false,
-        "connection_role_audit": {
-          "all_declared_roles_supported_by_l_tree": true,
-          "unsupported_role_indices": [],
-          "physical_layout_checked": false,
-          "branches": [
-            {
-              "edge": [
-                4,
-                -1
-              ],
-              "declared_role": "shunt_to_ground",
-              "electrical_class": "shunt_to_ground",
-              "evidence": "verified_ground_endpoint",
-              "declared_role_supported_by_l_tree": true
-            },
-            {
-              "edge": [
-                0,
-                3
-              ],
-              "declared_role": "bridge",
-              "electrical_class": "inductor_tree_chord",
-              "evidence": "verified_L_path_between_terminals",
-              "declared_role_supported_by_l_tree": true
-            }
-          ]
+      "area": {
+        "area_fraction": "14/3",
+        "area_unit": "one_LQP02_package_footprint",
+        "area_units": 4.666666666666667,
+        "counts": {
+          "GJM01": 1,
+          "IC_FIXED_C": 2,
+          "IC_VARIABLE_C": 2,
+          "LQP02HV": 4,
+          "PCB_PATTERN_C": 2,
+          "SHUNT_DTC_PARASITIC": 0
         },
-        "connection_role_evidence_incomplete": false,
-        "promotion_blockers": [
-          "independent_mna_not_checked",
-          "dense_rf_not_checked"
-        ],
-        "candidate_promotion_blocked": true
+        "fixed_external_s2p_area_included": false,
+        "ic_zero_area_is_nominal_only": true,
+        "physical_area_verified": false,
+        "policy_id": "RF-T008",
+        "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "terms": [
+          {
+            "count": 1,
+            "part": "GJM01",
+            "policy_path": "components.GJM01.area_units_fraction",
+            "unit_area_fraction": "2/3"
+          },
+          {
+            "count": 2,
+            "part": "IC_FIXED_C",
+            "policy_path": "trial_ic_fixed_c_by_connection.additional_chip_area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 2,
+            "part": "IC_VARIABLE_C",
+            "policy_path": "components.IC_VARIABLE_C.area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 4,
+            "part": "LQP02HV",
+            "policy_path": "components.LQP02.series.LQP02HV.area_units",
+            "unit_area_fraction": "1"
+          },
+          {
+            "count": 2,
+            "part": "PCB_PATTERN_C",
+            "policy_path": "components.PCB_PATTERN_C.area_units",
+            "unit_area_fraction": "0"
+          }
+        ]
       },
       "box": {
         "bounds": [
@@ -693,26 +601,88 @@
           4
         ]
       },
-      "schema": {
-        "n_inductors": 4,
-        "n_fixed": 3,
-        "n_coupling": 3,
-        "n_ic_fixed": 2,
-        "n_variable": 2,
-        "constant_caps_pf": []
+      "capacitor_q": [
+        80.0,
+        60.0,
+        60.0,
+        35.0,
+        35.0,
+        60.0,
+        60.0
+      ],
+      "complete_candidate_key": "f5326db90169b166dcd0129594bd2354b41665a999b023d29ca812f97d3532e5",
+      "component": {
+        "candidate_promotion_blocked": true,
+        "checked_settings": 6,
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                4,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                3
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_incomplete": false,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "independent_mna_checked": false,
+        "installed_variable_c_branches": 2,
+        "min_L_eigenvalue_H": 2e-09,
+        "physical_q_srf_em_checked": false,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false
+      },
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "branches": [
+          {
+            "declared_role": "shunt_to_ground",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              4,
+              -1
+            ],
+            "electrical_class": "shunt_to_ground",
+            "evidence": "verified_ground_endpoint"
+          },
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              0,
+              3
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          }
+        ],
+        "physical_layout_checked": false,
+        "unsupported_role_indices": []
       },
       "decoded_complete_values": {
-        "inductances_nh": [
-          2.0,
-          2.0,
-          2.0,
-          2.0
-        ],
-        "coupling_k": [
-          0.0,
-          0.0,
-          0.0
-        ],
         "capacitors_pf_by_setting": [
           [
             0.5,
@@ -768,201 +738,235 @@
             1.0,
             0.5
           ]
-        ]
-      },
-      "connection_role_audit": {
-        "all_declared_roles_supported_by_l_tree": true,
-        "unsupported_role_indices": [],
-        "physical_layout_checked": false,
-        "branches": [
-          {
-            "edge": [
-              4,
-              -1
-            ],
-            "declared_role": "shunt_to_ground",
-            "electrical_class": "shunt_to_ground",
-            "evidence": "verified_ground_endpoint",
-            "declared_role_supported_by_l_tree": true
-          },
-          {
-            "edge": [
-              0,
-              3
-            ],
-            "declared_role": "bridge",
-            "electrical_class": "inductor_tree_chord",
-            "evidence": "verified_L_path_between_terminals",
-            "declared_role_supported_by_l_tree": true
-          }
-        ]
-      },
-      "topology_key": "301feb5f64ec9f5ef87b4e84c4756d66976ad18d10f41be03fbdd0ecc1201a87",
-      "complete_candidate_key": "f5326db90169b166dcd0129594bd2354b41665a999b023d29ca812f97d3532e5",
-      "area": {
-        "counts": {
-          "GJM01": 1,
-          "IC_FIXED_C": 2,
-          "IC_VARIABLE_C": 2,
-          "LQP02HV": 4,
-          "PCB_PATTERN_C": 2,
-          "SHUNT_DTC_PARASITIC": 0
-        },
-        "area_fraction": "14/3",
-        "area_units": 4.666666666666667,
-        "area_unit": "one_LQP02_package_footprint",
-        "terms": [
-          {
-            "part": "GJM01",
-            "count": 1,
-            "unit_area_fraction": "2/3",
-            "policy_path": "components.GJM01.area_units_fraction"
-          },
-          {
-            "part": "IC_FIXED_C",
-            "count": 2,
-            "unit_area_fraction": "0",
-            "policy_path": "trial_ic_fixed_c_by_connection.additional_chip_area_units"
-          },
-          {
-            "part": "IC_VARIABLE_C",
-            "count": 2,
-            "unit_area_fraction": "0",
-            "policy_path": "components.IC_VARIABLE_C.area_units"
-          },
-          {
-            "part": "LQP02HV",
-            "count": 4,
-            "unit_area_fraction": "1",
-            "policy_path": "components.LQP02.series.LQP02HV.area_units"
-          },
-          {
-            "part": "PCB_PATTERN_C",
-            "count": 2,
-            "unit_area_fraction": "0",
-            "policy_path": "components.PCB_PATTERN_C.area_units"
-          }
         ],
-        "policy_id": "RF-T008",
-        "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
-        "physical_area_verified": false,
-        "fixed_external_s2p_area_included": false,
-        "ic_zero_area_is_nominal_only": true
+        "coupling_k": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "inductances_nh": [
+          2.0,
+          2.0,
+          2.0,
+          2.0
+        ]
       },
       "definition_sha256": "c676a609d25aa97cdd4ea76471d4419564a32a8753e0e4defeec363178bf8842",
-      "input_source_sha256": "57f093d93d7ce5174c83d1c3cf4af98be6eddb75205a79bb1d345b2cf339b76e",
-      "seed_record_sha256": "8232551e6a50a3477a8f3513ac5759ea29521598f3715b6a7bb1e1249993c600",
-      "seed_changes": [],
-      "same_class_duplicate_c": false,
       "inductor_q": [
         25.0,
         25.0,
         25.0,
         25.0
       ],
-      "capacitor_q": [
-        80.0,
-        60.0,
-        60.0,
-        35.0,
-        35.0,
-        60.0,
-        60.0
-      ]
+      "input_source_sha256": "57f093d93d7ce5174c83d1c3cf4af98be6eddb75205a79bb1d345b2cf339b76e",
+      "same_class_duplicate_c": false,
+      "schema": {
+        "constant_caps_pf": [],
+        "n_coupling": 3,
+        "n_fixed": 3,
+        "n_ic_fixed": 2,
+        "n_inductors": 4,
+        "n_variable": 2
+      },
+      "seed_changes": [],
+      "seed_record_sha256": "8232551e6a50a3477a8f3513ac5759ea29521598f3715b6a7bb1e1249993c600",
+      "topology_key": "301feb5f64ec9f5ef87b4e84c4756d66976ad18d10f41be03fbdd0ecc1201a87"
     },
+    "input_source": {
+      "budget": {
+        "policy_id": "slsqp-staged-v2",
+        "primary": {
+          "coarse": 240,
+          "fine": 120
+        },
+        "recovery": {
+          "coarse": 500,
+          "fine": 280
+        },
+        "retries_on_iteration_limit": 1
+      },
+      "definition": {
+        "capacitor_placement": {
+          "fixed_edges": [
+            [
+              0,
+              1
+            ],
+            [
+              3,
+              -1
+            ],
+            [
+              4,
+              -1
+            ]
+          ],
+          "ic_fixed_edges": [
+            [
+              4,
+              -1
+            ],
+            [
+              0,
+              3
+            ]
+          ],
+          "node_count": 5,
+          "variable_edges": [
+            [
+              4,
+              -1
+            ],
+            [
+              0,
+              3
+            ]
+          ]
+        },
+        "coupling_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "fixed_c_types": [
+          "GJM01",
+          "PCB_PATTERN_C",
+          "PCB_PATTERN_C"
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 5,
+          "source_node": 0
+        },
+        "inductor_types": [
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV"
+        ],
+        "physical_order": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "variable_roles": [
+          "shunt_to_ground",
+          "bridge"
+        ]
+      },
+      "grids": {
+        "coarse_points": 2,
+        "fine_points": 3
+      },
+      "jitter_fraction": 0.0,
+      "seed": 23,
+      "vector": [
+        2.0,
+        2.0,
+        2.0,
+        2.0,
+        0.5,
+        0.1,
+        0.1,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        0.5,
+        1.75,
+        0.75,
+        1.5,
+        1.0,
+        1.25,
+        1.25,
+        1.0,
+        1.5,
+        0.75,
+        1.75,
+        0.5
+      ],
+      "vector_sha256": "3b9891f02aa4baada64840f9594cc47da25716ad392d72574ffbb537b18e609b"
+    },
+    "input_source_origin": {
+      "definition": "Issue #226 fixed Round 1 table; ordered L edges, chip row and adjacent coupling slots unchanged.",
+      "input_source_sha256_encoding": "canonical_config_hash: sorted-key compact JSON.",
+      "vector": "Issue #226 deterministic rule encoded using circuit.schema from typed CircuitValues; no historical projection or warm start.",
+      "vector_order": "L[nH] -> fixedC[pF] -> signed k -> IC-fixedC[pF] -> six settings Cv[pF], B71/B12/B28/B13+B14/B26/B8.",
+      "vector_sha256_encoding": "SHA256 contiguous little-endian float64 bytes (vector_fingerprint)."
+    },
+    "input_source_sha256": "57f093d93d7ce5174c83d1c3cf4af98be6eddb75205a79bb1d345b2cf339b76e",
+    "issue_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/226",
+    "purpose_boundary": "RF-T008 rev3 diagnostic screening only; not formal RF certification or global optimum.",
     "reservation": {
       "record": {
-        "experiment_id": "EXP-072",
-        "state": "reserved",
-        "owner": "miyabimm",
-        "request_id": "rft008-stage8-round1-20261030-d",
-        "purpose": "Issue226 Round1 group D RF-T008 rev3 4L chain GJM 1-start diagnostic",
         "constraint_id": "RF-T008",
+        "experiment_id": "EXP-072",
+        "origin": "main_reservation_workflow",
+        "owner": "miyabimm",
+        "purpose": "Issue226 Round1 group D RF-T008 rev3 4L chain GJM 1-start diagnostic",
+        "request_id": "rft008-stage8-round1-20261030-d",
         "reserved_at_utc": "2026-10-30T03:31:07Z",
-        "origin": "main_reservation_workflow"
+        "state": "reserved"
       },
       "verified_main_sha": "c4e45d631082f0cf5c82c025a0b9788d5e7e1b4a",
       "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/40997817974"
     },
-    "diagnostic_grid": {
-      "source": "rf/bands.csv",
-      "settings": 6,
-      "separate_intervals": 28,
-      "coarse_total_samples": 56,
-      "fine_total_samples": 84,
-      "gap_bridging": false,
-      "limitations": "2/3 points per separate interval; not comparable to historical 7/17/1001 grids as equal-depth RF evidence."
-    },
-    "execution_plan": {
-      "driver": "scripts.run_phase2_one_start.run_one_start",
-      "optimize_stage": "Omit argument; real scipy_slsqp_stage default, no callback/mock.",
-      "order": "A -> B -> C -> D, each result independently reviewed, merged and main CI/remote byte checked before next group.",
-      "maximum_stage_calls": 4,
-      "round_maximum_starts": 4,
-      "round_maximum_stage_calls": 16,
-      "timeout_seconds": 300,
-      "timeout_semantics": "Cooperative stage-boundary timeout, not hard wall-clock limit.",
-      "recovery": "Existing slsqp-staged-v2 status-dependent recovery only. No extra starts, reruns, seeds, or budget change.",
-      "raw_path": "results/EXP-072/run.json",
-      "existing_raw_action": "STOP; preserve raw; no rerun.",
-      "finalize": "Inspect evidence then explicitly finalize_one_start for local Git HEAD byte audit.",
-      "cleanup": "G5 not authorized; retain raw.",
-      "mandatory_stop": "Issue #226 major STOP conditions apply; evidence mismatch/partial/timeout/exception blocks next group."
-    },
-    "validation_plan": {
-      "candidate_promotion": "blocked",
-      "rf_compliance_certification": false,
-      "numerical_convergence": "Record actual coarse/fine status/nit/nfev/recovery separately from component/box/SPD and strict sampled 30dB residuals.",
-      "independent_mna": "not_run",
-      "dense_rf": "not_run",
-      "power_balance": "not_run",
-      "continuous_frequency": "not_run",
-      "srf_qf_em_tolerance_measurement": "not_run"
-    },
     "runtime_observation": {
       "dependency_sync": "uv sync --frozen completed in clean full checkout before manifest generation.",
-      "uv_version": "uv 0.12.23 (x86_64-unknown-linux-gnu)",
-      "uv_lock_sha256": "fb528c275475f8cc18427aa1f44fc6f4777d9e5c58d23ccf87b3ee72419b9e8e",
       "thread_environment": {
-        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
         "OMP_NUM_THREADS": "1",
-        "MKL_NUM_THREADS": "1"
-      }
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "uv_lock_sha256": "fb528c275475f8cc18427aa1f44fc6f4777d9e5c58d23ccf87b3ee72419b9e8e",
+      "uv_version": "uv 0.12.23 (x86_64-unknown-linux-gnu)"
     },
-    "historical_context": {
-      "reference_experiments": [
-        "EXP-058",
-        "EXP-059",
-        "EXP-063",
-        "EXP-064",
-        "EXP-065",
-        "EXP-067",
-        "EXP-068"
-      ],
-      "review_depth": "Read historical manifest purpose, trial fingerprint and search_scope only; no historical RF audit or re-evaluation.",
-      "structural_context": "A/B: 3L cost tiers related to EXP-058/063. C: 4L zero-GJM/PCB placement related to EXP-058/064. D: 4L1GJM related to EXP-059/067/068. EXP-065 varied L trees and 2GJM at a different area. These are structural context, not exact equivalence.",
-      "comparison_limit": "Same T008 rev3 SHA observed, but different vectors/topology/physical chip row/coupling slots and grid/validation depth; no direct performance ranking or warm-start reuse."
+    "starts": 1,
+    "validation_plan": {
+      "candidate_promotion": "blocked",
+      "continuous_frequency": "not_run",
+      "dense_rf": "not_run",
+      "independent_mna": "not_run",
+      "numerical_convergence": "Record actual coarse/fine status/nit/nfev/recovery separately from component/box/SPD and strict sampled 30dB residuals.",
+      "power_balance": "not_run",
+      "rf_compliance_certification": false,
+      "srf_qf_em_tolerance_measurement": "not_run"
     }
   },
-  "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
-  "execution": {
-    "status": "planned",
-    "elapsed_seconds": null,
-    "evaluation_count": null
-  },
   "validation": {
-    "numerical": "not_run",
-    "independent": "not_run",
-    "implementation": "not_run",
     "analysis_grid": null,
-    "independent_grid": null
-  },
-  "evidence": [],
-  "limitations": [
-    "Only 2/3-point separate-interval diagnostic grids; no RF scientific PASS.",
-    "Independent MNA/dense RF/power/continuous-frequency/physical validation not_run.",
-    "Candidate promotion blocked; best-found is not a proven global optimum.",
-    "GJM open lower bound remains >0; optimizer box includes zero, which must fail component/open-box validation.",
-    "No scientific solver execution before G1 independent review, main integration and postmerge CI."
-  ]
+    "implementation": "not_run",
+    "independent": "not_run",
+    "independent_grid": null,
+    "numerical": "not_run"
+  }
 }
