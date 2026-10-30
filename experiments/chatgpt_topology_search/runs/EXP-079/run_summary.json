@@ -1,0 +1,1547 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 1,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 1
+  },
+  "best_found": [],
+  "callback_returns": [
+    [
+      [
+        3.3462279039713003,
+        11.479835941320435,
+        3.7218435809512065,
+        5.280636202995335,
+        0.09999999999999988,
+        -0.09999999999999981,
+        0.1,
+        1.6945104576128116,
+        0.5,
+        1.2367114634452017,
+        0.5116188496485957,
+        1.0278910929405534,
+        0.45852853721689163,
+        0.89381576489592,
+        0.45211159516424254,
+        0.41325393524001514,
+        0.3416429105597469,
+        0.2671017161532167,
+        0.09317034716335891,
+        1.8291147100364582e-17,
+        0.0,
+        1.110074106957438
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 2027,
+        "nit": 87,
+        "status": 0,
+        "success": true
+      }
+    ],
+    [
+      [
+        3.3462279039713003,
+        11.479835941320435,
+        3.7218435809512065,
+        5.280636202995335,
+        0.09999999999999988,
+        -0.09999999999999981,
+        0.1,
+        1.6945104576128116,
+        0.5,
+        1.2367114634452017,
+        0.5116188496485957,
+        1.0278910929405534,
+        0.45852853721689163,
+        0.89381576489592,
+        0.45211159516424254,
+        0.41325393524001514,
+        0.3416429105597469,
+        0.2671017161532167,
+        0.09317034716335891,
+        1.8291147100364582e-17,
+        0.0,
+        1.110074106957438
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 23,
+        "nit": 1,
+        "status": 0,
+        "success": true
+      }
+    ]
+  ],
+  "elapsed_seconds": 1.6033647779986495,
+  "excluded_records": [
+    {
+      "audit": {
+        "candidate_promotion_blocked": true,
+        "component_policy": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  4,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 3.1195480268098516e-09,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                3,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                4,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_complete": true,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "dense_rf_state": "not_checked",
+        "eligible_for_owner_review": false,
+        "forward_sampled_checked": false,
+        "forward_sampled_state": "not_checked",
+        "independent_mna_checked": false,
+        "independent_mna_state": "not_checked",
+        "limited_evidence": null,
+        "limited_evidence_failure_reason": null,
+        "local_extrema_checked": false,
+        "local_extrema_state": "not_checked",
+        "optimization_converged": null,
+        "optimization_state": "not_checked",
+        "owner_approval_recorded": false,
+        "owner_approval_state": "not_checked",
+        "physical_validation_checked": false,
+        "physical_validation_state": "not_checked",
+        "power_accounting_state": "not_checked",
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked",
+          "forward_sampled_not_checked",
+          "local_extrema_not_checked",
+          "optimization_convergence_not_checked",
+          "physical_validation_not_checked",
+          "owner_approval_not_recorded"
+        ],
+        "rf_compliance_certified": false,
+        "rf_dense_evaluation_completed": false,
+        "rf_threshold_failures": [],
+        "rf_threshold_state": "not_checked"
+      },
+      "candidate_id": "start-0",
+      "candidate_promotion_blocked": true,
+      "component": {
+        "detail": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  4,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 3.1195480268098516e-09,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "state": "pass"
+      },
+      "context": {
+        "finite_grid_only": true,
+        "objective": "full_lpf_worst_six_setting_UL_DL_external_port_IL",
+        "reference_planes": "external_input_to_external_output",
+        "thresholds": {
+          "minimum_h2_h3_db": 30,
+          "nominal_h2_h3_target_db": 35,
+          "nominal_max_il_db": 0.3
+        }
+      },
+      "definition": {
+        "capacitor_placement": {
+          "fixed_edges": [],
+          "ic_fixed_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              4,
+              -1
+            ]
+          ],
+          "node_count": 5,
+          "variable_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              4,
+              -1
+            ]
+          ]
+        },
+        "coupling_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "fixed_c_types": [],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 5,
+          "source_node": 0
+        },
+        "inductor_types": [
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV"
+        ],
+        "physical_order": [
+          0,
+          2,
+          1,
+          3
+        ],
+        "variable_roles": [
+          "shunt_to_ground",
+          "shunt_to_ground"
+        ]
+      },
+      "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+      "identity": {
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "constraint_status": "trial",
+        "definition_fingerprint": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "environment": {
+          "numpy": "2.5.4",
+          "python": "3.12.15",
+          "scipy": "1.18.1"
+        },
+        "git_head": "2bc7b366a1d1e0ce5cc78f0e859d216f43570398",
+        "historical_fixture_provenance": "not_checked",
+        "input_sha256": {
+          "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+          "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "source_provenance_scope": "current_src_lpf_python_files",
+        "source_tree_sha256": "26530c56ea4d81d80a49f57ef3ad9353da9a9a10a98a937958e89888683aa871",
+        "source_worktree_dirty": false,
+        "vector_fingerprint": "689912ce83e4c1dc85ff749dded31a623528a1a699614ff633d26803d7014a4b"
+      },
+      "nominal_area": {
+        "area_fraction": "4",
+        "area_unit": "one_LQP02_package_footprint",
+        "area_units": 4.0,
+        "counts": {
+          "IC_FIXED_C": 2,
+          "IC_VARIABLE_C": 2,
+          "LQP02HV": 4,
+          "SHUNT_DTC_PARASITIC": 0
+        },
+        "fixed_external_s2p_area_included": false,
+        "ic_zero_area_is_nominal_only": true,
+        "physical_area_verified": false,
+        "policy_id": "RF-T008",
+        "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "terms": [
+          {
+            "count": 2,
+            "part": "IC_FIXED_C",
+            "policy_path": "trial_ic_fixed_c_by_connection.additional_chip_area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 2,
+            "part": "IC_VARIABLE_C",
+            "policy_path": "components.IC_VARIABLE_C.area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 4,
+            "part": "LQP02HV",
+            "policy_path": "components.LQP02.series.LQP02HV.area_units",
+            "unit_area_fraction": "1"
+          }
+        ]
+      },
+      "numerical": {
+        "meaning": "reported_optimizer_status_consistent_with_v2; not_solver_attestation",
+        "state": "converged",
+        "vector_binding": "final_c2_output"
+      },
+      "parameter_schema": {
+        "constant_caps_pf": [],
+        "n_coupling": 3,
+        "n_fixed": 0,
+        "n_ic_fixed": 2,
+        "n_inductors": 4,
+        "n_variable": 2
+      },
+      "policy_id": "RF-T008",
+      "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "rf": {
+        "evidence_class": "forward_only",
+        "grid": {
+          "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+          "points_per_interval": 3,
+          "sample_count": 84,
+          "segment_count": 28
+        },
+        "locations": [
+          {
+            "case": "B8",
+            "frequency_mhz": 960.0,
+            "segment": 25
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 1396.0,
+            "segment": 2
+          },
+          {
+            "case": "B28",
+            "frequency_mhz": 2244.0,
+            "segment": 11
+          }
+        ],
+        "metrics": {
+          "min_h2_db": 29.99999999883604,
+          "min_h3_db": 30.00000002488732,
+          "worst_il_db": 1.1100741082214507
+        },
+        "requested_limited_points": null,
+        "requested_sampled_points": 3,
+        "state": "observed"
+      },
+      "rf_compliance_certified": false,
+      "schema": "s4b-candidate-record-v1",
+      "seed_record": {
+        "candidate_promotion_blocked": true,
+        "changes": [],
+        "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "input_vector": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.5,
+          1.75,
+          0.75,
+          1.5,
+          1.0,
+          1.25,
+          1.25,
+          1.0,
+          1.5,
+          0.75,
+          1.75,
+          0.5
+        ],
+        "input_vector_sha256": "720cb9fe8377456529bd2c034b1db8b9b147e06b51153915709829c15ecb9411",
+        "jitter_fraction": 0.0,
+        "points_per_interval": 2,
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "seed": 23,
+        "vector": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.5,
+          1.75,
+          0.75,
+          1.5,
+          1.0,
+          1.25,
+          1.25,
+          1.0,
+          1.5,
+          0.75,
+          1.75,
+          0.5,
+          4.038080684980951
+        ]
+      },
+      "source_provenance": {
+        "state": "provided",
+        "value": {
+          "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "execution_kind": "scipy_slsqp",
+          "git_head": "0cd19a58d5d280fe17fb9b9b40e235405ded945b",
+          "input_source_sha256": "aa8d183cd81d5e67529ce0e7938ea8dd1f93cf19d0bb2cf6757671b4fe7fecb2",
+          "kind": "recorded",
+          "optimizer_kind": "reported_slsqp"
+        }
+      },
+      "staged_record": {
+        "attempts": [
+          {
+            "coarse": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 2027,
+              "nit": 87,
+              "stage_call_index": 0,
+              "status": 0,
+              "success": true
+            },
+            "coarse_maxiter": 240,
+            "converged": true,
+            "fine": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 23,
+              "nit": 1,
+              "stage_call_index": 1,
+              "status": 0,
+              "success": true
+            },
+            "fine_maxiter": 120,
+            "tier": "primary",
+            "vector": [
+              3.3462279039713003,
+              11.479835941320435,
+              3.7218435809512065,
+              5.280636202995335,
+              0.09999999999999988,
+              -0.09999999999999981,
+              0.1,
+              1.6945104576128116,
+              0.5,
+              1.2367114634452017,
+              0.5116188496485957,
+              1.0278910929405534,
+              0.45852853721689163,
+              0.89381576489592,
+              0.45211159516424254,
+              0.41325393524001514,
+              0.3416429105597469,
+              0.2671017161532167,
+              0.09317034716335891,
+              1.8291147100364582e-17,
+              0.0,
+              1.110074106957438
+            ],
+            "warm_start_source": "supplied_initial_vector"
+          }
+        ],
+        "bands_file": "data/bands.csv",
+        "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "budget": {
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "candidate_promotion_blocked": true,
+        "controller": {
+          "iteration_policy": {
+            "max_continuations": 1,
+            "max_stage_calls_per_initial_start": 4,
+            "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+            "policy_id": "slsqp-staged-v2",
+            "primary": {
+              "coarse": 240,
+              "fine": 120
+            },
+            "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+            "recovery": {
+              "coarse": 500,
+              "fine": 280
+            },
+            "retries_on_iteration_limit": 1
+          },
+          "recovery_cause": null,
+          "recovery_invoked": false
+        },
+        "definition": {
+          "capacitor_placement": {
+            "fixed_edges": [],
+            "ic_fixed_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                4,
+                -1
+              ]
+            ],
+            "node_count": 5,
+            "variable_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                4,
+                -1
+              ]
+            ]
+          },
+          "coupling_pairs": [
+            [
+              0,
+              2
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "fixed_c_types": [],
+          "inductor_tree": {
+            "edges": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "load_node": 2,
+            "node_count": 5,
+            "source_node": 0
+          },
+          "inductor_types": [
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV"
+          ],
+          "physical_order": [
+            0,
+            2,
+            1,
+            3
+          ],
+          "variable_roles": [
+            "shunt_to_ground",
+            "shunt_to_ground"
+          ]
+        },
+        "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "elapsed_seconds": 1.2607003479934065,
+        "environment": {
+          "numpy": "2.5.4",
+          "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+          "scipy": "1.18.1"
+        },
+        "exception": null,
+        "grids": {
+          "coarse": {
+            "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+            "points_per_interval": 2,
+            "sample_count": 56,
+            "segment_count": 28
+          },
+          "fine": {
+            "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+            "points_per_interval": 3,
+            "sample_count": 84,
+            "segment_count": 28
+          }
+        },
+        "iteration_policy_id": "slsqp-staged-v2",
+        "numerical_state": "converged",
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "rf_compliance_certified": false,
+        "s2p_sha256": {
+          "input_parasitic": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "output_parasitic": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "schema": "c1-staged-v2-record-1",
+        "seed": {
+          "candidate_promotion_blocked": true,
+          "changes": [],
+          "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+          "input_vector": [
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.5,
+            1.75,
+            0.75,
+            1.5,
+            1.0,
+            1.25,
+            1.25,
+            1.0,
+            1.5,
+            0.75,
+            1.75,
+            0.5
+          ],
+          "input_vector_sha256": "720cb9fe8377456529bd2c034b1db8b9b147e06b51153915709829c15ecb9411",
+          "jitter_fraction": 0.0,
+          "points_per_interval": 2,
+          "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "policy_id": "RF-T008",
+          "seed": 23,
+          "vector": [
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            0.5,
+            1.75,
+            0.75,
+            1.5,
+            1.0,
+            1.25,
+            1.25,
+            1.0,
+            1.5,
+            0.75,
+            1.75,
+            0.5,
+            4.038080684980951
+          ]
+        },
+        "source_provenance": {
+          "state": "provided",
+          "value": {
+            "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "execution_kind": "scipy_slsqp",
+            "git_head": "0cd19a58d5d280fe17fb9b9b40e235405ded945b",
+            "input_source_sha256": "aa8d183cd81d5e67529ce0e7938ea8dd1f93cf19d0bb2cf6757671b4fe7fecb2",
+            "kind": "recorded",
+            "optimizer_kind": "reported_slsqp"
+          }
+        },
+        "stage_calls": [
+          {
+            "attempt_index": 0,
+            "call_index": 0,
+            "elapsed_seconds": 1.188306416006526,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+              "points_per_interval": 2,
+              "sample_count": 56,
+              "segment_count": 28
+            },
+            "input_vector": [
+              2.0,
+              2.0,
+              2.0,
+              2.0,
+              0.0,
+              0.0,
+              0.0,
+              1.0,
+              1.0,
+              0.5,
+              1.75,
+              0.75,
+              1.5,
+              1.0,
+              1.25,
+              1.25,
+              1.0,
+              1.5,
+              0.75,
+              1.75,
+              0.5,
+              4.038080684980951
+            ],
+            "input_vector_sha256": "56db60c685e17e45da505007104765eed44c9fa453f9faa360eeaafd3747bcc2",
+            "maxiter": 240,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          4,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 3.1195480268098516e-09,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -1.163961371730693e-09,
+                "h3_min_residual_db": 2.488732064875876e-08,
+                "min_h2_db": 29.99999999883604,
+                "min_h3_db": 30.00000002488732,
+                "minimum_residual_db": -1.2640126723084677e-09,
+                "passband_epigraph_min_residual_db": -1.2640126723084677e-09,
+                "residuals_db": [
+                  0.008294726253902818,
+                  -9.655196642199826e-10,
+                  0.01331352077180048,
+                  0.00988132651604512,
+                  1.8549553004731933e-08,
+                  -1.163961371730693e-09,
+                  6.794883430509621,
+                  5.145921143009872,
+                  0.06025346733461401,
+                  0.0541669283106061,
+                  0.048141680647625584,
+                  0.03796591452645948,
+                  2.69049939129966,
+                  1.657177091311894,
+                  8.58403535551021,
+                  5.510489298252956,
+                  0.08920126958442998,
+                  0.06767156623271164,
+                  0.060570343781121805,
+                  0.012095979395856382,
+                  2.0777765286084104e-08,
+                  8.461107370294485e-10,
+                  8.620513897907294,
+                  2.488732064875876e-08,
+                  0.13675967728741023,
+                  0.12677536897027775,
+                  0.12572866772235003,
+                  0.11474922967652479,
+                  0.16274277514658153,
+                  0.15511308622940845,
+                  0.1535057171790336,
+                  0.14503618065642132,
+                  0.48182418457813725,
+                  3.11739858324912,
+                  3.3435222589769182,
+                  4.70409049163775,
+                  3.5298696635767115,
+                  1.7361863284521242,
+                  1.5701983777877757,
+                  0.030350732289797122,
+                  0.1941848112938419,
+                  0.15320277652330572,
+                  0.13936089574476562,
+                  0.08182960436776532,
+                  0.46370967481071546,
+                  0.006733460271455272,
+                  0.10295425887592913,
+                  4.725154475298275,
+                  0.15423061868391574,
+                  0.09502697630204637,
+                  0.07589627197402038,
+                  -1.2640126723084677e-09,
+                  1.6257909672969006,
+                  1.584446351898805e-09,
+                  3.7830510279945884e-08,
+                  3.8655840451751047
+                ],
+                "state": "observed",
+                "worst_il_db": 1.1100741082214507
+              }
+            },
+            "output_vector": [
+              3.3462279039713003,
+              11.479835941320435,
+              3.7218435809512065,
+              5.280636202995335,
+              0.09999999999999988,
+              -0.09999999999999981,
+              0.1,
+              1.6945104576128116,
+              0.5,
+              1.2367114634452017,
+              0.5116188496485957,
+              1.0278910929405534,
+              0.45852853721689163,
+              0.89381576489592,
+              0.45211159516424254,
+              0.41325393524001514,
+              0.3416429105597469,
+              0.2671017161532167,
+              0.09317034716335891,
+              1.8291147100364582e-17,
+              0.0,
+              1.110074106957438
+            ],
+            "stage": "coarse",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 2027,
+              "nit": 87,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "seed"
+          },
+          {
+            "attempt_index": 0,
+            "call_index": 1,
+            "elapsed_seconds": 0.03271663800114766,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+              "points_per_interval": 3,
+              "sample_count": 84,
+              "segment_count": 28
+            },
+            "input_vector": [
+              3.3462279039713003,
+              11.479835941320435,
+              3.7218435809512065,
+              5.280636202995335,
+              0.09999999999999988,
+              -0.09999999999999981,
+              0.1,
+              1.6945104576128116,
+              0.5,
+              1.2367114634452017,
+              0.5116188496485957,
+              1.0278910929405534,
+              0.45852853721689163,
+              0.89381576489592,
+              0.45211159516424254,
+              0.41325393524001514,
+              0.3416429105597469,
+              0.2671017161532167,
+              0.09317034716335891,
+              1.8291147100364582e-17,
+              0.0,
+              1.110074106957438
+            ],
+            "input_vector_sha256": "eee8b31193d33829c7877fb0cece695bd817b38e07a63d281307b8f2ea3987bc",
+            "maxiter": 120,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          4,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 3.1195480268098516e-09,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -1.163961371730693e-09,
+                "h3_min_residual_db": 2.488732064875876e-08,
+                "min_h2_db": 29.99999999883604,
+                "min_h3_db": 30.00000002488732,
+                "minimum_residual_db": -1.2640126723084677e-09,
+                "passband_epigraph_min_residual_db": -1.2640126723084677e-09,
+                "residuals_db": [
+                  0.008294726253902818,
+                  0.004901405487425237,
+                  -9.655196642199826e-10,
+                  0.01331352077180048,
+                  0.011819960639264826,
+                  0.00988132651604512,
+                  1.8549553004731933e-08,
+                  2.5970711036225183,
+                  -1.163961371730693e-09,
+                  6.794883430509621,
+                  8.414145779354556,
+                  5.145921143009872,
+                  0.06025346733461401,
+                  0.05743533056559014,
+                  0.0541669283106061,
+                  0.048141680647625584,
+                  0.04341593591415771,
+                  0.03796591452645948,
+                  2.69049939129966,
+                  2.7958371907008797,
+                  1.657177091311894,
+                  8.58403535551021,
+                  7.345446298979482,
+                  5.510489298252956,
+                  0.08920126958442998,
+                  0.08025327474974309,
+                  0.06767156623271164,
+                  0.060570343781121805,
+                  0.04021825230155196,
+                  0.012095979395856382,
+                  2.0777765286084104e-08,
+                  3.3324528643796825,
+                  8.461107370294485e-10,
+                  8.620513897907294,
+                  4.120237855633931,
+                  2.488732064875876e-08,
+                  0.13675967728741023,
+                  0.13187537054299092,
+                  0.12677536897027775,
+                  0.12572866772235003,
+                  0.12035741245329024,
+                  0.11474922967652479,
+                  0.16274277514658153,
+                  0.1590111283122112,
+                  0.15511308622940845,
+                  0.1535057171790336,
+                  0.14936285321131182,
+                  0.14503618065642132,
+                  0.48182418457813725,
+                  1.854340841932558,
+                  3.11739858324912,
+                  3.3435222589769182,
+                  4.259697808941134,
+                  4.70409049163775,
+                  3.5298696635767115,
+                  2.601942167980198,
+                  1.7361863284521242,
+                  1.5701983777877757,
+                  0.7740146867352102,
+                  0.030350732289797122,
+                  0.1941848112938419,
+                  0.17505072274472555,
+                  0.15320277652330572,
+                  0.13936089574476562,
+                  0.11248495801729619,
+                  0.08182960436776532,
+                  0.46370967481071546,
+                  2.3242924318321982,
+                  0.006733460271455272,
+                  0.10295425887592913,
+                  2.1487584694488433,
+                  4.725154475298275,
+                  0.15423061868391574,
+                  0.1260657531803413,
+                  0.09502697630204637,
+                  0.07589627197402038,
+                  0.03977459016378182,
+                  -1.2640126723084677e-09,
+                  1.6257909672969006,
+                  2.454155821854762,
+                  1.584446351898805e-09,
+                  3.7830510279945884e-08,
+                  1.728714294931791,
+                  3.8655840451751047
+                ],
+                "state": "observed",
+                "worst_il_db": 1.1100741082214507
+              }
+            },
+            "output_vector": [
+              3.3462279039713003,
+              11.479835941320435,
+              3.7218435809512065,
+              5.280636202995335,
+              0.09999999999999988,
+              -0.09999999999999981,
+              0.1,
+              1.6945104576128116,
+              0.5,
+              1.2367114634452017,
+              0.5116188496485957,
+              1.0278910929405534,
+              0.45852853721689163,
+              0.89381576489592,
+              0.45211159516424254,
+              0.41325393524001514,
+              0.3416429105597469,
+              0.2671017161532167,
+              0.09317034716335891,
+              1.8291147100364582e-17,
+              0.0,
+              1.110074106957438
+            ],
+            "stage": "fine",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 23,
+              "nit": 1,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "stage_call_0"
+          }
+        ],
+        "validation": {
+          "continuous_frequency": "not_run",
+          "dense_rf": "not_run",
+          "independent_mna": "not_run",
+          "owner_approval": "not_run",
+          "physical": "not_run",
+          "power_balance": "not_run"
+        }
+      },
+      "stamped_topology": {
+        "capacitor_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        "capacitor_q": [
+          35.0,
+          35.0,
+          60.0,
+          60.0
+        ],
+        "coupling_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "inductor_q": [
+          25.0,
+          25.0,
+          25.0,
+          25.0
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 5,
+          "source_node": 0
+        }
+      },
+      "topology_key": "ec3d6fb723a6aa7e79bdd214dc2878187d14e8a0306bdfe670d81b8a129c07b6",
+      "validation": {
+        "continuous_frequency": "not_run",
+        "dense_rf": "not_run",
+        "independent_mna": "not_run",
+        "owner_approval": "not_run",
+        "physical": "not_run",
+        "power_balance": "not_run"
+      },
+      "values": {
+        "capacitors_pf_by_setting": [
+          [
+            1.2367114634452017,
+            0.5116188496485957,
+            1.6945104576128116,
+            0.5
+          ],
+          [
+            1.0278910929405534,
+            0.45852853721689163,
+            1.6945104576128116,
+            0.5
+          ],
+          [
+            0.89381576489592,
+            0.45211159516424254,
+            1.6945104576128116,
+            0.5
+          ],
+          [
+            0.41325393524001514,
+            0.3416429105597469,
+            1.6945104576128116,
+            0.5
+          ],
+          [
+            0.2671017161532167,
+            0.09317034716335891,
+            1.6945104576128116,
+            0.5
+          ],
+          [
+            1.8291147100364582e-17,
+            0.0,
+            1.6945104576128116,
+            0.5
+          ]
+        ],
+        "coupling_k": [
+          0.09999999999999988,
+          -0.09999999999999981,
+          0.1
+        ],
+        "inductances_nh": [
+          3.3462279039713003,
+          11.479835941320435,
+          3.7218435809512065,
+          5.280636202995335
+        ]
+      },
+      "vector": [
+        3.3462279039713003,
+        11.479835941320435,
+        3.7218435809512065,
+        5.280636202995335,
+        0.09999999999999988,
+        -0.09999999999999981,
+        0.1,
+        1.6945104576128116,
+        0.5,
+        1.2367114634452017,
+        0.5116188496485957,
+        1.0278910929405534,
+        0.45852853721689163,
+        0.89381576489592,
+        0.45211159516424254,
+        0.41325393524001514,
+        0.3416429105597469,
+        0.2671017161532167,
+        0.09317034716335891,
+        1.8291147100364582e-17,
+        0.0
+      ],
+      "vector_key": "90e75fcede777a4f68733f1d1cb6ab99dac229fbe609ea4a0f129fcc4454aea4",
+      "vector_sha256": "ae28cf4948224bf87f30e4cc905a9abee43a6fbdd18845bdf81e3e8ed272b736"
+    }
+  ],
+  "experiment_id": "EXP-079",
+  "input_source": {
+    "budget": {
+      "policy_id": "slsqp-staged-v2",
+      "primary": {
+        "coarse": 240,
+        "fine": 120
+      },
+      "recovery": {
+        "coarse": 500,
+        "fine": 280
+      },
+      "retries_on_iteration_limit": 1
+    },
+    "definition": {
+      "capacitor_placement": {
+        "fixed_edges": [],
+        "ic_fixed_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        "node_count": 5,
+        "variable_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ]
+      },
+      "coupling_pairs": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "fixed_c_types": [],
+      "inductor_tree": {
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "load_node": 2,
+        "node_count": 5,
+        "source_node": 0
+      },
+      "inductor_types": [
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV"
+      ],
+      "physical_order": [
+        0,
+        2,
+        1,
+        3
+      ],
+      "variable_roles": [
+        "shunt_to_ground",
+        "shunt_to_ground"
+      ]
+    },
+    "grids": {
+      "coarse_points": 2,
+      "fine_points": 3
+    },
+    "jitter_fraction": 0.0,
+    "seed": 23,
+    "vector": [
+      2.0,
+      2.0,
+      2.0,
+      2.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      0.5,
+      1.75,
+      0.75,
+      1.5,
+      1.0,
+      1.25,
+      1.25,
+      1.0,
+      1.5,
+      0.75,
+      1.75,
+      0.5
+    ],
+    "vector_sha256": "720cb9fe8377456529bd2c034b1db8b9b147e06b51153915709829c15ecb9411"
+  },
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "no_candidate_reason": "No eligible Pareto candidate: start-0: final_c2_epigraph_inequality_failed_on_grid, mandatory_harmonics_failed_on_grid",
+  "pareto": {
+    "candidate_promotion_blocked": true,
+    "candidates": [
+      {
+        "area_units": 4.0,
+        "candidate_id": "start-0",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.99999999883604,
+          "min_h3_db": 30.00000002488732,
+          "worst_il_db": 1.1100741082214507
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "final_c2_epigraph_inequality_failed_on_grid",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      }
+    ],
+    "global_optimum_proven": false,
+    "groups": [],
+    "rf_compliance_certified": false
+  },
+  "partial_staged_record": null,
+  "selected": [],
+  "selected_candidate_count": 0,
+  "selection_before_run": {
+    "estimated_curated_bytes": 200000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints; preserve all exclusions/failed/nonconverged/STOP diagnostics in run_summary.",
+    "top_k": 0
+  },
+  "source_provenance": {
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "0cd19a58d5d280fe17fb9b9b40e235405ded945b",
+    "input_source_sha256": "aa8d183cd81d5e67529ce0e7938ea8dd1f93cf19d0bb2cf6757671b4fe7fecb2",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "termination": {
+    "message": "converged",
+    "type": "completed"
+  },
+  "timeout_seconds": 300
+}

@@ -1,0 +1,1617 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 1,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 1
+  },
+  "best_found": [],
+  "callback_returns": [
+    [
+      [
+        0.40000000002129227,
+        11.297469799588143,
+        14.727967429792963,
+        12.065980986025508,
+        0.999999999999357,
+        1.0,
+        -0.1,
+        -0.09999999999932421,
+        2.7256805079625472,
+        0.47747972448450837,
+        3.0,
+        0.6465831599493175,
+        2.291266562837653,
+        0.5210272464051166,
+        1.9841507732333767,
+        0.5112399303505479,
+        1.8158979480475028,
+        0.3333606484963555,
+        0.7756089278406201,
+        0.27598290747867427,
+        0.0,
+        0.0,
+        4.061571297411846
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 1769,
+        "nit": 74,
+        "status": 0,
+        "success": true
+      }
+    ],
+    [
+      [
+        0.40000000002129227,
+        11.297469799588143,
+        14.727967429792963,
+        12.065980986025508,
+        0.999999999999357,
+        1.0,
+        -0.1,
+        -0.09999999999932421,
+        2.7256805079625472,
+        0.47747972448450837,
+        3.0,
+        0.6465831599493175,
+        2.291266562837653,
+        0.5210272464051166,
+        1.9841507732333767,
+        0.5112399303505479,
+        1.8158979480475028,
+        0.3333606484963555,
+        0.7756089278406201,
+        0.27598290747867427,
+        0.0,
+        0.0,
+        4.061571297411846
+      ],
+      {
+        "message": "Optimization terminated successfully",
+        "nfev": 24,
+        "nit": 1,
+        "status": 0,
+        "success": true
+      }
+    ]
+  ],
+  "elapsed_seconds": 1.4929052419902291,
+  "excluded_records": [
+    {
+      "audit": {
+        "candidate_promotion_blocked": true,
+        "component_policy": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "bridge",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  0,
+                  2
+                ],
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 3.9581015187978066e-10,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                3,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                2
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_complete": true,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "dense_rf_state": "not_checked",
+        "eligible_for_owner_review": false,
+        "forward_sampled_checked": false,
+        "forward_sampled_state": "not_checked",
+        "independent_mna_checked": false,
+        "independent_mna_state": "not_checked",
+        "limited_evidence": null,
+        "limited_evidence_failure_reason": null,
+        "local_extrema_checked": false,
+        "local_extrema_state": "not_checked",
+        "optimization_converged": null,
+        "optimization_state": "not_checked",
+        "owner_approval_recorded": false,
+        "owner_approval_state": "not_checked",
+        "physical_validation_checked": false,
+        "physical_validation_state": "not_checked",
+        "power_accounting_state": "not_checked",
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked",
+          "forward_sampled_not_checked",
+          "local_extrema_not_checked",
+          "optimization_convergence_not_checked",
+          "physical_validation_not_checked",
+          "owner_approval_not_recorded"
+        ],
+        "rf_compliance_certified": false,
+        "rf_dense_evaluation_completed": false,
+        "rf_threshold_failures": [],
+        "rf_threshold_state": "not_checked"
+      },
+      "candidate_id": "start-0",
+      "candidate_promotion_blocked": true,
+      "component": {
+        "detail": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "bridge",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  0,
+                  2
+                ],
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 3.9581015187978066e-10,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "state": "pass"
+      },
+      "context": {
+        "finite_grid_only": true,
+        "objective": "full_lpf_worst_six_setting_UL_DL_external_port_IL",
+        "reference_planes": "external_input_to_external_output",
+        "thresholds": {
+          "minimum_h2_h3_db": 30,
+          "nominal_h2_h3_target_db": 35,
+          "nominal_max_il_db": 0.3
+        }
+      },
+      "definition": {
+        "capacitor_placement": {
+          "fixed_edges": [
+            [
+              0,
+              -1
+            ],
+            [
+              2,
+              -1
+            ],
+            [
+              1,
+              -1
+            ]
+          ],
+          "ic_fixed_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "node_count": 4,
+          "variable_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              0,
+              2
+            ]
+          ]
+        },
+        "coupling_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "fixed_c_types": [
+          "GJM01",
+          "PCB_PATTERN_C",
+          "PCB_PATTERN_C"
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 4,
+          "source_node": 0
+        },
+        "inductor_types": [
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV"
+        ],
+        "physical_order": [
+          0,
+          1,
+          2
+        ],
+        "variable_roles": [
+          "shunt_to_ground",
+          "bridge"
+        ]
+      },
+      "definition_sha256": "383b31af983b2f750edf77d90046f57350ffb30e2bd058e239a686d24afce847",
+      "identity": {
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "constraint_status": "trial",
+        "definition_fingerprint": "383b31af983b2f750edf77d90046f57350ffb30e2bd058e239a686d24afce847",
+        "environment": {
+          "numpy": "2.5.4",
+          "python": "3.12.15",
+          "scipy": "1.18.1"
+        },
+        "git_head": "d98929e33537bd02cfd709fa8f54bd0300597eec",
+        "historical_fixture_provenance": "not_checked",
+        "input_sha256": {
+          "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+          "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "source_provenance_scope": "current_src_lpf_python_files",
+        "source_tree_sha256": "26530c56ea4d81d80a49f57ef3ad9353da9a9a10a98a937958e89888683aa871",
+        "source_worktree_dirty": false,
+        "vector_fingerprint": "ce2cc5b40ba8daf6a6a2429fb63560b55ddf5c72f26a4067ed8bea0ec6ae3a34"
+      },
+      "nominal_area": {
+        "area_fraction": "11/3",
+        "area_unit": "one_LQP02_package_footprint",
+        "area_units": 3.6666666666666665,
+        "counts": {
+          "GJM01": 1,
+          "IC_FIXED_C": 2,
+          "IC_VARIABLE_C": 2,
+          "LQP02HV": 3,
+          "PCB_PATTERN_C": 2,
+          "SHUNT_DTC_PARASITIC": 0
+        },
+        "fixed_external_s2p_area_included": false,
+        "ic_zero_area_is_nominal_only": true,
+        "physical_area_verified": false,
+        "policy_id": "RF-T008",
+        "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "terms": [
+          {
+            "count": 1,
+            "part": "GJM01",
+            "policy_path": "components.GJM01.area_units_fraction",
+            "unit_area_fraction": "2/3"
+          },
+          {
+            "count": 2,
+            "part": "IC_FIXED_C",
+            "policy_path": "trial_ic_fixed_c_by_connection.additional_chip_area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 2,
+            "part": "IC_VARIABLE_C",
+            "policy_path": "components.IC_VARIABLE_C.area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 3,
+            "part": "LQP02HV",
+            "policy_path": "components.LQP02.series.LQP02HV.area_units",
+            "unit_area_fraction": "1"
+          },
+          {
+            "count": 2,
+            "part": "PCB_PATTERN_C",
+            "policy_path": "components.PCB_PATTERN_C.area_units",
+            "unit_area_fraction": "0"
+          }
+        ]
+      },
+      "numerical": {
+        "meaning": "reported_optimizer_status_consistent_with_v2; not_solver_attestation",
+        "state": "converged",
+        "vector_binding": "final_c2_output"
+      },
+      "parameter_schema": {
+        "constant_caps_pf": [],
+        "n_coupling": 2,
+        "n_fixed": 3,
+        "n_ic_fixed": 2,
+        "n_inductors": 3,
+        "n_variable": 2
+      },
+      "policy_id": "RF-T008",
+      "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "rf": {
+        "evidence_class": "forward_only",
+        "grid": {
+          "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+          "points_per_interval": 3,
+          "sample_count": 84,
+          "segment_count": 28
+        },
+        "locations": [
+          {
+            "case": "B8",
+            "frequency_mhz": 880.0,
+            "segment": 24
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 1326.0,
+            "segment": 2
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 2094.0,
+            "segment": 3
+          }
+        ],
+        "metrics": {
+          "min_h2_db": 29.99999998994461,
+          "min_h3_db": 30.0000000020825,
+          "worst_il_db": 4.061571298281507
+        },
+        "requested_limited_points": null,
+        "requested_sampled_points": 3,
+        "state": "observed"
+      },
+      "rf_compliance_certified": false,
+      "schema": "s4b-candidate-record-v1",
+      "seed_record": {
+        "candidate_promotion_blocked": true,
+        "changes": [],
+        "definition_sha256": "383b31af983b2f750edf77d90046f57350ffb30e2bd058e239a686d24afce847",
+        "input_vector": [
+          2.0,
+          2.0,
+          2.0,
+          0.1,
+          0.1,
+          0.1,
+          0.0,
+          0.0,
+          1.0,
+          0.5,
+          0.5,
+          1.75,
+          0.75,
+          1.5,
+          1.0,
+          1.25,
+          1.25,
+          1.0,
+          1.5,
+          0.75,
+          1.75,
+          0.5
+        ],
+        "input_vector_sha256": "6c2be42f832a02e99636c4124030439ae86af602bc2c0c281daf1a1db431571f",
+        "jitter_fraction": 0.0,
+        "points_per_interval": 2,
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "seed": 23,
+        "vector": [
+          2.0,
+          2.0,
+          2.0,
+          0.1,
+          0.1,
+          0.1,
+          0.0,
+          0.0,
+          1.0,
+          0.5,
+          0.5,
+          1.75,
+          0.75,
+          1.5,
+          1.0,
+          1.25,
+          1.25,
+          1.0,
+          1.5,
+          0.75,
+          1.75,
+          0.5,
+          3.0173384094658315
+        ]
+      },
+      "source_provenance": {
+        "state": "provided",
+        "value": {
+          "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "execution_kind": "scipy_slsqp",
+          "git_head": "2fce916bcc91cb0168962440ca19b099606411ec",
+          "input_source_sha256": "5c7d0ff9105d747a1a7f6643bc001050b45a0ea70ce6e9e406590a23a519452e",
+          "kind": "recorded",
+          "optimizer_kind": "reported_slsqp"
+        }
+      },
+      "staged_record": {
+        "attempts": [
+          {
+            "coarse": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 1769,
+              "nit": 74,
+              "stage_call_index": 0,
+              "status": 0,
+              "success": true
+            },
+            "coarse_maxiter": 240,
+            "converged": true,
+            "fine": {
+              "converged": true,
+              "message": "Optimization terminated successfully",
+              "nfev": 24,
+              "nit": 1,
+              "stage_call_index": 1,
+              "status": 0,
+              "success": true
+            },
+            "fine_maxiter": 120,
+            "tier": "primary",
+            "vector": [
+              0.40000000002129227,
+              11.297469799588143,
+              14.727967429792963,
+              12.065980986025508,
+              0.999999999999357,
+              1.0,
+              -0.1,
+              -0.09999999999932421,
+              2.7256805079625472,
+              0.47747972448450837,
+              3.0,
+              0.6465831599493175,
+              2.291266562837653,
+              0.5210272464051166,
+              1.9841507732333767,
+              0.5112399303505479,
+              1.8158979480475028,
+              0.3333606484963555,
+              0.7756089278406201,
+              0.27598290747867427,
+              0.0,
+              0.0,
+              4.061571297411846
+            ],
+            "warm_start_source": "supplied_initial_vector"
+          }
+        ],
+        "bands_file": "data/bands.csv",
+        "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "budget": {
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "candidate_promotion_blocked": true,
+        "controller": {
+          "iteration_policy": {
+            "max_continuations": 1,
+            "max_stage_calls_per_initial_start": 4,
+            "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+            "policy_id": "slsqp-staged-v2",
+            "primary": {
+              "coarse": 240,
+              "fine": 120
+            },
+            "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+            "recovery": {
+              "coarse": 500,
+              "fine": 280
+            },
+            "retries_on_iteration_limit": 1
+          },
+          "recovery_cause": null,
+          "recovery_invoked": false
+        },
+        "definition": {
+          "capacitor_placement": {
+            "fixed_edges": [
+              [
+                0,
+                -1
+              ],
+              [
+                2,
+                -1
+              ],
+              [
+                1,
+                -1
+              ]
+            ],
+            "ic_fixed_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                0,
+                2
+              ]
+            ],
+            "node_count": 4,
+            "variable_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                0,
+                2
+              ]
+            ]
+          },
+          "coupling_pairs": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "fixed_c_types": [
+            "GJM01",
+            "PCB_PATTERN_C",
+            "PCB_PATTERN_C"
+          ],
+          "inductor_tree": {
+            "edges": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            "load_node": 2,
+            "node_count": 4,
+            "source_node": 0
+          },
+          "inductor_types": [
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV"
+          ],
+          "physical_order": [
+            0,
+            1,
+            2
+          ],
+          "variable_roles": [
+            "shunt_to_ground",
+            "bridge"
+          ]
+        },
+        "definition_sha256": "383b31af983b2f750edf77d90046f57350ffb30e2bd058e239a686d24afce847",
+        "elapsed_seconds": 1.1321586429985473,
+        "environment": {
+          "numpy": "2.5.4",
+          "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+          "scipy": "1.18.1"
+        },
+        "exception": null,
+        "grids": {
+          "coarse": {
+            "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+            "points_per_interval": 2,
+            "sample_count": 56,
+            "segment_count": 28
+          },
+          "fine": {
+            "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+            "points_per_interval": 3,
+            "sample_count": 84,
+            "segment_count": 28
+          }
+        },
+        "iteration_policy_id": "slsqp-staged-v2",
+        "numerical_state": "converged",
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "rf_compliance_certified": false,
+        "s2p_sha256": {
+          "input_parasitic": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "output_parasitic": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "schema": "c1-staged-v2-record-1",
+        "seed": {
+          "candidate_promotion_blocked": true,
+          "changes": [],
+          "definition_sha256": "383b31af983b2f750edf77d90046f57350ffb30e2bd058e239a686d24afce847",
+          "input_vector": [
+            2.0,
+            2.0,
+            2.0,
+            0.1,
+            0.1,
+            0.1,
+            0.0,
+            0.0,
+            1.0,
+            0.5,
+            0.5,
+            1.75,
+            0.75,
+            1.5,
+            1.0,
+            1.25,
+            1.25,
+            1.0,
+            1.5,
+            0.75,
+            1.75,
+            0.5
+          ],
+          "input_vector_sha256": "6c2be42f832a02e99636c4124030439ae86af602bc2c0c281daf1a1db431571f",
+          "jitter_fraction": 0.0,
+          "points_per_interval": 2,
+          "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "policy_id": "RF-T008",
+          "seed": 23,
+          "vector": [
+            2.0,
+            2.0,
+            2.0,
+            0.1,
+            0.1,
+            0.1,
+            0.0,
+            0.0,
+            1.0,
+            0.5,
+            0.5,
+            1.75,
+            0.75,
+            1.5,
+            1.0,
+            1.25,
+            1.25,
+            1.0,
+            1.5,
+            0.75,
+            1.75,
+            0.5,
+            3.0173384094658315
+          ]
+        },
+        "source_provenance": {
+          "state": "provided",
+          "value": {
+            "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "execution_kind": "scipy_slsqp",
+            "git_head": "2fce916bcc91cb0168962440ca19b099606411ec",
+            "input_source_sha256": "5c7d0ff9105d747a1a7f6643bc001050b45a0ea70ce6e9e406590a23a519452e",
+            "kind": "recorded",
+            "optimizer_kind": "reported_slsqp"
+          }
+        },
+        "stage_calls": [
+          {
+            "attempt_index": 0,
+            "call_index": 0,
+            "elapsed_seconds": 1.0590827170090051,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+              "points_per_interval": 2,
+              "sample_count": 56,
+              "segment_count": 28
+            },
+            "input_vector": [
+              2.0,
+              2.0,
+              2.0,
+              0.1,
+              0.1,
+              0.1,
+              0.0,
+              0.0,
+              1.0,
+              0.5,
+              0.5,
+              1.75,
+              0.75,
+              1.5,
+              1.0,
+              1.25,
+              1.25,
+              1.0,
+              1.5,
+              0.75,
+              1.75,
+              0.5,
+              3.0173384094658315
+            ],
+            "input_vector_sha256": "fc08b9948dddda583c766b512c88b94c8de0d623c9036b887a1755900268d48f",
+            "maxiter": 240,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "bridge",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          0,
+                          2
+                        ],
+                        "electrical_class": "inductor_tree_chord",
+                        "evidence": "verified_L_path_between_terminals"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 3.9581015187978066e-10,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -1.0055391186369889e-08,
+                "h3_min_residual_db": 2.0825012825298472e-09,
+                "min_h2_db": 29.99999998994461,
+                "min_h3_db": 30.0000000020825,
+                "minimum_residual_db": -1.0055391186369889e-08,
+                "passband_epigraph_min_residual_db": -8.696607878277973e-10,
+                "residuals_db": [
+                  1.4347086971654583,
+                  1.7626624903123158,
+                  -8.244533944434806e-10,
+                  1.226339553298089,
+                  -1.0055391186369889e-08,
+                  5.491915140624506,
+                  0.5335493779868763,
+                  2.0825012825298472e-09,
+                  1.3124064125067418,
+                  1.5367486665067744,
+                  1.6246038982933584,
+                  1.6432827947895765,
+                  0.7300706207043532,
+                  2.967727603443059,
+                  1.8101018996317784,
+                  1.5116162632907617,
+                  0.9208267081758303,
+                  1.5478934627011904,
+                  1.5570040216243966,
+                  1.1065463766187427,
+                  0.8582134090636551,
+                  7.395899569003781,
+                  1.9023354616695123,
+                  1.2239396863367311,
+                  1.5440783012493426,
+                  1.4898504620843154,
+                  1.4825486456048047,
+                  1.3912537336830497,
+                  1.4783548132833957,
+                  1.5407717691339133,
+                  1.5483202915300995,
+                  1.5627777802214506,
+                  3.2395902883190644,
+                  4.379618560129053,
+                  4.497194163235896,
+                  5.713162065075046,
+                  3.9251407133598732,
+                  3.751596856661749,
+                  3.7351698384956364,
+                  3.5794577952146653,
+                  0.9336893586620048,
+                  1.024760358505426,
+                  0.9091022416584016,
+                  0.12578561917792008,
+                  4.73494910712941,
+                  9.028320195665927,
+                  4.565974299155748,
+                  4.066119146673742,
+                  -8.696607878277973e-10,
+                  0.6444690693859858,
+                  0.6168494392234134,
+                  -1.0718093079731261e-10,
+                  -5.752390563884546e-09,
+                  2.111367140491211,
+                  13.598956808061601,
+                  12.060702676038098
+                ],
+                "state": "observed",
+                "worst_il_db": 4.061571298281507
+              }
+            },
+            "output_vector": [
+              0.40000000002129227,
+              11.297469799588143,
+              14.727967429792963,
+              12.065980986025508,
+              0.999999999999357,
+              1.0,
+              -0.1,
+              -0.09999999999932421,
+              2.7256805079625472,
+              0.47747972448450837,
+              3.0,
+              0.6465831599493175,
+              2.291266562837653,
+              0.5210272464051166,
+              1.9841507732333767,
+              0.5112399303505479,
+              1.8158979480475028,
+              0.3333606484963555,
+              0.7756089278406201,
+              0.27598290747867427,
+              0.0,
+              0.0,
+              4.061571297411846
+            ],
+            "stage": "coarse",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 1769,
+              "nit": 74,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "seed"
+          },
+          {
+            "attempt_index": 0,
+            "call_index": 1,
+            "elapsed_seconds": 0.03330647099937778,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+              "points_per_interval": 3,
+              "sample_count": 84,
+              "segment_count": 28
+            },
+            "input_vector": [
+              0.40000000002129227,
+              11.297469799588143,
+              14.727967429792963,
+              12.065980986025508,
+              0.999999999999357,
+              1.0,
+              -0.1,
+              -0.09999999999932421,
+              2.7256805079625472,
+              0.47747972448450837,
+              3.0,
+              0.6465831599493175,
+              2.291266562837653,
+              0.5210272464051166,
+              1.9841507732333767,
+              0.5112399303505479,
+              1.8158979480475028,
+              0.3333606484963555,
+              0.7756089278406201,
+              0.27598290747867427,
+              0.0,
+              0.0,
+              4.061571297411846
+            ],
+            "input_vector_sha256": "aec15ace7b29c2bd8f36adfcba362a283b2e70a3813ec489235380d3aea8cb9a",
+            "maxiter": 120,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "bridge",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          0,
+                          2
+                        ],
+                        "electrical_class": "inductor_tree_chord",
+                        "evidence": "verified_L_path_between_terminals"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 3.9581015187978066e-10,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": -1.0055391186369889e-08,
+                "h3_min_residual_db": 2.0825012825298472e-09,
+                "min_h2_db": 29.99999998994461,
+                "min_h3_db": 30.0000000020825,
+                "minimum_residual_db": -1.0055391186369889e-08,
+                "passband_epigraph_min_residual_db": -8.696607878277973e-10,
+                "residuals_db": [
+                  1.4347086971654583,
+                  1.6537796844409307,
+                  1.7626624903123158,
+                  -8.244533944434806e-10,
+                  0.7436336928771334,
+                  1.226339553298089,
+                  -1.0055391186369889e-08,
+                  2.5619846252492025,
+                  5.491915140624506,
+                  0.5335493779868763,
+                  0.23860501454267435,
+                  2.0825012825298472e-09,
+                  1.3124064125067418,
+                  1.441310156346201,
+                  1.5367486665067744,
+                  1.6246038982933584,
+                  1.6470233165657184,
+                  1.6432827947895765,
+                  0.7300706207043532,
+                  1.8193842304319148,
+                  2.967727603443059,
+                  1.8101018996317784,
+                  1.6536684341191616,
+                  1.5116162632907617,
+                  0.9208267081758303,
+                  1.3654672980363607,
+                  1.5478934627011904,
+                  1.5570040216243966,
+                  1.4290264939350728,
+                  1.1065463766187427,
+                  0.8582134090636551,
+                  3.862224782528017,
+                  7.395899569003781,
+                  1.9023354616695123,
+                  1.5210837134068953,
+                  1.2239396863367311,
+                  1.5440783012493426,
+                  1.5212708320232622,
+                  1.4898504620843154,
+                  1.4825486456048047,
+                  1.4410238053013886,
+                  1.3912537336830497,
+                  1.4783548132833957,
+                  1.5148091824140186,
+                  1.5407717691339133,
+                  1.5483202915300995,
+                  1.5603203225468292,
+                  1.5627777802214506,
+                  3.2395902883190644,
+                  3.801757089451442,
+                  4.379618560129053,
+                  4.497194163235896,
+                  5.095729287035432,
+                  5.713162065075046,
+                  3.9251407133598732,
+                  3.8362117925205865,
+                  3.751596856661749,
+                  3.7351698384956364,
+                  3.655412492184773,
+                  3.5794577952146653,
+                  0.9336893586620048,
+                  1.0834058083522025,
+                  1.024760358505426,
+                  0.9091022416584016,
+                  0.5831786254436402,
+                  0.12578561917792008,
+                  4.73494910712941,
+                  6.760662382345167,
+                  9.028320195665927,
+                  4.565974299155748,
+                  4.295901854989289,
+                  4.066119146673742,
+                  -8.696607878277973e-10,
+                  0.480038569287065,
+                  0.6444690693859858,
+                  0.6168494392234134,
+                  0.3946839282013377,
+                  -1.0718093079731261e-10,
+                  -5.752390563884546e-09,
+                  1.044320758850347,
+                  2.111367140491211,
+                  13.598956808061601,
+                  12.759536779752807,
+                  12.060702676038098
+                ],
+                "state": "observed",
+                "worst_il_db": 4.061571298281507
+              }
+            },
+            "output_vector": [
+              0.40000000002129227,
+              11.297469799588143,
+              14.727967429792963,
+              12.065980986025508,
+              0.999999999999357,
+              1.0,
+              -0.1,
+              -0.09999999999932421,
+              2.7256805079625472,
+              0.47747972448450837,
+              3.0,
+              0.6465831599493175,
+              2.291266562837653,
+              0.5210272464051166,
+              1.9841507732333767,
+              0.5112399303505479,
+              1.8158979480475028,
+              0.3333606484963555,
+              0.7756089278406201,
+              0.27598290747867427,
+              0.0,
+              0.0,
+              4.061571297411846
+            ],
+            "stage": "fine",
+            "status": {
+              "message": "Optimization terminated successfully",
+              "nfev": 24,
+              "nit": 1,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "stage_call_0"
+          }
+        ],
+        "validation": {
+          "continuous_frequency": "not_run",
+          "dense_rf": "not_run",
+          "independent_mna": "not_run",
+          "owner_approval": "not_run",
+          "physical": "not_run",
+          "power_balance": "not_run"
+        }
+      },
+      "stamped_topology": {
+        "capacitor_edges": [
+          [
+            0,
+            -1
+          ],
+          [
+            2,
+            -1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "capacitor_q": [
+          80.0,
+          60.0,
+          60.0,
+          35.0,
+          35.0,
+          60.0,
+          60.0
+        ],
+        "coupling_pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "inductor_q": [
+          25.0,
+          25.0,
+          25.0
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 4,
+          "source_node": 0
+        }
+      },
+      "topology_key": "4b4401d37890f4de84283499f3cd29e1126d7b59f69bff0d636a2bdfb0ad3b27",
+      "validation": {
+        "continuous_frequency": "not_run",
+        "dense_rf": "not_run",
+        "independent_mna": "not_run",
+        "owner_approval": "not_run",
+        "physical": "not_run",
+        "power_balance": "not_run"
+      },
+      "values": {
+        "capacitors_pf_by_setting": [
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            3.0,
+            0.6465831599493175,
+            2.7256805079625472,
+            0.47747972448450837
+          ],
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            2.291266562837653,
+            0.5210272464051166,
+            2.7256805079625472,
+            0.47747972448450837
+          ],
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            1.9841507732333767,
+            0.5112399303505479,
+            2.7256805079625472,
+            0.47747972448450837
+          ],
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            1.8158979480475028,
+            0.3333606484963555,
+            2.7256805079625472,
+            0.47747972448450837
+          ],
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            0.7756089278406201,
+            0.27598290747867427,
+            2.7256805079625472,
+            0.47747972448450837
+          ],
+          [
+            12.065980986025508,
+            0.999999999999357,
+            1.0,
+            0.0,
+            0.0,
+            2.7256805079625472,
+            0.47747972448450837
+          ]
+        ],
+        "coupling_k": [
+          -0.1,
+          -0.09999999999932421
+        ],
+        "inductances_nh": [
+          0.40000000002129227,
+          11.297469799588143,
+          14.727967429792963
+        ]
+      },
+      "vector": [
+        0.40000000002129227,
+        11.297469799588143,
+        14.727967429792963,
+        12.065980986025508,
+        0.999999999999357,
+        1.0,
+        -0.1,
+        -0.09999999999932421,
+        2.7256805079625472,
+        0.47747972448450837,
+        3.0,
+        0.6465831599493175,
+        2.291266562837653,
+        0.5210272464051166,
+        1.9841507732333767,
+        0.5112399303505479,
+        1.8158979480475028,
+        0.3333606484963555,
+        0.7756089278406201,
+        0.27598290747867427,
+        0.0,
+        0.0
+      ],
+      "vector_key": "1f99bfd7b0ab2d4bc817c9ddc5e7d55fbb6228549665bd9bcb2f72b2d1cb4132",
+      "vector_sha256": "d1fb7f90287ab09cf8bf0736cb03293455ad1d51f2bd58230b4cbbed6b25f3ca"
+    }
+  ],
+  "experiment_id": "EXP-077",
+  "input_source": {
+    "budget": {
+      "policy_id": "slsqp-staged-v2",
+      "primary": {
+        "coarse": 240,
+        "fine": 120
+      },
+      "recovery": {
+        "coarse": 500,
+        "fine": 280
+      },
+      "retries_on_iteration_limit": 1
+    },
+    "definition": {
+      "capacitor_placement": {
+        "fixed_edges": [
+          [
+            0,
+            -1
+          ],
+          [
+            2,
+            -1
+          ],
+          [
+            1,
+            -1
+          ]
+        ],
+        "ic_fixed_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "node_count": 4,
+        "variable_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      "coupling_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "fixed_c_types": [
+        "GJM01",
+        "PCB_PATTERN_C",
+        "PCB_PATTERN_C"
+      ],
+      "inductor_tree": {
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "load_node": 2,
+        "node_count": 4,
+        "source_node": 0
+      },
+      "inductor_types": [
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV"
+      ],
+      "physical_order": [
+        0,
+        1,
+        2
+      ],
+      "variable_roles": [
+        "shunt_to_ground",
+        "bridge"
+      ]
+    },
+    "grids": {
+      "coarse_points": 2,
+      "fine_points": 3
+    },
+    "jitter_fraction": 0.0,
+    "seed": 23,
+    "vector": [
+      2.0,
+      2.0,
+      2.0,
+      0.1,
+      0.1,
+      0.1,
+      0.0,
+      0.0,
+      1.0,
+      0.5,
+      0.5,
+      1.75,
+      0.75,
+      1.5,
+      1.0,
+      1.25,
+      1.25,
+      1.0,
+      1.5,
+      0.75,
+      1.75,
+      0.5
+    ],
+    "vector_sha256": "6c2be42f832a02e99636c4124030439ae86af602bc2c0c281daf1a1db431571f"
+  },
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "no_candidate_reason": "No eligible Pareto candidate: start-0: final_c2_epigraph_inequality_failed_on_grid, mandatory_harmonics_failed_on_grid",
+  "pareto": {
+    "candidate_promotion_blocked": true,
+    "candidates": [
+      {
+        "area_units": 3.6666666666666665,
+        "candidate_id": "start-0",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.99999998994461,
+          "min_h3_db": 30.0000000020825,
+          "worst_il_db": 4.061571298281507
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "final_c2_epigraph_inequality_failed_on_grid",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      }
+    ],
+    "global_optimum_proven": false,
+    "groups": [],
+    "rf_compliance_certified": false
+  },
+  "partial_staged_record": null,
+  "selected": [],
+  "selected_candidate_count": 0,
+  "selection_before_run": {
+    "estimated_curated_bytes": 200000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints; preserve all exclusions/failed/nonconverged/STOP diagnostics in run_summary.",
+    "top_k": 0
+  },
+  "source_provenance": {
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "2fce916bcc91cb0168962440ca19b099606411ec",
+    "input_source_sha256": "5c7d0ff9105d747a1a7f6643bc001050b45a0ea70ce6e9e406590a23a519452e",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "termination": {
+    "message": "converged",
+    "type": "completed"
+  },
+  "timeout_seconds": 300
+}

@@ -1,0 +1,30 @@
+{
+  "checkpoints": [],
+  "experiment_id": "EXP-077",
+  "git_readback": "passed",
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "phase": "Phase 2",
+  "policy": "phase2-git-only-v1",
+  "schema_version": 1,
+  "selection": {
+    "estimated_curated_bytes": 200000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints; preserve all exclusions/failed/nonconverged/STOP diagnostics in run_summary.",
+    "top_k": 0
+  },
+  "size_exception": null,
+  "stage": "complete",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-077/run_summary.json",
+    "sha256": "699211db2677bdeeb9b1486cb2852afc1bc53f68b878be1199c50abdb7313de8"
+  },
+  "supporting_evidence": [],
+  "validation_overlays": []
+}
