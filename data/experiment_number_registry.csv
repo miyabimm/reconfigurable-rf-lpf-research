@@ -71,3 +71,4 @@ EXP-069,reserved,miyabimm,rft005-stage7-first-pilot-20261029,Stage7 pilot single
 EXP-070,reserved,miyabimm,rft008-stage8-round1-20261030-a,Issue226 Round1 group A RF-T008 rev3 3L chain 1-start diagnostic,RF-T008,2026-10-30T03:30:50Z,main_reservation_workflow
 EXP-071,reserved,miyabimm,rft008-stage8-round1-20261030-c,Issue226 Round1 group C RF-T008 rev3 4L branch 1-start diagnostic,RF-T008,2026-10-30T03:31:05Z,main_reservation_workflow
 EXP-072,reserved,miyabimm,rft008-stage8-round1-20261030-d,Issue226 Round1 group D RF-T008 rev3 4L chain GJM 1-start diagnostic,RF-T008,2026-10-30T03:31:07Z,main_reservation_workflow
+EXP-073,reserved,miyabimm,rft008-stage8-round1-20261030-b,Issue226 Round1 group B RF-T008 rev3 3L branch GJM 1-start diagnostic,RF-T008,2026-10-30T03:31:06Z,main_reservation_workflow
