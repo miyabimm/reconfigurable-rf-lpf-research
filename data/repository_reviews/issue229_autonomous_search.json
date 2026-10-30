@@ -1,0 +1,1674 @@
+{
+  "schema_version": 1,
+  "issue_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/229",
+  "branch": "issue-229-autonomous-search",
+  "results_head_before_report": "8a6e7928c14b7ef999c7372be575ba562297466e",
+  "main_at_completion": "38bf40a89acef340919e62965ca38284ccc04932",
+  "stop_reason": "12_distinct_executed",
+  "phase": "Phase 2",
+  "constraint_id": "RF-T008",
+  "effective_constraint_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "counts": {
+    "proposals": 12,
+    "rejected_proposals": 0,
+    "distinct_executed": 12,
+    "starts": 12,
+    "stage_dispatches": 24,
+    "converged": 12,
+    "nonconverged": 0,
+    "failed": 0,
+    "selected": 0,
+    "strict_30db_pass": 0,
+    "unexecuted_authorized_starts": 0
+  },
+  "grid": {
+    "coarse_points_per_interval": 2,
+    "fine_points_per_interval": 3,
+    "separate_intervals": 28,
+    "settings": 6,
+    "gap_bridging": false
+  },
+  "numeric_observation_only": true,
+  "goal_verified": false,
+  "best_diagnostic_by_area_class": [
+    "EXP-074",
+    "EXP-075",
+    "EXP-079"
+  ],
+  "records": [
+    {
+      "proposal": 1,
+      "experiment_id": "EXP-074",
+      "selection_reason": "ChatGPT指定A': EXP-070からPCB shuntをnode1→source node0へ移動し入力整合の自由度を変更。他の接続・初期値はIssue229指定どおり。",
+      "topology_key": "bfe08a13fd06a7d9e0a15c56ad4a503139721b203abef3e2dbdaddef7bad8ac0",
+      "area_class": "3L0GJM",
+      "area_fraction": "3",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 3,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999989789343,
+        "min_h3_db": 29.999999997533955,
+        "worst_il_db": 1.3619784664212589
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 1.4835487021485869e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 842,
+            "nit": 35,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 24,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 0.9894787059893133,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024153605",
+        "main_sha": "a01f03fba759e04dedc0a51b6d70433b7c9039a3",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-074",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal1 A-prime RF-T008 rev3 3L0GJM autonomous one-start",
+          "request_id": "issue229-proposal01",
+          "reserved_at_utc": "2026-10-30T08:05:52Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "4496423d9a9d2bbb34b6b271a50bbe67f9b1c41cbd8fd1d892af3f4858b404f9"
+      },
+      "G1": {
+        "commit": "3cd70592fe75cf01999e79936dec3a57003746c4",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "bbd0d40dddc8cc45b835a0ce52e87ec7e4961c3a8a4088e2e681b4e98f55ba32"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-074/manifest.json",
+            "sha256": "e599bd1957b05a68a2d14826fe125f1307c27b1f8ea20ac8f67db2dad51e6407"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-074/storage_record.json",
+            "sha256": "d17eec1d461f751b866d01ebca7388bfc8337c801fc1d1dafc4cbe292a5c2699"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "45de9ade8ac1e38f3b104b10604e4825edf4d591",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "f8f194277cc63732e72591519df71a68cf2b1268ed1d192d31d628854b490976"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-074/manifest.json",
+            "sha256": "8533a3edf2428225b9de672e7c875d92c900df8b290903d806a9dbf23b50f153"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-074/run_summary.json",
+            "sha256": "0ca2d7e921b4f4c2e8338b9dae2d46bb473f9f044882761e5dc1821c885134b3"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-074/storage_record.json",
+            "sha256": "bb7931665389b4fb9c8518149f1d9315e83967ddadacce56c25133e6cacd7003"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-074/manifest.json",
+          "sha256": "8533a3edf2428225b9de672e7c875d92c900df8b290903d806a9dbf23b50f153"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-074/run_summary.json",
+          "sha256": "0ca2d7e921b4f4c2e8338b9dae2d46bb473f9f044882761e5dc1821c885134b3"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-074/storage_record.json",
+          "sha256": "bb7931665389b4fb9c8518149f1d9315e83967ddadacce56c25133e6cacd7003"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-074/run.json",
+        "sha256": "ea1f94eaa4a7ba7ec6331383cc178e63d3ba2df38208aa027d26adf15f8d7334",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "a01f03fba759e04dedc0a51b6d70433b7c9039a3"
+    },
+    {
+      "proposal": 2,
+      "experiment_id": "EXP-075",
+      "selection_reason": "EXP-074: IL1.362dB、source PCB-Cが1pF上限、他PCB-Cが0.02pF下限、両kが限界、B8両Cv OFF。入力shuntのみGJM01 Q80へ置換し容量可動域と損失を改善する仮説。歴史vectorは投影せず同じ合法名目値で開始。",
+      "topology_key": "90f760a9386dd9af43c740208f0bf5b1d110bbb9705e0670913decb3f17e4ad8",
+      "area_class": "3L1GJM",
+      "area_fraction": "11/3",
+      "counts": {
+        "GJM01": 1,
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 2,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999995132242,
+        "min_h3_db": 29.999999999546922,
+        "worst_il_db": 1.1203189708797305
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.342351780268204e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 505,
+            "nit": 21,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 24,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 0.8467642049945425,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024392093",
+        "main_sha": "186805179f8a30e46a39c5d431eaa269e2d5c037",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-075",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal2 source GJM RF-T008 rev3 3L1GJM one-start",
+          "request_id": "issue229-proposal02",
+          "reserved_at_utc": "2026-10-30T08:08:04Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "b41f3748186031052f77426db9614cfc60824deb49fb986839e7e8215281cc39"
+      },
+      "G1": {
+        "commit": "86fded4045c91641b528e7a5bcb5e43772e4e41e",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "9d168cf289c79c51defbba1c5d919c6b65423cca02b64e20205c2b50de5bcb54"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-075/manifest.json",
+            "sha256": "c7db5fdaadabde258965cf913fde9e1a4fec12f1ad0cbc9deeb364ca88e9d6a9"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-075/storage_record.json",
+            "sha256": "d5466c7c16a7b22270df3f346a1d19717da16b28b3f8586b4fca221e9240bed8"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "fb382f3dc6a82062792284e4fe07806793ca78a3",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "1d33d3609b831e0bf49a0fd26b105946323df352e19b40144fc2c22a5a5930b1"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-075/manifest.json",
+            "sha256": "cfe095969cd5e9c28142047a37bcd346d69adca5f0dfb9bf666975e65df94c2c"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-075/run_summary.json",
+            "sha256": "f1cc86164221606e01a2437f81b023d3387d56f7948d0101816c745c2c0dd000"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-075/storage_record.json",
+            "sha256": "b9ab8d139c30620388c9271434ab06f1791ef1b6e41a17abf1f1b0639b2c672d"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-075/manifest.json",
+          "sha256": "cfe095969cd5e9c28142047a37bcd346d69adca5f0dfb9bf666975e65df94c2c"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-075/run_summary.json",
+          "sha256": "f1cc86164221606e01a2437f81b023d3387d56f7948d0101816c745c2c0dd000"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-075/storage_record.json",
+          "sha256": "b9ab8d139c30620388c9271434ab06f1791ef1b6e41a17abf1f1b0639b2c672d"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-075/run.json",
+        "sha256": "914090e5ab66b3e7a7efcd88c73b9d3d874e3e10e9774e63a58c15e6cf15e05a",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "cba348094a6d774f09f251bdf5b73610fecaf326"
+    },
+    {
+      "proposal": 3,
+      "experiment_id": "EXP-076",
+      "selection_reason": "EXP-075でIL1.1203dBへ改善したがoutput/bridge PCBは両方下限、両k限界、B8 Cv OFF。不要寄りの固定bridgeをnode1の中間shuntへ移し、主経路2Lと第3Lのshunt共振で別々に高調波制御する自由度を追加。GJM sourceは保持し初期値は名目値。",
+      "topology_key": "4da8e8b693d49dc8f487541dc82ff28238e8064a03067f25a28375ce0cedc909",
+      "area_class": "3L1GJM",
+      "area_fraction": "11/3",
+      "counts": {
+        "GJM01": 1,
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 2,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.999999932980614,
+        "min_h3_db": 29.999999901889698,
+        "worst_il_db": 1.1211260006981736
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.0759133932023888e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 889,
+            "nit": 37,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 24,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 0.9776585270010401,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024532493",
+        "main_sha": "0f61f66a7603c9bed0405acbe8af793fe5ad40da",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-076",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal3 middle shunt RF-T008 rev3 3L1GJM one-start",
+          "request_id": "issue229-proposal03",
+          "reserved_at_utc": "2026-10-30T08:09:19Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "78c13dc71cbe0457800b865311925f42f366f43f2eb1c80b7280df5d34f9747e"
+      },
+      "G1": {
+        "commit": "90684be950e1c7a725e44f362c32928b90d3f341",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "c7bc73b0e1395f9471a3f18bd184372120a7262bf9eb1b749576ce895f63b20d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-076/manifest.json",
+            "sha256": "2d1947539ecde9602e2c54161f08038668c1bc324eb6421f0c9c4efaa4770f82"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-076/storage_record.json",
+            "sha256": "cd4ff307bd8a0e31d6b9ee2ae6ad128eeb7370675778296f5a26ab1be626ee94"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "fc9a5fcd07944525c97122e71d8b0b018c4f16df",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "682fc1262f1347906cb86465545247ebfe9df4061782992cffe66291f4f48750"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-076/manifest.json",
+            "sha256": "9c6009cca85b87672c5e5cc1145bb592f5aaf117b12d72a095e199b4f59f5857"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-076/run_summary.json",
+            "sha256": "8c7e7a29f016b3af2adf0c299fa08bcf0102a6df90abb077faffe48b84554e5f"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-076/storage_record.json",
+            "sha256": "4515482d795313e0c35e19aabe7bcba98bd5c10bb6f534e828b01f067a23691f"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-076/manifest.json",
+          "sha256": "9c6009cca85b87672c5e5cc1145bb592f5aaf117b12d72a095e199b4f59f5857"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-076/run_summary.json",
+          "sha256": "8c7e7a29f016b3af2adf0c299fa08bcf0102a6df90abb077faffe48b84554e5f"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-076/storage_record.json",
+          "sha256": "4515482d795313e0c35e19aabe7bcba98bd5c10bb6f534e828b01f067a23691f"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-076/run.json",
+        "sha256": "644c8364f2b6025a8f84b57fa566409ba75ae55cff65797caef34d35aaba1d7f",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "47aa657e8588cf2c61ef3cb8507c87b3a08b2ac8"
+    },
+    {
+      "proposal": 4,
+      "experiment_id": "EXP-077",
+      "selection_reason": "EXP-076中間固定shunt追加はIL1.1211dBで改善せず、そのPCBも下限。次は第3Lの分岐根をload2から中点1へ移し、中点の可変直列LCノッチとsource-load可変bridgeの干渉でH2/H3を分担する。Q/面積/初期名目値は維持。",
+      "topology_key": "4b4401d37890f4de84283499f3cd29e1126d7b59f69bff0d636a2bdfb0ad3b27",
+      "area_class": "3L1GJM",
+      "area_fraction": "11/3",
+      "counts": {
+        "GJM01": 1,
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 2,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999998994461,
+        "min_h3_db": 30.0000000020825,
+        "worst_il_db": 4.061571298281507
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.9581015187978066e-10,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1769,
+            "nit": 74,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 24,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.4929052419902291,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024652738",
+        "main_sha": "01f4678cda1a663939834e4998d6b585e9775245",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-077",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal4 midpoint resonator RF-T008 rev3 3L1GJM one-start",
+          "request_id": "issue229-proposal04",
+          "reserved_at_utc": "2026-10-30T08:10:22Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "9c7bf5afd003257ffedf3d18512374c1c9b7774395f19abbf1258f1f13bcffbd"
+      },
+      "G1": {
+        "commit": "d98929e33537bd02cfd709fa8f54bd0300597eec",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "aede6c9bf6e991c7c87f305049d720c38575039a2969d3fd3b924e21114782a6"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-077/manifest.json",
+            "sha256": "e19d1015d7d00ae7037114726bb73e54911bbc7aba6957613d8fbb70f09718b0"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-077/storage_record.json",
+            "sha256": "c7b4409164baa86cd438921160ca070f3c850b8d1bc0214d5e44fb7bd688ae42"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "59ff56e784bc489148b0b37900e7b0e211baa385",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "c831daeb0f4338bc04bdf9db27616285184fe93f6f23b184744e47aecae8e6f0"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-077/manifest.json",
+            "sha256": "a78570fbcf306ba5d5ddd9fe2e72ef915207634c1d73a0e9107706083171fc09"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-077/run_summary.json",
+            "sha256": "699211db2677bdeeb9b1486cb2852afc1bc53f68b878be1199c50abdb7313de8"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-077/storage_record.json",
+            "sha256": "79fa049f990111ea223f343e0a857e75efc585e2d7c5916a69aeeca3483f97c1"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-077/manifest.json",
+          "sha256": "a78570fbcf306ba5d5ddd9fe2e72ef915207634c1d73a0e9107706083171fc09"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-077/run_summary.json",
+          "sha256": "699211db2677bdeeb9b1486cb2852afc1bc53f68b878be1199c50abdb7313de8"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-077/storage_record.json",
+          "sha256": "79fa049f990111ea223f343e0a857e75efc585e2d7c5916a69aeeca3483f97c1"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-077/run.json",
+        "sha256": "13c7ba008b48cb0dfb4a2775814160bb043350fc1a741d7edf05fc3f958f40e4",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "2fce916bcc91cb0168962440ca19b099606411ec"
+    },
+    {
+      "proposal": 5,
+      "experiment_id": "EXP-078",
+      "selection_reason": "EXP-077中点分岐+bridgeはIL4.0616dBで悪化、L0が0.4nH下限・GJM12.1pF・他shuntも上限。bridge単独の伝達零点より二つの独立可変shunt直列LCノッチを試す。4L0GJM=A4、主経路0-1-2と中点/出力の分岐1-3,2-4を採用し両DTCでH2/H3の零点を分担。名目初期値を新規encodeし過去解の投影なし。",
+      "topology_key": "be4e0748e8fd79cbcca90cdb682e00d869424769964b62aaf068acf186bc40f5",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "PCB_PATTERN_C": 3,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999999999369,
+        "min_h3_db": 29.999999999993996,
+        "worst_il_db": 1.114695024659343
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.144768269313752e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 2641,
+            "nit": 102,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 26,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 2.0975518509949325,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024790427",
+        "main_sha": "a7f7a0c1fee0ad759e34494fd68d40001689324f",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-078",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal5 dual shunt resonators RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal05",
+          "reserved_at_utc": "2026-10-30T08:11:36Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "acbefe9081af8c6f2d3bc69181493ad6a798f89fddee2d31f34b591209cc136f"
+      },
+      "G1": {
+        "commit": "72b86e71597f1e0eeffe9145e48ab53b26b38c83",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "f0d0d493996f0ae1f3e38164cb06823ebc371c06e74002865749ef29dd4cfc1e"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-078/manifest.json",
+            "sha256": "2ea64f7c99ecc819c97ce9aeff6ca8541c50ab6a8d8fcb5bc9e766f0b31b0549"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-078/storage_record.json",
+            "sha256": "aef69b35f287b3503acd38e0af3874c828e12548a83d09b6f6ebb06e717d6450"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "df4f19df9ae1fae0cb1c51ed281c0aa428604a29",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "515aaf262e7d5b0198db1c84dc10caecdf6aa80c224013d163af5e69a1ab1e43"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-078/manifest.json",
+            "sha256": "a256f9b6e9ff13edd249a5cbc7f11dfa0cbab4e8c4245f91f5d14f01d27fd99d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-078/run_summary.json",
+            "sha256": "4f04fe7e8f515a17215743a3a51c55fee9857a45326b09be004ec0b882e707a2"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-078/storage_record.json",
+            "sha256": "805a11ac69e063812fa9808fa8a10ae097d3ea589156f6f6de3b21c09b3948ac"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-078/manifest.json",
+          "sha256": "a256f9b6e9ff13edd249a5cbc7f11dfa0cbab4e8c4245f91f5d14f01d27fd99d"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-078/run_summary.json",
+          "sha256": "4f04fe7e8f515a17215743a3a51c55fee9857a45326b09be004ec0b882e707a2"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-078/storage_record.json",
+          "sha256": "805a11ac69e063812fa9808fa8a10ae097d3ea589156f6f6de3b21c09b3948ac"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-078/run.json",
+        "sha256": "1a77281ad5387503159b1c3923ad56babf78da178afdfadf0c82014384aeee28",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "b446ef94097a49edcd72e082ee440b4da52b64f2"
+    },
+    {
+      "proposal": 6,
+      "experiment_id": "EXP-079",
+      "selection_reason": "EXP-078 dual-shuntはIL1.1147dB、全PCB-Cが0.02pF下限、k全て限界、B8 Cv両OFF。PCB3枝を削除して不要shunt損失を避け、physical rowを0,2,1,3へ変更し各main Lと分岐Lが近接するslots(0,2),(2,1),(1,3)にする。共振器間の直接slotをなくし主経路との結合で伝達零点を調整。初期L/Cは引き続き名目。",
+      "topology_key": "ec3d6fb723a6aa7e79bdd214dc2878187d14e8a0306bdfe670d81b8a129c07b6",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999999883604,
+        "min_h3_db": 30.00000002488732,
+        "worst_il_db": 1.1100741082214507
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.1195480268098516e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 2027,
+            "nit": 87,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 23,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.6033647779986495,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41024932329",
+        "main_sha": "5a4989489fe19b4bb3c83ff7a7fb3a1b21560082",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-079",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal6 reordered dual resonators noPCB RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal06",
+          "reserved_at_utc": "2026-10-30T08:12:51Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "02d976d99fcce0e25ac45b24747da861b5adfcd9f848836912d332bfaf8552dc"
+      },
+      "G1": {
+        "commit": "2bc7b366a1d1e0ce5cc78f0e859d216f43570398",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "d93d525f83711e0f5b0b0bc250cbd80034ca1b327067589355c3b670886ab41a"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-079/manifest.json",
+            "sha256": "3a86a8517f2056cc268116ce73ae6e4f470a6c0daae25dc0d983a370e1b4b1a0"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-079/storage_record.json",
+            "sha256": "e54cc112f454e1e6121387cfd1add6fbaad8bfd7b9dca49adde2ac94c0448bc6"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "3121752936bece58c131103c4cc6e9ca6e71189c",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "db05a84551ce7e94cbb27556d1c647536e880cefd22cc2039b9874351d790693"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-079/manifest.json",
+            "sha256": "6c04d405690ff523c3d54813580249e9aedaca76d7a91452a6b8aaa58475cc77"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-079/run_summary.json",
+            "sha256": "57d3f786d082419177d2162a62e857be0ced47a3174733b59b7dad6cdbde1b6d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-079/storage_record.json",
+            "sha256": "ea0d518436d291be9b8b2a3705d9c244376c0f98170a9a210735bd3c444c6458"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-079/manifest.json",
+          "sha256": "6c04d405690ff523c3d54813580249e9aedaca76d7a91452a6b8aaa58475cc77"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-079/run_summary.json",
+          "sha256": "57d3f786d082419177d2162a62e857be0ced47a3174733b59b7dad6cdbde1b6d"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-079/storage_record.json",
+          "sha256": "ea0d518436d291be9b8b2a3705d9c244376c0f98170a9a210735bd3c444c6458"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-079/run.json",
+        "sha256": "566254eace8cb90c7a207b74f43625a0171c319c41f35b5b899a0c14684f60de",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "0cd19a58d5d280fe17fb9b9b40e235405ded945b"
+    },
+    {
+      "proposal": 7,
+      "experiment_id": "EXP-080",
+      "selection_reason": "EXP-079はIL1.1101dBに留まりk全限界、出力側IC固定Cが0.5pF下限、B8 Cv OFF。2つのshunt共振器でなく主経路3Lへ1本を再配置して低域通過次数を上げ、残る分岐LCと可変bridgeでH2/H3零点を補う。source0-load3、主経路0-1-2-3と2-4分岐。3 PCBで入出力側shunt/局所bridge整合、過去解投影なし。",
+      "topology_key": "86b80aa59984b3eaabca9b8cc115b4b1beb236613f16a583dc0895ee41045a67",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "PCB_PATTERN_C": 3,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999975159418,
+        "min_h3_db": 30.000000011455363,
+        "worst_il_db": 1.4489861320341832
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 4.3633533088465575e-10,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1778,
+            "nit": 68,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 26,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.541412651000428,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025081558",
+        "main_sha": "ad4dc69a53b2a55a97720e03b6866bc928065c38",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-080",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal7 three main L plus trap bridge RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal07",
+          "reserved_at_utc": "2026-10-30T08:14:14Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "81a86df135724438053e51b6f8330561868207f4d171af304821c5942a9ae984"
+      },
+      "G1": {
+        "commit": "7717956189b666b82929731e482d24d2d3c15cc4",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "8a36f742ac5800237e5f81557df8f7802b56e3ace601b9fc226d9821a2ed7af3"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-080/manifest.json",
+            "sha256": "ec4516b2930ca44d9103da967046be9db7dd6c35b7e4b460f49f59e70a30b8ab"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-080/storage_record.json",
+            "sha256": "71d71471b28578e1d86dfdbdaad74a83346286fc952b5e847dea0bf71bcf5288"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "f013293388678f6f3b634859ceea203a54ada57f",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "29480f4d78bce8ed75de6d4cfd7d7eae9fe92d7ea40306c330d952e50c26ef0d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-080/manifest.json",
+            "sha256": "ac6a9e8f9cb4d34a88e9fbff3481b39dd09e0ad320c46b75c31b7153894cd91c"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-080/run_summary.json",
+            "sha256": "bde5a931e18c3121d16b639e9e280bde4aa3d5d0e464672a0353fa13c7e6cba8"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-080/storage_record.json",
+            "sha256": "7930025d066fd009c7aa0c90f83aec084a7cf204cfd1138cb7ee2dfc31df8a2a"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-080/manifest.json",
+          "sha256": "ac6a9e8f9cb4d34a88e9fbff3481b39dd09e0ad320c46b75c31b7153894cd91c"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-080/run_summary.json",
+          "sha256": "bde5a931e18c3121d16b639e9e280bde4aa3d5d0e464672a0353fa13c7e6cba8"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-080/storage_record.json",
+          "sha256": "7930025d066fd009c7aa0c90f83aec084a7cf204cfd1138cb7ee2dfc31df8a2a"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-080/run.json",
+        "sha256": "a851fc5cd4ab941dd6a3e9ff71a97695b4a59073472d1d3295155527cf8b8372",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "088d2fd750e76b3472bacb4eb967c78ed84e25db"
+    },
+    {
+      "proposal": 8,
+      "experiment_id": "EXP-081",
+      "selection_reason": "EXP-080: IL1.449dB、末端主経路L2=0.4465nHでほぼ下限、局所PCB bridge(1,3)は0.2pF上限。DTC bridgeをその局所区間(1,3)へ移し末端Lの反共振を制御、固定bridgeは(0,2)へ交換して入力側feedforwardを小容量化。source PCB上限の観測は保持し、まず接続交換の効果を診断。",
+      "topology_key": "8111459a2ee55ba0711411ee8e90fff97029478f24753851f3e341129b4fe272",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "PCB_PATTERN_C": 3,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.999999999640423,
+        "min_h3_db": 29.999999998777163,
+        "worst_il_db": 2.457350363920801
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.956990150598315e-10,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1705,
+            "nit": 65,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 26,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.552084224007558,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025229041",
+        "main_sha": "af4345d8a5d8ea948b96c912ee2b3da0f2dc587a",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-081",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal8 output local DTC bridge RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal08",
+          "reserved_at_utc": "2026-10-30T08:15:34Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "94b1c5d7664bfc7a6ab0d6ad732919d64663a13c92ad5dfc21186a186440595f"
+      },
+      "G1": {
+        "commit": "339e1a093373b12ac914d692d3a6132494719db6",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "7f84a184bcebad8e29985b1477ee698d9d770fef70f882a645ef4e4d516c46c6"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-081/manifest.json",
+            "sha256": "04f258aa35c7a424e295d0b072563d13d4d0ef610e449aa6d5f95dba8ef8a407"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-081/storage_record.json",
+            "sha256": "1b62f8c40f0913a4286e9ea821131543f0fc674d8e87be5a3f40eef7a1f0f04a"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "bdc5db876cf3abe28fcfe2b0106620852e402dbf",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "92197d34ca13430231801bd897ba5808d80043314782f6082ac3934177d6390e"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-081/manifest.json",
+            "sha256": "8a43a96ef03bab7c01294c86c3eb7c9c89e8220d86177d18dec26c07d4942e43"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-081/run_summary.json",
+            "sha256": "df6e01b4e6a47936524cd2a51e8b3484ec1e02bd0d98bce5b79b9a9f123aadb3"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-081/storage_record.json",
+            "sha256": "b5ffdec8de5566aacc1f510c01cdfd7e20ee96def432ff82879439443d4978fa"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-081/manifest.json",
+          "sha256": "8a43a96ef03bab7c01294c86c3eb7c9c89e8220d86177d18dec26c07d4942e43"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-081/run_summary.json",
+          "sha256": "df6e01b4e6a47936524cd2a51e8b3484ec1e02bd0d98bce5b79b9a9f123aadb3"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-081/storage_record.json",
+          "sha256": "b5ffdec8de5566aacc1f510c01cdfd7e20ee96def432ff82879439443d4978fa"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-081/run.json",
+        "sha256": "6ac1154d75e77486e505701306a6a9eeb9a2ddfcd2d6282d9b7d1a41d02b5d46",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "3167c03409862cae06a259b1dc4b16535baa8c6b"
+    },
+    {
+      "proposal": 9,
+      "experiment_id": "EXP-082",
+      "selection_reason": "EXP-081でIL2.4574dB、L0=0.4nH下限・L2=0.557nH、IC bridge固定C=0.2pF下限へ張付。主経路Lを増やす方向は本startで悪化。主経路1Lと出力に二つの可変LCノッチを持つ3L星型へ変更し通過域直列損失を減らす仮説。EXP-075のsource GJM改善を採用、共振器は二つの独立DTC+IC固定C。",
+      "topology_key": "22fef7cb165e9d7470335981e5e308a546559434a5a71e8b1200a3e08e3e88dc",
+      "area_class": "3L1GJM",
+      "area_fraction": "11/3",
+      "counts": {
+        "GJM01": 1,
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 2,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999951651698,
+        "min_h3_db": 29.999999997831853,
+        "worst_il_db": 2.4732205144501935
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 3.135114618776101e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1489,
+            "nit": 62,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 24,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.362373240001034,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025411123",
+        "main_sha": "14f0cbc5566258777e3ad68c52bdf20164366bba",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-082",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal9 single main dual output traps RF-T008 rev3 3L1GJM one-start",
+          "request_id": "issue229-proposal09",
+          "reserved_at_utc": "2026-10-30T08:17:14Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "1eec7c515afe605a3f92562953dcdd401cc2a0a3b7e81dfc2fb47bb728980d16"
+      },
+      "G1": {
+        "commit": "42bf17258bb5b0e06e2de1fa01cb8c586b066db0",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "d5619165c868c9bf277e6b5708b93022b41d2dda9cb6ea6b36b5e00a8f605d8a"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-082/manifest.json",
+            "sha256": "4810defa8784481ee9804dcc9d8894bcbd1219cd5383ed0d362e723270ac3ba5"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-082/storage_record.json",
+            "sha256": "46178ef0c1526454ae19cb3e9dd9a73591547d72117909857835b14a6b2abab3"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "81587b2cd07b01d5c806a2de56926702e2f0c1b8",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "9b63bdab0583c6d2cea12a3347c149e81617a6e4ea317600c9c99321aa9b5a25"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-082/manifest.json",
+            "sha256": "c0b6ec90b2ccd5557522c9b800d9655944a6b7d72bd56d82fd4c0e6d63f65229"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-082/run_summary.json",
+            "sha256": "ca0c9abd0752fa93b29180bb55d96f125217f2309a44aed214a71f9d1eb4f4b9"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-082/storage_record.json",
+            "sha256": "59e0922ac358dfb99e632f41a79f6afe9eb5e2cc21d351b5e6f0757e90747bec"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-082/manifest.json",
+          "sha256": "c0b6ec90b2ccd5557522c9b800d9655944a6b7d72bd56d82fd4c0e6d63f65229"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-082/run_summary.json",
+          "sha256": "ca0c9abd0752fa93b29180bb55d96f125217f2309a44aed214a71f9d1eb4f4b9"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-082/storage_record.json",
+          "sha256": "59e0922ac358dfb99e632f41a79f6afe9eb5e2cc21d351b5e6f0757e90747bec"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-082/run.json",
+        "sha256": "ce1d6350282784e68b5679040c7528ad089053da79cc1c7f58548263e5a8bb5b",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "3828a2a3461dbfcec4e579b551ef0c131e5c2880"
+    },
+    {
+      "proposal": 10,
+      "experiment_id": "EXP-083",
+      "selection_reason": "EXP-082の並列出力2共振器はIL2.4732dB、L2=19.69nH、B26第2Cv=3pF上限・B8両OFFで設定間の競合。第1分岐を出力から入力へ分離し、入出力それぞれの可変LC零点でH2/H3を分担、同一nodeでの並列相互作用を緩和する仮説。GJM sourceと名目seed23は維持し別topology keyを検査。",
+      "topology_key": "f46e38ef72a4c2f976ff5dc29ded02df2f0eb8441bece244f6300ae3945ad656",
+      "area_class": "3L1GJM",
+      "area_fraction": "11/3",
+      "counts": {
+        "GJM01": 1,
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 3,
+        "PCB_PATTERN_C": 2,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999999516751,
+        "min_h3_db": 39.06724711688894,
+        "worst_il_db": 6.007470579837949
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 1.1941988022907137e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1766,
+            "nit": 75,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 457,
+            "nit": 19,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.7779497770097805,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025569627",
+        "main_sha": "1da0a31dcce9bc331571170d8f0953f297b0c8ac",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-083",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal10 split input output traps RF-T008 rev3 3L1GJM one-start",
+          "request_id": "issue229-proposal10",
+          "reserved_at_utc": "2026-10-30T08:18:40Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "0db411bf97b7d22918f9cfa5bc3426d28b9bc1d6f31835bf679dc45a5f7adc69"
+      },
+      "G1": {
+        "commit": "d23715dcb2e6d12a38677d3e5bd6d679123a01f7",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "383fb505f6bd8125e7702df6200bf1faf6b25e61cdb7952417bab43ea0ce0ce0"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-083/manifest.json",
+            "sha256": "5cd5002037927d5200b44e69dcb1ee196078c413529c3e847653bca2c68e0508"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-083/storage_record.json",
+            "sha256": "75d9613a152de3201914a46fd8119410175e9f92c9cac29701e89723f1b0f2bf"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "f0f27d8498d0e2a8e1acb54a64997d28e4f80ca8",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "07ca6c4128d3ab18448a4d3bc6f40da323254be220885556baf8ce062b24595d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-083/manifest.json",
+            "sha256": "5858edded44426d71941416f1686cb3b539f6446f9d0fa8aa5b74e55ee632f47"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-083/run_summary.json",
+            "sha256": "8edfb25b58024aa6ecfcadaa89d73af55fbee25d017bafe638b2fcd3f1772d0d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-083/storage_record.json",
+            "sha256": "c5327a71fb0f894ace6711f7e569cbdf51cbc4b3c464263680b72df1b4b925b9"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-083/manifest.json",
+          "sha256": "5858edded44426d71941416f1686cb3b539f6446f9d0fa8aa5b74e55ee632f47"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-083/run_summary.json",
+          "sha256": "8edfb25b58024aa6ecfcadaa89d73af55fbee25d017bafe638b2fcd3f1772d0d"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-083/storage_record.json",
+          "sha256": "c5327a71fb0f894ace6711f7e569cbdf51cbc4b3c464263680b72df1b4b925b9"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-083/run.json",
+        "sha256": "295ce413756a296389ff7787ee3bc8306b519539ee573bad80489372747e51d1",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "a3678121a53167a6218f174d05231455488e5692"
+    },
+    {
+      "proposal": 11,
+      "experiment_id": "EXP-084",
+      "selection_reason": "EXP-083 input/output trap分離はIL6.0075dB、入力分岐L=27nH上限・GJM20.93pF・複数Cv上限で悪化。次は大きいshunt電流を避け、4L直列主経路の前後2区間に独立DTC bridgeを並列に置く二段反共振型を選択。固定PCB shuntで低域整合、二つのbridgeでH2/H3零点調整を試す。4L0GJM、Q25と名目初期値を維持。",
+      "topology_key": "9aff05958a0745ed72097eefe680a497a0f0ddf49e45a1e5e2fad9274fb5dacc",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "PCB_PATTERN_C": 3,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.99999993795779,
+        "min_h3_db": 29.99999994823707,
+        "worst_il_db": 5.768439047716325
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 1.8778718736458024e-09,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 2193,
+            "nit": 83,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 26,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.790173708999646,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025741569",
+        "main_sha": "701d399c3b65041cc6fa59b66064038db6d315d4",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-084",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal11 double bridge chain RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal11",
+          "reserved_at_utc": "2026-10-30T08:20:18Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "5e9be423c3b5f98ac07c7ccbf072149aa5d9860de098ee1cce1ec3263a471df7"
+      },
+      "G1": {
+        "commit": "2a049bec41f5e6aeeba514f57b3fd22db7d32913",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "97cbed775e6dd5dbe9a7ba346abea265b395490cbf2ce7a709e4d6928c33691d"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-084/manifest.json",
+            "sha256": "b792679a2e0670751d4d349f4b0bd409687de249a9f8e6c8f828f1581899a800"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-084/storage_record.json",
+            "sha256": "d94eef4bc7291895a29e49ae9be18d1a4d307b92ec6694eed8b5d3a23399ac97"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "795550d03778b4ea12bd1dd596a8aa987a3b5e5d",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "2a63261e14fc8e0e72c8d4c6d9ffafefec194fde9c9a26063d86dd119eac5337"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-084/manifest.json",
+            "sha256": "20992e0339854c867546e0a0317c9b9db8018e3e717e1f6d6735056f940c70ee"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-084/run_summary.json",
+            "sha256": "7846625c22fc13e6e1cac77840a26a9a1d32d33dca0dcb918df8555ea87240d2"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-084/storage_record.json",
+            "sha256": "43ba02c7e94ed59eba0316e8bc257d90d175eb2ae950725d1254f3c05bc11f9f"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-084/manifest.json",
+          "sha256": "20992e0339854c867546e0a0317c9b9db8018e3e717e1f6d6735056f940c70ee"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-084/run_summary.json",
+          "sha256": "7846625c22fc13e6e1cac77840a26a9a1d32d33dca0dcb918df8555ea87240d2"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-084/storage_record.json",
+          "sha256": "43ba02c7e94ed59eba0316e8bc257d90d175eb2ae950725d1254f3c05bc11f9f"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-084/run.json",
+        "sha256": "72fbc46f9c7d3f0ed3a1cd5f3f90fd9977ee40346fc222b33debf9726eda6f02",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "f8acca181563e15b1ae0266f7c9ce59929526af7"
+    },
+    {
+      "proposal": 12,
+      "experiment_id": "EXP-085",
+      "selection_reason": "EXP-084二段bridgeはIL5.7684dBで悪化、全PCB shuntが上限、後段IC固定Cは0.2pF下限。最終案はこれまで最小ILのEXP-079 dual-shunt系列へ戻り、主経路0-1-2を跨ぐ小PCB bridgeを1枝追加して第三の固定伝達零点を補助し、共振器間を結ぶslot(2,1)を除いて各mainと対応trapのみ結合。EXP-079のvectorは投影せず2nH/0.1pF/k0の名目初期値から1start。",
+      "topology_key": "b44c9e598b3ccc4b2d8d2cdec149af90fdf6bc0b59fc1cafa3041bcf3be08b33",
+      "area_class": "4L0GJM",
+      "area_fraction": "4",
+      "counts": {
+        "IC_FIXED_C": 2,
+        "IC_VARIABLE_C": 2,
+        "LQP02HV": 4,
+        "PCB_PATTERN_C": 1,
+        "SHUNT_DTC_PARASITIC": 0
+      },
+      "metrics_3_points_per_interval_db": {
+        "min_h2_db": 29.999999831817227,
+        "min_h3_db": 29.9999997829253,
+        "worst_il_db": 4.7611064328992345
+      },
+      "strict_30db_pass": false,
+      "goal_verified": false,
+      "numerical_state": "converged",
+      "component_policy": "pass",
+      "min_L_eigenvalue_H": 5.060485224184639e-10,
+      "stage_calls": [
+        {
+          "stage": "coarse",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 1108,
+            "nit": 46,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 240,
+          "exit_cause": "success"
+        },
+        {
+          "stage": "fine",
+          "status": {
+            "message": "Optimization terminated successfully",
+            "nfev": 23,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "maxiter": 120,
+          "exit_cause": "success"
+        }
+      ],
+      "elapsed_seconds": 1.1598361970100086,
+      "selected_count": 0,
+      "G0": {
+        "workflow_url": "https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41025922525",
+        "main_sha": "38bf40a89acef340919e62965ca38284ccc04932",
+        "record": {
+          "constraint_id": "RF-T008",
+          "experiment_id": "EXP-085",
+          "origin": "main_reservation_workflow",
+          "owner": "miyabimm",
+          "purpose": "Issue229 proposal12 dual traps fixed bridge sparse coupling RF-T008 rev3 4L0GJM one-start",
+          "request_id": "issue229-proposal12",
+          "reserved_at_utc": "2026-10-30T08:21:53Z",
+          "state": "reserved"
+        },
+        "pre_G0_area_role_component_SPD_gate": "passed",
+        "pre_G0_local_log_sha256": "e99340f3736e686c7beaaf7216d08abc0260a3e017a6bcc95268f719a88d493b"
+      },
+      "G1": {
+        "commit": "19d0870577281f22266f1220cd9345d3901ac5df",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "aeaa6a0522faaf277f120764e39edc7e8befef9a331f487c5c9fee33458d3953"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-085/manifest.json",
+            "sha256": "86027744045d6abc7cdead928e27a00f266efa8a243f84b2c411693987077bd3"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-085/storage_record.json",
+            "sha256": "e383002e7ae1df56b4cc3903dcdd11de4230d9746edd0d55cdc413666bdc0a36"
+          }
+        ]
+      },
+      "G3": {
+        "commit": "8a6e7928c14b7ef999c7372be575ba562297466e",
+        "readback": "passed",
+        "method": "GitHub contents API at exact commit, base64 decode and byte equality against local working bytes; remote branch HEAD via git ls-remote matched local HEAD.",
+        "files": [
+          {
+            "path": "data/experiment_index.csv",
+            "sha256": "0c0b9cdf4e9a2aeaff034f82a9d5f05cd73f92b481039a2faf1ac42cda04c285"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-085/manifest.json",
+            "sha256": "ce63e5420baad61104aa7a24861dd6c333f49ee5b305f430b64a881221ad66cb"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-085/run_summary.json",
+            "sha256": "3d1b96618817e62473c96b0237ee36f38b65485a72ece8624b52dd8e9bc1bf55"
+          },
+          {
+            "path": "experiments/chatgpt_topology_search/runs/EXP-085/storage_record.json",
+            "sha256": "846bf35c84f4beb38fee8c5d683de53c8bc6f6f5dcfc71638e90db3420b9d484"
+          }
+        ]
+      },
+      "preservation": "complete",
+      "evidence": [
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-085/manifest.json",
+          "sha256": "ce63e5420baad61104aa7a24861dd6c333f49ee5b305f430b64a881221ad66cb"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-085/run_summary.json",
+          "sha256": "3d1b96618817e62473c96b0237ee36f38b65485a72ece8624b52dd8e9bc1bf55"
+        },
+        {
+          "path": "experiments/chatgpt_topology_search/runs/EXP-085/storage_record.json",
+          "sha256": "846bf35c84f4beb38fee8c5d683de53c8bc6f6f5dcfc71638e90db3420b9d484"
+        }
+      ],
+      "raw": {
+        "path": "results/EXP-085/run.json",
+        "sha256": "2a0cb7f6392596c1701a37878aa409ea6af52c382d65bc326e66f42995c0e9d5",
+        "retained_locally": true,
+        "git_ignored": true
+      },
+      "execution_source_sha": "2951e4b36eaedee0b019fb8f6cc15494324caa2b"
+    }
+  ],
+  "checks": {
+    "storage_audit": "passed, all new experiments; each finalize also invoked audit_all before next proposal",
+    "provenance_audit": "passed, audit_provenance returned [] after every EXP",
+    "number_registry_audit": "passed",
+    "remote_G1_G3_byte_readback": "passed for every EXP before next proposal",
+    "science_source_diff_from_main": "empty at every fetched main and final comparison",
+    "historical_EXP_058_073_diff_from_main": "empty",
+    "regression": {
+      "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 uv run --frozen python -m unittest discover -s tests -p 'test_phase2_shared_entry.py' -v",
+      "tests": 5,
+      "status": "passed"
+    },
+    "git_tracked_tree_bytes_before_report": 17566277,
+    "per_EXP_curated_bytes": "74-79 KiB; all below 512 KiB; no size exceptions",
+    "pre_G0_legality_note": "nominal_area currently returns a dict with area_fraction as a rational string, not an object with an attribute; exact comparisons used Fraction(area[\"area_fraction\"]) <= Fraction(4,1). RF policy hard_cap remains null.",
+    "local_preflight_helper_note": "First explicit prepare invocation was rejected by temporary helper duplicate check because it counted its own already-planned EXP-074. Helper was corrected to exclude only the current EXP in prepare/run/finalize modes. No core preflight ran and no raw/solver dispatch occurred in this rejected invocation; committed G1 input was unchanged."
+  },
+  "validation": {
+    "dense1001": "not_run",
+    "independent_MNA84": "not_run",
+    "power_balance": "not_run",
+    "SPD": "nominal full inductance-matrix eigenvalue check passed at initial and final vectors for all 12; not independent MNA validation",
+    "physical": "not_run"
+  },
+  "limitations": [
+    "全12件は同じT008 rev3/外部固定S2P/6設定28区間の2/3点有限診断。高密度・連続周波数保証なし。",
+    "全件SciPy status0でもH2またはH3が30dBを厳密に下回る。丸めてPASSにしない。35dB目標とIL0.30dBの達成候補なし。",
+    "最小診断IL EXP-079=1.1100741082214507dBは不適合の診断観測であって採用可能解やPareto最適解ではない。",
+    "以後の案は各前実験G3/remote監査後にPiが選択。12案の固定列挙・自動scheduler・新solverなし。seed23/jitter0を全件固定、restartなし。",
+    "歴史との重複防止は利用可能なmanifestのexact topology keysを照合し、新12件も全て異なる。全歴史で電気同型を証明する同型監査ではない。",
+    "IC/PCBの名目面積0は実装面積0を意味せず、Q(f)/SRF/EM/公差/実測・物理成立は未検証。",
+    "GitHub保存監査PASSは科学PASSとは異なる。rawはローカルに保持、G5なし。"
+  ],
+  "next_gate": "最終一括Draft PRのChatGPT独立レビュー。main統合・postmerge CIは未実施。Phase3未承認。"
+}
