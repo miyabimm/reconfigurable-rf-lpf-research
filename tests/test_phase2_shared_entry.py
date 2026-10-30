@@ -31,6 +31,43 @@ from scripts.run_phase2_one_start import (
 
 
 class SharedEntryTests(unittest.TestCase):
+    def _check_components(self, circuit, vector, checkpoint):
+        d, s, t = circuit.definition, circuit.schema, circuit.topology
+        values = circuit.decode(vector)
+        parts = checkpoint['components']
+        self.assertEqual(checkpoint['candidate_record']['vector'], vector)
+        self.assertEqual(checkpoint['candidate_record']['policy_id'], circuit.policy_id)
+        self.assertEqual(checkpoint['chip_row'], [f'L{i}' for i in d.physical_order])
+        self.assertEqual(checkpoint['couplings'][0]['signed_k'], -.02)
+        self.assertEqual(len(parts), s.n_inductors + len(t.capacitor_edges))
+        for i, part in enumerate(parts[:s.n_inductors]):
+            self.assertEqual((part['series'], part['Q'], part['terminals'], part['L_nH']),
+                (d.inductor_types[i], t.inductor_q[i], list(d.inductor_tree.edges[i]),
+                 values.inductances_nh[i]))
+        caps = parts[s.n_inductors:]
+        for i, part in enumerate(caps):
+            self.assertEqual(part['terminals'], list(t.capacitor_edges[i]))
+            self.assertEqual(part['Q'], t.capacitor_q[i])
+            self.assertEqual(part['C_pf_by_setting'],
+                {case: values.capacitors_pf_by_setting[j][i] for j, case in enumerate(CASES)})
+        self.assertEqual(checkpoint['ic_variable_C_pf_by_setting'],
+            {case: list(row[s.n_fixed:s.n_fixed + s.n_variable])
+             for case, row in zip(CASES, values.capacitors_pf_by_setting)})
+        if circuit.policy_id == 'RF-T008':
+            self.assertEqual([p['Q'] for p in caps[1:3]], [60., 40.])
+            self.assertEqual(s.n_ic_fixed, 2)
+            for i, fixed in enumerate(caps[s.n_fixed + s.n_variable:]):
+                variable = caps[s.n_fixed + i]
+                self.assertEqual((fixed['series'], fixed['Q']), ('IC_FIXED_C', 60.))
+                self.assertEqual((variable['series'], variable['Q']), ('IC_VARIABLE_C', 35.))
+                self.assertEqual(fixed['terminals'], variable['terminals'])
+                self.assertEqual(fixed['parallel_variable_component_id'], variable['id'])
+                self.assertEqual(set(fixed['C_pf_by_setting'].values()), {fixed['C_pf']})
+                self.assertGreater(fixed['C_pf'], 0.)
+            self.assertEqual(caps[s.n_fixed]['C_pf_by_setting'][CASES[0]], 0.)
+            self.assertEqual(checkpoint['fixed_values']['ic_fixed_capacitors_pf'],
+                             [caps[-2]['C_pf'], caps[-1]['C_pf']])
+
     def test_explicit_mock_entry(self):
         script = str(ROOT / 'scripts/run_phase2_shared.py')
         env = {**os.environ, 'OPENBLAS_NUM_THREADS': '1'}
@@ -67,6 +104,24 @@ class SharedEntryTests(unittest.TestCase):
             manifest_preview(ROOT, 'EXP-999', 'fixture', {}, policy_id='RF-F003', seed=1, allow_trial=True)
 
     def test_temporary_full_checkout_preflight_and_fail_closed(self):
+        self._checkout_driver('RF-T005', 3, enumerated=False)
+
+    def test_driver_unsupported_policies_never_preflight_or_dispatch(self):
+        from types import SimpleNamespace
+        with patch('scripts.run_phase2_one_start.prepare_one_start') as prepare:
+            for policy in ('RF-T007', 'RF-T006', 'RF-F003', 'RF-T999'):
+                with self.subTest(policy=policy), self.assertRaisesRegex(ValueError, 'Only RF-T005'):
+                    run_one_start(ROOT, 'EXP-999', circuit=SimpleNamespace(policy_id=policy),
+                                  optimize_stage=lambda *a: self.fail('solver called'))
+            prepare.assert_not_called()
+
+    def test_enumerated_multi_topology_driver_and_checkpoint(self):
+        for policy in ('RF-T005', 'RF-T008'):
+            for n in (3, 4):
+                with self.subTest(policy=policy, inductors=n):
+                    self._checkout_driver(policy, n, enumerated=True)
+
+    def _checkout_driver(self, policy, n, *, enumerated):
         with tempfile.TemporaryDirectory() as tmp:
             repo, remote = Path(tmp) / 'repo', Path(tmp) / 'remote.git'
             def git(*args, cwd=repo):
@@ -94,7 +149,7 @@ class SharedEntryTests(unittest.TestCase):
                      'owner': '', 'request_id': '', 'purpose': '', 'constraint_id': '',
                      'reserved_at_utc': '', 'origin': ''} for n in range(1, 50)]
             rows, ident, _ = next_reservation(rows, owner='fixture', purpose='fixture only',
-                request_id='fixture-194', constraint_id='RF-T005', reserved_at_utc='2026-10-28T00:00:00Z')
+                request_id='fixture-194', constraint_id=policy, reserved_at_utc='2026-10-28T00:00:00Z')
             ledger.write_text(as_csv(rows))
             (repo / 'data/phase2_git_storage_budget.json').write_text(json.dumps({'thresholds': {
                 'individual_new_file_soft_bytes': 131072, 'individual_new_file_hard_bytes': 1048576,
@@ -103,8 +158,29 @@ class SharedEntryTests(unittest.TestCase):
             git('commit', '-qm', 'fixture reservation')
             git('push', '-q', '-u', 'origin', 'main')
             source = git('rev-parse', 'HEAD')
-            problem, vector = make('RF-T005', 3)
-            vector[6] = 0.
+            if enumerated:
+                from lpf.constraint_versions import load_constraint
+                from lpf.phase2_models.api import build_nominal_circuit
+                from lpf.phase2_models.circuit_layout import InductorTree
+                from lpf.phase2_models.topology_enumeration import TopologySpace, enumerate_topologies
+                from lpf.phase2_models.sampled_epigraph import SampledEpigraph
+                space = TopologySpace(
+                    trees=(InductorTree(n + 1, tuple((0, i) for i in range(1, n + 1))),),
+                    inductor_assignments=(('LQP02HQ',) + ('LQP02HV',) * (n - 2) + ('PCB_L',),),
+                    fixed_layouts=((((0, 1), 'GJM01'), ((1, -1), 'PCB_PATTERN_C'),
+                                    ((0, 2), 'PCB_PATTERN_C')),),
+                    variable_layouts=((((3, -1), 'shunt_to_ground'), ((0, 2), 'bridge')),),
+                    coupling_slot_counts=(1,), physical_order_limit=1, max_candidates=1)
+                approved = load_constraint(policy, allow_trial=True)
+                rows = enumerate_topologies(approved, space)['candidates']
+                self.assertEqual(len(rows), 1)
+                circuit = build_nominal_circuit(approved, rows[0]['definition'])
+                problem = SampledEpigraph(circuit, 1)
+                vector = np.array(rows[0]['representative_vector'])
+                vector[n + 3] = -.02  # signed adjacent-chip k
+            else:
+                problem, vector = make(policy, n)
+                vector[6] = 0.
             # Distinct six-setting values catch accidental row reuse/reordering.
             vector[-12:] = [0., 3., .2, 2.8, .4, 2.6, .6, 2.4, .8, 2.2, 1., 2.]
             vector = vector.tolist()
@@ -119,7 +195,7 @@ class SharedEntryTests(unittest.TestCase):
             input_sha = canonical_config_hash(input_source)
             scope = {'input_source': input_source, 'input_source_sha256': input_sha}
             manifest = new_manifest(ident, 'fixture only', scope, objective='full_lpf', seed=23,
-                                    root=repo, constraint_id='RF-T005', allow_trial=True)
+                                    root=repo, constraint_id=policy, allow_trial=True)
             run = repo / 'experiments/chatgpt_topology_search/runs' / ident
             run.mkdir(parents=True)
             record = {'schema_version': 1, 'policy': 'phase2-git-only-v1', 'experiment_id': ident,
@@ -135,7 +211,7 @@ class SharedEntryTests(unittest.TestCase):
             git('add', str(run.relative_to(repo)))
             git('commit', '-qm', 'fixture planned evidence')
             git('push', '-q', 'origin', 'main')
-            args = dict(owner='fixture', request_id='fixture-194', policy_id='RF-T005',
+            args = dict(owner='fixture', request_id='fixture-194', policy_id=policy,
                         policy_sha256=manifest['constraints']['effective_constraint_sha256'],
                         source_sha=source, bands_sha256=manifest['bands_sha256'],
                         input_sha256=input_sha, allow_trial=True)
@@ -170,14 +246,16 @@ class SharedEntryTests(unittest.TestCase):
             with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', forward), \
                  patch('lpf.phase2_models.staged_optimization.minimize',
                        side_effect=AssertionError('real SciPy forbidden')) as minimize:
-                for codes, expected in (((0, 0), 'converged'), ((4, 9), 'nonconverged'),
+                scenarios = (((0, 0), 'converged'),) if enumerated else (
+                    ((0, 0), 'converged'), ((4, 9), 'nonconverged'),
                     ((8, 9), 'nonconverged'), ((4, 0, 0, 0), 'converged'),
                     ((9, 0, 0, 0), 'converged'), ((0, 9, 0), 'converged'),
                     ((0, 'error'), 'failed'), ((0, 'interrupt'), 'failed'),
                     ((0, 'timeout'), 'failed'), ((0, 'stop'), 'failed'),
                     ((0, 'source'), 'failed'),
                     ((0, 'parts'), 'converged'), ((0, 'h2'), 'converged'),
-                    ((), 'not_started')):
+                    ((), 'not_started'))
+                for codes, expected in scenarios:
                     with self.subTest(driver=codes):
                         calls = []
                         h2_bad[0] = bool(codes and codes[-1] == 'h2')
@@ -211,6 +289,23 @@ class SharedEntryTests(unittest.TestCase):
                         self.assertEqual(len(calls), len(codes))
                         saved = json.loads((run / 'run_summary.json').read_text())
                         self.assertEqual(saved['attempts'][expected], 1)
+                        if enumerated:
+                            self.assertEqual(saved['selected_candidate_count'], 1)
+                            checkpoint = fixture_checkpoint(problem.circuit,
+                                outcome['result']['completed'][0])
+                            self._check_components(problem.circuit, vector, checkpoint)
+                            for field, value in (('policy_sha256', '0' * 64),
+                                    ('vector', vector[:-1]), ('definition', {})):
+                                bad = deepcopy(outcome['result']['completed'][0])
+                                bad[field] = value
+                                with self.assertRaises((ValueError, TypeError, KeyError)):
+                                    fixture_checkpoint(problem.circuit, bad)
+                            for other_policy, other_n in (('RF-T007', n),
+                                    ('RF-T008' if policy == 'RF-T005' else 'RF-T005', n),
+                                    (policy, 4 if n == 3 else 3)):
+                                with self.assertRaises(ValueError):
+                                    fixture_checkpoint(make(other_policy, other_n)[0].circuit,
+                                        outcome['result']['completed'][0])
                         self.assertEqual(saved['selection_before_run'], record['selection'])
                         self.assertEqual(saved['source_provenance']['kind'], 'recorded')
                         self.assertEqual(saved['source_provenance']['execution_kind'], 'injected_callback')
@@ -250,6 +345,12 @@ class SharedEntryTests(unittest.TestCase):
                                 report = finalize_one_start(repo, ident)
                                 self.assertTrue(report['committed_readback'])
                                 self.assertEqual(report['independent_validation'], 'not_run')
+                                if enumerated:
+                                    stored = json.loads((run / 'storage_record.json').read_text())
+                                    self.assertEqual(len(stored['checkpoints']), 1)
+                                    cp = stored['checkpoints'][0]
+                                    self.assertEqual(json.loads(subprocess.check_output(
+                                        ['git', 'show', 'HEAD:' + cp['path']], cwd=repo)), checkpoint)
                                 final_head = git('rev-parse', 'HEAD')
                                 self.assertEqual(finalize_one_start(repo, ident), report)
                                 self.assertEqual(git('rev-parse', 'HEAD'), final_head)
@@ -270,11 +371,16 @@ class SharedEntryTests(unittest.TestCase):
                         h2_bad[0] = False
                 for change in ({'seed': 24}, {'vector': vector[:-1]}, {'fine_points': 3},
                                {'budget': budget | {'policy_id': 'bad'}}, {'owner': 'wrong'},
-                               {'source_sha': '0' * 40}, {'input_sha256': '0' * 64}):
+                               {'source_sha': '0' * 40}, {'input_sha256': '0' * 64},
+                               {'policy_sha256': '0' * 64},
+                               {'circuit': make('RF-T008' if policy == 'RF-T005' else 'RF-T005', n)[0].circuit},
+                               {'circuit': make(policy, 4 if n == 3 else 3)[0].circuit}):
                     with self.subTest(driver_rejection=change), self.assertRaises((ValueError, subprocess.CalledProcessError)):
                         run_one_start(repo, ident, **(args | start_args | change),
                                       optimize_stage=lambda *a: self.fail('solver called'))
                 minimize.assert_not_called()
+            if enumerated:
+                return  # The legacy fixture below owns the exhaustive stop/failure regressions.
             # A fixture-only adapter links the *same* checked manifest input to
             # the existing C1/C2 and #207 classifier. It is not a production entry.
             from lpf.phase2_models.staged_optimization import run_c1_staged

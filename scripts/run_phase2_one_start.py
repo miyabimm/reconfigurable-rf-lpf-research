@@ -1,4 +1,4 @@
-"""Explicit RF-T005 3L one-start driver; no CLI, reservation or unattended run.
+"""Explicit RF-T005 / RF-T008 rev3 one-start driver; no unattended run.
 
 Call only within the launched experiment Issue. prepare_one_start stays read-only.
 Git commits are a separate explicit step. Timeout/STOP checks are cooperative at
@@ -20,8 +20,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.phase2_models.candidate_records import record_candidate, CandidateRecord, recheck_record
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
-from lpf.phase2_models.api import CircuitDefinition
+from lpf.phase2_models.api import build_nominal_circuit
 from lpf.phase2_models._grid import CASES
 from lpf.phase2_models.staged_optimization import run_c1_staged, scipy_slsqp_stage, _json_value
 from lpf.phase2_models.synthetic_runner import checked_one_start_selection
@@ -38,13 +37,12 @@ LIMITATIONS = [
 
 
 def _supported(circuit):
-    expected = CircuitDefinition(
-        InductorTree(4, ((0, 1), (1, 2), (1, 3))), ('LQP02HV',) * 3,
-        (0, 1, 2), ((0, 1), (0, 2)),
-        CapacitorPlacement(4, ((0, 1), (1, -1)), ((3, -1), (0, 2)), ()),
-        ('GJM01', 'PCB_PATTERN_C'), ('shunt_to_ground', 'bridge'))
-    if circuit.policy_id != 'RF-T005' or circuit.definition != expected:
-        raise ValueError('Only the existing RF-T005 3L layout is supported')
+    # The public builder checks the approved policy fingerprint and structural
+    # legality; G0/G1 below additionally binds the complete planned input.
+    if circuit.policy_id not in ('RF-T005', 'RF-T008'):
+        raise ValueError('Only RF-T005 and RF-T008 rev3 are supported')
+    if build_nominal_circuit(circuit.resolved_policy, circuit.definition) != circuit:
+        raise ValueError('Circuit differs from approved nominal model')
 
 
 def candidate_checkpoint(circuit, row):
@@ -52,7 +50,7 @@ def candidate_checkpoint(circuit, row):
     _supported(circuit)
     checked = recheck_record(CandidateRecord.from_json(json.dumps(row))).as_dict()
     d, t, s = circuit.definition, circuit.topology, circuit.schema
-    if (s.n_ic_fixed or s.constant_caps_pf or
+    if (checked['policy_id'] != circuit.policy_id or
             checked['policy_sha256'] != circuit.policy_fingerprint or
             checked['definition'] != json.loads(json.dumps(asdict(d)))):
         raise ValueError('Unsupported/mismatched circuit')
@@ -60,11 +58,17 @@ def candidate_checkpoint(circuit, row):
     components = [dict(id=f'L{i}', L_nH=value, Q=t.inductor_q[i],
                        series=d.inductor_types[i], terminals=list(d.inductor_tree.edges[i]))
                   for i, value in enumerate(values.inductances_nh)]
-    for i, edge in enumerate(t.capacitor_edges):
-        components.append(dict(id=f'C{i}', Q=t.capacitor_q[i], terminals=list(edge),
-            series=d.fixed_c_types[i] if i < s.n_fixed else 'IC_VARIABLE_C',
-            C_pf_by_setting={case: values.capacitors_pf_by_setting[j][i]
-                             for j, case in enumerate(CASES)}))
+    # Decoded/stamped order is fixed, variable, IC fixed, unlike the flat
+    # vector's L, fixed, k, IC fixed, six-setting variable order.
+    kinds = d.fixed_c_types + ('IC_VARIABLE_C',) * s.n_variable + ('IC_FIXED_C',) * s.n_ic_fixed
+    for i, (edge, kind) in enumerate(zip(t.capacitor_edges, kinds)):
+        component = dict(id=f'C{i}', Q=t.capacitor_q[i], terminals=list(edge),
+            series=kind, C_pf_by_setting={case: values.capacitors_pf_by_setting[j][i]
+                                         for j, case in enumerate(CASES)})
+        if kind == 'IC_FIXED_C':
+            component.update(C_pf=values.capacitors_pf_by_setting[0][i],
+                             parallel_variable_component_id=f'C{i - s.n_ic_fixed}')
+        components.append(component)
     payload = dict(candidate_id=checked['candidate_id'], topology=checked['stamped_topology'],
         components=components,
         couplings=[dict(inductor_indices=list(pair), signed_k=k)
@@ -75,6 +79,9 @@ def candidate_checkpoint(circuit, row):
         ic_variable_C_pf_by_setting={case: list(values.capacitors_pf_by_setting[j][
             s.n_fixed:s.n_fixed + s.n_variable]) for j, case in enumerate(CASES)},
         candidate_record=checked)
+    if s.n_ic_fixed:
+        payload['fixed_values']['ic_fixed_capacitors_pf'] = list(
+            values.capacitors_pf_by_setting[0][s.n_fixed + s.n_variable:])
     validate_checkpoint(payload, checked['candidate_id'])
     return payload
 
