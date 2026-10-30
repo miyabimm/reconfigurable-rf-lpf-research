@@ -69,3 +69,4 @@ EXP-067,reserved,MasayaTakagi,rft008-k01-independent-multibasin-fixed-sweep-2026
 EXP-068,reserved,MasayaTakagi,rft008-three-k-sensitivity-and-zero-coupling-feasibility-20261021,RF-T008 rev3 Phase2 k13 and k32 fixed sweeps with mixed basin starts and all three chip mutual couplings set zero feasibility,RF-T008,2026-10-21T01:59:41Z,main_manual_connector_reservation
 EXP-069,reserved,miyabimm,rft005-stage7-first-pilot-20261029,Stage7 pilot single RF-T005 3L 1-start real SciPy execution with Git evidence,RF-T005,2026-10-29T13:13:16Z,main_reservation_workflow
 EXP-070,reserved,miyabimm,rft008-stage8-round1-20261030-a,Issue226 Round1 group A RF-T008 rev3 3L chain 1-start diagnostic,RF-T008,2026-10-30T03:30:50Z,main_reservation_workflow
+EXP-071,reserved,miyabimm,rft008-stage8-round1-20261030-c,Issue226 Round1 group C RF-T008 rev3 4L branch 1-start diagnostic,RF-T008,2026-10-30T03:31:05Z,main_reservation_workflow
