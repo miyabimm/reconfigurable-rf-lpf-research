@@ -80,3 +80,4 @@ EXP-078,reserved,miyabimm,issue229-proposal05,Issue229 proposal5 dual shunt reso
 EXP-079,reserved,miyabimm,issue229-proposal06,Issue229 proposal6 reordered dual resonators noPCB RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:12:51Z,main_reservation_workflow
 EXP-080,reserved,miyabimm,issue229-proposal07,Issue229 proposal7 three main L plus trap bridge RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:14:14Z,main_reservation_workflow
 EXP-081,reserved,miyabimm,issue229-proposal08,Issue229 proposal8 output local DTC bridge RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:15:34Z,main_reservation_workflow
+EXP-082,reserved,miyabimm,issue229-proposal09,Issue229 proposal9 single main dual output traps RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:17:14Z,main_reservation_workflow
