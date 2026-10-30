@@ -76,3 +76,4 @@ EXP-074,reserved,miyabimm,issue229-proposal01,Issue229 proposal1 A-prime RF-T008
 EXP-075,reserved,miyabimm,issue229-proposal02,Issue229 proposal2 source GJM RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:08:04Z,main_reservation_workflow
 EXP-076,reserved,miyabimm,issue229-proposal03,Issue229 proposal3 middle shunt RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:09:19Z,main_reservation_workflow
 EXP-077,reserved,miyabimm,issue229-proposal04,Issue229 proposal4 midpoint resonator RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:10:22Z,main_reservation_workflow
+EXP-078,reserved,miyabimm,issue229-proposal05,Issue229 proposal5 dual shunt resonators RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:11:36Z,main_reservation_workflow
