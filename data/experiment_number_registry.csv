@@ -83,3 +83,4 @@ EXP-081,reserved,miyabimm,issue229-proposal08,Issue229 proposal8 output local DT
 EXP-082,reserved,miyabimm,issue229-proposal09,Issue229 proposal9 single main dual output traps RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:17:14Z,main_reservation_workflow
 EXP-083,reserved,miyabimm,issue229-proposal10,Issue229 proposal10 split input output traps RF-T008 rev3 3L1GJM one-start,RF-T008,2026-10-30T08:18:40Z,main_reservation_workflow
 EXP-084,reserved,miyabimm,issue229-proposal11,Issue229 proposal11 double bridge chain RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:20:18Z,main_reservation_workflow
+EXP-085,reserved,miyabimm,issue229-proposal12,Issue229 proposal12 dual traps fixed bridge sparse coupling RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:21:53Z,main_reservation_workflow
