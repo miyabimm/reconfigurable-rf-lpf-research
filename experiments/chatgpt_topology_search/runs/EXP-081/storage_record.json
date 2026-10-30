@@ -1,7 +1,7 @@
 {
   "checkpoints": [],
   "experiment_id": "EXP-081",
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
     "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
     "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
@@ -20,7 +20,7 @@
     "top_k": 0
   },
   "size_exception": null,
-  "stage": "preservation_incomplete",
+  "stage": "complete",
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-081/run_summary.json",
     "sha256": "df6e01b4e6a47936524cd2a51e8b3484ec1e02bd0d98bce5b79b9a9f123aadb3"
