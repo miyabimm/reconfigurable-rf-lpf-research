@@ -107,6 +107,89 @@ class ProblemSeedTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "open lower"):
             seed(p, x)
 
+    def test_multistart_determinism_legality_and_fail_closed(self):
+        from unittest.mock import patch
+        from lpf.phase2_models.multistart import generate_starts, unique_topologies
+        for n in (3, 4):
+            p, x = make('RF-T008', n)
+            if n == 3:
+                x[6] = 0.
+            a = generate_starts(p, x, seed=23)
+            self.assertEqual(a, generate_starts(p, x, seed=23))
+            self.assertNotEqual(a, generate_starts(p, x, seed=24))
+            self.assertEqual([s['id'].split('-')[-1] for s in a['starts']], ['0', '1', '2'])
+            self.assertEqual(len({s['id'] for s in a['starts']}), 3)
+            self.assertEqual(len({s['vector_sha256'] for s in a['starts']}), 3)
+            self.assertEqual([s['generation_method'] for s in a['starts']],
+                             ['nominal_design', 'sobol', 'sobol'])
+            for s in a['starts']:
+                self.assertEqual(s['vector_sha256'], vector_fingerprint(s['vector']))
+                detail = p.circuit.validate_components(s['vector'])
+                self.assertEqual(detail['checked_settings'], 6)
+                self.assertGreater(detail['min_L_eigenvalue_H'], 0)
+                self.assertFalse(s['seed_record']['changes'])
+            self.assertEqual(unique_topologies([p.circuit, p.circuit]), [p.circuit])
+            bad = x.copy()
+            bad[n] = 0.
+            with self.assertRaisesRegex(ValueError, 'open lower'):
+                generate_starts(p, bad, seed=23)
+            bad = x.copy()
+            bad[-1] = 4.
+            with self.assertRaisesRegex(ValueError, 'Box violation'):
+                generate_starts(p, bad, seed=23)
+            with patch('lpf.phase2_models.multistart.qmc.Sobol') as sobol:
+                bounds = np.asarray(p.box.bounds[:-1], float)
+                unit = np.divide(x - bounds[:, 0], bounds[:, 1] - bounds[:, 0],
+                    out=np.zeros_like(x), where=bounds[:, 1] != bounds[:, 0])
+                sobol.return_value.random_base2.return_value = np.tile(unit, (16, 1))
+                # A degenerate legal block must not lead to unlimited retries.
+                with self.assertRaisesRegex(ValueError, 'Insufficient legal distinct'):
+                    generate_starts(p, x, seed=23)
+                sobol.return_value.random_base2.assert_called_once_with(4)
+
+    def test_multistart_warm_identity(self):
+        import hashlib
+        import json
+        import tempfile
+        from dataclasses import asdict
+        from lpf.phase2_models.multistart import generate_starts
+        p, x = make('RF-T008', 4)
+        body = {'policy_id': p.policy_id, 'policy_sha256': p.policy_fingerprint,
+                'definition_sha256': definition_fingerprint(p.circuit.definition),
+                'parameter_schema': asdict(p.circuit.schema), 'vector': x.tolist(),
+                'vector_sha256': vector_fingerprint(x)}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'warm.json'
+            def save():
+                path.write_text(json.dumps(body))
+                return hashlib.sha256(path.read_bytes()).hexdigest()
+            sha = save()
+            result = generate_starts(p, x, seed=23, warm_checkpoint=path, warm_sha256=sha)
+            self.assertEqual(result['starts'][0]['source_checkpoint']['sha256'], sha)
+            self.assertEqual(result['starts'][0]['generation_method'], 'verified_warm_checkpoint')
+            with self.assertRaisesRegex(ValueError, 'SHA mismatch'):
+                generate_starts(p, x, seed=23, warm_checkpoint=path, warm_sha256='0'*64)
+            for field in ('policy_sha256', 'definition_sha256', 'parameter_schema', 'vector_sha256'):
+                original = body[field]
+                body[field] = 'wrong'
+                with self.assertRaises(ValueError):
+                    generate_starts(p, x, seed=23, warm_checkpoint=path, warm_sha256=save())
+                body[field] = original
+
+    def test_intermediate_scan_separate_grid_no_mutation(self):
+        from lpf.phase2_models.multistart import intermediate_scan
+        p, x = make('RF-T008', 4)
+        before = x.copy()
+        result = intermediate_scan(p.circuit, x)
+        self.assertEqual(result['grid']['sample_count'], 28*17)
+        evaluator = p.circuit.forward_evaluator(17)
+        self.assertEqual(set(evaluator.setting), set(range(6)))
+        self.assertEqual(set(evaluator.segment), set(range(28)))
+        self.assertTrue(all(np.count_nonzero(evaluator.segment == i) == 17 for i in range(28)))
+        self.assertEqual(result['observation']['sampled_forward_metrics'], evaluator.summary(x))
+        self.assertTrue(all(v == 'not_run' for v in result['validation'].values()))
+        np.testing.assert_array_equal(x, before)
+
     def test_open_lower_and_invalid_policy(self):
         p, x = make("RF-T005", 4)
         x[4] = 0

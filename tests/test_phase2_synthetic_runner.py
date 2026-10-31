@@ -21,6 +21,15 @@ from lpf.phase2_models.staged_optimization import scipy_slsqp_stage
 from lpf.phase2_models.candidate_records import _without_timing
 
 
+def historical_fixture(circuit):
+    return [{'source': 'synthetic historical fixture, not EXP evidence',
+             'policy_id': circuit.policy_id, 'policy_sha256': circuit.policy_fingerprint,
+             'objective': 'full_lpf_worst_six_setting_UL_DL_external_port_IL',
+             'reference_planes': 'external_input_to_external_output',
+             'grid': {'points_per_interval': 1001}, 'validation': {'dense_rf': 'reported'},
+             'worst_il_db': .9}]
+
+
 def plan_for(circuit, vector, *, count=2):
     vector = list(map(float, vector))
     starts = [{'id': f'start-{i}', 'vector': vector, 'vector_sha256': vector_fingerprint(vector),
@@ -265,6 +274,100 @@ class SyntheticRunnerTests(unittest.TestCase):
             self.assertEqual(calls, [240, 120])
         with self.assertRaisesRegex(ValueError, 'exactly one'):
             run_synthetic_preview(p.circuit, plan_for(p.circuit, x), 'unused', optimize_stage=mock)
+
+    def test_multistart_two_axis_strict_boundary_and_stop_counts(self):
+        from lpf.phase2_models.multistart import generate_starts, run_multistart_preview
+        from lpf.phase2_models.sampled_epigraph import SampledEpigraph
+        from lpf.phase2_models.candidate_records import record_candidate
+        p, x = make('RF-T008', 4)
+        history = historical_fixture(p.circuit)
+        def il(evaluator, vector):
+            # Exact nextafter boundary must FAIL, even when display rounds to 30.
+            values = np.where(evaluator.role == 0, .25, 36.)
+            first_l = vector.inductances_nh[0] if hasattr(vector, 'inductances_nh') else vector[0]
+            if first_l == x[0]:
+                values[evaluator.role == 1] = np.nextafter(30., -np.inf)
+            return values
+        calls = []
+        with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', il), \
+                patch('lpf.phase2_models.staged_optimization.minimize',
+                      side_effect=AssertionError('Real solver forbidden')), \
+                tempfile.TemporaryDirectory() as tmp:
+            generated = generate_starts(SampledEpigraph(p.circuit, 2), x, seed=23)
+            second_l = generated['starts'][1]['vector'][0]
+            def mock(problem, v, budget, target):
+                calls.append(budget)
+                v[-1] = .5
+                return v, status(8 if v[0] == second_l else 0)
+            path = Path(tmp) / 'multi.json'
+            bad_history = copy.deepcopy(history)
+            bad_history[0]['policy_sha256'] = '0'*64
+            with self.assertRaisesRegex(ValueError, 'Historical benchmark RF'):
+                run_multistart_preview(p.circuit, generated, path, optimize_stage=mock,
+                    historical_benchmarks=bad_history)
+            self.assertFalse(path.exists())
+            first = run_multistart_preview(p.circuit, generated, path, optimize_stage=mock,
+                historical_benchmarks=history, max_new_starts=1)
+            self.assertEqual(first['attempts']['not_started'], 2)
+            final = run_multistart_preview(p.circuit, generated, path, optimize_stage=mock,
+                historical_benchmarks=history)
+            self.assertEqual(final['attempts'], dict(planned=3, attempted=3, converged=2,
+                             nonconverged=1, failed=0, not_started=0))
+            self.assertEqual(calls, [240, 120]*3)
+            rows = final['report']['candidates']
+            self.assertEqual(len({r['topology_key'] for r in rows}), 1)
+            self.assertEqual(len({r['vector_sha256'] for r in rows}), 3)
+            self.assertIn('mandatory_harmonics_failed_on_grid', rows[0]['reasons'])
+            self.assertEqual(rows[0]['classification'], 'diagnostic')
+            self.assertIn('numerical_not_converged', rows[1]['reasons'])
+            self.assertEqual(rows[2]['classification'], 'finite_grid_eligible')
+            self.assertTrue(rows[2]['pareto_within_group'])
+            self.assertEqual(final['report']['historical_benchmarks'], history)
+            self.assertTrue(all(r['grid']['points_per_interval'] == 3 for r in rows))
+            repeat = run_multistart_preview(p.circuit, generated, Path(tmp)/'repeat.json',
+                optimize_stage=mock, historical_benchmarks=history)
+            self.assertEqual(_without_timing(final), _without_timing(repeat))
+            from lpf.phase2_models.multistart import two_axis_report
+            from lpf.phase2_models.candidate_records import CandidateRecord
+            other, y = make('RF-T008', 3)
+            y[6] = 0.
+            other_start = generate_starts(other, y, seed=23)['starts'][0]
+            # IDs are topology-scoped: same seed/start index on another topology
+            # must not collide, while all three original starts remain visible.
+            records = [CandidateRecord.from_json(json.dumps(r)) for r in final['result']['completed']]
+            records.append(record_candidate(other_start['id'], other.circuit, y, sampled_points=3))
+            combined = two_axis_report(records, historical_benchmarks=history)
+            self.assertEqual(len(combined['candidates']), 4)
+            self.assertEqual(len({r['topology_key'] for r in combined['candidates']}), 2)
+            # 17-point diagnostics must not widen CandidateRecord's contract.
+            with self.assertRaisesRegex(ValueError, '1/2/3'):
+                record_candidate('bad-grid', p.circuit, x, sampled_points=17)
+
+    def test_multistart_failed_and_interrupted_do_not_dispatch_next(self):
+        from lpf.phase2_models.multistart import generate_starts, run_multistart_preview
+        p, x = make('RF-T008', 4)
+        generated = generate_starts(p, x, seed=23)
+        history = historical_fixture(p.circuit)
+        for interrupted in (False, True):
+            with tempfile.TemporaryDirectory() as tmp:
+                path = Path(tmp)/'multi.json'
+                def fail(*args):
+                    if interrupted:
+                        raise KeyboardInterrupt()
+                    raise RuntimeError('mock failure')
+                def run(callback):
+                    return run_multistart_preview(p.circuit, generated, path,
+                        optimize_stage=callback, historical_benchmarks=history)
+                if interrupted:
+                    with self.assertRaises(KeyboardInterrupt):
+                        run(fail)
+                    with self.assertRaisesRegex(ValueError, 'outcome unknown'):
+                        run(lambda *args: self.fail('retry prohibited'))
+                else:
+                    result = run(fail)
+                    self.assertEqual(result['attempts'], dict(planned=3, attempted=1,
+                        converged=0, nonconverged=0, failed=1, not_started=2))
+                    self.assertEqual(run(lambda *args: self.fail('next prohibited')), result)
 
     def test_rejects_other_git_worktree(self):
         p, x = make('RF-T008', 4)
