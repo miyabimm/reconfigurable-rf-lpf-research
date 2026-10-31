@@ -54,7 +54,7 @@ EXP-058のmanifestはanalysis_grid欄nullだがsearch_scopeにdense1001点と3 p
 ## 証拠とゲート
 
 - G0：指定main CI [41204162115](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41204162115) SUCCESSを確認後、3構成のキー/面積/元manifest/合法性と全9 startをsolver0回で固定。正式予約はmain `355b977` までの `issue233-start1..9`。
-- G1：全9件planned manifest/storage/indexをcommit **`f6ed6d47e...`（完全SHAはreport.json）**、push。remote refから全ファイルのbyte読戻しと、全9件 `prepare_one_start` / storage preflightをPASS後に最初のG2を開始。
+- G1：全9件planned manifest/storage/indexをcommit **`f6ed6d4312d215284330215e2ef0adae38a8d1da`**、push。remote refから全ファイルのbyte読戻しと、全9件 `prepare_one_start` / storage preflightをPASS後に最初のG2を開始。
 - G2/G3：各1回の既存SciPy driver実行→local finalizeの2 commit/HEAD読戻し→push/remote読戻し/保存監査PASS後に次startへ。各remote SHAは各overlayの `gates` に記録。例外・STOP・timeout・容量超過なし。全18 stage、最大36 stageの範囲内。
 - 後続17点は各 `EXP-NNN-17pt.json` に別overlayとして保存。`storage_record.validation_overlays.status=failed` は**17点厳密30dBの不適合**を示す。forward計算や保存監査の失敗、solver例外の意味ではない。
 - 新9件以外のindex行・歴史manifest/ベクトル/検証状態は不変更。rawは `results/EXP-086..094/run.json` に保持し、G5削除なし。
