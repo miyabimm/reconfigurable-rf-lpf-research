@@ -86,3 +86,4 @@ EXP-084,reserved,miyabimm,issue229-proposal11,Issue229 proposal11 double bridge 
 EXP-085,reserved,miyabimm,issue229-proposal12,Issue229 proposal12 dual traps fixed bridge sparse coupling RF-T008 rev3 4L0GJM one-start,RF-T008,2026-10-30T08:21:53Z,main_reservation_workflow
 EXP-086,reserved,miyabimm,issue233-start2,Issue 233 fixed 3-class 3-start pilot start 2 coarse2 fine3 seed23,RF-T008,2026-10-31T13:38:12Z,main_reservation_workflow
 EXP-087,reserved,miyabimm,issue233-start1,Issue 233 fixed 3-class 3-start pilot start 1 coarse2 fine3 seed23,RF-T008,2026-10-31T13:38:12Z,main_reservation_workflow
+EXP-088,reserved,miyabimm,issue233-start3,Issue 233 fixed 3-class 3-start pilot start 3 coarse2 fine3 seed23,RF-T008,2026-10-31T13:38:15Z,main_reservation_workflow
