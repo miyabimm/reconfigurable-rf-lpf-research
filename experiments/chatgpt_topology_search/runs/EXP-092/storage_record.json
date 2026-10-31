@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-092",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 0,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints and all excluded/failed/nonconverged/STOP diagnostics and reasons in run_summary.",
+    "estimated_curated_bytes": 240000
+  },
+  "summary": null,
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "git_readback": "not_run",
+  "size_exception": null,
+  "limitations": [
+    "Planned; solver not_run. Issue233 scope and user launch authorize G2 after G1 remote readback/preflight; no intermediate human review required.",
+    "Finite diagnostic grids only; convergence, strict RF thresholds, dense/independent and physical validation are distinct.",
+    "Historical 1001-point results external only. No formal RF changes or Phase3 transition."
+  ]
+}
