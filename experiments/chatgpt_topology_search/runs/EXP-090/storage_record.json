@@ -26,5 +26,12 @@
     "sha256": "a2027bd99e5a7dd16619d4f4200b68c03f835a00c02ab5c3e0d9b000350e22a5"
   },
   "supporting_evidence": [],
-  "validation_overlays": []
+  "validation_overlays": [
+    {
+      "method": "grid",
+      "status": "failed",
+      "path": "data/validation/issue233_multistart_pilot/EXP-090-17pt.json",
+      "sha256": "b1e09b38c2987bdb9bf4a82df6569cece7eb023d14f7e1be962ef6d93a5cdd81"
+    }
+  ]
 }
