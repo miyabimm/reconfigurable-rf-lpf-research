@@ -64,6 +64,6 @@ EXP-058のmanifestはanalysis_grid欄nullだがsearch_scopeにdense1001点と3 p
 
 実行済み：`uv sync --frozen`、`test_phase2_problem_seed.py` **8件PASS**、`test_phase2_shared_entry.py` **5件PASS**、全9 G1/G3監査・遠隔byte読戻しPASS。
 初回の `test_phase2_multistart.py` 指定は該当ファイルなしで0件/exit5だったため、既存 `test_phase2_problem_seed.py` のmultistart/17点テストを実行し直した（科学EXPの再試行ではない）。
-最終の全保存監査・差分／遠隔読戻し・CI結果は結果Draft PR本文を正本とする。
+初回PR CI [41207481103](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/41207481103) は `Experiment index differs from manifests` でFAIL。新9行を生成順に追加したが、既存index生成器はEXP番号順を要求するため、新9行だけを番号順へ並べ替えた。歴史行・科学結果・生成順記録は不変更、追加solver実行なし。`audit_provenance` と既存回帰テストで確認する。最終の全保存監査・差分／遠隔読戻し・CI結果は結果Draft PR本文を正本とする。
 
 ChatGPT独立レビュー待ち。レビュー前にmainへマージしない。101start本格探索、内部guard変更、別seed/再試行、追加トポロジー、Phase 3は本Issueに含まない。
