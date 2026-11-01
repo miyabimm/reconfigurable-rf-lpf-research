@@ -56,7 +56,7 @@ def select_pair(starts, bounds):
     def f(a):
         s = a['score']
         return (s['worst_il_db'], s['max_violation_db'],
-                s['sum_violation_db'], a['sobol_index'])
+                s['sum_violation_db'], a.get('pool_index', a['sobol_index']))
 
     candidates = starts[1:]
     anchor = min(front(candidates), key=f)

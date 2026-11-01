@@ -48,7 +48,10 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 RF-T008/coarse2で既存16点blockを評価し、nominal/検証済warm＋F/V非劣性・正規化vector多様性で2本を選ぶ。
 既定出力は不変更。全候補/例外/費用を `selection_report`、途中停止を
 `StartSelectionError.report` に保持する。[API・限定診断・未実施事項](diagnostics/issue245_start_selection.md)参照。
-本番探索、B/C、17点/1001点適合の代用は提供しない。
+本番探索、17点/1001点適合の代用は提供しない。
+Stage Bの `candidate_pool='design_prototype'` は純直列L＋port-shunt IC 1組だけの限定仮説。
+実固定S2Pでは適用不能で停止したため、有効性未確認のprototypeで止めている。
+[API・仮定・mockと実診断の区別](diagnostics/issue245_designed_starts.md)参照。Stage Cは未実装。
 
 ## Issue #241：SciPy-DE最小接続（mockのみ）
 
