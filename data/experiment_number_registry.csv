@@ -94,3 +94,4 @@ EXP-092,reserved,miyabimm,issue233-start8,Issue 233 fixed 3-class 3-start pilot 
 EXP-093,reserved,miyabimm,issue233-start9,Issue 233 fixed 3-class 3-start pilot start 9 coarse2 fine3 seed23,RF-T008,2026-10-31T13:38:26Z,main_reservation_workflow
 EXP-094,reserved,miyabimm,issue233-start7,Issue 233 fixed 3-class 3-start pilot start 7 coarse2 fine3 seed23,RF-T008,2026-10-31T13:38:29Z,main_reservation_workflow
 EXP-095,reserved,miyabimm,issue237-pair1-B,Issue 237 pair 1 mode B physical vs normalized saved EXP-086 coarse2 fine3 seed23,RF-T008,2026-11-01T05:31:59Z,main_reservation_workflow
+EXP-096,reserved,miyabimm,issue237-pair1-A,Issue 237 pair 1 mode A physical vs normalized saved EXP-086 coarse2 fine3 seed23,RF-T008,2026-11-01T05:31:59Z,main_reservation_workflow
