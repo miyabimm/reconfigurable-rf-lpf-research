@@ -129,7 +129,8 @@ class RFT008CapacitorLayout:
         return cls(placement, positions, roles, stamp_q, tuple(fixed_ranges),
                    fixed_bounds, varrange)
 
-    def validate_values(self, policy, fixed_pf, ic_fixed_pf, variable_pf_by_setting):
+    def validate_values(self, policy, fixed_pf, ic_fixed_pf, variable_pf_by_setting,
+                        *, allow_absent_gjm=False):
         """Check a physical six-setting candidate; no optimizer state mutation."""
         f = np.asarray(fixed_pf, dtype=float)
         c = np.asarray(ic_fixed_pf, dtype=float)
@@ -143,7 +144,7 @@ class RFT008CapacitorLayout:
             raise ValueError("Invalid fixed/IC/setting C vector shape or values")
         for index, (value, (lo, hi)) in enumerate(zip(f, self.fixed_bounds_pf)):
             if not lo <= value <= hi or (
-                    index in self.gjm_positions and value <= 0):
+                    index in self.gjm_positions and value <= 0 and not allow_absent_gjm):
                 raise ValueError("Fixed C value outside layout bounds")
         variable = policy_edges(self.placement.variable_edges,
                                 roles=self.variable_roles)
