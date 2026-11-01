@@ -54,6 +54,62 @@ class StageTests(unittest.TestCase):
         self.assertEqual(len(result["stage_calls"][1]["observation"]["sampled_rf"]["residuals_db"]), 56)
         json.dumps(result, allow_nan=False)
 
+    def test_shared_sample_ceiling_includes_observation_and_stops_recovery(self):
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        meter = SampleBudgetCost(140)
+        snapshots = []
+        def callback(problem, x, maxiter, target):
+            problem.residuals(x)
+            return x, status(4 if maxiter == 240 else 0)
+        result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+            fine_points=2, optimize_stage=callback, cost_meter=meter,
+            record_sink=snapshots.append)
+        self.assertEqual(result['numerical_state'], 'budget_exhausted')
+        self.assertEqual(len(result['stage_calls']), 2)  # no v2 restart
+        self.assertEqual(result['stage_calls'][1]['status']['status'], 0)
+        self.assertEqual(result['exception']['type'], 'SampleBudgetExceeded')
+        self.assertEqual(result['evaluation_cost']['frequency_samples_requested'], 140)
+        self.assertEqual(result['evaluation_cost']['RF_forward_calls'], 4)
+        self.assertEqual(result['stage_calls'][0]['evaluation_cost']['frequency_samples_requested'], 56)
+        self.assertEqual(result['stage_calls'][1]['evaluation_cost']['frequency_samples_requested'], 56)
+        self.assertEqual(snapshots[-1], result)
+        json.dumps(result, allow_nan=False)
+
+    def test_scipy_sample_exhaustion_is_not_solver_status_and_is_durable(self):
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        meter = SampleBudgetCost(56)  # seed replay + exactly one coarse forward
+        snapshots = []
+        def solver(objective, x, **kwargs):
+            objective(x)
+            residuals = kwargs['constraints'][0]['fun']
+            residuals(x)
+            residuals(x)  # reject before entering forward
+            self.fail('budget exception must escape SciPy')
+        with patch('lpf.phase2_models.staged_optimization.minimize', side_effect=solver):
+            result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+                fine_points=2, cost_meter=meter, record_sink=snapshots.append)
+        self.assertEqual(result['numerical_state'], 'budget_exhausted')
+        self.assertEqual(len(result['stage_calls']), 1)
+        self.assertIsNone(result['stage_calls'][0]['status'])
+        self.assertEqual(meter.frequency_samples_requested, 56)
+        self.assertEqual(meter.solver_constraint_calls, 2)
+        self.assertEqual(meter.RF_forward_calls, 2)
+        self.assertEqual(snapshots[-1]['numerical_state'], 'budget_exhausted')
+
+    def test_shared_cost_preserves_v2_recovery_and_stage_deltas(self):
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        meter = SampleBudgetCost(1000)
+        codes = iter([9, 0, 0, 0])
+        def callback(problem, x, maxiter, target):
+            problem.residuals(x)
+            return x, status(next(codes))
+        result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+            fine_points=2, optimize_stage=callback, cost_meter=meter)
+        self.assertEqual(result['numerical_state'], 'converged')
+        self.assertEqual([s['maxiter'] for s in result['stage_calls']], [240, 120, 500, 280])
+        self.assertEqual(meter.frequency_samples_requested, 28 + 2 * (28 + 56 + 28 + 56))
+        self.assertEqual(result['evaluation_cost'], meter.snapshot())
+
     def test_nonlimit_restart_and_unconverged(self):
         for code in (4, 8):
             result, calls = self.run_codes([code, 0, 8, 0])

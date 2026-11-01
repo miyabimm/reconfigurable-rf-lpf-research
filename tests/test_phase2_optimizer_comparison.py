@@ -58,6 +58,42 @@ class ComparisonTests(unittest.TestCase):
             self.assertIs(p.evaluator, original_evaluator)
             self.assertIs(p.circuit, original_circuit)
 
+    def test_sample_budget_rejects_before_forward_and_counts_failed_requests(self):
+        from lpf.phase2_models.evaluation_cost import SampleBudgetExceeded, SampleBudgetCost
+        evaluator = SimpleNamespace(f=np.arange(3), il=lambda x: x)
+        meter = SampleBudgetCost(6)
+        meter.forward(evaluator, 1)
+        evaluator.il = lambda x: (_ for _ in ()).throw(ValueError('forward failed'))
+        with self.assertRaises(ValueError):
+            meter.forward(evaluator, 2)
+        with self.assertRaises(SampleBudgetExceeded):
+            meter.forward(evaluator, 3)
+        self.assertEqual(meter.frequency_samples_requested, 6)
+        self.assertEqual(meter.frequency_samples_completed, 3)
+        self.assertEqual(meter.RF_forward_calls, 2)
+        self.assertEqual(meter.forward_failures, 1)
+        for invalid in (-1, 1.5, True):
+            with self.assertRaises(ValueError):
+                SampleBudgetCost(invalid)
+
+    def test_issue250_preparation_identity_excludes_elapsed_time(self):
+        from copy import deepcopy
+        from lpf.checkpoint_io import canonical_config_hash
+        from scripts.prepare_issue250_comparison import _stable_plan_identity
+        original = {'pools': [{'cost': {'wall_seconds': 1., 'cpu_seconds': 2.,
+                                        'frequency_samples_requested': 952},
+                               'generated': {'selection_report': {
+                                   'candidates': [{'vector_sha256': 'a',
+                                                   'cost': {'wall_seconds': 3.}}]}}}]}
+        rerun = deepcopy(original)
+        rerun['pools'][0]['cost']['wall_seconds'] = 80.
+        rerun['pools'][0]['cost']['cpu_seconds'] = 90.
+        rerun['pools'][0]['generated']['selection_report']['candidates'][0]['cost']['wall_seconds'] = 10.
+        fingerprint = lambda source: canonical_config_hash(_stable_plan_identity(source))
+        self.assertEqual(fingerprint(original), fingerprint(rerun))
+        rerun['pools'][0]['generated']['selection_report']['candidates'][0]['vector_sha256'] = 'b'
+        self.assertNotEqual(fingerprint(original), fingerprint(rerun))
+
     def test_strict_no_tolerance_and_lexicographic_order(self):
         role = np.array([0, 0, 1, 2])
         good = sampled_score(np.array([.2, .3, 30., 35.]), role, 30.)

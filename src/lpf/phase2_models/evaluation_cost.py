@@ -91,6 +91,31 @@ class EvaluationCost:
         return measured
 
 
+class SampleBudgetExceeded(RuntimeError):
+    """The next whole RF request would exceed the start's frozen ceiling."""
+
+
+class SampleBudgetCost(EvaluationCost):
+    """Opt-in, shared across stages; rejected requests never enter forward.
+
+    The ceiling is not a counter and is deliberately absent from snapshot().
+    Failed forwards still consume their full requested samples, as before.
+    """
+    def __init__(self, max_samples):
+        if type(max_samples) is not int or max_samples < 0:
+            raise ValueError('max_samples must be a nonnegative integer')
+        super().__init__()
+        self.max_samples = max_samples
+
+    def forward(self, evaluator, vector):
+        requested = len(evaluator.f)
+        if self.frequency_samples_requested + requested > self.max_samples:
+            raise SampleBudgetExceeded(
+                f'RF sample budget {self.max_samples}: '
+                f'{self.frequency_samples_requested} consumed, {requested} requested')
+        return super().forward(evaluator, vector)
+
+
 class _ForwardView:
     def __init__(self, original, cost):
         self.original, self.cost = original, cost
