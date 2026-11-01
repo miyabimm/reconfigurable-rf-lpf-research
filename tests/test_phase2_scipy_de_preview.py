@@ -167,6 +167,34 @@ class DEPreviewTests(unittest.TestCase):
         self.assertEqual(r['evaluation_cost']['role_rejections'], 0)
         self.assertGreater(r['evaluation_cost']['RF_forward_calls'], 0)
 
+    def test_other_trials_keep_strict_de_preview(self):
+        for policy in ('RF-T005', 'RF-T007'):
+            with self.subTest(policy=policy):
+                problem, x = make(policy, 3)
+                x[6] = 0.  # nominally forbidden nonadjacent chip coupling
+                problem = SampledEpigraph(problem.circuit, 2)
+                result = run_de_preview(
+                    PhysicalComparison(problem.circuit, 2),
+                    initialize=lambda meter: generate_starts(
+                        problem, x, seed=23, count=6, cost_meter=meter),
+                    seed=241, maxiter=0, max_frequency_samples=5600,
+                    max_proposals=200, max_wall_seconds=30.)
+                self.assertEqual(result['termination'], 'solver_returned')
+                self.assertEqual(result['evaluation_cost']['component_rejections'], 0)
+
+    def test_exploration_cache_never_skips_strict_role_check(self):
+        definition = replace(self.p.circuit.definition,
+                             variable_roles=('shunt_to_ground', 'series'))
+        circuit = build_nominal_circuit(
+            self.p.circuit.resolved_policy, definition)
+        comparison = PhysicalComparison(circuit, 2, cache=True)
+        comparison.evaluate(self.x, for_exploration=True)
+        with self.assertRaisesRegex(ValueError, 'lacks evidence'):
+            comparison.evaluate(self.x)
+        self.assertEqual(comparison.cost.cache_hits, 0)
+        comparison.evaluate(self.x, for_exploration=True)
+        self.assertEqual(comparison.cost.cache_hits, 1)
+
     def test_zero_gjm_is_only_legal_for_exploration(self):
         self.x[3] = 0.  # fixed GJM01: zero admittance, absent at final layout
         with self.assertRaises(ValueError):
