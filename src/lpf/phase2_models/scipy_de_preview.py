@@ -22,6 +22,10 @@ class _Stop(Exception):
     pass
 
 
+class _PhysicalRejected(ValueError):
+    """A current physical validation failure, not a historical reject count."""
+
+
 class _BudgetCost(EvaluationCost):
     def __init__(self, sample_limit, wall_limit):
         super().__init__()
@@ -32,6 +36,16 @@ class _BudgetCost(EvaluationCost):
     def check_wall(self):
         if time.perf_counter() >= self.deadline:
             raise _Stop('wall_limit')
+
+    def components(self, circuit, vector):
+        try:
+            result = super().components(circuit, vector)
+        except Exception as exc:
+            raise _PhysicalRejected(str(exc)) from exc
+        if result['connection_role_evidence_incomplete']:
+            self.role_rejections += 1
+            raise _PhysicalRejected('Connection role not proven')
+        return result
 
     def forward(self, evaluator, vector):
         self.check_wall()
@@ -97,7 +111,13 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
         if last is not None and last[0] == key:
             meter.cache_hits += 1  # exact F/constraint sharing, not another forward
             return last[1]
-        score = comparison.evaluate(x)
+        before_box = meter.box_rejections
+        try:
+            score = comparison.evaluate(x)
+        except ValueError as exc:
+            if meter.box_rejections > before_box:
+                raise _PhysicalRejected(str(exc)) from exc
+            raise
         remember(x, score)
         last = key, score
         return score
@@ -133,11 +153,11 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
             if (any(not lo <= v <= hi for v, (lo, hi) in zip(x, bounds)) or
                     any(x[i] <= bounds[i][0] for i in comparison.box.open_lower)):
                 meter.box_rejections += 1
-                raise ValueError('Population outside physical box/open endpoint')
+                raise _PhysicalRejected('Population outside physical box/open endpoint')
             component = meter.components(comparison.circuit, x)
             if component['connection_role_evidence_incomplete']:
                 meter.role_rejections += 1
-                raise ValueError('Population role not proven')
+                raise _PhysicalRejected('Population role not proven')
         result = differential_evolution(
             meter.callback(objective), bounds,
             constraints=(NonlinearConstraint(meter.callback(residual, constraint=True), 0., np.inf),),
@@ -150,10 +170,10 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
         reason = str(exc)
     except KeyboardInterrupt as exc:
         reason, error = 'interrupted', type(exc).__name__
+    except _PhysicalRejected as exc:
+        reason, error = 'physical_rejected', f'{type(exc).__name__}: {exc}'
     except Exception as exc:
-        rejected = meter.box_rejections + meter.component_rejections + meter.role_rejections
-        reason = 'physical_rejected' if rejected and not meter.forward_failures else 'failed'
-        error = f'{type(exc).__name__}: {exc}'
+        reason, error = 'failed', f'{type(exc).__name__}: {exc}'
     finally:
         # PhysicalComparison also times evaluations. Replace, do not add nested
         # timings: total includes initialization + solver overhead, exactly once.
