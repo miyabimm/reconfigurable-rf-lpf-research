@@ -15,6 +15,50 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
 - Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
 
+## 共通YAML CLI（コード検証と本番実験は別）
+
+`scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
+
+```bash
+uv run --frozen python scripts/run_phase2_shared.py plan --config project/experiments/issue250.yaml
+# 以下は別工程のG0/G1と実験Issueの起動指示が必要。コードレビューでは実行しない。
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+uv run --frozen python scripts/run_phase2_shared.py run --config project/experiments/issue250.yaml --experiment-id EXP-NNN --phase pilot
+uv run --frozen python scripts/run_phase2_shared.py run --config project/experiments/issue250.yaml --experiment-id EXP-NNN --phase remaining
+# curated diffを確認した後だけ、既存単一EXP保存処理を明示実行（push/削除なし）。
+uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP-NNN
+```
+
+- `plan` はread-only。SafeLoaderで未知・重複キー、未対応schema、RF/definition/vector/SHA、
+  box/role/SPD、seed/比較群・logical→actual・予算を照合し、既存manifestの
+  `search_scope.input_source` / `input_source_sha256` に入れる凍結対象を標準出力へ返す。
+  `plan.sha256` はprepared JSONの `input_source` から `wall_seconds` / `cpu_seconds` だけを
+  再帰除外したcanonical SHA。YAML自体のcanonical SHA、完全実行vector/C1 SHA、群別screen費用も凍結する。
+  YAMLに部品bounds、S2P、solver maxiterを重複定義しない。
+- Issue250例はPR #251で取得済みのローカルprepared入力を、**追加RF計算なし**で時間非依存に
+  正規化した `results/issue250/frozen-plan.json`（SHAはYAMLに固定）を参照する。
+  このファイルは通常checkoutにはない。欠落時はfail-closed。完全環境で準備入力を確保し、
+  再計算時のSHA差をレビューしてからG1へ進む。既存準備原本は書換えない。
+  未追跡planだけを正本とせず、G1 manifest内へ完全な実行部分を保存する。
+  大きな再生成可能poolは内容SHAで束縛し、保存容量例外や証拠分類が必要なら既存ポリシーでSTOPする。
+- `run` は完全checkout・最新remote mainのG0、main上planned manifest/storageの実byte読戻し、
+  実行ソース/環境/全入力の一致を必須とする。storage選別はYAMLのtop Kと `retain=["pareto"]`、
+  ruleに全除外・失敗診断保持を明記し、容量を事前見積もりする。追加owner認証は要求しない。
+- 同一EXPの固有startを既存v2へ一度ずつ渡す。pilotに共通nominalと対象seedが参照する固有startを含め、
+  remainingとの重複は計算しない。pilot終了時にも既存manifest/storage/summaryへ保存・監査する。
+  remainingは明示的な別呼出しとpilot保存監査PASSを要し、自動で次phaseへ進まない。
+- start前markerとstage snapshotは原子的な `results/EXP-NNN/run.json` に保存。
+  確定結果だけskipし、途中不明・STOP・システム中断・保存/provenance障害は全体STOP、raw保持。
+  status4/8、数値例外、`budget_exhausted` は個別結果。v2以外の救済はしない。
+  操作はWSL/Linuxの単一プロセス・直列のみ（EXP単位の排他lock、並列workerなし）。
+  pilot〜remaining中は実行checkoutのHEAD/ソース/環境を保持し、Git確定は別のfinalize工程で行う。
+  確定済みGit証拠はrunで再更新しない。
+- optimization（seed replay/solver/stage観測を同一sample上限へ算入）、screen、候補再検査の
+  forward/sample費用を分離する。73論理参照を58固有試行へ水増ししない。
+  各方式/seedの論理IDと共有actual結果参照を保存し、A/B paired解析に使える。
+- 17点/dense1001/独立MNA・power・独立SPDは別証拠で `not_run`。このCLIはそれらを起動しない。
+  自動候補昇格、Git push、raw削除はない。Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
+
 ## 限定1-start driver（RF-T005 / RF-T008 rev3・合法3L/4L）
 
 `scripts/run_phase2_shared.py` の `prepare_one_start` / `one_start_gate` は引き続きread-only。

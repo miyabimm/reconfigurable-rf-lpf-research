@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared diagnostic entrypoint. Never starts an EXP or a real optimizer."""
+"""Shared diagnostic/plan entrypoint with explicit G0/G1-gated run and finalize."""
 import argparse
 import json
 import re
@@ -265,6 +265,14 @@ def main(argv=None):
     audit = sub.add_parser('storage-audit', help='read-only storage audit or finalize check')
     audit.add_argument('operation', choices=('audit', 'finalize'))
     audit.add_argument('--experiment-id')
+    plan = sub.add_parser('plan', help='read-only frozen YAML/prepared-plan checks')
+    plan.add_argument('--config', required=True)
+    run = sub.add_parser('run', help='explicit G0/G1-gated frozen actual starts')
+    run.add_argument('--config', required=True)
+    run.add_argument('--experiment-id', required=True)
+    run.add_argument('--phase', required=True, choices=('pilot', 'remaining'))
+    final = sub.add_parser('finalize', help='explicit single-EXP Git commits and existing audit; inspect diff first')
+    final.add_argument('--experiment-id', required=True)
     args = parser.parse_args(argv)
     if args.mode == 'synthetic':
         result = synthetic(args.policy, args.inductors)
@@ -276,6 +284,17 @@ def main(argv=None):
     elif args.mode == 'manifest-preview':
         result = manifest_preview(ROOT, args.experiment_id, args.purpose, json.loads(args.scope_json),
                                   policy_id=args.policy, seed=args.seed, allow_trial=args.allow_trial)
+    elif args.mode == 'plan':
+        from lpf.phase2_models.experiment_config import plan_preview
+        result = plan_preview(ROOT, args.config)
+    elif args.mode == 'run':
+        from lpf.phase2_models.experiment_run import run_plan
+        result = run_plan(ROOT, args.config, args.experiment_id, args.phase)
+    elif args.mode == 'finalize':
+        from scripts.run_phase2_one_start import finalize_experiment
+        _complete_checkout(ROOT)
+        _fresh_main(ROOT)
+        result = finalize_experiment(ROOT, args.experiment_id)
     else:
         result = storage_audit(ROOT, args.operation, args.experiment_id)
     print(json.dumps(result, sort_keys=True, allow_nan=False))

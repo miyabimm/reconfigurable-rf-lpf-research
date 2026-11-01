@@ -1,0 +1,33 @@
+# Frozen preparation from PR #251; not an EXP reservation or execution permission.
+schema_version: 1
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+plan:
+  path: results/issue250/frozen-plan.json
+  sha256: b5a042c27b78589a03a38263849b40595861552a4dbf08ce09c58b80b42b3913
+iteration_policy_id: slsqp-staged-v2
+grids:
+  coarse_points: 2
+  fine_points: 3
+samples_per_start: 1500000
+seeds: [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]
+methods: [D, A, B]
+pilot_seeds: [23, 24]
+selection:
+  intermediate_points: 17
+  dense_points: 1001
+  independent_points: 3
+  top_k_per_method: 5
+budgets:
+  logical_starts: 73
+  actual_starts: 58
+  stages: 292
+  optimization_samples: 109500000
+  screen_forwards: 444
+  screen_samples: 24864
+  intermediate_samples: 34748
+  dense_samples: 448448

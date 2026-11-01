@@ -39,7 +39,11 @@ def _copy(value):
 
 def _without_timing(value):
     if isinstance(value, dict):
-        return {k: _without_timing(v) for k, v in value.items() if k != "elapsed_seconds"}
+        # A status replay performs no solver forwards. Instrumentation from
+        # the original physical execution cannot be reproduced by this replay;
+        # retain it in the record, but compare electrical/controller evidence.
+        return {k: _without_timing(v) for k, v in value.items()
+                if k not in ("elapsed_seconds", "evaluation_cost")}
     if isinstance(value, list):
         return [_without_timing(v) for v in value]
     return value
@@ -64,9 +68,11 @@ def _provenance(value):
     return {"state": "provided", "value": _copy(value)}
 
 
-def _seed(circuit, saved):
+def _seed(circuit, saved, cost_meter=None):
     _points(saved["points_per_interval"])
     p = SampledEpigraph(circuit, saved["points_per_interval"])
+    if cost_meter is not None:
+        p = cost_meter.epigraph(p)
     actual = p.seed(saved["input_vector"], policy_id=saved["policy_id"],
         policy_fingerprint=saved["policy_fingerprint"],
         definition_sha256=saved["definition_sha256"],
@@ -76,9 +82,9 @@ def _seed(circuit, saved):
         raise ValueError("C1 seed replay mismatch")
 
 
-def _numerical(circuit, vector, staged, seed):
+def _numerical(circuit, vector, staged, seed, cost_meter=None):
     if seed is not None:
-        _seed(circuit, seed)
+        _seed(circuit, seed, cost_meter)
     if staged is None:
         if seed is not None and list(vector) != seed["vector"][:-1]:
             raise ValueError("Candidate vector differs from C1 seed output")
@@ -123,7 +129,8 @@ def _numerical(circuit, vector, staged, seed):
     actual = run_c1_staged(circuit, seed,
         coarse_points=staged["grids"]["coarse"]["points_per_interval"],
         fine_points=staged["grids"]["fine"]["points_per_interval"], optimize_stage=replay,
-        source_provenance=source["value"] if source["state"] == "provided" else None)
+        source_provenance=source["value"] if source["state"] == "provided" else None,
+        cost_meter=cost_meter)
     # Reuse the existing v2 controller and C1 observations, not a second set of
     # retry/status/epigraph rules. Timing/environment of the saved run are kept.
     keys = ("iteration_policy_id", "budget", "seed", "bands_sha256", "s2p_sha256",
@@ -234,7 +241,7 @@ def _validate_payload(b):
 
 
 def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_record=None,
-                     source_provenance=None, sampled_points=None, limited_points=None):
+                     source_provenance=None, sampled_points=None, limited_points=None, cost_meter=None):
     """Capture a finite complete vector and existing C1/C2 records without mutation.
 
     Without C1/C2 input, default is component/role only; RF/MNA/power not_run.
@@ -246,6 +253,8 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
     vector; its actual invalid output stays verbatim in staged_record.
     """
     _points(sampled_points)
+    if cost_meter is not None and limited_points is not None:
+        raise ValueError('Cost metering supports forward-only candidate checks')
     if limited_points is not None and (type(limited_points) is not int or limited_points not in (2, 3)):
         raise ValueError("Limited audit requires 2/3 points")
     if sampled_points is not None and limited_points is not None and sampled_points != limited_points:
@@ -265,7 +274,7 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
             if source_provenance is not None and _copy(source_provenance) != old["value"]:
                 raise ValueError("Conflicting execution source provenance")
             source_provenance = old["value"]
-    numerical = _numerical(circuit, x, staged, seed)
+    numerical = _numerical(circuit, x, staged, seed, cost_meter)
     if staged is not None and numerical["state"] != "failed" and sampled_points is None and limited_points is None:
         sampled_points = staged["stage_calls"][-1]["grid"]["points_per_interval"]
     source = _provenance(source_provenance)
@@ -296,7 +305,9 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
                            "min_h2_db": summary["H2"]["il_db"], "min_h3_db": summary["H3"]["il_db"]}
                 locations = [summary[k] for k in ("pass_il", "H2", "H3")]
             else:
-                summary = problem.evaluator.summary(x)
+                evaluator = (cost_meter.evaluator(problem.evaluator) if cost_meter is not None
+                             else problem.evaluator)
+                summary = evaluator.summary(x)
                 metrics = {"worst_il_db": summary["worst_IL_db"],
                            "min_h2_db": summary["min_H2_db"], "min_h3_db": summary["min_H3_db"]}
                 locations = summary["locations"]
@@ -322,7 +333,7 @@ def record_candidate(candidate_id, circuit, vector, *, seed_record=None, staged_
     return CandidateRecord(_json(body), True)
 
 
-def recheck_record(record):
+def recheck_record(record, *, cost_meter=None):
     """Recompute observations; saved metrics/evidence cannot supply PASS.
 
     Identical source/input context is required. Changed source/HEAD is a new
@@ -334,7 +345,8 @@ def recheck_record(record):
     c = _circuit(b)
     fresh = record_candidate(b["candidate_id"], c, b["vector"], seed_record=b["seed_record"],
         staged_record=b["staged_record"], source_provenance=b["source_provenance"].get("value"),
-        sampled_points=b["rf"]["requested_sampled_points"], limited_points=b["rf"]["requested_limited_points"])
+        sampled_points=b["rf"]["requested_sampled_points"], limited_points=b["rf"]["requested_limited_points"],
+        cost_meter=cost_meter)
     if b["audit"] and b["audit"].get("limited_evidence"):
         actual_audit = fresh.as_dict()["audit"]
         if not actual_audit or actual_audit.get("limited_evidence") is None:
