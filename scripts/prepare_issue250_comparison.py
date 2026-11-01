@@ -88,6 +88,16 @@ def verify_reference(root, circuit):
                 independent_mna_84=independent, use='external_reference_only_not_a_start')
 
 
+def _stable_plan_identity(value):
+    """Exclude measured timing from the replayable preparation identity."""
+    if isinstance(value, dict):
+        return {key: _stable_plan_identity(item) for key, item in value.items()
+                if key not in ('wall_seconds', 'cpu_seconds')}
+    if isinstance(value, list):
+        return [_stable_plan_identity(item) for item in value]
+    return value
+
+
 def prepare(root):
     root = Path(root).resolve()
     _complete_checkout(root)
@@ -149,7 +159,8 @@ def prepare(root):
         pilot_seeds=[23, 24], logical_starts=logical, actual_starts=actual,
         pools=pools, screen_cost=total.snapshot(), reference=reference)
     return dict(schema='issue250-preparation-v1', main_sha=main_sha,
-                input_source=source, input_source_sha256=canonical_config_hash(source),
+                input_source=source,
+                input_source_sha256=canonical_config_hash(_stable_plan_identity(source)),
                 execution='not_run', g0_reservation='not_run', g1_manifest='not_run',
                 g2_review='required', limitations=[
                     'Preparation is not a G0/G1 PASS or permission to bypass independent review.',
