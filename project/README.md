@@ -42,6 +42,15 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 - Git保存PASSはRF科学PASSではない。独立MNA/power/dense/物理/連続帯域は `not_run`、候補昇格は禁止。
   `optimize_stage` の注入は隔離テスト用で、実SciPyとは異なる実行種別を記録する。実験実行はコードレビューとは別判断。
 
+## Issue #239：optimizer比較契約・RFコスト計測（本番EXPなし）
+
+[診断と未実行比較計画](diagnostics/issue239_optimizer_comparison.md)を参照。
+`scipy_slsqp_stage(..., cost_meter=EvaluationCost())` はopt-inで実forward/sample数と
+solver callback数・CPU/wallを分離し、既定探索・RF計算・v2予算は変えない。
+`lpf.phase2_models.optimizer_comparison.PhysicalComparison` は物理xだけのforward-only API案。
+strict30、max/sum違反とILの比較、部品/box/SPD/role拒否を軽量検査する。
+DE/L-SHADE本番runner・L-SHADE本体・新EXP/数値予算の承認は含まない。
+
 ## Issue #235：SLSQP座標正規化（明示opt-in、本番EXPなし）
 
 [診断・実装差分・9B-2提案](diagnostics/issue235_scaling.md)を参照。
