@@ -109,3 +109,4 @@ EXP-107,reserved,miyabimm,issue237-pair7-A,Issue 237 pair 7 mode A physical vs n
 EXP-108,reserved,miyabimm,issue237-pair8-A,Issue 237 pair 8 mode A physical vs normalized saved EXP-093 coarse2 fine3 seed23,RF-T008,2026-11-01T05:32:24Z,main_reservation_workflow
 EXP-109,reserved,miyabimm,issue237-pair8-B,Issue 237 pair 8 mode B physical vs normalized saved EXP-093 coarse2 fine3 seed23,RF-T008,2026-11-01T05:32:25Z,main_reservation_workflow
 EXP-110,reserved,miyabimm,issue237-pair9-A,Issue 237 pair 9 mode A physical vs normalized saved EXP-094 coarse2 fine3 seed23,RF-T008,2026-11-01T05:32:27Z,main_reservation_workflow
+EXP-111,reserved,miyabimm,issue237-pair7-B,Issue 237 pair 7 mode B physical vs normalized saved EXP-092 coarse2 fine3 seed23,RF-T008,2026-11-01T05:32:33Z,main_reservation_workflow
