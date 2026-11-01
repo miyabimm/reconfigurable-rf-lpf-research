@@ -42,6 +42,14 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 - Git保存PASSはRF科学PASSではない。独立MNA/power/dense/物理/連続帯域は `not_run`、候補昇格は禁止。
   `optimize_stage` の注入は隔離テスト用で、実SciPyとは異なる実行種別を記録する。実験実行はコードレビューとは別判断。
 
+## Issue #235：SLSQP座標正規化（明示opt-in、本番EXPなし）
+
+[診断・実装差分・9B-2提案](diagnostics/issue235_scaling.md)を参照。
+`partial(scipy_slsqp_stage, coordinates="normalized")` は既存C1/C2のstage内だけで
+有限boxを正規化する。完全物理vector・tのdB・RF制約・v2予算・検証ゲートは維持し、
+従来の既定経路は変更しない。差分幅は比較用に明示指定可能だが、新標準の採用や
+実験で未実証の収束改善を意味しない。保存済み9初期値の診断再現には完全evidence checkoutが必要。
+
 ## Issue #231：多start準備・mock比較（本番EXPなし）
 
 `lpf.phase2_models.multistart` は既存1-start driverとは別の**synthetic専用**経路。

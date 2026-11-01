@@ -27,21 +27,49 @@ from .problem_seed import definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SampledEpigraph
 
 
-def scipy_slsqp_stage(problem, vector, maxiter, target):
+def scipy_slsqp_stage(problem, vector, maxiter, target, *,
+                      coordinates="physical", finite_difference_eps=None):
     """Single C1 constrained stage; scheduling and validation live elsewhere.
 
     ``target`` is unused: the mandatory limit is bound to the resolved policy,
     not a caller-selected replacement. Bounds include open-bound closures;
     component validation must reject excluded boundary points afterwards.
+    Explicit opt-in via functools.partial(..., coordinates="normalized"); the
+    callback still accepts/returns the full physical vector, so v2 and saved
+    vector SHAs remain physical. This path rejects excluded open endpoints
+    rather than repairing them. Optional absolute finite_difference_eps is a
+    comparison setting, not a production default; ftol is never overridden.
     """
     if target is not None:
         raise ValueError("RF target override is not supported")
-    result = minimize(problem.objective, np.asarray(vector, float), method="SLSQP",
+    if coordinates not in ("physical", "normalized"):
+        raise ValueError("Unknown coordinate system")
+    if finite_difference_eps is not None and (
+            not np.isscalar(finite_difference_eps)
+            or not np.isfinite(finite_difference_eps) or finite_difference_eps <= 0):
+        raise ValueError("finite_difference_eps must be finite and positive")
+    options = {"maxiter": maxiter}
+    if finite_difference_eps is not None:
+        options["eps"] = float(finite_difference_eps)
+    original = np.asarray(vector, float)
+    if coordinates == "normalized":
+        from .normalized_epigraph import NormalizedEpigraph
+        problem = NormalizedEpigraph(problem)
+        original = problem.to_normalized(original)
+    result = minimize(problem.objective, original, method="SLSQP",
         bounds=problem.box.bounds, constraints=({"type": "ineq", "fun": problem.residuals},),
-        options={"maxiter": maxiter})
-    return result.x, {"success": bool(result.success), "status": int(result.status),
-                      "message": str(result.message), "nit": int(result.nit),
-                      "nfev": int(result.nfev)}
+        options=options)
+    output = problem.to_physical(result.x) if coordinates == "normalized" else result.x
+    state = {"success": bool(result.success), "status": int(result.status),
+             "message": str(result.message), "nit": int(result.nit),
+             "nfev": int(result.nfev)}
+    if coordinates == "normalized" or finite_difference_eps is not None:
+        state["coordinate_configuration"] = {
+            "coordinates": coordinates, "epigraph_units": "dB",
+            "finite_difference_eps": finite_difference_eps,
+            "eps_units": "physical" if coordinates == "physical" else "unit_box_and_t_db",
+            "ftol": "scipy_default_unchanged"}
+    return output, state
 
 
 def _json_value(value):
