@@ -2,7 +2,12 @@
   "checkpoints": [],
   "experiment_id": "EXP-101",
   "git_readback": "not_run",
-  "limitations": [],
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
   "phase": "Phase 2",
   "policy": "phase2-git-only-v1",
   "schema_version": 1,
@@ -15,8 +20,18 @@
     "top_k": 0
   },
   "size_exception": null,
-  "stage": "planned",
-  "summary": null,
+  "stage": "preservation_incomplete",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-101/run_summary.json",
+    "sha256": "7c3a906ceb4888d46030df19478eeb80021df5fb0a8ac2e5c24d6539b6eccc37"
+  },
   "supporting_evidence": [],
-  "validation_overlays": []
+  "validation_overlays": [
+    {
+      "method": "grid",
+      "path": "data/validation/issue237_coordinate_ab/EXP-101-17pt.json",
+      "sha256": "ec0213e49127e28cb86bee332fce90879075fd344b78ea4ecad8c25fb11af11f",
+      "status": "passed"
+    }
+  ]
 }
