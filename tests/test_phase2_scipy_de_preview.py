@@ -163,6 +163,23 @@ class DEPreviewTests(unittest.TestCase):
         self.assertEqual(r['evaluation_cost']['role_rejections'], 1)
         self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 0)
 
+    def test_past_rejection_does_not_mask_unrelated_solver_exception(self):
+        def initialize(meter):
+            invalid = self.x.copy()
+            invalid[3] = 0.
+            with self.assertRaises(ValueError):
+                self.comparison.evaluate(invalid)  # genuine rejected proposal
+            return self.generate(meter)
+
+        with patch('lpf.phase2_models.scipy_de_preview.differential_evolution',
+                   side_effect=RuntimeError('unrelated solver failure')):
+            r = self.run_preview(initialize=initialize)
+        self.assertEqual(r['termination'], 'failed')
+        self.assertIn('unrelated solver failure', r['error'])
+        self.assertEqual(r['evaluation_cost']['box_rejections'], 1)
+        self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 6)
+        self.assertIsNotNone(r['best_observed'])
+
     def test_invalid_population_and_solver_proposal_are_not_rf_scores(self):
         def bad(meter):
             generated = self.generate(meter)
