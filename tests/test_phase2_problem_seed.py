@@ -231,6 +231,23 @@ class RFStartSelectionTests(unittest.TestCase):
             meter = EvaluationCost()
             a = self.generate(cost_meter=meter)
             b = self.generate()
+            # Measured timing varies but must not enter synthetic preview run ID.
+            from lpf.phase2_models.multistart import run_multistart_preview
+            class Captured(Exception):
+                pass
+            ids = []
+            def capture_plan(*args, **kwargs):
+                ids.append(kwargs['run_id'])
+                raise Captured()
+            with patch('lpf.phase2_models.multistart.make_synthetic_plan',
+                       side_effect=capture_plan):
+                for generated in (a, b):
+                    with self.assertRaises(Captured):
+                        run_multistart_preview(self.p.circuit, generated, None,
+                            optimize_stage=lambda *args: None,
+                            historical_benchmarks=[], max_new_starts=0)
+            self.assertEqual(len(ids), 2)
+            self.assertEqual(ids[0], ids[1])
         self.assertEqual([s['vector_sha256'] for s in legacy['starts']], [
             'b6a098b045772b02fee8ed619e5324481ed72cbcf3008cc522783df5009ba591',
             '2ada66b1b4fd8e42050cdd738f92dd60c795682ee3a4a484293be121a0a74268',
