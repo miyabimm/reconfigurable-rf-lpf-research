@@ -30,8 +30,9 @@ class DEPreviewTests(unittest.TestCase):
         self.patch.start()
         self.addCleanup(self.patch.stop)
 
-    def generate(self, meter=None, count=6):
-        return generate_starts(self.p, self.x, seed=23, count=count, cost_meter=meter)
+    def generate(self, meter=None, count=6, for_exploration=False):
+        return generate_starts(self.p, self.x, seed=23, count=count,
+                               cost_meter=meter, for_exploration=for_exploration)
 
     def run_preview(self, **overrides):
         args = dict(initialize=self.generate, seed=241, maxiter=1,
@@ -144,7 +145,7 @@ class DEPreviewTests(unittest.TestCase):
         self.assertEqual(r['termination'], 'interrupted')
         self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 6)
 
-    def test_cooperative_wall_limit_and_role_rejection(self):
+    def test_cooperative_wall_limit_and_role_evidence(self):
         clock = [100.]
         def initialize(meter):
             result = self.generate(meter)
@@ -156,12 +157,64 @@ class DEPreviewTests(unittest.TestCase):
         self.assertEqual(r['termination'], 'wall_limit')
         self.assertIsNotNone(r['best_observed'])
         self.assertEqual(r['evaluation_cost']['wall_seconds'], 100.)  # not double-timed
+        # Role evidence is not a numeric exploration rejection.
         with patch.object(type(self.p.circuit), 'validate_components',
                           return_value={'connection_role_evidence_incomplete': True}):
+            r = self.run_preview(initialize=lambda m: self.generate(
+                m, for_exploration=True))
+        self.assertEqual(r['termination'], 'solver_returned')
+        self.assertEqual(r['evaluation_cost']['role_rejections'], 0)
+        self.assertGreater(r['evaluation_cost']['RF_forward_calls'], 0)
+
+    def test_zero_gjm_is_only_legal_for_exploration(self):
+        self.x[3] = 0.  # fixed GJM01: zero admittance, absent at final layout
+        with self.assertRaises(ValueError):
+            self.p.circuit.validate_components(self.x)
+        with self.assertRaisesRegex(ValueError, 'open lower'):
+            self.generate()
+        preview = self.p.circuit.validate_components(
+            self.x, allow_absent_gjm=True)
+        self.assertEqual(preview['exploration_absent_gjm_indices'], (0,))
+        self.assertFalse(preview['component_policy_pass'])
+        self.assertIn('absent_gjm_requires_topology_redefinition',
+                      preview['promotion_blockers'])
+        comp = PhysicalComparison(self.p.circuit, 2)
+        with self.assertRaises(ValueError):
+            comp.evaluate(self.x)
+        score = comp.evaluate(self.x, for_exploration=True)
+        self.assertTrue(score.strict_feasible)
+        starts = self.generate(for_exploration=True)
+        self.assertEqual(starts['starts'][0]['vector'][3], 0.)
+        r = self.run_preview(initialize=lambda m: self.generate(
+            m, for_exploration=True))
+        self.assertEqual(r['termination'], 'solver_returned')
+        self.assertIsNotNone(r['best_observed'])
+
+    def test_de_proposal_at_zero_gjm_is_not_rejected(self):
+        from types import SimpleNamespace
+
+        def gjm_favors_zero(evaluator, x):
+            return np.choose(evaluator.role, [float(x[3]), 30., 31.])
+
+        def solver(objective, bounds, **kw):
+            zero = kw['init'][0].copy()
+            zero[3] = 0.
+            self.assertEqual(kw['constraints'][0].fun(zero).shape, (2,))
+            self.assertEqual(objective(zero), 0.)
+            return SimpleNamespace(success=True, message='mock solver',
+                                   nit=1, nfev=1)
+
+        with patch.object(type(self.p.evaluator), 'il', gjm_favors_zero), \
+             patch('lpf.phase2_models.scipy_de_preview.differential_evolution',
+                   solver):
             r = self.run_preview()
-        self.assertEqual(r['termination'], 'physical_rejected')
-        self.assertEqual(r['evaluation_cost']['role_rejections'], 1)
-        self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 0)
+        self.assertEqual(r['termination'], 'solver_returned')
+        self.assertEqual(r['evaluation_cost']['box_rejections'], 0)
+        self.assertEqual(r['evaluation_cost']['component_rejections'], 0)
+        self.assertEqual(r['best_observed']['vector'][3], 0.)
+        self.assertEqual(r['best_observed']['exploration_absent_gjm_indices'], [0])
+        self.assertTrue(r['best_observed']['requires_topology_redefinition'])
+        self.assertTrue(r['best_observed']['candidate_promotion_blocked'])
 
     def test_past_rejection_does_not_mask_unrelated_solver_exception(self):
         def initialize(meter):
@@ -184,7 +237,7 @@ class DEPreviewTests(unittest.TestCase):
         def bad(meter):
             generated = self.generate(meter)
             x = generated['starts'][0]['vector']
-            x[3] = 0.
+            x[0] = 0.  # LQP02HV is below 0.4 nH: genuinely invalid
             generated['starts'][0]['vector_sha256'] = vector_fingerprint(x)
             return generated
         r = self.run_preview(initialize=bad)
@@ -195,7 +248,7 @@ class DEPreviewTests(unittest.TestCase):
             good = kw['init'][0]
             kw['constraints'][0].fun(good)
             bad = good.copy()
-            bad[3] = 0.
+            bad[0] = 0.  # invalid inductor, not removable GJM01
             kw['constraints'][0].fun(bad)
             self.fail('Invalid physical proposal must abort')
         with patch('lpf.phase2_models.scipy_de_preview.differential_evolution', solver):
