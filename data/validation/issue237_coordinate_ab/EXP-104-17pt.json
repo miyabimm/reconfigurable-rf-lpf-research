@@ -1,0 +1,626 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 1,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 1
+  },
+  "comparison": {
+    "coordinates": "normalized",
+    "finite_difference_eps": null,
+    "ftol": "scipy_default_unchanged",
+    "mode": "B",
+    "old_experiment": "EXP-090",
+    "pair": 5,
+    "physical_difference_steps_equal": false,
+    "seed_sha256": "91fac56f18baa4ca4c977c525120de20bad5a837b811f91678765ff55da2ed30",
+    "source_manifest_sha256": "0dbdfca654f7adc76222763f44e9a6514d315bd17855164fafdd84805f2cb868"
+  },
+  "elapsed_seconds": 1.3520526479987893,
+  "experiment_id": "EXP-104",
+  "final_vector_with_t_db": [
+    26.999999987599647,
+    26.999999938258146,
+    26.57530595774527,
+    81.29180127424772,
+    0.9999999999975047,
+    0.1999999999715007,
+    0.09999999953619923,
+    -0.09999999395384383,
+    0.5000000008683285,
+    3.0,
+    5.155947680242677e-13,
+    2.9984534360949615,
+    9.260600411535059e-10,
+    1.234023576077949,
+    0.3503735023085658,
+    2.762744770277941,
+    0.04937942920455899,
+    1.962898862208796,
+    0.05133014887920538,
+    2.8803854559979167,
+    0.0,
+    2.999999985145191,
+    29.51331988895342
+  ],
+  "numerical_state": "converged",
+  "scan": {
+    "candidate_promotion_blocked": true,
+    "definition_sha256": "b9471434d8bcdc3ef6da383a39851d16cdcc4f539e0c0bca14e2a158eae96662",
+    "evidence_class": "forward_only_diagnostic",
+    "grid": {
+      "points_per_interval": 17,
+      "sample_count": 476,
+      "segment_count": 28,
+      "settings": 6
+    },
+    "identity": {
+      "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "constraint_id": "RF-T008",
+      "constraint_status": "trial",
+      "definition_fingerprint": "b9471434d8bcdc3ef6da383a39851d16cdcc4f539e0c0bca14e2a158eae96662",
+      "environment": {
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "scipy": "1.18.1"
+      },
+      "git_head": "fc4c76b30eb521c388c8e068a87902f4e20e790f",
+      "historical_fixture_provenance": "not_checked",
+      "input_sha256": {
+        "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+        "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      },
+      "source_provenance_scope": "current_src_lpf_python_files",
+      "source_tree_sha256": "3de640a5f8022296e1d02c4624beb1c1ded0892394b8217f1eccae31f1d20804",
+      "source_worktree_dirty": false,
+      "vector_fingerprint": "a4beb7cfa973ef60c4823a060a66f2a3523381e3cff402e96d0c90d0ed225fb4"
+    },
+    "observation": {
+      "candidate_promotion_blocked": true,
+      "component_policy": {
+        "candidate_promotion_blocked": true,
+        "checked_settings": 6,
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                3,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                2
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_incomplete": false,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "independent_mna_checked": false,
+        "installed_variable_c_branches": 2,
+        "min_L_eigenvalue_H": 2.3083615574653403e-08,
+        "physical_q_srf_em_checked": false,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false
+      },
+      "independent_mna_checked": false,
+      "points_per_interval": 17,
+      "rf_compliance_certified": false,
+      "sampled_forward_metrics": {
+        "locations": [
+          {
+            "case": "B28",
+            "frequency_mhz": 803.0,
+            "segment": 9
+          },
+          {
+            "case": "B12",
+            "frequency_mhz": 1432.0,
+            "segment": 6
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 1989.0,
+            "segment": 3
+          }
+        ],
+        "min_H2_db": 29.99999963910165,
+        "min_H3_db": 32.9611493334305,
+        "min_L_eigenvalue_nH": 23.083615574653404,
+        "worst_IL_db": 29.513320013325533
+      }
+    },
+    "policy_id": "RF-T008",
+    "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+    "rf_compliance_certified": false,
+    "validation": {
+      "dense_rf_1001": "not_run",
+      "independent_mna_84": "not_run",
+      "passivity": "not_run",
+      "power_balance": "not_run"
+    },
+    "vector_sha256": "43113b0924db92d7221891eea9479f2e31367b55f38c9a14a95513b13e443297"
+  },
+  "source_provenance": {
+    "coordinate_configuration": {
+      "coordinates": "normalized",
+      "finite_difference_eps": null
+    },
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "e1a29ac03d54dc451daf0118dad217a0beb5aac8",
+    "input_source_sha256": "ed56e12f44ad052cea6526561a9cded5f72cfe688448946e5f129d416145c5eb",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "stages": [
+    {
+      "attempt_index": 0,
+      "call_index": 0,
+      "elapsed_seconds": 0.8228643830079818,
+      "exception": null,
+      "exit_cause": "success",
+      "grid": {
+        "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+        "points_per_interval": 2,
+        "sample_count": 56,
+        "segment_count": 28
+      },
+      "input_vector": [
+        0.5397146437317133,
+        17.667327941954134,
+        22.907585878297688,
+        2.884013392031193,
+        0.7888260023668409,
+        0.12813282292336226,
+        -0.03209834601730109,
+        0.09248806722462177,
+        1.299358137883246,
+        1.6293285772204398,
+        1.5741961039602757,
+        2.8420103592798114,
+        1.2099048709496856,
+        1.2143930280581117,
+        1.1551023814827204,
+        0.8968611666932702,
+        0.13708369061350822,
+        2.808850415982306,
+        0.5956647265702486,
+        2.275379623286426,
+        0.7138698734343052,
+        1.0633525494486094,
+        23.824219705515294
+      ],
+      "input_vector_sha256": "f58b62b776ec426cdf604827fb54d7dc07c6c85b5dd22423657820ad6c43c9e3",
+      "maxiter": 240,
+      "observation": {
+        "box": {
+          "open_lower_indices": [],
+          "outside_indices": [],
+          "state": "pass"
+        },
+        "component_policy": {
+          "detail": {
+            "candidate_promotion_blocked": true,
+            "checked_settings": 6,
+            "component_policy_pass": true,
+            "connection_role_audit": {
+              "all_declared_roles_supported_by_l_tree": true,
+              "branches": [
+                {
+                  "declared_role": "shunt_to_ground",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    3,
+                    -1
+                  ],
+                  "electrical_class": "shunt_to_ground",
+                  "evidence": "verified_ground_endpoint"
+                },
+                {
+                  "declared_role": "bridge",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    0,
+                    2
+                  ],
+                  "electrical_class": "inductor_tree_chord",
+                  "evidence": "verified_L_path_between_terminals"
+                }
+              ],
+              "physical_layout_checked": false,
+              "unsupported_role_indices": []
+            },
+            "connection_role_evidence_incomplete": false,
+            "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "constraint_id": "RF-T008",
+            "independent_mna_checked": false,
+            "installed_variable_c_branches": 2,
+            "min_L_eigenvalue_H": 2.3083615574653403e-08,
+            "physical_q_srf_em_checked": false,
+            "promotion_blockers": [
+              "independent_mna_not_checked",
+              "dense_rf_not_checked"
+            ],
+            "rf_performance_checked": false
+          },
+          "state": "pass"
+        },
+        "sampled_rf": {
+          "all_sampled_inequalities_nonnegative": false,
+          "h2_min_residual_db": -3.6089835120378666e-07,
+          "h3_min_residual_db": 2.961149333430498,
+          "min_h2_db": 29.99999963910165,
+          "min_h3_db": 32.9611493334305,
+          "minimum_residual_db": -3.6089835120378666e-07,
+          "passband_epigraph_min_residual_db": -1.243721143850962e-07,
+          "residuals_db": [
+            2.344284911347607,
+            2.0800373368985206,
+            2.6766074576281866,
+            2.4256199529233626,
+            4.757659693833894,
+            3.0927110081055673,
+            2.961149333430498,
+            3.392404150639244,
+            0.2687018900114495,
+            0.17514295276368586,
+            0.10069453729675715,
+            -1.013342014744012e-07,
+            4.858849272940262,
+            -3.6089835120378666e-07,
+            4.196300224161163,
+            4.391195033107948,
+            1.1096102611280863,
+            0.6426861267240227,
+            0.5324947959571169,
+            -1.243721143850962e-07,
+            1.104833913245784e-08,
+            0.6983631459947617,
+            3.6293494317469737,
+            4.0881038536152445,
+            0.5057951194212684,
+            0.43129424801916016,
+            0.42380765156124767,
+            0.34858448713849555,
+            0.732269553218373,
+            0.6599909605225065,
+            0.6454433201271357,
+            0.572263870539679,
+            0.6309575137342414,
+            0.8501399203495943,
+            0.8709353742505499,
+            1.06908282009352,
+            4.650582909045738,
+            4.744619178635311,
+            4.753918079232982,
+            4.845893607338972,
+            0.9760396362160151,
+            0.6870339956305429,
+            0.6036370064354628,
+            0.30830333061697246,
+            1.0378115963497372,
+            1.5446739874904303,
+            4.620801223061704,
+            4.921166714546658,
+            0.6487952550208362,
+            0.36712644912242354,
+            0.2861145484254699,
+            -1.1268602051472953e-07,
+            1.7777763857705509,
+            2.189576264918337,
+            5.1249458676990685,
+            5.395555406268507
+          ],
+          "state": "observed",
+          "worst_il_db": 29.513320013325533
+        }
+      },
+      "output_vector": [
+        26.999999987599647,
+        26.999999938258146,
+        26.57530595774527,
+        81.29180127424772,
+        0.9999999999975047,
+        0.1999999999715007,
+        0.09999999953619923,
+        -0.09999999395384383,
+        0.5000000008683285,
+        3.0,
+        5.155947680242677e-13,
+        2.9984534360949615,
+        9.260600411535059e-10,
+        1.234023576077949,
+        0.3503735023085658,
+        2.762744770277941,
+        0.04937942920455899,
+        1.962898862208796,
+        0.05133014887920538,
+        2.8803854559979167,
+        0.0,
+        2.999999985145191,
+        29.51331988895342
+      ],
+      "stage": "coarse",
+      "status": {
+        "coordinate_configuration": {
+          "coordinates": "normalized",
+          "epigraph_units": "dB",
+          "eps_units": "unit_box_and_t_db",
+          "finite_difference_eps": null,
+          "ftol": "scipy_default_unchanged"
+        },
+        "message": "Optimization terminated successfully",
+        "nfev": 530,
+        "nit": 23,
+        "status": 0,
+        "success": true
+      },
+      "warm_start_source": "seed"
+    },
+    {
+      "attempt_index": 0,
+      "call_index": 1,
+      "elapsed_seconds": 0.08937761800189037,
+      "exception": null,
+      "exit_cause": "success",
+      "grid": {
+        "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+        "points_per_interval": 3,
+        "sample_count": 84,
+        "segment_count": 28
+      },
+      "input_vector": [
+        26.999999987599647,
+        26.999999938258146,
+        26.57530595774527,
+        81.29180127424772,
+        0.9999999999975047,
+        0.1999999999715007,
+        0.09999999953619923,
+        -0.09999999395384383,
+        0.5000000008683285,
+        3.0,
+        5.155947680242677e-13,
+        2.9984534360949615,
+        9.260600411535059e-10,
+        1.234023576077949,
+        0.3503735023085658,
+        2.762744770277941,
+        0.04937942920455899,
+        1.962898862208796,
+        0.05133014887920538,
+        2.8803854559979167,
+        0.0,
+        2.999999985145191,
+        29.51331988895342
+      ],
+      "input_vector_sha256": "9a53df189f90eb8065aec02fbcddc57ca028a39f9a15e6fac286a1978643d8ad",
+      "maxiter": 120,
+      "observation": {
+        "box": {
+          "open_lower_indices": [],
+          "outside_indices": [],
+          "state": "pass"
+        },
+        "component_policy": {
+          "detail": {
+            "candidate_promotion_blocked": true,
+            "checked_settings": 6,
+            "component_policy_pass": true,
+            "connection_role_audit": {
+              "all_declared_roles_supported_by_l_tree": true,
+              "branches": [
+                {
+                  "declared_role": "shunt_to_ground",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    3,
+                    -1
+                  ],
+                  "electrical_class": "shunt_to_ground",
+                  "evidence": "verified_ground_endpoint"
+                },
+                {
+                  "declared_role": "bridge",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    0,
+                    2
+                  ],
+                  "electrical_class": "inductor_tree_chord",
+                  "evidence": "verified_L_path_between_terminals"
+                }
+              ],
+              "physical_layout_checked": false,
+              "unsupported_role_indices": []
+            },
+            "connection_role_evidence_incomplete": false,
+            "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "constraint_id": "RF-T008",
+            "independent_mna_checked": false,
+            "installed_variable_c_branches": 2,
+            "min_L_eigenvalue_H": 2.3083615574653403e-08,
+            "physical_q_srf_em_checked": false,
+            "promotion_blockers": [
+              "independent_mna_not_checked",
+              "dense_rf_not_checked"
+            ],
+            "rf_performance_checked": false
+          },
+          "state": "pass"
+        },
+        "sampled_rf": {
+          "all_sampled_inequalities_nonnegative": false,
+          "h2_min_residual_db": -3.6089835120378666e-07,
+          "h3_min_residual_db": 2.961149333430498,
+          "min_h2_db": 29.99999963910165,
+          "min_h3_db": 32.9611493334305,
+          "minimum_residual_db": -3.6089835120378666e-07,
+          "passband_epigraph_min_residual_db": -1.243721143850962e-07,
+          "residuals_db": [
+            2.344284911347607,
+            2.213070230096079,
+            2.0800373368985206,
+            2.6766074576281866,
+            2.552788212070496,
+            2.4256199529233626,
+            4.757659693833894,
+            5.759526226376394,
+            3.0927110081055673,
+            2.961149333430498,
+            3.1827475950068447,
+            3.392404150639244,
+            0.2687018900114495,
+            0.2224933245191778,
+            0.17514295276368586,
+            0.10069453729675715,
+            0.05079376393013746,
+            -1.013342014744012e-07,
+            4.858849272940262,
+            2.1079870963397056,
+            -3.6089835120378666e-07,
+            4.196300224161163,
+            4.2949702908528735,
+            4.391195033107948,
+            1.1096102611280863,
+            0.8817164851781634,
+            0.6426861267240227,
+            0.5324947959571169,
+            0.274433750669445,
+            -1.243721143850962e-07,
+            1.104833913245784e-08,
+            0.3684522335235414,
+            0.6983631459947617,
+            3.6293494317469737,
+            3.863918335613384,
+            4.0881038536152445,
+            0.5057951194212684,
+            0.4686282364595087,
+            0.43129424801916016,
+            0.42380765156124767,
+            0.38627680242306184,
+            0.34858448713849555,
+            0.732269553218373,
+            0.6962273212496939,
+            0.6599909605225065,
+            0.6454433201271357,
+            0.6089443984997729,
+            0.572263870539679,
+            0.6309575137342414,
+            0.7432018400363134,
+            0.8501399203495943,
+            0.8709353742505499,
+            0.972154346489642,
+            1.06908282009352,
+            4.650582909045738,
+            4.697841325045637,
+            4.744619178635311,
+            4.753918079232982,
+            4.800134055984316,
+            4.845893607338972,
+            0.9760396362160151,
+            0.8320709570885505,
+            0.6870339956305429,
+            0.6036370064354628,
+            0.4566885590201011,
+            0.30830333061697246,
+            1.0378115963497372,
+            1.3037122816505473,
+            1.5446739874904303,
+            4.620801223061704,
+            4.77332502146065,
+            4.921166714546658,
+            0.6487952550208362,
+            0.5082868804155325,
+            0.36712644912242354,
+            0.2861145484254699,
+            0.14361347706112326,
+            -1.1268602051472953e-07,
+            1.7777763857705509,
+            1.9912214845127565,
+            2.189576264918337,
+            5.1249458676990685,
+            5.262113155438605,
+            5.395555406268507
+          ],
+          "state": "observed",
+          "worst_il_db": 29.513320013325533
+        }
+      },
+      "output_vector": [
+        26.999999987599647,
+        26.999999938258146,
+        26.57530595774527,
+        81.29180127424772,
+        0.9999999999975047,
+        0.1999999999715007,
+        0.09999999953619923,
+        -0.09999999395384383,
+        0.5000000008683285,
+        3.0,
+        5.155947680242677e-13,
+        2.9984534360949615,
+        9.260600411535059e-10,
+        1.234023576077949,
+        0.3503735023085658,
+        2.762744770277941,
+        0.04937942920455899,
+        1.962898862208796,
+        0.05133014887920538,
+        2.8803854559979167,
+        0.0,
+        2.999999985145191,
+        29.51331988895342
+      ],
+      "stage": "fine",
+      "status": {
+        "coordinate_configuration": {
+          "coordinates": "normalized",
+          "epigraph_units": "dB",
+          "eps_units": "unit_box_and_t_db",
+          "finite_difference_eps": null,
+          "ftol": "scipy_default_unchanged"
+        },
+        "message": "Optimization terminated successfully",
+        "nfev": 24,
+        "nit": 1,
+        "status": 0,
+        "success": true
+      },
+      "warm_start_source": "stage_call_0"
+    }
+  ],
+  "termination": {
+    "message": "converged",
+    "type": "completed"
+  },
+  "validation": {
+    "dense1001": "not_run",
+    "independent_mna84": "not_run",
+    "passivity": "not_run",
+    "power": "not_run"
+  },
+  "validation_reason": "No eligible candidate established; independent validation not performed."
+}
