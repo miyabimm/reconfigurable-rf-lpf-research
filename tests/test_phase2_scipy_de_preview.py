@@ -9,6 +9,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from test_phase2_problem_seed import make
+from lpf.phase2_models.api import build_nominal_circuit
 from lpf.phase2_models.evaluation_cost import EvaluationCost
 from lpf.phase2_models.multistart import generate_starts
 from lpf.phase2_models.optimizer_comparison import PhysicalComparison
@@ -189,6 +190,29 @@ class DEPreviewTests(unittest.TestCase):
             m, for_exploration=True))
         self.assertEqual(r['termination'], 'solver_returned')
         self.assertIsNotNone(r['best_observed'])
+
+    def test_unproven_series_role_is_not_a_numeric_exploration_error(self):
+        definition = replace(self.p.circuit.definition,
+                             variable_roles=('shunt_to_ground', 'series'))
+        circuit = build_nominal_circuit(
+            self.p.circuit.resolved_policy, definition)
+        problem = SampledEpigraph(circuit, 2)
+        self.assertTrue(circuit.validate_components(self.x)[
+            'connection_role_evidence_incomplete'])
+        with self.assertRaisesRegex(ValueError, 'role not proven'):
+            generate_starts(problem, self.x, seed=23, count=6)
+        starts = generate_starts(problem, self.x, seed=23, count=6,
+                                 for_exploration=True)
+        self.assertEqual(len(starts['starts']), 6)
+        strict = PhysicalComparison(circuit, 2)
+        with self.assertRaises(ValueError):
+            strict.evaluate(self.x)
+        exploratory = PhysicalComparison(circuit, 2)
+        score = exploratory.evaluate(self.x, for_exploration=True)
+        self.assertTrue(score.strict_feasible)
+        report = circuit.validate_components(self.x)
+        self.assertIn('declared_role_not_proven_by_l_tree',
+                      report['promotion_blockers'])
 
     def test_de_proposal_at_zero_gjm_is_not_rejected(self):
         from types import SimpleNamespace
