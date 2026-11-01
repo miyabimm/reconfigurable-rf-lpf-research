@@ -29,7 +29,7 @@ def unique_topologies(circuits):
 
 
 def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
-                    warm_sha256=None):
+                    warm_sha256=None, count=3, cost_meter=None):
     """Exactly nominal/design (or verified warm) + two scrambled Sobol starts.
 
     One fixed Sobol block of 16 is inspected, with no clipping, epsilon floor,
@@ -37,7 +37,15 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     raises with diagnostics. Warm JSON must explicitly bind policy, definition,
     schema and full vector; a length-compatible legacy vector is not sufficient.
     This preparation runs forward diagnostics, not optimization or RF validation.
+    Opt-in count uses the SAME block/order, never retries. Pass cost_meter to
+    charge all initialization forwards (also on failure); default three-start
+    vectors, records and behavior remain unchanged.
     """
+    if type(count) is not int or not 3 <= count <= 17:
+        raise ValueError('count must be between 3 and 17 (one fixed Sobol block)')
+    if cost_meter is not None:
+        # Shallow metered view includes seed forward calls, without changing C1.
+        problem = cost_meter.epigraph(problem)
     if type(seed) is not int or seed < 0:
         raise ValueError('seed must be a nonnegative integer')
     circuit = problem.circuit
@@ -69,15 +77,23 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     def accept(vector, method, index, source=None):
         x = np.asarray(vector, float)
         if x.shape != (circuit.schema.vector_length,):
+            if cost_meter is not None:
+                cost_meter.box_rejections += 1
             raise ValueError('Incomplete vector')
         # Unlike make_seed, this precheck must not silently clip the design.
         for i, (lo, hi) in enumerate(problem.box.bounds[:-1]):
             if not np.isfinite(x[i]) or not lo <= x[i] <= hi:
+                if cost_meter is not None:
+                    cost_meter.box_rejections += 1
                 raise ValueError('Box violation at index ' + str(i))
         if any(x[i] <= problem.box.bounds[i][0] for i in problem.box.open_lower):
+            if cost_meter is not None:
+                cost_meter.box_rejections += 1
             raise ValueError('Excluded open lower bound')
         component = circuit.validate_components(x)
         if component['connection_role_evidence_incomplete']:
+            if cost_meter is not None:
+                cost_meter.role_rejections += 1
             raise ValueError('Connection role not proven')
         sha = vector_fingerprint(x)
         if sha in seen:
@@ -105,11 +121,11 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             accept(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
         except ValueError as exc:
             rejected.append({'sobol_index': index, 'reason': str(exc)})
-        if len(starts) == 3:
+        if len(starts) == count:
             return {'starts': starts, 'rejected': rejected, 'sobol_block_size': 16,
                     'generation_policy': 'nominal-plus-sobol-v1',
                     'candidate_promotion_blocked': True}
-    raise ValueError(f'Insufficient legal distinct starts: {len(starts)}/3; {rejected}')
+    raise ValueError(f'Insufficient legal distinct starts: {len(starts)}/{count}; {rejected}')
 
 
 def intermediate_scan(circuit, vector):
