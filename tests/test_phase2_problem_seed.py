@@ -195,6 +195,13 @@ class ProblemSeedTests(unittest.TestCase):
         a = generate_starts(p, x, candidate_pool='design_prototype', **kw)
         b = generate_starts(p, x, candidate_pool='design_prototype', **kw)
         baseline = generate_starts(p, x, **kw)
+        # Frozen against main 6f4a5da, excluding measured timing only.
+        from lpf.checkpoint_io import canonical_config_hash
+        for generated, expected in ((baseline,
+                '8b3ff7c05f8a185b98df28c58ac48c3f8e5b9f944995397bdd9005fea9ceb775'),
+                (a, '5df4656451891398d67ec19087a2f2f149948507d9dbe5332716c60ce5097b89')):
+            self.assertEqual(canonical_config_hash([r['vector_sha256'] for r in
+                generated['selection_report']['candidates']]), expected)
         self.assertEqual(a['starts'], b['starts'])
         report = a['selection_report']
         self.assertEqual(report['cost']['frequency_samples_requested'], 952)

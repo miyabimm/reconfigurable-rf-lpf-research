@@ -51,8 +51,12 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     candidate_pool='design_prototype' replaces Sobol slots 0,1 with two
     narrow L-match hypotheses (nominal only). Unsupported or illegal designs
     fail closed; never repairs values or silently falls back to pure Sobol.
+    candidate_pool='physical_transform' replaces slots 0,1 with common legal
+    L/C scaling and 2,3 with six-setting Cv trends. Invalid transformation
+    slots are discarded with reasons; slots 4..15 are unchanged broad Sobol.
+    No new constraints, extra forwards, repairs or topology projection.
     """
-    if candidate_pool not in ('sobol', 'design_prototype'):
+    if candidate_pool not in ('sobol', 'design_prototype', 'physical_transform'):
         raise ValueError('Unknown candidate pool')
     if candidate_pool != 'sobol' and (selection != 'rf_pareto' or warm_checkpoint is not None):
         raise ValueError('Design prototype requires rf_pareto and nominal (not warm) input')
@@ -130,7 +134,7 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
 
     starts, seen, rejected = [], set(), []
 
-    def accept(vector, method, index, source=None):
+    def validate(vector, *, duplicate=True):
         x = np.asarray(vector, float)
         if x.shape != (circuit.schema.vector_length,):
             if cost_meter is not None:
@@ -154,8 +158,12 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                 cost_meter.role_rejections += 1
             raise ValueError('Connection role not proven')
         sha = vector_fingerprint(x)
-        if sha in seen:
+        if duplicate and sha in seen:
             raise ValueError('Duplicate vector')
+        return x, sha
+
+    def accept(vector, method, index, source=None):
+        x, sha = validate(vector)
         record = problem.seed(x, policy_id=circuit.policy_id,
             policy_fingerprint=circuit.policy_fingerprint,
             definition_sha256=definition_sha, input_sha256=sha, seed=seed,
@@ -172,7 +180,7 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             'definition_sha256': definition_sha, 'schema_sha256': schema_sha,
             'seed_record': record})
 
-    def inspect(vector, method, index, source=None):
+    def inspect(vector, method, index, source=None, transform=None):
         if selection is None:
             return accept(vector, method, index, source)
         x = np.asarray(vector, float)
@@ -183,7 +191,17 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
         before = cost_meter.snapshot()
         try:
             with cost_meter.timed():
+                if transform is not None:
+                    from .generic_starts import transform_candidate
+                    row.update(pool_index=index, transform={},
+                               source_vector_sha256=row['vector_sha256'])
+                    validate(vector, duplicate=False)
+                    vector = transform_candidate(problem, vector, transform, index, row['transform'])
+                    row.update(vector=vector.tolist(), vector_sha256=vector_fingerprint(vector))
                 accept(vector, method, index, source)
+                if transform is not None:
+                    starts[-1].update(pool_index=index, transform=row['transform'],
+                                     source_vector_sha256=row['source_vector_sha256'])
             row['score'] = selection_forward.score
             row['h2_deficit_db'] = max(0., problem.mandatory_stop_db - row['score']['min_h2_db'])
             row['h3_deficit_db'] = max(0., problem.mandatory_stop_db - row['score']['min_h3_db'])
@@ -209,6 +227,9 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
         except ValueError as exc:
             raise fail(exc) from exc
         report['pool_rule'] = 'two design anchors replace Sobol slots 0,1; retain slots 2..15'
+    if candidate_pool == 'physical_transform':
+        report.update(candidate_pool=candidate_pool,
+            pool_rule='transform slots 0,1 L/C and 2,3 Cv; retain Sobol slots 4..15 unchanged')
     block = qmc.Sobol(d=circuit.schema.vector_length, scramble=True, seed=seed).random_base2(4)
     for index, unit in enumerate(block):
         try:
@@ -224,7 +245,11 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                     item['pool_index'] = index
                     item['design'] = designs[index]['design']
             else:
-                inspect(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
+                transformed = candidate_pool == 'physical_transform' and index < 4
+                inspect(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]),
+                        ('physical_LC_scale' if index < 2 else 'physical_Cv_trend')
+                        if transformed else 'sobol', index,
+                        transform=unit if transformed else None)
         except StartSelectionError:
             raise
         except ValueError as exc:
@@ -248,7 +273,7 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             item['id'] = f'{definition_sha[:12]}-seed-{seed}-start-{i}'
         update_cost()
         baseline = starts[:3]
-        report['baseline_kind'] = ('legacy_sobol_prefix' if not designs else
+        report['baseline_kind'] = ('legacy_sobol_prefix' if candidate_pool == 'sobol' else
                                    'pool_prefix_only_not_legacy_sobol')
         report.update(status='complete',
             baseline_prefix_vector_sha256=[s['vector_sha256'] for s in baseline],
@@ -258,7 +283,9 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             selection_rule='low-F Pareto anchor; remove anchor; min-V Pareto alternative; '
                 'ties: max normalized distance, F, V, sum deficit, pool/Sobol index')
         return {'starts': selected, 'rejected': rejected, 'sobol_block_size': 16,
-                'generation_policy': ('nominal-plus-design-sobol-rf-pareto-prototype-v1'
+                'generation_policy': ('nominal-plus-physical-transform-rf-pareto-v1'
+                    if candidate_pool == 'physical_transform' else
+                    'nominal-plus-design-sobol-rf-pareto-prototype-v1'
                     if designs else 'nominal-plus-sobol-rf-pareto-v1'),
                 'selection_report': report, 'candidate_promotion_blocked': True}
     raise ValueError(f'Insufficient legal distinct starts: {len(starts)}/{count}; {rejected}')
