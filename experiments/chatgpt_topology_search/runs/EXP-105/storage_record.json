@@ -1,0 +1,22 @@
+{
+  "checkpoints": [],
+  "experiment_id": "EXP-105",
+  "git_readback": "not_run",
+  "limitations": [],
+  "phase": "Phase 2",
+  "policy": "phase2-git-only-v1",
+  "schema_version": 1,
+  "selection": {
+    "estimated_curated_bytes": 240000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints and all excluded/failed/nonconverged/STOP diagnostics and reasons in run_summary.",
+    "top_k": 0
+  },
+  "size_exception": null,
+  "stage": "planned",
+  "summary": null,
+  "supporting_evidence": [],
+  "validation_overlays": []
+}
