@@ -15,6 +15,8 @@ from .sampled_epigraph import SampledEpigraph
 from .synthetic_plan import make_synthetic_plan
 from .synthetic_runner import run_synthetic
 from .topology_enumeration import exact_candidate_key
+from .evaluation_cost import EvaluationCost
+from .start_selection import SelectionForward, StartSelectionError, select_pair
 
 
 def unique_topologies(circuits):
@@ -30,7 +32,7 @@ def unique_topologies(circuits):
 
 def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                     warm_sha256=None, count=3, cost_meter=None,
-                    for_exploration=False):
+                    for_exploration=False, selection=None, max_initial_samples=None):
     """Exactly nominal/design (or verified warm) + two scrambled Sobol starts.
 
     One fixed Sobol block of 16 is inspected, with no clipping, epsilon floor,
@@ -41,10 +43,50 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     Opt-in count uses the SAME block/order, never retries. Pass cost_meter to
     charge all initialization forwards (also on failure); default three-start
     vectors, records and behavior remain unchanged.
+    selection='rf_pareto' (RF-T008/coarse2/count=3 only) evaluates the entire
+    same block once and returns a selection_report, including initialization
+    cost. max_initial_samples is an optional incremental sample ceiling; an
+    incomplete block fails closed via StartSelectionError.report.
     """
+    if selection not in (None, 'rf_pareto'):
+        raise ValueError('Unknown start selection')
+    if selection is None and max_initial_samples is not None:
+        raise ValueError('Initialization budget requires rf_pareto selection')
+    if selection is not None:
+        if count != 3 or problem.points_per_interval != 2 or problem.policy_id != 'RF-T008':
+            raise ValueError('RF selection requires RF-T008, coarse2 and count=3')
+        if max_initial_samples is not None and (
+                type(max_initial_samples) is not int or max_initial_samples < 0):
+            raise ValueError('Invalid initialization sample budget')
+        cost_meter = cost_meter if cost_meter is not None else EvaluationCost()
+        evaluator = problem.evaluator
+        problem = cost_meter.epigraph(problem)
+        selection_forward = SelectionForward(evaluator, cost_meter,
+            max_initial_samples, problem.mandatory_stop_db)
+        problem.evaluator = selection_forward
+        report = {'candidates': [], 'grid': {'points_per_interval': 2,
+            'segment_count': 28, 'settings': 6, 'sample_count': 56},
+            'status': 'preparing', 'candidate_promotion_blocked': True,
+            'rf_compliance_certified': False, 'for_exploration': for_exploration,
+            'policy_id': problem.policy_id, 'policy_sha256': problem.policy_fingerprint,
+            'definition_sha256': definition_fingerprint(problem.circuit.definition),
+            'schema_sha256': canonical_config_hash(asdict(problem.circuit.schema)),
+            'validation': dict.fromkeys(('strict_17', 'dense_rf_1001',
+                'independent_mna_84', 'power_balance', 'passivity'), 'not_run')}
+        cost_before = cost_meter.snapshot()
+
+        def update_cost():
+            report['cost'] = {k: v - cost_before[k]
+                              for k, v in cost_meter.snapshot().items()}
+
+        def fail(exc):
+            report['status'] = 'failed'
+            report['exception'] = f'{type(exc).__name__}: {exc}'
+            update_cost()
+            return StartSelectionError(str(exc), report)
     if type(count) is not int or not 3 <= count <= 17:
         raise ValueError('count must be between 3 and 17 (one fixed Sobol block)')
-    if cost_meter is not None:
+    if cost_meter is not None and selection is None:
         # Shallow metered view includes seed forward calls, without changing C1.
         problem = cost_meter.epigraph(problem)
     if type(seed) is not int or seed < 0:
@@ -122,18 +164,71 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             'definition_sha256': definition_sha, 'schema_sha256': schema_sha,
             'seed_record': record})
 
-    accept(nominal_vector, method, None, source)
+    def inspect(vector, method, index, source=None):
+        if selection is None:
+            return accept(vector, method, index, source)
+        x = np.asarray(vector, float)
+        row = {'vector': x.tolist(), 'vector_sha256': vector_fingerprint(x),
+               'seed': seed, 'sobol_index': index, 'generation_method': method,
+               'source_checkpoint': source, 'score': None, 'reason': 'pending'}
+        report['candidates'].append(row)
+        before = cost_meter.snapshot()
+        try:
+            with cost_meter.timed():
+                accept(vector, method, index, source)
+            row['score'] = selection_forward.score
+            row['h2_deficit_db'] = max(0., problem.mandatory_stop_db - row['score']['min_h2_db'])
+            row['h3_deficit_db'] = max(0., problem.mandatory_stop_db - row['score']['min_h3_db'])
+            starts[-1]['score'] = row['score']
+            row['reason'] = 'evaluated'
+        except BaseException as exc:
+            row['reason'] = 'rejected'
+            row['exception'] = f'{type(exc).__name__}: {exc}'
+            if selection_forward.failed or not isinstance(exc, ValueError) or index is None:
+                raise fail(exc) from exc
+            raise
+        finally:
+            row['cost'] = {k: v - before[k] for k, v in cost_meter.snapshot().items()}
+
+    inspect(nominal_vector, method, None, source)
     bounds = np.asarray(problem.box.bounds[:-1], float)
     block = qmc.Sobol(d=circuit.schema.vector_length, scramble=True, seed=seed).random_base2(4)
     for index, unit in enumerate(block):
         try:
-            accept(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
+            inspect(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
+        except StartSelectionError:
+            raise
         except ValueError as exc:
             rejected.append({'sobol_index': index, 'reason': str(exc)})
-        if len(starts) == count:
+        if selection is None and len(starts) == count:
             return {'starts': starts, 'rejected': rejected, 'sobol_block_size': 16,
                     'generation_policy': 'nominal-plus-sobol-v1',
                     'candidate_promotion_blocked': True}
+    if selection is not None:
+        if len(starts) < 3:
+            raise fail(ValueError(f'Insufficient legal distinct starts: {len(starts)}/3'))
+        anchor, other = select_pair(starts, bounds)
+        selected = [starts[0], anchor, other]
+        reasons = {s['vector_sha256']: reason for s, reason in zip(selected,
+            ('mandatory_nominal_or_verified_warm', 'pareto_low_IL',
+             'pareto_constraint_side_with_normalized_diversity'))}
+        for row in report['candidates']:
+            if row['reason'] == 'evaluated':
+                row['reason'] = reasons.get(row['vector_sha256'], 'not_selected_by_F_V_diversity')
+        for i, item in enumerate(selected):
+            item['id'] = f'{definition_sha[:12]}-seed-{seed}-start-{i}'
+        update_cost()
+        baseline = starts[:3]
+        report.update(status='complete',
+            baseline_prefix_vector_sha256=[s['vector_sha256'] for s in baseline],
+            baseline_frequency_samples_requested=3 * len(problem.evaluator.f),
+            extra_frequency_samples_requested=report['cost']['frequency_samples_requested']
+                - 3 * len(problem.evaluator.f),
+            selection_rule='low-F Pareto anchor; remove anchor; min-V Pareto alternative; '
+                'ties: max normalized distance, F, V, sum deficit, Sobol index')
+        return {'starts': selected, 'rejected': rejected, 'sobol_block_size': 16,
+                'generation_policy': 'nominal-plus-sobol-rf-pareto-v1',
+                'selection_report': report, 'candidate_promotion_blocked': True}
     raise ValueError(f'Insufficient legal distinct starts: {len(starts)}/{count}; {rejected}')
 
 
@@ -231,8 +326,11 @@ def run_multistart_preview(circuit, generated, checkpoint, *, optimize_stage,
         starts.append({k: item[k] for k in ('id', 'vector', 'vector_sha256', 'seed', 'jitter_fraction')})
     source = {'kind': 'synthetic', 'policy_id': circuit.policy_id,
               'vectors': {s['id']: s['vector'] for s in starts}}
+    # Selection reports include measured CPU/wall times; these are not run identity.
+    identity = (generated if 'selection_report' not in generated else
+                {'generation_policy': generated['generation_policy'], 'starts': starts})
     envelope = make_synthetic_plan(circuit, starts,
-        run_id='synthetic-multistart-' + canonical_config_hash(generated),
+        run_id='synthetic-multistart-' + canonical_config_hash(identity),
         coarse_points=2, fine_points=3, input_source=source)
     # Preflight benchmark input before any dispatch.
     two_axis_report([], historical_benchmarks=historical_benchmarks)
