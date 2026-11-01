@@ -2,6 +2,7 @@
 import hashlib
 from copy import deepcopy
 from dataclasses import asdict
+from functools import partial
 import json
 import shutil
 import os
@@ -27,7 +28,8 @@ from test_phase2_staged_optimization import status
 
 
 from scripts.run_phase2_one_start import (
-    candidate_checkpoint as fixture_checkpoint, run_one_start, finalize_one_start)
+    candidate_checkpoint as fixture_checkpoint, run_one_start, finalize_one_start,
+    _optimizer_provenance, scipy_slsqp_stage)
 
 
 class SharedEntryTests(unittest.TestCase):
@@ -93,6 +95,23 @@ class SharedEntryTests(unittest.TestCase):
                 self.assertEqual(candidate['validation']['independent_mna'], 'not_run')
                 again = json.loads(subprocess.check_output(cmd, env=env))
                 self.assertEqual(result['plan_fingerprint'], again['plan_fingerprint'])
+
+    def test_scipy_opt_in_provenance_not_synthetic(self):
+        for coordinates in ('physical', 'normalized'):
+            callback = partial(scipy_slsqp_stage, coordinates=coordinates,
+                               finite_difference_eps=None)
+            result = _optimizer_provenance(callback)
+            self.assertEqual(result['execution_kind'], 'scipy_slsqp')
+            self.assertEqual(result['optimizer_kind'], 'reported_slsqp')
+            self.assertEqual(result['coordinate_configuration'], {
+                'coordinates': coordinates, 'finite_difference_eps': None})
+        for callback in (lambda *args: None, partial(lambda *args: None),
+                         partial(scipy_slsqp_stage, object()),
+                         partial(scipy_slsqp_stage, unknown=True)):
+            self.assertEqual(_optimizer_provenance(callback)['execution_kind'],
+                             'injected_callback')
+        self.assertEqual(_optimizer_provenance(scipy_slsqp_stage), {
+            'execution_kind': 'scipy_slsqp', 'optimizer_kind': 'reported_slsqp'})
 
     def test_preview_is_only_in_memory(self):
         result = manifest_preview(ROOT, 'EXP-999', 'fixture only', {}, policy_id='RF-T005', seed=1, allow_trial=True)
