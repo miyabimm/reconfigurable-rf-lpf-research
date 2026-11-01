@@ -1,0 +1,1600 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 1,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 1
+  },
+  "best_found": [],
+  "callback_returns": [
+    [
+      [
+        22.223771213621323,
+        2.4391424678226734,
+        26.9999999982779,
+        1.4782590891761926,
+        -0.1,
+        -0.1,
+        0.1,
+        0.5,
+        3.0,
+        1.8347175485682339,
+        3.0,
+        2.837637014032069,
+        2.4069513417444113,
+        0.25818755329046794,
+        1.962319207998537,
+        2.3808441897665604,
+        1.3310198431039444,
+        0.393646124289433,
+        0.8616121604080725,
+        0.25596651085604494,
+        0.23113218728648977,
+        14.640609345767983
+      ],
+      {
+        "coordinate_configuration": {
+          "coordinates": "normalized",
+          "epigraph_units": "dB",
+          "eps_units": "unit_box_and_t_db",
+          "finite_difference_eps": null,
+          "ftol": "scipy_default_unchanged"
+        },
+        "message": "Optimization terminated successfully",
+        "nfev": 468,
+        "nit": 22,
+        "status": 0,
+        "success": true
+      }
+    ],
+    [
+      [
+        22.223771213621323,
+        2.4391424678226734,
+        26.9999999982779,
+        1.4782590891761926,
+        -0.1,
+        -0.1,
+        0.1,
+        0.5,
+        3.0,
+        1.8347175485682339,
+        3.0,
+        2.837637014032069,
+        2.4069513417444113,
+        0.25818755329046794,
+        1.962319207998537,
+        2.3808441897665604,
+        1.3310198431039444,
+        0.393646124289433,
+        0.8616121604080725,
+        0.25596651085604494,
+        0.23113218728648977,
+        14.640609345767983
+      ],
+      {
+        "coordinate_configuration": {
+          "coordinates": "normalized",
+          "epigraph_units": "dB",
+          "eps_units": "unit_box_and_t_db",
+          "finite_difference_eps": null,
+          "ftol": "scipy_default_unchanged"
+        },
+        "message": "Optimization terminated successfully",
+        "nfev": 23,
+        "nit": 1,
+        "status": 0,
+        "success": true
+      }
+    ]
+  ],
+  "elapsed_seconds": 1.2694563589902828,
+  "excluded_records": [
+    {
+      "audit": {
+        "candidate_promotion_blocked": true,
+        "component_policy": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  4,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 1.4411605452437561e-09,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                3,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                4,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_complete": true,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "dense_rf_state": "not_checked",
+        "eligible_for_owner_review": false,
+        "forward_sampled_checked": false,
+        "forward_sampled_state": "not_checked",
+        "independent_mna_checked": false,
+        "independent_mna_state": "not_checked",
+        "limited_evidence": null,
+        "limited_evidence_failure_reason": null,
+        "local_extrema_checked": false,
+        "local_extrema_state": "not_checked",
+        "optimization_converged": null,
+        "optimization_state": "not_checked",
+        "owner_approval_recorded": false,
+        "owner_approval_state": "not_checked",
+        "physical_validation_checked": false,
+        "physical_validation_state": "not_checked",
+        "power_accounting_state": "not_checked",
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked",
+          "forward_sampled_not_checked",
+          "local_extrema_not_checked",
+          "optimization_convergence_not_checked",
+          "physical_validation_not_checked",
+          "owner_approval_not_recorded"
+        ],
+        "rf_compliance_certified": false,
+        "rf_dense_evaluation_completed": false,
+        "rf_threshold_failures": [],
+        "rf_threshold_state": "not_checked"
+      },
+      "candidate_id": "start-0",
+      "candidate_promotion_blocked": true,
+      "component": {
+        "detail": {
+          "candidate_promotion_blocked": true,
+          "checked_settings": 6,
+          "component_policy_pass": true,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "branches": [
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  3,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              },
+              {
+                "declared_role": "shunt_to_ground",
+                "declared_role_supported_by_l_tree": true,
+                "edge": [
+                  4,
+                  -1
+                ],
+                "electrical_class": "shunt_to_ground",
+                "evidence": "verified_ground_endpoint"
+              }
+            ],
+            "physical_layout_checked": false,
+            "unsupported_role_indices": []
+          },
+          "connection_role_evidence_incomplete": false,
+          "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "constraint_id": "RF-T008",
+          "independent_mna_checked": false,
+          "installed_variable_c_branches": 2,
+          "min_L_eigenvalue_H": 1.4411605452437561e-09,
+          "physical_q_srf_em_checked": false,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false
+        },
+        "state": "pass"
+      },
+      "context": {
+        "finite_grid_only": true,
+        "objective": "full_lpf_worst_six_setting_UL_DL_external_port_IL",
+        "reference_planes": "external_input_to_external_output",
+        "thresholds": {
+          "minimum_h2_h3_db": 30,
+          "nominal_h2_h3_target_db": 35,
+          "nominal_max_il_db": 0.3
+        }
+      },
+      "definition": {
+        "capacitor_placement": {
+          "fixed_edges": [],
+          "ic_fixed_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              4,
+              -1
+            ]
+          ],
+          "node_count": 5,
+          "variable_edges": [
+            [
+              3,
+              -1
+            ],
+            [
+              4,
+              -1
+            ]
+          ]
+        },
+        "coupling_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "fixed_c_types": [],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 5,
+          "source_node": 0
+        },
+        "inductor_types": [
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV",
+          "LQP02HV"
+        ],
+        "physical_order": [
+          0,
+          2,
+          1,
+          3
+        ],
+        "variable_roles": [
+          "shunt_to_ground",
+          "shunt_to_ground"
+        ]
+      },
+      "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+      "identity": {
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "constraint_status": "trial",
+        "definition_fingerprint": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "environment": {
+          "numpy": "2.5.4",
+          "python": "3.12.15",
+          "scipy": "1.18.1"
+        },
+        "git_head": "1362ed22573ffe18203ba42bd2ca2513c96cb339",
+        "historical_fixture_provenance": "not_checked",
+        "input_sha256": {
+          "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+          "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "source_provenance_scope": "current_src_lpf_python_files",
+        "source_tree_sha256": "3de640a5f8022296e1d02c4624beb1c1ded0892394b8217f1eccae31f1d20804",
+        "source_worktree_dirty": false,
+        "vector_fingerprint": "bfe0052cc9588b7ca6a13c4cc712504314e4c24561fe8468c2b48a969ff629b8"
+      },
+      "nominal_area": {
+        "area_fraction": "4",
+        "area_unit": "one_LQP02_package_footprint",
+        "area_units": 4.0,
+        "counts": {
+          "IC_FIXED_C": 2,
+          "IC_VARIABLE_C": 2,
+          "LQP02HV": 4,
+          "SHUNT_DTC_PARASITIC": 0
+        },
+        "fixed_external_s2p_area_included": false,
+        "ic_zero_area_is_nominal_only": true,
+        "physical_area_verified": false,
+        "policy_id": "RF-T008",
+        "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "terms": [
+          {
+            "count": 2,
+            "part": "IC_FIXED_C",
+            "policy_path": "trial_ic_fixed_c_by_connection.additional_chip_area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 2,
+            "part": "IC_VARIABLE_C",
+            "policy_path": "components.IC_VARIABLE_C.area_units",
+            "unit_area_fraction": "0"
+          },
+          {
+            "count": 4,
+            "part": "LQP02HV",
+            "policy_path": "components.LQP02.series.LQP02HV.area_units",
+            "unit_area_fraction": "1"
+          }
+        ]
+      },
+      "numerical": {
+        "meaning": "reported_optimizer_status_consistent_with_v2; not_solver_attestation",
+        "state": "converged",
+        "vector_binding": "final_c2_output"
+      },
+      "parameter_schema": {
+        "constant_caps_pf": [],
+        "n_coupling": 3,
+        "n_fixed": 0,
+        "n_ic_fixed": 2,
+        "n_inductors": 4,
+        "n_variable": 2
+      },
+      "policy_id": "RF-T008",
+      "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "rf": {
+        "evidence_class": "forward_only",
+        "grid": {
+          "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+          "points_per_interval": 3,
+          "sample_count": 84,
+          "segment_count": 28
+        },
+        "locations": [
+          {
+            "case": "B71",
+            "frequency_mhz": 663.0,
+            "segment": 0
+          },
+          {
+            "case": "B8",
+            "frequency_mhz": 1760.0,
+            "segment": 26
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 2094.0,
+            "segment": 3
+          }
+        ],
+        "metrics": {
+          "min_h2_db": 30.000000004774442,
+          "min_h3_db": 29.99999997871912,
+          "worst_il_db": 14.640609338454178
+        },
+        "requested_limited_points": null,
+        "requested_sampled_points": 3,
+        "state": "observed"
+      },
+      "rf_compliance_certified": false,
+      "schema": "s4b-candidate-record-v1",
+      "seed_record": {
+        "candidate_promotion_blocked": true,
+        "changes": [],
+        "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "input_vector": [
+          0.5397146437317133,
+          17.667327941954134,
+          22.907585878297688,
+          1.1671475622802974,
+          0.0569032657891512,
+          0.020147581025958067,
+          -0.03209834601730109,
+          2.906100840307772,
+          1.299358137883246,
+          1.5314234755933285,
+          1.5741961039602757,
+          2.8420103592798114,
+          1.2099048709496856,
+          1.2143930280581117,
+          1.1551023814827204,
+          0.8968611666932702,
+          0.13708369061350822,
+          2.808850415982306,
+          0.5956647265702486,
+          2.275379623286426,
+          0.7138698734343052
+        ],
+        "input_vector_sha256": "c18167a7d69eaa64c1957a61752e1ce5eefb74cf496614b8d9e5dadddb0f61c9",
+        "jitter_fraction": 0.0,
+        "points_per_interval": 2,
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "seed": 23,
+        "vector": [
+          0.5397146437317133,
+          17.667327941954134,
+          22.907585878297688,
+          1.1671475622802974,
+          0.0569032657891512,
+          0.020147581025958067,
+          -0.03209834601730109,
+          2.906100840307772,
+          1.299358137883246,
+          1.5314234755933285,
+          1.5741961039602757,
+          2.8420103592798114,
+          1.2099048709496856,
+          1.2143930280581117,
+          1.1551023814827204,
+          0.8968611666932702,
+          0.13708369061350822,
+          2.808850415982306,
+          0.5956647265702486,
+          2.275379623286426,
+          0.7138698734343052,
+          6.753864800634246
+        ]
+      },
+      "source_provenance": {
+        "state": "provided",
+        "value": {
+          "coordinate_configuration": {
+            "coordinates": "normalized",
+            "finite_difference_eps": null
+          },
+          "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "execution_kind": "scipy_slsqp",
+          "git_head": "e1a29ac03d54dc451daf0118dad217a0beb5aac8",
+          "input_source_sha256": "58020648ea9940d83a56660b640a4fa23d5e669368a2be825d80c34ac2dcd83c",
+          "kind": "recorded",
+          "optimizer_kind": "reported_slsqp"
+        }
+      },
+      "staged_record": {
+        "attempts": [
+          {
+            "coarse": {
+              "converged": true,
+              "coordinate_configuration": {
+                "coordinates": "normalized",
+                "epigraph_units": "dB",
+                "eps_units": "unit_box_and_t_db",
+                "finite_difference_eps": null,
+                "ftol": "scipy_default_unchanged"
+              },
+              "message": "Optimization terminated successfully",
+              "nfev": 468,
+              "nit": 22,
+              "stage_call_index": 0,
+              "status": 0,
+              "success": true
+            },
+            "coarse_maxiter": 240,
+            "converged": true,
+            "fine": {
+              "converged": true,
+              "coordinate_configuration": {
+                "coordinates": "normalized",
+                "epigraph_units": "dB",
+                "eps_units": "unit_box_and_t_db",
+                "finite_difference_eps": null,
+                "ftol": "scipy_default_unchanged"
+              },
+              "message": "Optimization terminated successfully",
+              "nfev": 23,
+              "nit": 1,
+              "stage_call_index": 1,
+              "status": 0,
+              "success": true
+            },
+            "fine_maxiter": 120,
+            "tier": "primary",
+            "vector": [
+              22.223771213621323,
+              2.4391424678226734,
+              26.9999999982779,
+              1.4782590891761926,
+              -0.1,
+              -0.1,
+              0.1,
+              0.5,
+              3.0,
+              1.8347175485682339,
+              3.0,
+              2.837637014032069,
+              2.4069513417444113,
+              0.25818755329046794,
+              1.962319207998537,
+              2.3808441897665604,
+              1.3310198431039444,
+              0.393646124289433,
+              0.8616121604080725,
+              0.25596651085604494,
+              0.23113218728648977,
+              14.640609345767983
+            ],
+            "warm_start_source": "supplied_initial_vector"
+          }
+        ],
+        "bands_file": "data/bands.csv",
+        "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "budget": {
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "candidate_promotion_blocked": true,
+        "controller": {
+          "iteration_policy": {
+            "max_continuations": 1,
+            "max_stage_calls_per_initial_start": 4,
+            "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+            "policy_id": "slsqp-staged-v2",
+            "primary": {
+              "coarse": 240,
+              "fine": 120
+            },
+            "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+            "recovery": {
+              "coarse": 500,
+              "fine": 280
+            },
+            "retries_on_iteration_limit": 1
+          },
+          "recovery_cause": null,
+          "recovery_invoked": false
+        },
+        "definition": {
+          "capacitor_placement": {
+            "fixed_edges": [],
+            "ic_fixed_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                4,
+                -1
+              ]
+            ],
+            "node_count": 5,
+            "variable_edges": [
+              [
+                3,
+                -1
+              ],
+              [
+                4,
+                -1
+              ]
+            ]
+          },
+          "coupling_pairs": [
+            [
+              0,
+              2
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "fixed_c_types": [],
+          "inductor_tree": {
+            "edges": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "load_node": 2,
+            "node_count": 5,
+            "source_node": 0
+          },
+          "inductor_types": [
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV",
+            "LQP02HV"
+          ],
+          "physical_order": [
+            0,
+            2,
+            1,
+            3
+          ],
+          "variable_roles": [
+            "shunt_to_ground",
+            "shunt_to_ground"
+          ]
+        },
+        "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+        "elapsed_seconds": 0.9015829609998036,
+        "environment": {
+          "numpy": "2.5.4",
+          "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+          "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+          "scipy": "1.18.1"
+        },
+        "exception": null,
+        "grids": {
+          "coarse": {
+            "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+            "points_per_interval": 2,
+            "sample_count": 56,
+            "segment_count": 28
+          },
+          "fine": {
+            "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+            "points_per_interval": 3,
+            "sample_count": 84,
+            "segment_count": 28
+          }
+        },
+        "iteration_policy_id": "slsqp-staged-v2",
+        "numerical_state": "converged",
+        "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "policy_id": "RF-T008",
+        "rf_compliance_certified": false,
+        "s2p_sha256": {
+          "input_parasitic": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+          "output_parasitic": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+        },
+        "schema": "c1-staged-v2-record-1",
+        "seed": {
+          "candidate_promotion_blocked": true,
+          "changes": [],
+          "definition_sha256": "a3054141a0195489045dc6dc2ee247d87e817a9fe93d1aef44f5c75c6f099c9c",
+          "input_vector": [
+            0.5397146437317133,
+            17.667327941954134,
+            22.907585878297688,
+            1.1671475622802974,
+            0.0569032657891512,
+            0.020147581025958067,
+            -0.03209834601730109,
+            2.906100840307772,
+            1.299358137883246,
+            1.5314234755933285,
+            1.5741961039602757,
+            2.8420103592798114,
+            1.2099048709496856,
+            1.2143930280581117,
+            1.1551023814827204,
+            0.8968611666932702,
+            0.13708369061350822,
+            2.808850415982306,
+            0.5956647265702486,
+            2.275379623286426,
+            0.7138698734343052
+          ],
+          "input_vector_sha256": "c18167a7d69eaa64c1957a61752e1ce5eefb74cf496614b8d9e5dadddb0f61c9",
+          "jitter_fraction": 0.0,
+          "points_per_interval": 2,
+          "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "policy_id": "RF-T008",
+          "seed": 23,
+          "vector": [
+            0.5397146437317133,
+            17.667327941954134,
+            22.907585878297688,
+            1.1671475622802974,
+            0.0569032657891512,
+            0.020147581025958067,
+            -0.03209834601730109,
+            2.906100840307772,
+            1.299358137883246,
+            1.5314234755933285,
+            1.5741961039602757,
+            2.8420103592798114,
+            1.2099048709496856,
+            1.2143930280581117,
+            1.1551023814827204,
+            0.8968611666932702,
+            0.13708369061350822,
+            2.808850415982306,
+            0.5956647265702486,
+            2.275379623286426,
+            0.7138698734343052,
+            6.753864800634246
+          ]
+        },
+        "source_provenance": {
+          "state": "provided",
+          "value": {
+            "coordinate_configuration": {
+              "coordinates": "normalized",
+              "finite_difference_eps": null
+            },
+            "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "execution_kind": "scipy_slsqp",
+            "git_head": "e1a29ac03d54dc451daf0118dad217a0beb5aac8",
+            "input_source_sha256": "58020648ea9940d83a56660b640a4fa23d5e669368a2be825d80c34ac2dcd83c",
+            "kind": "recorded",
+            "optimizer_kind": "reported_slsqp"
+          }
+        },
+        "stage_calls": [
+          {
+            "attempt_index": 0,
+            "call_index": 0,
+            "elapsed_seconds": 0.7618512810004177,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+              "points_per_interval": 2,
+              "sample_count": 56,
+              "segment_count": 28
+            },
+            "input_vector": [
+              0.5397146437317133,
+              17.667327941954134,
+              22.907585878297688,
+              1.1671475622802974,
+              0.0569032657891512,
+              0.020147581025958067,
+              -0.03209834601730109,
+              2.906100840307772,
+              1.299358137883246,
+              1.5314234755933285,
+              1.5741961039602757,
+              2.8420103592798114,
+              1.2099048709496856,
+              1.2143930280581117,
+              1.1551023814827204,
+              0.8968611666932702,
+              0.13708369061350822,
+              2.808850415982306,
+              0.5956647265702486,
+              2.275379623286426,
+              0.7138698734343052,
+              6.753864800634246
+            ],
+            "input_vector_sha256": "afa7a65460054c18c310002165267b77de77f5a6995826e4abb3fbeaafbed476",
+            "maxiter": 240,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          4,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 1.4411605452437561e-09,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": 4.77444217494849e-09,
+                "h3_min_residual_db": -2.128087928099376e-08,
+                "min_h2_db": 30.000000004774442,
+                "min_h3_db": 29.99999997871912,
+                "minimum_residual_db": -2.128087928099376e-08,
+                "passband_epigraph_min_residual_db": 7.313804673003688e-09,
+                "residuals_db": [
+                  7.313804673003688e-09,
+                  1.6148992838949905,
+                  3.8905377777357675,
+                  2.6996932689371533e-08,
+                  8.58560866845437e-09,
+                  3.216109455973154,
+                  1.4231182725399982,
+                  -2.128087928099376e-08,
+                  4.818619039890148,
+                  4.344247448214508,
+                  3.981215597405983,
+                  3.5081272653663937,
+                  0.00010571572363460291,
+                  1.4117802220860014,
+                  1.4109526878251053,
+                  0.7044462516575081,
+                  6.218685874032632,
+                  5.291852794068028,
+                  5.090937268229222,
+                  4.2182465269926634,
+                  0.016414607818337146,
+                  2.9407415535359647,
+                  3.2194957908157136,
+                  1.129075686750781,
+                  4.617788478933562,
+                  4.3694232733393275,
+                  4.344567939153526,
+                  4.095988170996831,
+                  5.3793931790183915,
+                  5.136085066565755,
+                  5.08706359214206,
+                  4.840710921431334,
+                  8.338808754615457e-09,
+                  0.714717360794733,
+                  0.7879503161171968,
+                  1.5396186565217285,
+                  1.7481734332346157,
+                  1.3441601638741432,
+                  1.3053824425714957,
+                  0.9324325379662746,
+                  5.761002968646833,
+                  5.266680897855531,
+                  5.141671036893083,
+                  4.781486429229043,
+                  0.2330310068722632,
+                  2.557094171749327,
+                  2.429949024817475,
+                  1.0822354663344456,
+                  5.693955510511621,
+                  5.230910459871353,
+                  5.111939889941983,
+                  4.757475014580288,
+                  4.77444217494849e-09,
+                  2.024901411285242,
+                  2.9977333164871283,
+                  1.6387216556302704
+                ],
+                "state": "observed",
+                "worst_il_db": 14.640609338454178
+              }
+            },
+            "output_vector": [
+              22.223771213621323,
+              2.4391424678226734,
+              26.9999999982779,
+              1.4782590891761926,
+              -0.1,
+              -0.1,
+              0.1,
+              0.5,
+              3.0,
+              1.8347175485682339,
+              3.0,
+              2.837637014032069,
+              2.4069513417444113,
+              0.25818755329046794,
+              1.962319207998537,
+              2.3808441897665604,
+              1.3310198431039444,
+              0.393646124289433,
+              0.8616121604080725,
+              0.25596651085604494,
+              0.23113218728648977,
+              14.640609345767983
+            ],
+            "stage": "coarse",
+            "status": {
+              "coordinate_configuration": {
+                "coordinates": "normalized",
+                "epigraph_units": "dB",
+                "eps_units": "unit_box_and_t_db",
+                "finite_difference_eps": null,
+                "ftol": "scipy_default_unchanged"
+              },
+              "message": "Optimization terminated successfully",
+              "nfev": 468,
+              "nit": 22,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "seed"
+          },
+          {
+            "attempt_index": 0,
+            "call_index": 1,
+            "elapsed_seconds": 0.07675069299875759,
+            "exception": null,
+            "exit_cause": "success",
+            "grid": {
+              "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+              "points_per_interval": 3,
+              "sample_count": 84,
+              "segment_count": 28
+            },
+            "input_vector": [
+              22.223771213621323,
+              2.4391424678226734,
+              26.9999999982779,
+              1.4782590891761926,
+              -0.1,
+              -0.1,
+              0.1,
+              0.5,
+              3.0,
+              1.8347175485682339,
+              3.0,
+              2.837637014032069,
+              2.4069513417444113,
+              0.25818755329046794,
+              1.962319207998537,
+              2.3808441897665604,
+              1.3310198431039444,
+              0.393646124289433,
+              0.8616121604080725,
+              0.25596651085604494,
+              0.23113218728648977,
+              14.640609345767983
+            ],
+            "input_vector_sha256": "430e4a5571d14fe457dd8b84abd8b85ba1bc66620990c110f65635d47d805516",
+            "maxiter": 120,
+            "observation": {
+              "box": {
+                "open_lower_indices": [],
+                "outside_indices": [],
+                "state": "pass"
+              },
+              "component_policy": {
+                "detail": {
+                  "candidate_promotion_blocked": true,
+                  "checked_settings": 6,
+                  "component_policy_pass": true,
+                  "connection_role_audit": {
+                    "all_declared_roles_supported_by_l_tree": true,
+                    "branches": [
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          3,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      },
+                      {
+                        "declared_role": "shunt_to_ground",
+                        "declared_role_supported_by_l_tree": true,
+                        "edge": [
+                          4,
+                          -1
+                        ],
+                        "electrical_class": "shunt_to_ground",
+                        "evidence": "verified_ground_endpoint"
+                      }
+                    ],
+                    "physical_layout_checked": false,
+                    "unsupported_role_indices": []
+                  },
+                  "connection_role_evidence_incomplete": false,
+                  "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+                  "constraint_id": "RF-T008",
+                  "independent_mna_checked": false,
+                  "installed_variable_c_branches": 2,
+                  "min_L_eigenvalue_H": 1.4411605452437561e-09,
+                  "physical_q_srf_em_checked": false,
+                  "promotion_blockers": [
+                    "independent_mna_not_checked",
+                    "dense_rf_not_checked"
+                  ],
+                  "rf_performance_checked": false
+                },
+                "state": "pass"
+              },
+              "sampled_rf": {
+                "all_sampled_inequalities_nonnegative": false,
+                "h2_min_residual_db": 4.77444217494849e-09,
+                "h3_min_residual_db": -2.128087928099376e-08,
+                "min_h2_db": 30.000000004774442,
+                "min_h3_db": 29.99999997871912,
+                "minimum_residual_db": -2.128087928099376e-08,
+                "passband_epigraph_min_residual_db": 7.313804673003688e-09,
+                "residuals_db": [
+                  7.313804673003688e-09,
+                  1.0478461158494525,
+                  1.6148992838949905,
+                  3.8905377777357675,
+                  2.00395909918479,
+                  2.6996932689371533e-08,
+                  8.58560866845437e-09,
+                  1.5218822346224172,
+                  3.216109455973154,
+                  1.4231182725399982,
+                  0.6598942588884391,
+                  -2.128087928099376e-08,
+                  4.818619039890148,
+                  4.581679376147088,
+                  4.344247448214508,
+                  3.981215597405983,
+                  3.7443585989236663,
+                  3.5081272653663937,
+                  0.00010571572363460291,
+                  0.6902334459861272,
+                  1.4117802220860014,
+                  1.4109526878251053,
+                  1.045353214812689,
+                  0.7044462516575081,
+                  6.218685874032632,
+                  5.751145014511202,
+                  5.291852794068028,
+                  5.090937268229222,
+                  4.647509655752353,
+                  4.2182465269926634,
+                  0.016414607818337146,
+                  1.3639414400083965,
+                  2.9407415535359647,
+                  3.2194957908157136,
+                  2.0759919907567976,
+                  1.129075686750781,
+                  4.617788478933562,
+                  4.493660702038788,
+                  4.3694232733393275,
+                  4.344567939153526,
+                  4.22027501226863,
+                  4.095988170996831,
+                  5.3793931790183915,
+                  5.258156637798859,
+                  5.136085066565755,
+                  5.08706359214206,
+                  4.964115401044074,
+                  4.840710921431334,
+                  8.338808754615457e-09,
+                  0.3534604236868262,
+                  0.714717360794733,
+                  0.7879503161171968,
+                  1.1592692033377574,
+                  1.5396186565217285,
+                  1.7481734332346157,
+                  1.5423786782275215,
+                  1.3441601638741432,
+                  1.3053824425714957,
+                  1.1156228222066602,
+                  0.9324325379662746,
+                  5.761002968646833,
+                  5.503944214514716,
+                  5.266680897855531,
+                  5.141671036893083,
+                  4.9449360544546614,
+                  4.781486429229043,
+                  0.2330310068722632,
+                  1.3482912590864586,
+                  2.557094171749327,
+                  2.429949024817475,
+                  1.7160070725200924,
+                  1.0822354663344456,
+                  5.693955510511621,
+                  5.454214416877859,
+                  5.230910459871353,
+                  5.111939889941983,
+                  4.92146463200455,
+                  4.757475014580288,
+                  4.77444217494849e-09,
+                  0.9776775264591606,
+                  2.024901411285242,
+                  2.9977333164871283,
+                  2.280176287477417,
+                  1.6387216556302704
+                ],
+                "state": "observed",
+                "worst_il_db": 14.640609338454178
+              }
+            },
+            "output_vector": [
+              22.223771213621323,
+              2.4391424678226734,
+              26.9999999982779,
+              1.4782590891761926,
+              -0.1,
+              -0.1,
+              0.1,
+              0.5,
+              3.0,
+              1.8347175485682339,
+              3.0,
+              2.837637014032069,
+              2.4069513417444113,
+              0.25818755329046794,
+              1.962319207998537,
+              2.3808441897665604,
+              1.3310198431039444,
+              0.393646124289433,
+              0.8616121604080725,
+              0.25596651085604494,
+              0.23113218728648977,
+              14.640609345767983
+            ],
+            "stage": "fine",
+            "status": {
+              "coordinate_configuration": {
+                "coordinates": "normalized",
+                "epigraph_units": "dB",
+                "eps_units": "unit_box_and_t_db",
+                "finite_difference_eps": null,
+                "ftol": "scipy_default_unchanged"
+              },
+              "message": "Optimization terminated successfully",
+              "nfev": 23,
+              "nit": 1,
+              "status": 0,
+              "success": true
+            },
+            "warm_start_source": "stage_call_0"
+          }
+        ],
+        "validation": {
+          "continuous_frequency": "not_run",
+          "dense_rf": "not_run",
+          "independent_mna": "not_run",
+          "owner_approval": "not_run",
+          "physical": "not_run",
+          "power_balance": "not_run"
+        }
+      },
+      "stamped_topology": {
+        "capacitor_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        "capacitor_q": [
+          35.0,
+          35.0,
+          60.0,
+          60.0
+        ],
+        "coupling_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "inductor_q": [
+          25.0,
+          25.0,
+          25.0,
+          25.0
+        ],
+        "inductor_tree": {
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "load_node": 2,
+          "node_count": 5,
+          "source_node": 0
+        }
+      },
+      "topology_key": "ec3d6fb723a6aa7e79bdd214dc2878187d14e8a0306bdfe670d81b8a129c07b6",
+      "validation": {
+        "continuous_frequency": "not_run",
+        "dense_rf": "not_run",
+        "independent_mna": "not_run",
+        "owner_approval": "not_run",
+        "physical": "not_run",
+        "power_balance": "not_run"
+      },
+      "values": {
+        "capacitors_pf_by_setting": [
+          [
+            1.8347175485682339,
+            3.0,
+            0.5,
+            3.0
+          ],
+          [
+            2.837637014032069,
+            2.4069513417444113,
+            0.5,
+            3.0
+          ],
+          [
+            0.25818755329046794,
+            1.962319207998537,
+            0.5,
+            3.0
+          ],
+          [
+            2.3808441897665604,
+            1.3310198431039444,
+            0.5,
+            3.0
+          ],
+          [
+            0.393646124289433,
+            0.8616121604080725,
+            0.5,
+            3.0
+          ],
+          [
+            0.25596651085604494,
+            0.23113218728648977,
+            0.5,
+            3.0
+          ]
+        ],
+        "coupling_k": [
+          -0.1,
+          -0.1,
+          0.1
+        ],
+        "inductances_nh": [
+          22.223771213621323,
+          2.4391424678226734,
+          26.9999999982779,
+          1.4782590891761926
+        ]
+      },
+      "vector": [
+        22.223771213621323,
+        2.4391424678226734,
+        26.9999999982779,
+        1.4782590891761926,
+        -0.1,
+        -0.1,
+        0.1,
+        0.5,
+        3.0,
+        1.8347175485682339,
+        3.0,
+        2.837637014032069,
+        2.4069513417444113,
+        0.25818755329046794,
+        1.962319207998537,
+        2.3808441897665604,
+        1.3310198431039444,
+        0.393646124289433,
+        0.8616121604080725,
+        0.25596651085604494,
+        0.23113218728648977
+      ],
+      "vector_key": "90be0260dafce0950936107b4cb4b7487210ee4a79a94b63ef4a53df1966a95e",
+      "vector_sha256": "bfdb1d647d79fa72a5b7e3001565ad0165dff9ace1a07bbbab10e4dbd23c6f87"
+    }
+  ],
+  "experiment_id": "EXP-111",
+  "input_source": {
+    "budget": {
+      "policy_id": "slsqp-staged-v2",
+      "primary": {
+        "coarse": 240,
+        "fine": 120
+      },
+      "recovery": {
+        "coarse": 500,
+        "fine": 280
+      },
+      "retries_on_iteration_limit": 1
+    },
+    "definition": {
+      "capacitor_placement": {
+        "fixed_edges": [],
+        "ic_fixed_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ],
+        "node_count": 5,
+        "variable_edges": [
+          [
+            3,
+            -1
+          ],
+          [
+            4,
+            -1
+          ]
+        ]
+      },
+      "coupling_pairs": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "fixed_c_types": [],
+      "inductor_tree": {
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "load_node": 2,
+        "node_count": 5,
+        "source_node": 0
+      },
+      "inductor_types": [
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV"
+      ],
+      "physical_order": [
+        0,
+        2,
+        1,
+        3
+      ],
+      "variable_roles": [
+        "shunt_to_ground",
+        "shunt_to_ground"
+      ]
+    },
+    "grids": {
+      "coarse_points": 2,
+      "fine_points": 3
+    },
+    "jitter_fraction": 0.0,
+    "seed": 23,
+    "vector": [
+      0.5397146437317133,
+      17.667327941954134,
+      22.907585878297688,
+      1.1671475622802974,
+      0.0569032657891512,
+      0.020147581025958067,
+      -0.03209834601730109,
+      2.906100840307772,
+      1.299358137883246,
+      1.5314234755933285,
+      1.5741961039602757,
+      2.8420103592798114,
+      1.2099048709496856,
+      1.2143930280581117,
+      1.1551023814827204,
+      0.8968611666932702,
+      0.13708369061350822,
+      2.808850415982306,
+      0.5956647265702486,
+      2.275379623286426,
+      0.7138698734343052
+    ],
+    "vector_sha256": "c18167a7d69eaa64c1957a61752e1ce5eefb74cf496614b8d9e5dadddb0f61c9"
+  },
+  "limitations": [
+    "Diagnostic 1/2/3-point separate-interval grids only, not RF scientific PASS.",
+    "Independent MNA/power/dense RF/continuous frequency/physical validation not_run.",
+    "Candidate promotion blocked; best-found is not a proven global optimum.",
+    "Timeout/STOP is cooperative between stages; external termination can leave partial evidence."
+  ],
+  "no_candidate_reason": "No eligible Pareto candidate: start-0: mandatory_harmonics_failed_on_grid",
+  "pareto": {
+    "candidate_promotion_blocked": true,
+    "candidates": [
+      {
+        "area_units": 4.0,
+        "candidate_id": "start-0",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 30.000000004774442,
+          "min_h3_db": 29.99999997871912,
+          "worst_il_db": 14.640609338454178
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      }
+    ],
+    "global_optimum_proven": false,
+    "groups": [],
+    "rf_compliance_certified": false
+  },
+  "partial_staged_record": null,
+  "selected": [],
+  "selected_candidate_count": 0,
+  "selection_before_run": {
+    "estimated_curated_bytes": 240000,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto checkpoints and all excluded/failed/nonconverged/STOP diagnostics and reasons in run_summary.",
+    "top_k": 0
+  },
+  "source_provenance": {
+    "coordinate_configuration": {
+      "coordinates": "normalized",
+      "finite_difference_eps": null
+    },
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "e1a29ac03d54dc451daf0118dad217a0beb5aac8",
+    "input_source_sha256": "58020648ea9940d83a56660b640a4fa23d5e669368a2be825d80c34ac2dcd83c",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "termination": {
+    "message": "converged",
+    "type": "completed"
+  },
+  "timeout_seconds": 300
+}

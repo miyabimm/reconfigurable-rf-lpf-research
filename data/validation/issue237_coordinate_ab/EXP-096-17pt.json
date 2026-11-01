@@ -1,0 +1,612 @@
+{
+  "attempts": {
+    "attempted": 1,
+    "converged": 0,
+    "failed": 0,
+    "nonconverged": 1,
+    "not_started": 0,
+    "planned": 1
+  },
+  "comparison": {
+    "coordinates": "physical",
+    "finite_difference_eps": null,
+    "ftol": "scipy_default_unchanged",
+    "mode": "A",
+    "old_experiment": "EXP-086",
+    "pair": 1,
+    "physical_difference_steps_equal": false,
+    "seed_sha256": "b8babd353ab1222bed3b8e636368291bacfdac733b18d0845794a6f10ec3b548",
+    "source_manifest_sha256": "53f176bf9a1c76c77f79946f4cd2d6109c45a2e595f2302692cb8bcf744c0b6a"
+  },
+  "elapsed_seconds": 1.4312426639953628,
+  "experiment_id": "EXP-096",
+  "final_vector_with_t_db": [
+    0.9983538226378791,
+    26.998960225115,
+    26.99999999967655,
+    0.9999999909433693,
+    1.0,
+    0.020000000000000056,
+    -0.09973112732537603,
+    -0.08928244231722271,
+    2.4040317868130923,
+    0.20000000000000007,
+    2.6617526383221763,
+    0.0003568520907636354,
+    2.9999999999301803,
+    0.00031159727016493105,
+    2.543461830009206,
+    0.13472015540261265,
+    2.8546100427668626,
+    0.00019107260613810689,
+    9.375361836162056e-08,
+    1.2005123296432065e-06,
+    2.9999999998219757,
+    3.767162543554626e-11,
+    -24993692.841323894
+  ],
+  "numerical_state": "not_converged",
+  "scan": {
+    "candidate_promotion_blocked": true,
+    "definition_sha256": "22abefe85d694876073de70c8f64eebbfb8fb117720fd011aefa8aa2ffa6ccf3",
+    "evidence_class": "forward_only_diagnostic",
+    "grid": {
+      "points_per_interval": 17,
+      "sample_count": 476,
+      "segment_count": 28,
+      "settings": 6
+    },
+    "identity": {
+      "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "constraint_id": "RF-T008",
+      "constraint_status": "trial",
+      "definition_fingerprint": "22abefe85d694876073de70c8f64eebbfb8fb117720fd011aefa8aa2ffa6ccf3",
+      "environment": {
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "scipy": "1.18.1"
+      },
+      "git_head": "64401192de43203ca15ff0591cb65456b1a21d2d",
+      "historical_fixture_provenance": "not_checked",
+      "input_sha256": {
+        "data/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+        "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+        "data/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      },
+      "source_provenance_scope": "current_src_lpf_python_files",
+      "source_tree_sha256": "3de640a5f8022296e1d02c4624beb1c1ded0892394b8217f1eccae31f1d20804",
+      "source_worktree_dirty": false,
+      "vector_fingerprint": "08d6fddb1eda05614a2985275122925af372c1514f5075138d1ff3d9ac2c9e7e"
+    },
+    "observation": {
+      "candidate_promotion_blocked": true,
+      "component_policy": {
+        "candidate_promotion_blocked": true,
+        "checked_settings": 6,
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "shunt_to_ground",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                3,
+                -1
+              ],
+              "electrical_class": "shunt_to_ground",
+              "evidence": "verified_ground_endpoint"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                2
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_incomplete": false,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "independent_mna_checked": false,
+        "installed_variable_c_branches": 2,
+        "min_L_eigenvalue_H": 9.879574489500625e-10,
+        "physical_q_srf_em_checked": false,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false
+      },
+      "independent_mna_checked": false,
+      "points_per_interval": 17,
+      "rf_compliance_certified": false,
+      "sampled_forward_metrics": {
+        "locations": [
+          {
+            "case": "B8",
+            "frequency_mhz": 960.0,
+            "segment": 25
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 1326.0,
+            "segment": 2
+          },
+          {
+            "case": "B28",
+            "frequency_mhz": 2244.0,
+            "segment": 11
+          }
+        ],
+        "min_H2_db": 16.79240454659588,
+        "min_H3_db": 23.006962062182406,
+        "min_L_eigenvalue_nH": 0.9879574489500623,
+        "worst_IL_db": 7.950033417042529
+      }
+    },
+    "policy_id": "RF-T008",
+    "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+    "rf_compliance_certified": false,
+    "validation": {
+      "dense_rf_1001": "not_run",
+      "independent_mna_84": "not_run",
+      "passivity": "not_run",
+      "power_balance": "not_run"
+    },
+    "vector_sha256": "03173ad87631946285d7e5b4b3316e798ef2e504b454badab54f3106790f39c8"
+  },
+  "source_provenance": {
+    "coordinate_configuration": {
+      "coordinates": "physical",
+      "finite_difference_eps": null
+    },
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "execution_kind": "scipy_slsqp",
+    "git_head": "e1a29ac03d54dc451daf0118dad217a0beb5aac8",
+    "input_source_sha256": "f2b16097d21b36669ae816fc232b4a772abbd6c9bd112db366e649cfe4d98726",
+    "kind": "recorded",
+    "optimizer_kind": "reported_slsqp"
+  },
+  "stages": [
+    {
+      "attempt_index": 0,
+      "call_index": 0,
+      "elapsed_seconds": 0.6023240610011271,
+      "exception": null,
+      "exit_cause": "status_8",
+      "grid": {
+        "grid_sha256": "1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d",
+        "points_per_interval": 2,
+        "sample_count": 56,
+        "segment_count": 28
+      },
+      "input_vector": [
+        0.5397146437317133,
+        17.667327941954134,
+        22.907585878297688,
+        0.04826333124190569,
+        0.7888260023668409,
+        0.12813282292336226,
+        -0.03209834601730109,
+        0.09248806722462177,
+        1.299358137883246,
+        1.6293285772204398,
+        1.5741961039602757,
+        2.8420103592798114,
+        1.2099048709496856,
+        1.2143930280581117,
+        1.1551023814827204,
+        0.8968611666932702,
+        0.13708369061350822,
+        2.808850415982306,
+        0.5956647265702486,
+        2.275379623286426,
+        0.7138698734343052,
+        1.0633525494486094,
+        21.310173269694857
+      ],
+      "input_vector_sha256": "705b3f20b7e8fbd53b90211a70d79a61927b5b86d94d0c390e92bc0589d78530",
+      "maxiter": 240,
+      "observation": {
+        "box": {
+          "open_lower_indices": [],
+          "outside_indices": [],
+          "state": "pass"
+        },
+        "component_policy": {
+          "detail": {
+            "candidate_promotion_blocked": true,
+            "checked_settings": 6,
+            "component_policy_pass": true,
+            "connection_role_audit": {
+              "all_declared_roles_supported_by_l_tree": true,
+              "branches": [
+                {
+                  "declared_role": "shunt_to_ground",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    3,
+                    -1
+                  ],
+                  "electrical_class": "shunt_to_ground",
+                  "evidence": "verified_ground_endpoint"
+                },
+                {
+                  "declared_role": "bridge",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    0,
+                    2
+                  ],
+                  "electrical_class": "inductor_tree_chord",
+                  "evidence": "verified_L_path_between_terminals"
+                }
+              ],
+              "physical_layout_checked": false,
+              "unsupported_role_indices": []
+            },
+            "connection_role_evidence_incomplete": false,
+            "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "constraint_id": "RF-T008",
+            "independent_mna_checked": false,
+            "installed_variable_c_branches": 2,
+            "min_L_eigenvalue_H": 3.9603522624136555e-10,
+            "physical_q_srf_em_checked": false,
+            "promotion_blockers": [
+              "independent_mna_not_checked",
+              "dense_rf_not_checked"
+            ],
+            "rf_performance_checked": false
+          },
+          "state": "pass"
+        },
+        "sampled_rf": {
+          "all_sampled_inequalities_nonnegative": false,
+          "h2_min_residual_db": -15.583521925996841,
+          "h3_min_residual_db": -16.641948440949978,
+          "min_h2_db": 14.416478074003159,
+          "min_h3_db": 13.358051559050022,
+          "minimum_residual_db": -24993453.43193138,
+          "passband_epigraph_min_residual_db": -24993453.43193138,
+          "residuals_db": [
+            -24993452.494652327,
+            -24993453.43193138,
+            -24993452.094655763,
+            -24993452.30905644,
+            -15.085563640159204,
+            -15.583521925996841,
+            -16.641948440949978,
+            -16.615702126776384,
+            -24993448.117327895,
+            -24993448.160777997,
+            -24993448.219854407,
+            -24993448.328108504,
+            -11.239695025135696,
+            -10.29549137598853,
+            8.435802996055088,
+            6.222329628018748,
+            -24993448.954752546,
+            -24993449.416434627,
+            -24993449.55906159,
+            -24993450.353269596,
+            4.065178389803357,
+            7.55475609465384,
+            -7.986212654077576,
+            -8.586231730783368,
+            -24993448.606448837,
+            -24993448.716428023,
+            -24993448.72792627,
+            -24993448.847723108,
+            -24993448.32794672,
+            -24993448.40688575,
+            -24993448.423961725,
+            -24993448.51553416,
+            -6.668267484861605,
+            -6.024985470500646,
+            -5.959701455048201,
+            -5.296527104142243,
+            1.712425307976261,
+            1.2446190500359897,
+            1.200468283724625,
+            0.7825647686178705,
+            -24993450.216459636,
+            -24993450.283525236,
+            -24993450.351557977,
+            -24993450.719692886,
+            -4.057030566927224,
+            -1.3709834528319504,
+            0.1385801257628536,
+            -0.881217001503785,
+            -24993450.113129854,
+            -24993450.76588731,
+            -24993450.962325964,
+            -24993451.678836502,
+            1.2059471167656,
+            5.048834084414942,
+            -1.5383713732982294,
+            -2.165537547503405
+          ],
+          "state": "observed",
+          "worst_il_db": 9.749798621982336
+        }
+      },
+      "output_vector": [
+        0.40000000444357764,
+        26.99999999999965,
+        27.0,
+        1.0,
+        1.0,
+        0.02,
+        -0.09832262131737267,
+        -0.09931392624144979,
+        2.575142936570019,
+        0.2,
+        2.644899322880421,
+        0.7399751685672652,
+        2.99999996900535,
+        0.00011440115069722552,
+        3.0,
+        0.17840103295891135,
+        2.9999999768183065,
+        8.344302239827955e-05,
+        0.2234582716897431,
+        1.1127317164363243e-09,
+        2.8239190181592724,
+        6.923493396022132e-10,
+        -24993443.68213276
+      ],
+      "stage": "coarse",
+      "status": {
+        "message": "Positive directional derivative for linesearch",
+        "nfev": 901,
+        "nit": 36,
+        "status": 8,
+        "success": false
+      },
+      "warm_start_source": "seed"
+    },
+    {
+      "attempt_index": 0,
+      "call_index": 1,
+      "elapsed_seconds": 0.4200635480010533,
+      "exception": null,
+      "exit_cause": "status_8",
+      "grid": {
+        "grid_sha256": "1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786",
+        "points_per_interval": 3,
+        "sample_count": 84,
+        "segment_count": 28
+      },
+      "input_vector": [
+        0.40000000444357764,
+        26.99999999999965,
+        27.0,
+        1.0,
+        1.0,
+        0.02,
+        -0.09832262131737267,
+        -0.09931392624144979,
+        2.575142936570019,
+        0.2,
+        2.644899322880421,
+        0.7399751685672652,
+        2.99999996900535,
+        0.00011440115069722552,
+        3.0,
+        0.17840103295891135,
+        2.9999999768183065,
+        8.344302239827955e-05,
+        0.2234582716897431,
+        1.1127317164363243e-09,
+        2.8239190181592724,
+        6.923493396022132e-10,
+        -24993443.68213276
+      ],
+      "input_vector_sha256": "094377f22e1b4f1ea4892fb55902052be352d1190d10e422b203f06be1e799d0",
+      "maxiter": 120,
+      "observation": {
+        "box": {
+          "open_lower_indices": [],
+          "outside_indices": [],
+          "state": "pass"
+        },
+        "component_policy": {
+          "detail": {
+            "candidate_promotion_blocked": true,
+            "checked_settings": 6,
+            "component_policy_pass": true,
+            "connection_role_audit": {
+              "all_declared_roles_supported_by_l_tree": true,
+              "branches": [
+                {
+                  "declared_role": "shunt_to_ground",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    3,
+                    -1
+                  ],
+                  "electrical_class": "shunt_to_ground",
+                  "evidence": "verified_ground_endpoint"
+                },
+                {
+                  "declared_role": "bridge",
+                  "declared_role_supported_by_l_tree": true,
+                  "edge": [
+                    0,
+                    2
+                  ],
+                  "electrical_class": "inductor_tree_chord",
+                  "evidence": "verified_L_path_between_terminals"
+                }
+              ],
+              "physical_layout_checked": false,
+              "unsupported_role_indices": []
+            },
+            "connection_role_evidence_incomplete": false,
+            "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "constraint_id": "RF-T008",
+            "independent_mna_checked": false,
+            "installed_variable_c_branches": 2,
+            "min_L_eigenvalue_H": 9.879574489500625e-10,
+            "physical_q_srf_em_checked": false,
+            "promotion_blockers": [
+              "independent_mna_not_checked",
+              "dense_rf_not_checked"
+            ],
+            "rf_performance_checked": false
+          },
+          "state": "pass"
+        },
+        "sampled_rf": {
+          "all_sampled_inequalities_nonnegative": false,
+          "h2_min_residual_db": -13.207595453404121,
+          "h3_min_residual_db": -6.9930379378175935,
+          "min_h2_db": 16.79240454659588,
+          "min_h3_db": 23.006962062182406,
+          "minimum_residual_db": -24993700.791357312,
+          "passband_epigraph_min_residual_db": -24993700.791357312,
+          "residuals_db": [
+            -24993697.62084557,
+            -24993697.512655534,
+            -24993697.46323982,
+            -24993698.254487216,
+            -24993697.94537756,
+            -24993697.722583286,
+            -13.207595453404121,
+            -12.276932068627154,
+            -11.32725300430246,
+            15.02014304518297,
+            11.723178126613654,
+            8.563187831353297,
+            -24993697.319355056,
+            -24993697.329399146,
+            -24993697.349818535,
+            -24993697.400010545,
+            -24993697.444557413,
+            -24993697.497884456,
+            -11.277567381003525,
+            -10.80823505239374,
+            -10.333180572053678,
+            8.439114860115744,
+            7.249337561973249,
+            6.227394748760531,
+            -24993698.11865944,
+            -24993698.21408536,
+            -24993698.39634946,
+            -24993698.502477985,
+            -24993698.792267755,
+            -24993699.145725492,
+            -2.0135756646353364,
+            1.3270457553221888,
+            5.551727460664765,
+            -6.165138451073581,
+            -6.619521217838535,
+            -6.9930379378175935,
+            -24993697.781785764,
+            -24993697.832022835,
+            -24993697.884723246,
+            -24993697.895552903,
+            -24993697.951119438,
+            -24993698.00900126,
+            -24993697.529695205,
+            -24993697.563032668,
+            -24993697.599295706,
+            -24993697.614602134,
+            -24993697.654827427,
+            -24993697.697790477,
+            -6.710660945103015,
+            -6.391493935867022,
+            -6.068114476028342,
+            -6.0029123272460225,
+            -5.674160670546733,
+            -5.340647669244433,
+            1.7225962431309405,
+            1.4819631528798922,
+            1.253699932364178,
+            1.2094476336128714,
+            0.994802753196204,
+            0.7905957637120729,
+            -24993700.362569563,
+            -24993700.119400427,
+            -24993699.999035347,
+            -24993699.97692868,
+            -24993700.007416688,
+            -24993700.11245421,
+            -4.09936849793052,
+            -2.8055997016567424,
+            -1.4160452673167896,
+            0.14473204310522192,
+            -0.40309615001726584,
+            -0.8760314278284511,
+            -24993699.22987894,
+            -24993699.54781005,
+            -24993699.880315445,
+            -24993700.076233596,
+            -24993700.42843389,
+            -24993700.791357312,
+            1.115725295530062,
+            2.8971262676294245,
+            4.923865954636128,
+            -1.5239666469575432,
+            -1.8575375874830442,
+            -2.1535306217852046
+          ],
+          "state": "observed",
+          "worst_il_db": 7.950033418834209
+        }
+      },
+      "output_vector": [
+        0.9983538226378791,
+        26.998960225115,
+        26.99999999967655,
+        0.9999999909433693,
+        1.0,
+        0.020000000000000056,
+        -0.09973112732537603,
+        -0.08928244231722271,
+        2.4040317868130923,
+        0.20000000000000007,
+        2.6617526383221763,
+        0.0003568520907636354,
+        2.9999999999301803,
+        0.00031159727016493105,
+        2.543461830009206,
+        0.13472015540261265,
+        2.8546100427668626,
+        0.00019107260613810689,
+        9.375361836162056e-08,
+        1.2005123296432065e-06,
+        2.9999999998219757,
+        3.767162543554626e-11,
+        -24993692.841323894
+      ],
+      "stage": "fine",
+      "status": {
+        "message": "Positive directional derivative for linesearch",
+        "nfev": 583,
+        "nit": 25,
+        "status": 8,
+        "success": false
+      },
+      "warm_start_source": "stage_call_0"
+    }
+  ],
+  "termination": {
+    "message": "not_converged",
+    "type": "completed"
+  },
+  "validation": {
+    "dense1001": "not_run",
+    "independent_mna84": "not_run",
+    "passivity": "not_run",
+    "power": "not_run"
+  },
+  "validation_reason": "No eligible candidate established; independent validation not performed."
+}

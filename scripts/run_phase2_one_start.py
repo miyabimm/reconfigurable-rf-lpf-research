@@ -7,6 +7,7 @@ last atomic raw snapshot and require manual investigation, never automatic retry
 """
 from copy import deepcopy
 from dataclasses import asdict
+from functools import partial
 import hashlib
 import json
 from pathlib import Path
@@ -86,6 +87,24 @@ def candidate_checkpoint(circuit, row):
     return payload
 
 
+def _optimizer_provenance(callback):
+    """Recognize the supported SciPy opt-in without blessing arbitrary wrappers."""
+    configuration = None
+    real_scipy = callback is scipy_slsqp_stage
+    if (isinstance(callback, partial) and callback.func is scipy_slsqp_stage
+            and not callback.args
+            and set(callback.keywords) <= {'coordinates', 'finite_difference_eps'}):
+        configuration = {'coordinates': 'physical', 'finite_difference_eps': None,
+                         **callback.keywords}
+        real_scipy = True
+    result = {
+        'optimizer_kind': 'reported_slsqp' if real_scipy else 'synthetic_callback',
+        'execution_kind': 'scipy_slsqp' if real_scipy else 'injected_callback'}
+    if configuration is not None:
+        result['coordinate_configuration'] = configuration
+    return result
+
+
 class _Stopped(Exception):
     pass
 
@@ -133,8 +152,7 @@ def run_one_start(root, experiment_id, *, optimize_stage=scipy_slsqp_stage,
         raise ValueError('Raw results must be Git ignored')
     raw.mkdir(parents=True, exist_ok=False)
     provenance = {'kind': 'recorded',
-        'optimizer_kind': 'reported_slsqp' if optimize_stage is scipy_slsqp_stage else 'synthetic_callback',
-        'execution_kind': 'scipy_slsqp' if optimize_stage is scipy_slsqp_stage else 'injected_callback',
+        **_optimizer_provenance(optimize_stage),
         'git_head': kwargs['source_sha'], 'dirty_patch_sha256': hashlib.sha256(b'').hexdigest(),
         'input_source_sha256': canonical_config_hash(prepared['input_source'])}
     state = {'experiment_id': experiment_id, 'preflight': prepared['preflight'],
