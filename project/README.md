@@ -42,6 +42,14 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 - Git保存PASSはRF科学PASSではない。独立MNA/power/dense/物理/連続帯域は `not_run`、候補昇格は禁止。
   `optimize_stage` の注入は隔離テスト用で、実SciPyとは異なる実行種別を記録する。実験実行はコードレビューとは別判断。
 
+## Issue #245 A：Sobol RF選別（明示opt-in）
+
+`generate_starts(..., selection='rf_pareto', max_initial_samples=952)` は
+RF-T008/coarse2で既存16点blockを評価し、nominal/検証済warm＋F/V非劣性・正規化vector多様性で2本を選ぶ。
+既定出力は不変更。全候補/例外/費用を `selection_report`、途中停止を
+`StartSelectionError.report` に保持する。[API・限定診断・未実施事項](diagnostics/issue245_start_selection.md)参照。
+本番探索、B/C、17点/1001点適合の代用は提供しない。
+
 ## Issue #241：SciPy-DE最小接続（mockのみ）
 
 [API・計測・本番接続ブロッカー](diagnostics/issue241_scipy_de_preview.md)を参照。
