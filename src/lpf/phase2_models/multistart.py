@@ -29,7 +29,8 @@ def unique_topologies(circuits):
 
 
 def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
-                    warm_sha256=None, count=3, cost_meter=None):
+                    warm_sha256=None, count=3, cost_meter=None,
+                    for_exploration=False):
     """Exactly nominal/design (or verified warm) + two scrambled Sobol starts.
 
     One fixed Sobol block of 16 is inspected, with no clipping, epsilon floor,
@@ -49,6 +50,11 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     if type(seed) is not int or seed < 0:
         raise ValueError('seed must be a nonnegative integer')
     circuit = problem.circuit
+    if for_exploration and circuit.policy_id != "RF-T008":
+        raise ValueError("Exploration-only starts are RF-T008-only")
+    gjm = {len(circuit.definition.inductor_types) + i
+           for i, kind in enumerate(circuit.definition.fixed_c_types)
+           if kind == "GJM01"} if for_exploration else set()
     definition_sha = definition_fingerprint(circuit.definition)
     schema_sha = canonical_config_hash(asdict(circuit.schema))
     source = None
@@ -86,12 +92,14 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                 if cost_meter is not None:
                     cost_meter.box_rejections += 1
                 raise ValueError('Box violation at index ' + str(i))
-        if any(x[i] <= problem.box.bounds[i][0] for i in problem.box.open_lower):
+        if any(x[i] <= problem.box.bounds[i][0]
+               for i in problem.box.open_lower if i not in gjm):
             if cost_meter is not None:
                 cost_meter.box_rejections += 1
             raise ValueError('Excluded open lower bound')
-        component = circuit.validate_components(x)
-        if component['connection_role_evidence_incomplete']:
+        component = (circuit.validate_components(x, allow_absent_gjm=True)
+                     if for_exploration else circuit.validate_components(x))
+        if component['connection_role_evidence_incomplete'] and not for_exploration:
             if cost_meter is not None:
                 cost_meter.role_rejections += 1
             raise ValueError('Connection role not proven')
@@ -100,7 +108,8 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             raise ValueError('Duplicate vector')
         record = problem.seed(x, policy_id=circuit.policy_id,
             policy_fingerprint=circuit.policy_fingerprint,
-            definition_sha256=definition_sha, input_sha256=sha, seed=seed)
+            definition_sha256=definition_sha, input_sha256=sha, seed=seed,
+            for_exploration=for_exploration)
         if record['changes']:
             raise ValueError('Unexpected seed clipping')
         seen.add(sha)

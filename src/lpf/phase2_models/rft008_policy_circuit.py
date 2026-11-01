@@ -106,7 +106,7 @@ class PolicyBoundRFT008Circuit:
         """Return a fresh snapshot: callers cannot change retained RF rules."""
         return json.loads(self.policy_json)
 
-    def validate_candidate(self, vector):
+    def validate_candidate(self, vector, *, allow_absent_gjm=False):
         """Validate nominal component/Q/k/layout and six setting values.
 
         This check neither calls nor replaces independent MNA. The returned
@@ -134,7 +134,8 @@ class PolicyBoundRFT008Circuit:
             row[nf:nf + nv] for row in values.capacitors_pf_by_setting
         ], dtype=float)
         self.capacitor_layout.validate_values(
-            policy, fixed, ic_fixed, variable
+            policy, fixed, ic_fixed, variable,
+            allow_absent_gjm=allow_absent_gjm
         )
         return {
             "component_policy_pass": True,

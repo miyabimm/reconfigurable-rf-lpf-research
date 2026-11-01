@@ -106,15 +106,31 @@ class NominalCircuit:
             d.variable_roles
         ).as_dict()
 
-    def validate_components(self, vector):
-        """Separate component-policy pass from physical-role evidence."""
-        result = dict(self._adapter.validate_candidate(vector))
+    def validate_components(self, vector, *, allow_absent_gjm=False):
+        """Strict final check by default; optional RF-T008 numeric exploration."""
+        if allow_absent_gjm:
+            if self.policy_id != "RF-T008":
+                raise ValueError("Absent GJM exploration is RF-T008-only")
+            result = dict(self._adapter.validate_candidate(
+                vector, allow_absent_gjm=True))
+        else:
+            result = dict(self._adapter.validate_candidate(vector))
         roles = self.connection_role_audit()
         result["connection_role_audit"] = roles
         result["connection_role_evidence_incomplete"] = not roles[
             "all_declared_roles_supported_by_l_tree"
         ]
         blockers = ["independent_mna_not_checked", "dense_rf_not_checked"]
+        if allow_absent_gjm:
+            values = self.schema.decode(vector)
+            fixed = values.capacitors_pf_by_setting[0][:self.schema.n_fixed]
+            absent = tuple(i for i, (kind, value) in enumerate(
+                zip(self.definition.fixed_c_types, fixed))
+                if kind == "GJM01" and value == 0.)
+            result["exploration_absent_gjm_indices"] = absent
+            if absent:
+                result["component_policy_pass"] = False
+                blockers.append("absent_gjm_requires_topology_redefinition")
         if result["connection_role_evidence_incomplete"]:
             blockers.append("declared_role_not_proven_by_l_tree")
         result["promotion_blockers"] = tuple(blockers)

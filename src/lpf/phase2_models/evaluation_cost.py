@@ -59,9 +59,11 @@ class EvaluationCost:
         self.frequency_samples_completed += len(evaluator.f)
         return result
 
-    def components(self, circuit, vector):
+    def components(self, circuit, vector, *, allow_absent_gjm=False):
         self.component_checks += 1
         try:
+            if allow_absent_gjm:
+                return circuit.validate_components(vector, allow_absent_gjm=True)
             return circuit.validate_components(vector)
         except BaseException as exc:
             self.component_rejections += 1
@@ -107,5 +109,6 @@ class _CircuitView:
     def __getattr__(self, name):
         return getattr(self.original, name)
 
-    def validate_components(self, vector):
-        return self.cost.components(self.original, vector)
+    def validate_components(self, vector, *, allow_absent_gjm=False):
+        return self.cost.components(
+            self.original, vector, allow_absent_gjm=allow_absent_gjm)

@@ -37,12 +37,13 @@ class _BudgetCost(EvaluationCost):
         if time.perf_counter() >= self.deadline:
             raise _Stop('wall_limit')
 
-    def components(self, circuit, vector):
+    def components(self, circuit, vector, *, allow_absent_gjm=False):
         try:
-            result = super().components(circuit, vector)
-        except Exception as exc:
+            result = super().components(
+                circuit, vector, allow_absent_gjm=allow_absent_gjm)
+        except ValueError as exc:
             raise _PhysicalRejected(str(exc)) from exc
-        if result['connection_role_evidence_incomplete']:
+        if result['connection_role_evidence_incomplete'] and not allow_absent_gjm:
             self.role_rejections += 1
             raise _PhysicalRejected('Connection role not proven')
         return result
@@ -81,13 +82,23 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
     comparison.cost = meter
     best, last, generated, solver_state = None, None, None, None
     requests = 0
+    explore_t008 = comparison.circuit.policy_id == 'RF-T008'
     reason, error = 'not_started', None
     wall, cpu = time.perf_counter(), time.process_time()
 
     def remember(x, score):
         nonlocal best
+        c = comparison.circuit
+        absent = [i for i, kind in enumerate(c.definition.fixed_c_types)
+                  if kind == 'GJM01' and
+                  float(x[len(c.definition.inductor_types) + i]) == 0.]
         candidate = {'vector': np.asarray(x, float).tolist(),
-                     'vector_sha256': vector_fingerprint(x), 'score': asdict(score)}
+                     'vector_sha256': vector_fingerprint(x), 'score': asdict(score),
+                     'exploration_absent_gjm_indices': absent,
+                     'requires_topology_redefinition': bool(absent),
+                     'connection_role_evidence_incomplete':
+                         c.connection_role_audit()['all_declared_roles_supported_by_l_tree'] is False,
+                     'candidate_promotion_blocked': True}
         if best is None or score.rank_key() < best[0]:
             best = score.rank_key(), candidate
 
@@ -113,7 +124,7 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
             return last[1]
         before_box = meter.box_rejections
         try:
-            score = comparison.evaluate(x)
+            score = comparison.evaluate(x, for_exploration=explore_t008)
         except ValueError as exc:
             if meter.box_rejections > before_box:
                 raise _PhysicalRejected(str(exc)) from exc
@@ -149,15 +160,16 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
         if len(set(hashes)) != len(hashes) or hashes != [s['vector_sha256'] for s in starts]:
             raise ValueError('Population duplicate or SHA mismatch')
         # SciPy clips explicit init to its closed box. Reject BEFORE it can do so.
+        gjm = {len(circuit.definition.inductor_types) + i
+               for i, kind in enumerate(circuit.definition.fixed_c_types)
+               if kind == 'GJM01'} if explore_t008 else set()
         for x in population:
             if (any(not lo <= v <= hi for v, (lo, hi) in zip(x, bounds)) or
-                    any(x[i] <= bounds[i][0] for i in comparison.box.open_lower)):
+                    any(x[i] <= bounds[i][0]
+                        for i in comparison.box.open_lower if i not in gjm)):
                 meter.box_rejections += 1
                 raise _PhysicalRejected('Population outside physical box/open endpoint')
-            component = meter.components(comparison.circuit, x)
-            if component['connection_role_evidence_incomplete']:
-                meter.role_rejections += 1
-                raise _PhysicalRejected('Population role not proven')
+            meter.components(comparison.circuit, x, allow_absent_gjm=explore_t008)
         result = differential_evolution(
             meter.callback(objective), bounds,
             constraints=(NonlinearConstraint(meter.callback(residual, constraint=True), 0., np.inf),),

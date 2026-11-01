@@ -66,23 +66,30 @@ class PhysicalComparison:
         self.cache = cache
         self._last = None
 
-    def evaluate(self, vector):
+    def evaluate(self, vector, *, for_exploration=False):
+        if for_exploration and self.circuit.policy_id != "RF-T008":
+            raise ValueError("Exploration-only evaluation is RF-T008-only")
         with self.cost.timed():
             x = np.asarray(vector, float)
             bounds = self.box.bounds[:-1]
             if x.shape != (len(bounds),) or not np.all(np.isfinite(x)):
                 self.cost.box_rejections += 1
                 raise ValueError('Expected complete finite physical vector without epigraph')
+            gjm = {len(self.circuit.definition.inductor_types) + i
+                   for i, kind in enumerate(self.circuit.definition.fixed_c_types)
+                   if kind == "GJM01"} if for_exploration else set()
             if (any(v < lo or v > hi for v, (lo, hi) in zip(x, bounds)) or
-                    any(x[i] <= bounds[i][0] for i in self.box.open_lower)):
+                    any(x[i] <= bounds[i][0]
+                        for i in self.box.open_lower if i not in gjm)):
                 self.cost.box_rejections += 1
                 raise ValueError('Physical vector outside box or at excluded open endpoint')
-            key = x.tobytes()
+            key = (for_exploration, x.tobytes())
             if self.cache and self._last is not None and self._last[0] == key:
                 self.cost.cache_hits += 1
                 return self._last[1]
-            component = self.cost.components(self.circuit, x)
-            if component['connection_role_evidence_incomplete']:
+            component = self.cost.components(
+                self.circuit, x, allow_absent_gjm=for_exploration)
+            if component['connection_role_evidence_incomplete'] and not for_exploration:
                 self.cost.role_rejections += 1
                 raise ValueError('Declared connection role lacks evidence')
             il = self.cost.forward(self.evaluator, x)

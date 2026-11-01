@@ -84,7 +84,8 @@ def circuit_box(circuit):
 
 
 def make_seed(problem, vector, *, policy_id, policy_fingerprint,
-              definition_sha256, input_sha256, seed, jitter_fraction=0.0):
+              definition_sha256, input_sha256, seed, jitter_fraction=0.0,
+              for_exploration=False):
     """Clip a provenance-bound full vector and optionally jitter within its box.
 
     All provenance is explicit, never guessed from a length-compatible vector.
@@ -121,9 +122,18 @@ def make_seed(problem, vector, *, policy_id, policy_fingerprint,
             x[i] = np.clip(x[i] + rng.uniform(-1, 1) * (hi-lo) * jitter_fraction, lo, hi)
             if x[i] != before:
                 changes.append({"index": i, "kind": "jitter", "before": before, "after": float(x[i])})
-    if any(x[i] <= problem.box.bounds[i][0] for i in problem.box.open_lower):
+    if for_exploration and c.policy_id != "RF-T008":
+        raise ValueError("Exploration-only absence is RF-T008-only")
+    gjm = {len(c.definition.inductor_types) + i
+           for i, kind in enumerate(c.definition.fixed_c_types)
+           if kind == "GJM01"} if for_exploration else set()
+    if any(x[i] <= problem.box.bounds[i][0]
+           for i in problem.box.open_lower if i not in gjm):
         raise ValueError("Clipping reached an excluded open lower bound")
-    c.validate_components(x)
+    if for_exploration:
+        c.validate_components(x, allow_absent_gjm=True)
+    else:
+        c.validate_components(x)
     il = problem.evaluator.il(x)
     t = float(np.max(il[problem.evaluator.role == 0]))
     return {"vector": tuple(map(float, x)) + (t,), "input_vector": original,
