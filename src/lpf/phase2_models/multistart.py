@@ -326,8 +326,11 @@ def run_multistart_preview(circuit, generated, checkpoint, *, optimize_stage,
         starts.append({k: item[k] for k in ('id', 'vector', 'vector_sha256', 'seed', 'jitter_fraction')})
     source = {'kind': 'synthetic', 'policy_id': circuit.policy_id,
               'vectors': {s['id']: s['vector'] for s in starts}}
+    # Selection reports include measured CPU/wall times; these are not run identity.
+    identity = (generated if 'selection_report' not in generated else
+                {'generation_policy': generated['generation_policy'], 'starts': starts})
     envelope = make_synthetic_plan(circuit, starts,
-        run_id='synthetic-multistart-' + canonical_config_hash(generated),
+        run_id='synthetic-multistart-' + canonical_config_hash(identity),
         coarse_points=2, fine_points=3, input_source=source)
     # Preflight benchmark input before any dispatch.
     two_axis_report([], historical_benchmarks=historical_benchmarks)
