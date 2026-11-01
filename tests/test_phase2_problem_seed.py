@@ -147,6 +147,85 @@ class ProblemSeedTests(unittest.TestCase):
                     generate_starts(p, x, seed=23)
                 sobol.return_value.random_base2.assert_called_once_with(4)
 
+    def test_impedance_design_prototype_pool_and_fail_closed(self):
+        from lpf.phase2_models.multistart import generate_starts
+        from lpf.phase2_models.designed_starts import design_candidates, impedance
+        from lpf.phase2_models.start_selection import StartSelectionError
+        d = CircuitDefinition(
+            InductorTree(4, ((0, 1), (1, 3), (3, 2))), ('LQP02HV',)*3,
+            (0, 1, 2), ((0, 1), (1, 2)),
+            CapacitorPlacement(4, (), ((0, -1),), ((0, -1),)), (), ('shunt_to_ground',))
+        p = SampledEpigraph(build_nominal_circuit(
+            load_constraint('RF-T008', allow_trial=True), d), 2)
+        x = np.array([2., 2., 2., 0., 0., .5] + [1.]*6)
+        # Synthetic matching fixture only: actual fixed-S2P feasibility is
+        # separately diagnosed, never inferred from this engineering test.
+        p.evaluator.pre[:] = np.eye(2)
+        p.evaluator.post[:] = np.eye(2)
+        p.evaluator.source_ohms = 50.+0j
+        p.evaluator.load_ohms = 40.-40j
+        designs = design_candidates(p, x)
+        np.testing.assert_array_equal(x, [2., 2., 2., 0., 0., .5] + [1.]*6)
+        for row in designs:
+            self.assertTrue(p.circuit.validate_components(row['vector'])['component_policy_pass'])
+            diag = row['design']
+            self.assertEqual(len(diag['representatives']), 6)
+            anchor = diag['anchor_setting']
+            rep = diag['representatives'][anchor]
+            zs, zl = complex(*rep['source_ohms']), complex(*rep['load_ohms'])
+            branch = zl + 1j * rep['series_x_ohms']
+            matched = 1 / (1 / branch + 1j * rep['shunt_b_siemens'])
+            self.assertAlmostEqual(abs(matched - zs.conjugate()), 0., places=10)
+            self.assertGreater(sum(diag['series_loss_ohms_by_L']), 0)
+            self.assertEqual(len(diag['approximate_response']), 6)
+            self.assertAlmostEqual(diag['approximate_response'][anchor]['external_gt'], 1.)
+        out_d = replace(d, capacitor_placement=CapacitorPlacement(
+            4, (), ((2, -1),), ((2, -1),)))
+        out_p = SampledEpigraph(build_nominal_circuit(
+            load_constraint('RF-T008', allow_trial=True), out_d), 2)
+        out_p.evaluator.pre[:] = np.eye(2)
+        out_p.evaluator.post[:] = np.eye(2)
+        out_p.evaluator.load_ohms = 100.-40j
+        for row in design_candidates(out_p, x):
+            diag = row['design']
+            self.assertEqual(diag['shunt_port'], 'output')
+            self.assertAlmostEqual(diag['approximate_response'][diag['anchor_setting']]['external_gt'], 1.)
+        self.assertEqual(impedance(np.eye(2), 60-40j), 60-40j)
+        kw = dict(seed=23, selection='rf_pareto', max_initial_samples=952)
+        a = generate_starts(p, x, candidate_pool='design_prototype', **kw)
+        b = generate_starts(p, x, candidate_pool='design_prototype', **kw)
+        baseline = generate_starts(p, x, **kw)
+        self.assertEqual(a['starts'], b['starts'])
+        report = a['selection_report']
+        self.assertEqual(report['cost']['frequency_samples_requested'], 952)
+        self.assertEqual(report['cost']['frequency_samples_requested'],
+                         baseline['selection_report']['cost']['frequency_samples_requested'])
+        self.assertEqual([r['generation_method'] for r in report['candidates'][1:3]],
+                         ['impedance_design_prototype']*2)
+        self.assertTrue(all(r['sobol_index'] is None for r in report['candidates'][1:3]))
+        self.assertEqual([r['vector_sha256'] for r in report['candidates'][3:]],
+                         [r['vector_sha256'] for r in baseline['selection_report']['candidates'][3:]])
+        from unittest.mock import patch
+        illegal = [dict(row, vector=row['vector'].copy()) for row in designs]
+        illegal[0]['vector'][-1] = 4.
+        with patch('lpf.phase2_models.designed_starts.design_candidates', return_value=illegal):
+            with self.assertRaises(StartSelectionError) as rejected:
+                generate_starts(p, x, candidate_pool='design_prototype', **kw)
+        self.assertEqual(rejected.exception.report['cost']['frequency_samples_requested'], 56)
+        self.assertEqual(rejected.exception.report['candidates'][-1]['pool_index'], 0)
+        self.assertEqual(rejected.exception.report['candidates'][-1]['reason'], 'rejected')
+        with self.assertRaises(StartSelectionError) as stopped:
+            generate_starts(p, x, seed=23, selection='rf_pareto',
+                            candidate_pool='design_prototype', max_initial_samples=56)
+        self.assertEqual(stopped.exception.report['status'], 'failed')
+        unsupported, u = make('RF-T008', 3)
+        u[6] = 0.
+        with self.assertRaises(StartSelectionError):
+            generate_starts(SampledEpigraph(unsupported.circuit, 2), u,
+                            candidate_pool='design_prototype', **kw)
+        with self.assertRaises(ValueError):
+            generate_starts(p, x, seed=23, candidate_pool='design_prototype')
+
     def test_multistart_warm_identity(self):
         import hashlib
         import json

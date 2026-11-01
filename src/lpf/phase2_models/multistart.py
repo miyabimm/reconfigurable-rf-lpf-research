@@ -32,7 +32,8 @@ def unique_topologies(circuits):
 
 def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                     warm_sha256=None, count=3, cost_meter=None,
-                    for_exploration=False, selection=None, max_initial_samples=None):
+                    for_exploration=False, selection=None, max_initial_samples=None,
+                    candidate_pool='sobol'):
     """Exactly nominal/design (or verified warm) + two scrambled Sobol starts.
 
     One fixed Sobol block of 16 is inspected, with no clipping, epsilon floor,
@@ -47,7 +48,14 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
     same block once and returns a selection_report, including initialization
     cost. max_initial_samples is an optional incremental sample ceiling; an
     incomplete block fails closed via StartSelectionError.report.
+    candidate_pool='design_prototype' replaces Sobol slots 0,1 with two
+    narrow L-match hypotheses (nominal only). Unsupported or illegal designs
+    fail closed; never repairs values or silently falls back to pure Sobol.
     """
+    if candidate_pool not in ('sobol', 'design_prototype'):
+        raise ValueError('Unknown candidate pool')
+    if candidate_pool != 'sobol' and (selection != 'rf_pareto' or warm_checkpoint is not None):
+        raise ValueError('Design prototype requires rf_pareto and nominal (not warm) input')
     if selection not in (None, 'rf_pareto'):
         raise ValueError('Unknown start selection')
     if selection is None and max_initial_samples is not None:
@@ -192,10 +200,31 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
 
     inspect(nominal_vector, method, None, source)
     bounds = np.asarray(problem.box.bounds[:-1], float)
+    designs = []
+    if candidate_pool == 'design_prototype':
+        from .designed_starts import design_candidates
+        report['candidate_pool'] = candidate_pool
+        try:
+            designs = design_candidates(problem, nominal_vector)
+        except ValueError as exc:
+            raise fail(exc) from exc
+        report['pool_rule'] = 'two design anchors replace Sobol slots 0,1; retain slots 2..15'
     block = qmc.Sobol(d=circuit.schema.vector_length, scramble=True, seed=seed).random_base2(4)
     for index, unit in enumerate(block):
         try:
-            inspect(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
+            if index < len(designs):
+                try:
+                    inspect(designs[index]['vector'], 'impedance_design_prototype', index)
+                except ValueError as exc:
+                    row = report['candidates'][-1]
+                    row.update(sobol_index=None, pool_index=index, design=designs[index]['design'])
+                    raise fail(exc) from exc
+                for item in (starts[-1], report['candidates'][-1]):
+                    item['sobol_index'] = None
+                    item['pool_index'] = index
+                    item['design'] = designs[index]['design']
+            else:
+                inspect(bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0]), 'sobol', index)
         except StartSelectionError:
             raise
         except ValueError as exc:
@@ -219,15 +248,18 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             item['id'] = f'{definition_sha[:12]}-seed-{seed}-start-{i}'
         update_cost()
         baseline = starts[:3]
+        report['baseline_kind'] = ('legacy_sobol_prefix' if not designs else
+                                   'pool_prefix_only_not_legacy_sobol')
         report.update(status='complete',
             baseline_prefix_vector_sha256=[s['vector_sha256'] for s in baseline],
             baseline_frequency_samples_requested=3 * len(problem.evaluator.f),
             extra_frequency_samples_requested=report['cost']['frequency_samples_requested']
                 - 3 * len(problem.evaluator.f),
             selection_rule='low-F Pareto anchor; remove anchor; min-V Pareto alternative; '
-                'ties: max normalized distance, F, V, sum deficit, Sobol index')
+                'ties: max normalized distance, F, V, sum deficit, pool/Sobol index')
         return {'starts': selected, 'rejected': rejected, 'sobol_block_size': 16,
-                'generation_policy': 'nominal-plus-sobol-rf-pareto-v1',
+                'generation_policy': ('nominal-plus-design-sobol-rf-pareto-prototype-v1'
+                    if designs else 'nominal-plus-sobol-rf-pareto-v1'),
                 'selection_report': report, 'candidate_promotion_blocked': True}
     raise ValueError(f'Insufficient legal distinct starts: {len(starts)}/{count}; {rejected}')
 
