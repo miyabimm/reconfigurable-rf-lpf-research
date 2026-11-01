@@ -83,7 +83,7 @@ class PhysicalComparison:
                         for i in self.box.open_lower if i not in gjm)):
                 self.cost.box_rejections += 1
                 raise ValueError('Physical vector outside box or at excluded open endpoint')
-            key = x.tobytes()
+            key = (for_exploration, x.tobytes())
             if self.cache and self._last is not None and self._last[0] == key:
                 self.cost.cache_hits += 1
                 return self._last[1]
