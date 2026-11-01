@@ -6,6 +6,7 @@ Each stage's optimizer is injectable; the v2 controller is the sole retry
 policy. Numerical convergence, sampled RF observations, component checks and
 candidate promotion are explicitly separate.
 """
+from contextlib import nullcontext
 from copy import deepcopy
 from dataclasses import asdict
 import hashlib
@@ -28,7 +29,7 @@ from .sampled_epigraph import SampledEpigraph
 
 
 def scipy_slsqp_stage(problem, vector, maxiter, target, *,
-                      coordinates="physical", finite_difference_eps=None):
+                      coordinates="physical", finite_difference_eps=None, cost_meter=None):
     """Single C1 constrained stage; scheduling and validation live elsewhere.
 
     ``target`` is unused: the mandatory limit is bound to the resolved policy,
@@ -39,6 +40,10 @@ def scipy_slsqp_stage(problem, vector, maxiter, target, *,
     vector SHAs remain physical. This path rejects excluded open endpoints
     rather than repairing them. Optional absolute finite_difference_eps is a
     comparison setting, not a production default; ftol is never overridden.
+    Optional EvaluationCost measures actual forward and solver callback events
+    without caching or extra checks. Use a fresh meter per stage; a supplied
+    meter remains inspectable on failure. Its snapshot excludes subsequent
+    C2 observations / validation. The default API/output remains unchanged.
     """
     if target is not None:
         raise ValueError("RF target override is not supported")
@@ -52,17 +57,26 @@ def scipy_slsqp_stage(problem, vector, maxiter, target, *,
     if finite_difference_eps is not None:
         options["eps"] = float(finite_difference_eps)
     original = np.asarray(vector, float)
-    if coordinates == "normalized":
-        from .normalized_epigraph import NormalizedEpigraph
-        problem = NormalizedEpigraph(problem)
-        original = problem.to_normalized(original)
-    result = minimize(problem.objective, original, method="SLSQP",
-        bounds=problem.box.bounds, constraints=({"type": "ineq", "fun": problem.residuals},),
-        options=options)
-    output = problem.to_physical(result.x) if coordinates == "normalized" else result.x
+    with cost_meter.timed() if cost_meter is not None else nullcontext():
+        if cost_meter is not None:
+            problem = cost_meter.epigraph(problem)
+        if coordinates == "normalized":
+            from .normalized_epigraph import NormalizedEpigraph
+            problem = NormalizedEpigraph(problem)
+            original = problem.to_normalized(original)
+        objective, residuals = problem.objective, problem.residuals
+        if cost_meter is not None:
+            objective = cost_meter.callback(objective)
+            residuals = cost_meter.callback(residuals, constraint=True)
+        result = minimize(objective, original, method="SLSQP",
+            bounds=problem.box.bounds, constraints=({"type": "ineq", "fun": residuals},),
+            options=options)
+        output = problem.to_physical(result.x) if coordinates == "normalized" else result.x
     state = {"success": bool(result.success), "status": int(result.status),
              "message": str(result.message), "nit": int(result.nit),
              "nfev": int(result.nfev)}
+    if cost_meter is not None:
+        state["evaluation_cost"] = cost_meter.snapshot()
     if coordinates == "normalized" or finite_difference_eps is not None:
         state["coordinate_configuration"] = {
             "coordinates": coordinates, "epigraph_units": "dB",
