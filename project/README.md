@@ -42,6 +42,14 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 - Git保存PASSはRF科学PASSではない。独立MNA/power/dense/物理/連続帯域は `not_run`、候補昇格は禁止。
   `optimize_stage` の注入は隔離テスト用で、実SciPyとは異なる実行種別を記録する。実験実行はコードレビューとは別判断。
 
+## Issue #241：SciPy-DE最小接続（mockのみ）
+
+[API・計測・本番接続ブロッカー](diagnostics/issue241_scipy_de_preview.md)を参照。
+`generate_starts(..., count=N, cost_meter=meter)` は既存16点Sobol blockを再利用し、
+既定3-startを維持する。`scipy_de_preview.run_de_preview` は公開SciPy制約APIを
+mock forwardで検査する小さなadapter。初期化も含むsample予算・中断時メーター/bestを保持し、
+物理不正proposalはRFスコアを作らずfail-closed停止する。本番runner/実RF探索は未提供。
+
 ## Issue #239：optimizer比較契約・RFコスト計測（本番EXPなし）
 
 [診断と未実行比較計画](diagnostics/issue239_optimizer_comparison.md)を参照。
