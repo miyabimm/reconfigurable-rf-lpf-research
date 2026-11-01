@@ -26,6 +26,7 @@ from lpf.constraint_versions import rf_input_file
 from ._grid import ROOT
 from .problem_seed import definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SampledEpigraph
+from .evaluation_cost import SampleBudgetExceeded
 
 
 def scipy_slsqp_stage(problem, vector, maxiter, target, *,
@@ -154,8 +155,12 @@ def _observe(problem, vector):
                 "min_h3_db": float(problem.mandatory_stop_db + np.min(residual[role == 2])),
                 "all_sampled_inequalities_nonnegative": bool(np.all(residual >= 0)),
             }
+        except SampleBudgetExceeded:
+            raise
         except Exception as exc:
             result["sampled_rf"] = {"state": "error", "error": _error(exc)}
+    except SampleBudgetExceeded:
+        raise
     except Exception as exc:
         result["input_error"] = _error(exc)
     return result
@@ -166,7 +171,8 @@ class _StageAbort(Exception):
 
 
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
-                  optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None):
+                  optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
+                  cost_meter=None):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -181,6 +187,11 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     ``record_sink``, when supplied, receives snapshots before dispatch and after
     every stage (including interruption), then the final record. Sink failures
     propagate: callers must not claim durable preservation after a write fails.
+    Optional cost_meter covers seed replay, all solver forwards and post-stage
+    observations, using one shared meter across v2 recovery stages. Supply a
+    fresh SampleBudgetCost for a per-start hard requested-sample ceiling.
+    Budget exhaustion is saved separately from solver status/nonconvergence;
+    no recovery is attempted. Injected test optimizers receive a metered view.
     This API runs one start only; no EXP storage, multistart or dense checks.
     """
     if not callable(optimize_stage):
@@ -193,11 +204,13 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     fine = SampledEpigraph(circuit, fine_points)
     if not isinstance(seed_record, dict):
         raise TypeError("Expected C1 seed record")
-    replay = coarse.seed(seed_record["input_vector"], policy_id=seed_record["policy_id"],
-        policy_fingerprint=seed_record["policy_fingerprint"],
-        definition_sha256=seed_record["definition_sha256"],
-        input_sha256=seed_record["input_vector_sha256"], seed=seed_record["seed"],
-        jitter_fraction=seed_record["jitter_fraction"])
+    replay_problem = cost_meter.epigraph(coarse) if cost_meter is not None else coarse
+    with cost_meter.timed() if cost_meter is not None else nullcontext():
+        replay = replay_problem.seed(seed_record["input_vector"], policy_id=seed_record["policy_id"],
+            policy_fingerprint=seed_record["policy_fingerprint"],
+            definition_sha256=seed_record["definition_sha256"],
+            input_sha256=seed_record["input_vector_sha256"], seed=seed_record["seed"],
+            jitter_fraction=seed_record["jitter_fraction"])
     if (json.dumps(replay, sort_keys=True, allow_nan=False) !=
             json.dumps(seed_record, sort_keys=True, allow_nan=False)):
         raise ValueError("Seed record does not match C1 deterministic replay")
@@ -228,6 +241,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     started = time.monotonic()
 
     def persist():
+        if cost_meter is not None:
+            record["evaluation_cost"] = cost_meter.snapshot()
+            if hasattr(cost_meter, "max_samples"):
+                record["max_frequency_samples_requested"] = cost_meter.max_samples
         if record_sink is not None:
             record_sink(deepcopy(record))
 
@@ -247,8 +264,17 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
         calls.append(stage)
         persist()
         tick = time.monotonic()
+        before_cost = cost_meter.snapshot() if cost_meter is not None else None
         try:
-            raw_vector, raw_status = optimize_stage(problem, x.copy(), maxiter, target)
+            if cost_meter is not None and optimize_stage is scipy_slsqp_stage:
+                raw_vector, raw_status = optimize_stage(
+                    problem, x.copy(), maxiter, target, cost_meter=cost_meter)
+            elif cost_meter is not None:
+                with cost_meter.timed():
+                    raw_vector, raw_status = optimize_stage(
+                        cost_meter.epigraph(problem), x.copy(), maxiter, target)
+            else:
+                raw_vector, raw_status = optimize_stage(problem, x.copy(), maxiter, target)
             # Retain original returned values before validating the callback contract.
             output = np.asarray(raw_vector, dtype=float)
             stage["output_vector"] = _json_value(output)
@@ -265,7 +291,11 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                 raise ValueError("Optimizer success/status contradict each other")
             stage["exit_cause"] = ("success" if raw_status["success"] else
                                    f"status_{raw_status['status']}")
-            stage["observation"] = _observe(problem, output)
+            if cost_meter is not None:
+                with cost_meter.timed():
+                    stage["observation"] = _observe(cost_meter.epigraph(problem), output)
+            else:
+                stage["observation"] = _observe(problem, output)
             if stage["observation"]["sampled_rf"]["state"] != "observed":
                 raise ValueError("Stage output cannot be evaluated on its finite grid")
             status = _json_value(raw_status)
@@ -277,6 +307,9 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
             raise _StageAbort(str(exc)) from exc
         finally:
             stage["elapsed_seconds"] = time.monotonic() - tick
+            if cost_meter is not None:
+                stage["evaluation_cost"] = {
+                    k: v - before_cost[k] for k, v in cost_meter.snapshot().items()}
             persist()
 
     try:
@@ -288,7 +321,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
             record["attempts"].append(item)
         record["numerical_state"] = "converged" if result["attempts"][-1]["converged"] else "not_converged"
     except _StageAbort as exc:
-        record["numerical_state"] = "failed"
+        record["numerical_state"] = (
+            "budget_exhausted" if isinstance(exc.__cause__, SampleBudgetExceeded) else "failed")
         record["exception"] = _error(exc.__cause__ or exc)
         # The controller cannot return attempt metadata on an exception. Keep
         # all completed and interrupted calls grouped, without inventing a

@@ -42,6 +42,34 @@ Cvar=0でも固定Cは残り、容量合算や単一Qへの置換はしない。
 - Git保存PASSはRF科学PASSではない。独立MNA/power/dense/物理/連続帯域は `not_run`、候補昇格は禁止。
   `optimize_stage` の注入は隔離テスト用で、実SciPyとは異なる実行種別を記録する。実験実行はコードレビューとは別判断。
 
+## Issue #250：D/A/B比較の実行前準備（独立レビュー待ち）
+
+`scripts/prepare_issue250_comparison.py --output results/issue250/preparation.json` は
+完全checkout・最新remote mainを検査し、EXP-062面積6の固定4L/3GJM回路を枝順・signed k順まで
+保持して構築する。過去checkpoint/manifest/MNA原本SHAを照合し、1001点forwardの互換性と
+84点独立branch-current MNA・電力・受動性をread-onlyで確認してから、bounds中点＋k=0の
+共通nominalとseed 23〜34のD/A/B開始点を生成する。nominalはcheckpoint値を使わない。
+出力は候補pool/選別理由・全vector/SHA・実消費費用・論理73件と重複除外後の計算対応表を含む。
+`results/`内の新規ファイルだけに原子的に保存する。過去EXPは変更しない。
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  uv run --frozen python scripts/prepare_issue250_comparison.py \
+  --output results/issue250/preparation.json
+```
+
+`run_c1_staged(..., cost_meter=SampleBudgetCost(1_500_000))` は1 startのseed replay、
+ソルバー、段階後のforward観測、v2回復の全てを共通sample上限へ算入する。
+次のforward全体が入らない場合は入口前に停止し、`budget_exhausted`、消費費用、既存段階の
+入出力/statusを保存する。solver nfevによる代用や新しいRF guardはない。
+既定のmeterなし経路は不変更。stage別費用は差分、start費用はreplayを含む累積であり、
+SciPy status内のmeter snapshot（累積）を合算しない。
+
+**これは実行前の独立PR範囲でありIssue #250全体の完了ではない。** EXP番号予約、厳格manifest/
+storage plannedのGit保存と遠隔readback、独立レビュー、再開可能な本番反復配線、pilot監査、
+17点→上位dense→独立検証・比較表・G3/G4は未実施。準備ファイルはG0/G1 PASSではなく、
+既存one-start driverへmulti-startと偽装して渡してはならない。本番計算は開始しない。
+
 ## Issue #245 A：Sobol RF選別（明示opt-in）
 
 `generate_starts(..., selection='rf_pareto', max_initial_samples=952)` は
