@@ -1,25 +1,95 @@
 {
-  "schema_version": 1,
-  "policy": "phase2-git-only-v1",
+  "checkpoints": [],
   "experiment_id": "EXP-114",
+  "git_readback": "passed",
+  "limitations": [
+    "4 local SLSQP starts only; convergence is not RF compliance or global optimality.",
+    "All 4 final 17-point evaluations fail strict30 without rounding; dense1001 and independent MNA/power/passivity were not run because no arm passed the gate.",
+    "EXP-113 initial dense1001 was a separate pre-optimization diagnostic, not post-optimization validation.",
+    "External EXP-062 IL is an external different-grid/depth reference; its numerical delta is not a like-for-like ranking.",
+    "Finite 17-point grid does not prove continuous-frequency behavior; Q(f), SRF, EM, tolerance, measurement and implementation remain unverified.",
+    "Original pre-forward KeyError STOP and original 476-reservation marker are retained; recovery actual forward cost is separately measured.",
+    "Raw retained until audited preservation; no candidate promotion."
+  ],
   "phase": "Phase 2",
-  "stage": "planned",
+  "policy": "phase2-git-only-v1",
+  "schema_version": 1,
   "selection": {
-    "top_k": 2,
+    "estimated_curated_bytes": 1500000,
     "retain": [
       "pareto"
     ],
     "rule": "Retain checked Pareto and all start status, complete vectors, recovery, costs, and exclusion/failure diagnostics. Validate all four final vectors at 17 points; only strict30 and physical PASS go to dense1001, then dense PASS to independent MNA84/power/passivity/SPD. Preserve raw until Git readback and audit.",
-    "estimated_curated_bytes": 1500000
+    "top_k": 2
   },
-  "summary": null,
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
-  "git_readback": "not_run",
   "size_exception": null,
-  "limitations": [
-    "Planned only; optimization and post-optimization validation not_run.",
-    "Finite-grid diagnostics are not continuous-frequency or implementation guarantees."
+  "stage": "complete",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+    "sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7"
+  },
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-stop.json",
+      "reason": "Post-optimization validation stopped before first RF forward; preserve fail-closed marker and accounting.",
+      "role": "representative_failure",
+      "sha256": "4de7fd4f1b8c0ef4ad502498e7b7da5f30b4d0879a7dd8049c0a8cad0917e35f"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/recovery17.py",
+      "reason": "Exact one-shot recovery source, actual metering and final-vector binding.",
+      "role": "source_snapshot",
+      "sha256": "ea6c490636d04f3adaeb3d9fe9f988ccca9f26b6e403d77ba790fd40b68270ab"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+      "reason": "Complete original staged raw with observations and G1 identity; retained for forensic recovery, including material not in compact summary.",
+      "role": "recovery_state",
+      "sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-original-marker.json",
+      "reason": "Byte-identical original pre-forward STOP marker, reservation 476 is not an RF charge.",
+      "role": "recovery_state",
+      "sha256": "4c3f4750f91811379159644d1a63a61d17ce7b10b410cdf0d081a7d985fdc2c1"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-recovery-1.json",
+      "reason": "Completed recovery attempt and actual measured RF costs, source and raw SHA.",
+      "role": "recovery_state",
+      "sha256": "b9aab09f564e28df9f00c663f606f25f6d6ca5778f603796aeb2e2c61adcf251"
+    }
+  ],
+  "validation_overlays": [
+    {
+      "method": "grid",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-physical-grid17.json",
+      "sha256": "a6606b1e5f974947506f34bdce31fa3c0377736bdd1c2871a22ff409cd1b92f1",
+      "status": "failed"
+    },
+    {
+      "method": "grid",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-normalized-grid17.json",
+      "sha256": "ce8518ad1693644e8fc3c021f2a6abee5be6bb86bbbec1fc76ac67925f60f790",
+      "status": "failed"
+    },
+    {
+      "method": "grid",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+      "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814",
+      "status": "failed"
+    },
+    {
+      "method": "grid",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-normalized-grid17.json",
+      "sha256": "2ad68e4599fb946aa196797805de29f6cb6cdff2f7e2b3a51a2e3e141f08d093",
+      "status": "failed"
+    },
+    {
+      "method": "spd",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/independent-spd.json",
+      "sha256": "1c0d96f6d8df5ef80ff90536e5b991d5ae7573f438ca1c958d47749a4d09474b",
+      "status": "passed"
+    }
   ]
 }

@@ -1,0 +1,29 @@
+{
+  "experiment_id": "EXP-114",
+  "issue": 259,
+  "operation": "post_optimization_grid17_validation",
+  "status": "stopped_before_first_forward",
+  "failed_arm": "B-31-1-physical",
+  "exception_type": "KeyError",
+  "exception_message": "vector",
+  "cause": "The one-off validation code read plan['actual'][k]['vector']; the actual object stores the physical vector under plan['actual'][k]['start']['vector']. The failure happened on that lookup before intermediate_scan was invoked.",
+  "raw_progress_path": "results/EXP-114/validation17-progress.json",
+  "raw_progress_snapshot": {
+    "completed": [],
+    "completed_samples": 0,
+    "in_progress": "B-31-1-physical",
+    "requested_samples": 476
+  },
+  "accounting_note": "The progress counter was incremented as a reservation before the failing lookup, not by a forward meter. No intermediate_scan or RF forward was called; actual validation requested/completed frequency samples are 0/0. Preserve the original marker without resetting it.",
+  "completed_optimization_arms": [
+    "B-31-1-physical",
+    "B-31-1-normalized",
+    "B-28-1-physical",
+    "B-28-1-normalized"
+  ],
+  "post_optimization_grid17": "not_run",
+  "post_optimization_dense1001": "not_run",
+  "independent_mna_power_passivity": "not_run",
+  "preservation": "incomplete; raw snapshots and progress marker retained",
+  "next_action": "Fail closed. No automatic retry or marker reset; independent review and an explicit recovery decision are required before any further validation."
+}

@@ -1,0 +1,1148 @@
+{
+  "actual_results": {
+    "B-28-1-normalized": {
+      "controller": {
+        "iteration_policy": {
+          "max_continuations": 1,
+          "max_stage_calls_per_initial_start": 4,
+          "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "recovery_cause": null,
+        "recovery_invoked": false
+      },
+      "coordinates": "normalized",
+      "evaluation_cost": {
+        "RF_forward_calls": 319,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 626,
+        "component_rejections": 0,
+        "cpu_seconds": 0.570428810000001,
+        "forward_failures": 0,
+        "frequency_samples_completed": 18704,
+        "frequency_samples_requested": 18704,
+        "role_rejections": 0,
+        "solver_constraint_calls": 316,
+        "solver_objective_calls": 303,
+        "spd_rejections": 0,
+        "wall_seconds": 0.5704431660415139
+      },
+      "exception": null,
+      "numerical_state": "converged",
+      "seed_ref": {
+        "actual_start_id": "B-28-1-normalized",
+        "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+        "seed_record_sha256": "2292a0847d6a4224b1285a8ba583c905135a12d65b7ee8c6e7cbca7ae9bb0fd0"
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-28-1-grid17.json",
+        "sha256": "9296b39924dca72910ab9cf1fdaf3b43bcd73f4ea073cff0238fd4f34e958e40",
+        "vector_sha256": "ea8bb64ed3dd90957f7065ef553933775979e95f77fb6d35d024379902b8f609"
+      },
+      "stage_calls": [
+        {
+          "attempt_index": 0,
+          "call_index": 0,
+          "elapsed_seconds": 0.5132951319974381,
+          "evaluation_cost": {
+            "RF_forward_calls": 288,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 566,
+            "component_rejections": 0,
+            "cpu_seconds": 0.5131419040000003,
+            "forward_failures": 0,
+            "frequency_samples_completed": 16128,
+            "frequency_samples_requested": 16128,
+            "role_rejections": 0,
+            "solver_constraint_calls": 287,
+            "solver_objective_calls": 276,
+            "spd_rejections": 0,
+            "wall_seconds": 0.5131603949994314
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "168f9218aed609ac049411d25109284122c8c53a088080d8f28c3d73a8a245f9",
+            "vector_ref": "seed"
+          },
+          "input_vector_sha256": "69e06e7196296efe6feccaee65688bb2f22f38a3f9e0f12017a9da406a25d1a2",
+          "maxiter": 240,
+          "output_vector": [
+            2.5205513299505085,
+            25.702708531975922,
+            3.6615980272381248,
+            7.95266622979827,
+            4.395555035463136,
+            1.593401520027828,
+            0.3220618863584411,
+            0.02000000000000065,
+            -0.1,
+            0.01689881494794361,
+            -0.06815417155488507,
+            0.20000000000000367,
+            0.2,
+            0.0660194166866562,
+            1.186631358451457,
+            2.9999999999996265,
+            0.9381754192537898,
+            3.0,
+            0.8740842621379304,
+            0.009663111427513688,
+            0.2615911844902862,
+            1.7841603868046874,
+            0.18549571113406677,
+            0.0,
+            0.0,
+            0.9825454100601445
+          ],
+          "stage": "coarse",
+          "status": {
+            "coordinate_configuration": {
+              "coordinates": "normalized",
+              "epigraph_units": "dB",
+              "eps_units": "unit_box_and_t_db",
+              "finite_difference_eps": null,
+              "ftol": "scipy_default_unchanged"
+            },
+            "evaluation_cost": {
+              "RF_forward_calls": 288,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 566,
+              "component_rejections": 0,
+              "cpu_seconds": 0.5133563410000002,
+              "forward_failures": 0,
+              "frequency_samples_completed": 16128,
+              "frequency_samples_requested": 16128,
+              "role_rejections": 0,
+              "solver_constraint_calls": 287,
+              "solver_objective_calls": 276,
+              "spd_rejections": 0,
+              "wall_seconds": 0.5133748650259804
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 276,
+            "nit": 10,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "seed"
+        },
+        {
+          "attempt_index": 0,
+          "call_index": 1,
+          "elapsed_seconds": 0.056123999995179474,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 59,
+            "component_rejections": 0,
+            "cpu_seconds": 0.055995825000000554,
+            "forward_failures": 0,
+            "frequency_samples_completed": 2520,
+            "frequency_samples_requested": 2520,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.055993400019360706
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "843f2a3f594c8dfc09e7ff89dfc7ee2cae3567773720882ec62bea406064a869",
+            "vector_ref": "0"
+          },
+          "input_vector_sha256": "74b0513fa589d40907366deb755c1760a9f57e766a27149a2b0e72401b87b18b",
+          "maxiter": 120,
+          "output_vector": {
+            "sha256": "843f2a3f594c8dfc09e7ff89dfc7ee2cae3567773720882ec62bea406064a869",
+            "vector_ref": "0"
+          },
+          "stage": "fine",
+          "status": {
+            "coordinate_configuration": {
+              "coordinates": "normalized",
+              "epigraph_units": "dB",
+              "eps_units": "unit_box_and_t_db",
+              "finite_difference_eps": null,
+              "ftol": "scipy_default_unchanged"
+            },
+            "evaluation_cost": {
+              "RF_forward_calls": 318,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 625,
+              "component_rejections": 0,
+              "cpu_seconds": 0.5693679960000009,
+              "forward_failures": 0,
+              "frequency_samples_completed": 18620,
+              "frequency_samples_requested": 18620,
+              "role_rejections": 0,
+              "solver_constraint_calls": 316,
+              "solver_objective_calls": 303,
+              "spd_rejections": 0,
+              "wall_seconds": 0.5693838050356135
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "stage_call_0"
+        }
+      ]
+    },
+    "B-28-1-physical": {
+      "controller": {
+        "iteration_policy": {
+          "max_continuations": 1,
+          "max_stage_calls_per_initial_start": 4,
+          "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "recovery_cause": null,
+        "recovery_invoked": false
+      },
+      "coordinates": "physical",
+      "evaluation_cost": {
+        "RF_forward_calls": 707,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 3,
+        "component_rejections": 0,
+        "cpu_seconds": 0.6200469379999999,
+        "forward_failures": 0,
+        "frequency_samples_completed": 40432,
+        "frequency_samples_requested": 40432,
+        "role_rejections": 0,
+        "solver_constraint_calls": 704,
+        "solver_objective_calls": 677,
+        "spd_rejections": 0,
+        "wall_seconds": 0.6201075699937064
+      },
+      "exception": null,
+      "numerical_state": "converged",
+      "seed_ref": {
+        "actual_start_id": "B-28-1-physical",
+        "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+        "seed_record_sha256": "2292a0847d6a4224b1285a8ba583c905135a12d65b7ee8c6e7cbca7ae9bb0fd0"
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-28-1-grid17.json",
+        "sha256": "9296b39924dca72910ab9cf1fdaf3b43bcd73f4ea073cff0238fd4f34e958e40",
+        "vector_sha256": "ea8bb64ed3dd90957f7065ef553933775979e95f77fb6d35d024379902b8f609"
+      },
+      "stage_calls": [
+        {
+          "attempt_index": 0,
+          "call_index": 0,
+          "elapsed_seconds": 0.5885594389983453,
+          "evaluation_cost": {
+            "RF_forward_calls": 676,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 1,
+            "component_rejections": 0,
+            "cpu_seconds": 0.588172671,
+            "forward_failures": 0,
+            "frequency_samples_completed": 37856,
+            "frequency_samples_requested": 37856,
+            "role_rejections": 0,
+            "solver_constraint_calls": 675,
+            "solver_objective_calls": 650,
+            "spd_rejections": 0,
+            "wall_seconds": 0.5882358610106166
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "168f9218aed609ac049411d25109284122c8c53a088080d8f28c3d73a8a245f9",
+            "vector_ref": "seed"
+          },
+          "input_vector_sha256": "69e06e7196296efe6feccaee65688bb2f22f38a3f9e0f12017a9da406a25d1a2",
+          "maxiter": 240,
+          "output_vector": [
+            2.5231084610484524,
+            25.73401530624057,
+            3.6627547728022964,
+            7.950118072865671,
+            4.390819174095009,
+            1.592835278092626,
+            0.3222545833700626,
+            0.02,
+            -0.1,
+            0.01691618630359255,
+            -0.06815807011315582,
+            0.2,
+            0.2000000000000001,
+            0.065734759976128,
+            1.1871094398739592,
+            3.0,
+            0.9384483480886404,
+            3.0,
+            0.8743677210720067,
+            0.009663111427513688,
+            0.2615911844902862,
+            1.7251707761870096,
+            0.18546824096143003,
+            0.0,
+            0.0,
+            0.982542176312745
+          ],
+          "stage": "coarse",
+          "status": {
+            "evaluation_cost": {
+              "RF_forward_calls": 676,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 1,
+              "component_rejections": 0,
+              "cpu_seconds": 0.586926687,
+              "forward_failures": 0,
+              "frequency_samples_completed": 37856,
+              "frequency_samples_requested": 37856,
+              "role_rejections": 0,
+              "solver_constraint_calls": 675,
+              "solver_objective_calls": 650,
+              "spd_rejections": 0,
+              "wall_seconds": 0.5869951459753793
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 650,
+            "nit": 24,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "seed"
+        },
+        {
+          "attempt_index": 0,
+          "call_index": 1,
+          "elapsed_seconds": 0.03060117401764728,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 1,
+            "component_rejections": 0,
+            "cpu_seconds": 0.03019995799999986,
+            "forward_failures": 0,
+            "frequency_samples_completed": 2520,
+            "frequency_samples_requested": 2520,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.030196742998668924
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "25a5ad8170d994c59415ff268ee1d9bddae60c50dbcf0983c799467d51497186",
+            "vector_ref": "0"
+          },
+          "input_vector_sha256": "5f0f4db538465991d844b904c61b3b2952e3fc91637c943a1757843ae266b216",
+          "maxiter": 120,
+          "output_vector": {
+            "sha256": "25a5ad8170d994c59415ff268ee1d9bddae60c50dbcf0983c799467d51497186",
+            "vector_ref": "0"
+          },
+          "stage": "fine",
+          "status": {
+            "evaluation_cost": {
+              "RF_forward_calls": 706,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 2,
+              "component_rejections": 0,
+              "cpu_seconds": 0.617182673,
+              "forward_failures": 0,
+              "frequency_samples_completed": 40348,
+              "frequency_samples_requested": 40348,
+              "role_rejections": 0,
+              "solver_constraint_calls": 704,
+              "solver_objective_calls": 677,
+              "spd_rejections": 0,
+              "wall_seconds": 0.6172443100076634
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "stage_call_0"
+        }
+      ]
+    },
+    "B-31-1-normalized": {
+      "controller": {
+        "iteration_policy": {
+          "max_continuations": 1,
+          "max_stage_calls_per_initial_start": 4,
+          "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "recovery_cause": null,
+        "recovery_invoked": false
+      },
+      "coordinates": "normalized",
+      "evaluation_cost": {
+        "RF_forward_calls": 61,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 119,
+        "component_rejections": 0,
+        "cpu_seconds": 0.11763196799999998,
+        "forward_failures": 0,
+        "frequency_samples_completed": 4256,
+        "frequency_samples_requested": 4256,
+        "role_rejections": 0,
+        "solver_constraint_calls": 58,
+        "solver_objective_calls": 54,
+        "spd_rejections": 0,
+        "wall_seconds": 0.11761855400982313
+      },
+      "exception": null,
+      "numerical_state": "converged",
+      "seed_ref": {
+        "actual_start_id": "B-31-1-normalized",
+        "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+        "seed_record_sha256": "da290dab360db35d0d07b0a79772ceeade56bb5b052ea3805b11c5f5adfcb2cb"
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-31-1-grid17.json",
+        "sha256": "8e1e418a9844b32715eb9caa8553a3014fcb138d6a9d3ab11d57306581052ba8",
+        "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+      },
+      "stage_calls": [
+        {
+          "attempt_index": 0,
+          "call_index": 0,
+          "elapsed_seconds": 0.057166864979080856,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 59,
+            "component_rejections": 0,
+            "cpu_seconds": 0.05702548999999979,
+            "forward_failures": 0,
+            "frequency_samples_completed": 1680,
+            "frequency_samples_requested": 1680,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.05702253899653442
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "16404b1b39b8514465f51d9e5278e88c1cbe59714fe96ce804c49a8a7f0f27ed",
+            "vector_ref": "seed"
+          },
+          "input_vector_sha256": "aceac65fcd52b0fa07d157fd92e1868f617d390821b9b945bfef49b5721f61d1",
+          "maxiter": 240,
+          "output_vector": [
+            4.530156849713734,
+            23.31113596556562,
+            5.696784215570115,
+            7.022612522832906,
+            1.1928649525007526,
+            1.2266937480463014,
+            0.26509234748754373,
+            0.02,
+            -0.1,
+            5.159170308779992e-05,
+            -0.08422741635281443,
+            0.4179336656783661,
+            0.20000000000000004,
+            0.05607296891335961,
+            1.348199997364001,
+            0.027621391821095985,
+            1.0964829812077765,
+            0.021606778603962724,
+            0.9542579435248506,
+            0.0,
+            0.6602773484360126,
+            3.0,
+            0.47981755379283975,
+            2.999999999999999,
+            0.0,
+            0.8801666159536757
+          ],
+          "stage": "coarse",
+          "status": {
+            "coordinate_configuration": {
+              "coordinates": "normalized",
+              "epigraph_units": "dB",
+              "eps_units": "unit_box_and_t_db",
+              "finite_difference_eps": null,
+              "ftol": "scipy_default_unchanged"
+            },
+            "evaluation_cost": {
+              "RF_forward_calls": 30,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 59,
+              "component_rejections": 0,
+              "cpu_seconds": 0.05843528599999992,
+              "forward_failures": 0,
+              "frequency_samples_completed": 1680,
+              "frequency_samples_requested": 1680,
+              "role_rejections": 0,
+              "solver_constraint_calls": 29,
+              "solver_objective_calls": 27,
+              "spd_rejections": 0,
+              "wall_seconds": 0.05843024401110597
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "seed"
+        },
+        {
+          "attempt_index": 0,
+          "call_index": 1,
+          "elapsed_seconds": 0.05826420697849244,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 59,
+            "component_rejections": 0,
+            "cpu_seconds": 0.05813096800000017,
+            "forward_failures": 0,
+            "frequency_samples_completed": 2520,
+            "frequency_samples_requested": 2520,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.058124100003624335
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "8bc59c88f402d5a3cbedeb69559d6c2d0e07cd2960265f66d2aa6e95dc0a7e95",
+            "vector_ref": "0"
+          },
+          "input_vector_sha256": "8bebdc63ab94206fcf42a8160704cf6612a123a208ac815679c3983c9d757790",
+          "maxiter": 120,
+          "output_vector": {
+            "sha256": "8bc59c88f402d5a3cbedeb69559d6c2d0e07cd2960265f66d2aa6e95dc0a7e95",
+            "vector_ref": "0"
+          },
+          "stage": "fine",
+          "status": {
+            "coordinate_configuration": {
+              "coordinates": "normalized",
+              "epigraph_units": "dB",
+              "eps_units": "unit_box_and_t_db",
+              "finite_difference_eps": null,
+              "ftol": "scipy_default_unchanged"
+            },
+            "evaluation_cost": {
+              "RF_forward_calls": 60,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 118,
+              "component_rejections": 0,
+              "cpu_seconds": 0.11644922199999996,
+              "forward_failures": 0,
+              "frequency_samples_completed": 4172,
+              "frequency_samples_requested": 4172,
+              "role_rejections": 0,
+              "solver_constraint_calls": 58,
+              "solver_objective_calls": 54,
+              "spd_rejections": 0,
+              "wall_seconds": 0.11643775200354867
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "stage_call_0"
+        }
+      ]
+    },
+    "B-31-1-physical": {
+      "controller": {
+        "iteration_policy": {
+          "max_continuations": 1,
+          "max_stage_calls_per_initial_start": 4,
+          "noniteration_warm_restart": "once_if_coarse_failed_and_fine_converged",
+          "policy_id": "slsqp-staged-v2",
+          "primary": {
+            "coarse": 240,
+            "fine": 120
+          },
+          "prohibit_fine_maxiter_extension_if_coarse_noniteration_failure": true,
+          "recovery": {
+            "coarse": 500,
+            "fine": 280
+          },
+          "retries_on_iteration_limit": 1
+        },
+        "recovery_cause": null,
+        "recovery_invoked": false
+      },
+      "coordinates": "physical",
+      "evaluation_cost": {
+        "RF_forward_calls": 61,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 3,
+        "component_rejections": 0,
+        "cpu_seconds": 0.05082290899999997,
+        "forward_failures": 0,
+        "frequency_samples_completed": 4256,
+        "frequency_samples_requested": 4256,
+        "role_rejections": 0,
+        "solver_constraint_calls": 58,
+        "solver_objective_calls": 54,
+        "spd_rejections": 0,
+        "wall_seconds": 0.05086452001705766
+      },
+      "exception": null,
+      "numerical_state": "converged",
+      "seed_ref": {
+        "actual_start_id": "B-31-1-physical",
+        "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+        "seed_record_sha256": "da290dab360db35d0d07b0a79772ceeade56bb5b052ea3805b11c5f5adfcb2cb"
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-31-1-grid17.json",
+        "sha256": "8e1e418a9844b32715eb9caa8553a3014fcb138d6a9d3ab11d57306581052ba8",
+        "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+      },
+      "stage_calls": [
+        {
+          "attempt_index": 0,
+          "call_index": 0,
+          "elapsed_seconds": 0.02629200799856335,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 1,
+            "component_rejections": 0,
+            "cpu_seconds": 0.026147440000000022,
+            "forward_failures": 0,
+            "frequency_samples_completed": 1680,
+            "frequency_samples_requested": 1680,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.026143646973650903
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "16404b1b39b8514465f51d9e5278e88c1cbe59714fe96ce804c49a8a7f0f27ed",
+            "vector_ref": "seed"
+          },
+          "input_vector_sha256": "aceac65fcd52b0fa07d157fd92e1868f617d390821b9b945bfef49b5721f61d1",
+          "maxiter": 240,
+          "output_vector": {
+            "sha256": "16404b1b39b8514465f51d9e5278e88c1cbe59714fe96ce804c49a8a7f0f27ed",
+            "vector_ref": "seed"
+          },
+          "stage": "coarse",
+          "status": {
+            "evaluation_cost": {
+              "RF_forward_calls": 30,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 1,
+              "component_rejections": 0,
+              "cpu_seconds": 0.02653194999999997,
+              "forward_failures": 0,
+              "frequency_samples_completed": 1680,
+              "frequency_samples_requested": 1680,
+              "role_rejections": 0,
+              "solver_constraint_calls": 29,
+              "solver_objective_calls": 27,
+              "spd_rejections": 0,
+              "wall_seconds": 0.026578525023069233
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "seed"
+        },
+        {
+          "attempt_index": 0,
+          "call_index": 1,
+          "elapsed_seconds": 0.023211646010167897,
+          "evaluation_cost": {
+            "RF_forward_calls": 30,
+            "box_rejections": 0,
+            "cache_hits": 0,
+            "component_checks": 1,
+            "component_rejections": 0,
+            "cpu_seconds": 0.02307379799999998,
+            "forward_failures": 0,
+            "frequency_samples_completed": 2520,
+            "frequency_samples_requested": 2520,
+            "role_rejections": 0,
+            "solver_constraint_calls": 29,
+            "solver_objective_calls": 27,
+            "spd_rejections": 0,
+            "wall_seconds": 0.023071638017427176
+          },
+          "exception": null,
+          "exit_cause": "success",
+          "input_vector": {
+            "sha256": "16404b1b39b8514465f51d9e5278e88c1cbe59714fe96ce804c49a8a7f0f27ed",
+            "vector_ref": "seed"
+          },
+          "input_vector_sha256": "aceac65fcd52b0fa07d157fd92e1868f617d390821b9b945bfef49b5721f61d1",
+          "maxiter": 120,
+          "output_vector": {
+            "sha256": "16404b1b39b8514465f51d9e5278e88c1cbe59714fe96ce804c49a8a7f0f27ed",
+            "vector_ref": "seed"
+          },
+          "stage": "fine",
+          "status": {
+            "evaluation_cost": {
+              "RF_forward_calls": 60,
+              "box_rejections": 0,
+              "cache_hits": 0,
+              "component_checks": 2,
+              "component_rejections": 0,
+              "cpu_seconds": 0.04963973300000002,
+              "forward_failures": 0,
+              "frequency_samples_completed": 4172,
+              "frequency_samples_requested": 4172,
+              "role_rejections": 0,
+              "solver_constraint_calls": 58,
+              "solver_objective_calls": 54,
+              "spd_rejections": 0,
+              "wall_seconds": 0.04968243601615541
+            },
+            "message": "Optimization terminated successfully",
+            "nfev": 27,
+            "nit": 1,
+            "status": 0,
+            "success": true
+          },
+          "warm_start_source": "stage_call_0"
+        }
+      ]
+    }
+  },
+  "attempts": {
+    "attempted": 4,
+    "converged": 4,
+    "failed": 0,
+    "nonconverged": 0,
+    "not_started": 0,
+    "planned": 4
+  },
+  "best_found": [],
+  "costs": {
+    "logical_shared": "G1 logical_starts reference actual_start_id; never sum shared results.",
+    "physical_optimization": {
+      "RF_forward_calls": 1148,
+      "box_rejections": 0,
+      "cache_hits": 0,
+      "component_checks": 751,
+      "component_rejections": 0,
+      "cpu_seconds": 1.3589306250000008,
+      "forward_failures": 0,
+      "frequency_samples_completed": 67648,
+      "frequency_samples_requested": 67648,
+      "role_rejections": 0,
+      "solver_constraint_calls": 1136,
+      "solver_objective_calls": 1088,
+      "spd_rejections": 0,
+      "wall_seconds": 1.359033810062101
+    },
+    "recheck": {
+      "RF_forward_calls": 50,
+      "box_rejections": 0,
+      "cache_hits": 0,
+      "component_checks": 40,
+      "component_rejections": 0,
+      "cpu_seconds": 0.047177680999998195,
+      "forward_failures": 0,
+      "frequency_samples_completed": 3360,
+      "frequency_samples_requested": 3360,
+      "role_rejections": 0,
+      "solver_constraint_calls": 0,
+      "solver_objective_calls": 0,
+      "spd_rejections": 0,
+      "wall_seconds": 0.04705078003462404
+    },
+    "validation17_recovery": {
+      "RF_forward_calls": 4,
+      "box_rejections": 0,
+      "cache_hits": 0,
+      "component_checks": 4,
+      "component_rejections": 0,
+      "cpu_seconds": 0.011558795000000455,
+      "forward_failures": 0,
+      "frequency_samples_completed": 1904,
+      "frequency_samples_requested": 1904,
+      "role_rejections": 0,
+      "solver_constraint_calls": 0,
+      "solver_objective_calls": 0,
+      "spd_rejections": 0,
+      "wall_seconds": 1.335188930039294
+    }
+  },
+  "execution_identity": {
+    "experiment_id": "EXP-114",
+    "g1_sha256": "bbd0ee6eca7014d1523131e3d753c92410ca7994959d8bf42d5116d0624cfb65",
+    "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+    "source_provenance": {
+      "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "execution_kind": "scipy_slsqp",
+      "git_head": "a56cd0223ae0ae4bc8255930a619e31d21590da3",
+      "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+      "kind": "recorded",
+      "optimizer_kind": "reported_slsqp",
+      "thread_environment": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      }
+    }
+  },
+  "experiment_id": "EXP-114",
+  "input_source_sha256": "95f59eb67e0b265b147c43a589fe440caad5cdb2354ffa4b795c6dc1dc09633b",
+  "limitations": [
+    "4 local SLSQP starts only; convergence is not RF compliance or global optimality.",
+    "All 4 final 17-point evaluations fail strict30 without rounding; dense1001 and independent MNA/power/passivity were not run because no arm passed the gate.",
+    "EXP-113 initial dense1001 was a separate pre-optimization diagnostic, not post-optimization validation.",
+    "External EXP-062 IL is an external different-grid/depth reference; its numerical delta is not a like-for-like ranking.",
+    "Finite 17-point grid does not prove continuous-frequency behavior; Q(f), SRF, EM, tolerance, measurement and implementation remain unverified.",
+    "Original pre-forward KeyError STOP and original 476-reservation marker are retained; recovery actual forward cost is separately measured.",
+    "Raw retained until audited preservation; no candidate promotion."
+  ],
+  "no_candidate_reason": "All four final vectors fail strict30 on the 17-point grid; no arm qualifies for dense/MNA.",
+  "pareto": {
+    "candidate_promotion_blocked": true,
+    "candidates": [
+      {
+        "area_units": 6.0,
+        "candidate_id": "B-28-1-normalized",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.99999956056881,
+          "min_h3_db": 29.999999903142303,
+          "worst_il_db": 0.9825454149958562
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "final_c2_epigraph_inequality_failed_on_grid",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      },
+      {
+        "area_units": 6.0,
+        "candidate_id": "B-28-1-physical",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.999999777548453,
+          "min_h3_db": 30.00000000928769,
+          "worst_il_db": 0.982542177069669
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "final_c2_epigraph_inequality_failed_on_grid",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      },
+      {
+        "area_units": 6.0,
+        "candidate_id": "B-31-1-normalized",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.99999929751715,
+          "min_h3_db": 30.000000133762153,
+          "worst_il_db": 0.8801666159536763
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "final_c2_epigraph_inequality_failed_on_grid",
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      },
+      {
+        "area_units": 6.0,
+        "candidate_id": "B-31-1-physical",
+        "candidate_promotion_blocked": true,
+        "comparison_key": null,
+        "metrics": {
+          "min_h2_db": 29.999999297517157,
+          "min_h3_db": 30.000000133762153,
+          "worst_il_db": 0.8801666159536757
+        },
+        "pareto_within_group": null,
+        "reasons": [
+          "mandatory_harmonics_failed_on_grid"
+        ],
+        "threshold_observations": {
+          "mandatory_harmonics_met": false,
+          "nominal_harmonics_met": false,
+          "nominal_il_met": false
+        }
+      }
+    ],
+    "global_optimum_proven": false,
+    "groups": [],
+    "rf_compliance_certified": false
+  },
+  "selected_candidate_count": 0,
+  "validation": {
+    "dense_1001": "not_run_no_strict30_and_physical_pass",
+    "independent_mna": "not_run_no_dense_eligible_candidate",
+    "intermediate_17": "completed_strict30_failed_all_4",
+    "passivity": "not_run",
+    "power_balance": "not_run",
+    "spd_independent": "passed_all_4"
+  },
+  "validation_17_results": [
+    {
+      "actual_id": "B-31-1-physical",
+      "il_delta_vs_external_reference_db": 0.05232546749082445,
+      "il_delta_vs_source_17_db": 0.0,
+      "locations": {
+        "H2": {
+          "case": "B71",
+          "frequency_mhz": 1326.0,
+          "il_db": 29.999999297517157,
+          "region": "H2",
+          "segment": 2,
+          "setting": "B71",
+          "subband": ""
+        },
+        "H3": {
+          "case": "B8",
+          "frequency_mhz": 2725.3125,
+          "il_db": 29.977326753990926,
+          "region": "H3",
+          "segment": 27,
+          "setting": "B8",
+          "subband": ""
+        },
+        "pass_il": {
+          "case": "B8",
+          "frequency_mhz": 960.0,
+          "il_db": 0.8801666159536757,
+          "region": "DL",
+          "segment": 25,
+          "setting": "B8",
+          "subband": ""
+        }
+      },
+      "max_attenuation_deficit_db": 0.022673246009073722,
+      "metrics": {
+        "min_H2_db": 29.999999297517157,
+        "min_H3_db": 29.977326753990926,
+        "worst_IL_db": 0.8801666159536757
+      },
+      "normalized_vector_distance": 0.0,
+      "physical_pass": true,
+      "strict30_pass": false,
+      "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+    },
+    {
+      "actual_id": "B-31-1-normalized",
+      "il_delta_vs_external_reference_db": 0.052325467490825006,
+      "il_delta_vs_source_17_db": 5.551115123125783e-16,
+      "locations": {
+        "H2": {
+          "case": "B71",
+          "frequency_mhz": 1326.0,
+          "il_db": 29.99999929751715,
+          "region": "H2",
+          "segment": 2,
+          "setting": "B71",
+          "subband": ""
+        },
+        "H3": {
+          "case": "B8",
+          "frequency_mhz": 2725.3125,
+          "il_db": 29.977326753990926,
+          "region": "H3",
+          "segment": 27,
+          "setting": "B8",
+          "subband": ""
+        },
+        "pass_il": {
+          "case": "B8",
+          "frequency_mhz": 960.0,
+          "il_db": 0.8801666159536763,
+          "region": "DL",
+          "segment": 25,
+          "setting": "B8",
+          "subband": ""
+        }
+      },
+      "max_attenuation_deficit_db": 0.022673246009073722,
+      "metrics": {
+        "min_H2_db": 29.99999929751715,
+        "min_H3_db": 29.977326753990926,
+        "worst_IL_db": 0.8801666159536763
+      },
+      "normalized_vector_distance": 1.074394458836939e-16,
+      "physical_pass": true,
+      "strict30_pass": false,
+      "vector_sha256": "749f22558b6b7070e320211e67ef816c38e38bee0b2f5b32cc03c509cbd2a926"
+    },
+    {
+      "actual_id": "B-28-1-physical",
+      "il_delta_vs_external_reference_db": 0.15470102860681767,
+      "il_delta_vs_source_17_db": -0.00020815632611148605,
+      "locations": {
+        "H2": {
+          "case": "B71",
+          "frequency_mhz": 1326.0,
+          "il_db": 29.999999777548453,
+          "region": "H2",
+          "segment": 2,
+          "setting": "B71",
+          "subband": ""
+        },
+        "H3": {
+          "case": "B12",
+          "frequency_mhz": 2097.0,
+          "il_db": 30.00000000928769,
+          "region": "H3",
+          "segment": 7,
+          "setting": "B12",
+          "subband": ""
+        },
+        "pass_il": {
+          "case": "B8",
+          "frequency_mhz": 960.0,
+          "il_db": 0.982542177069669,
+          "region": "DL",
+          "segment": 25,
+          "setting": "B8",
+          "subband": ""
+        }
+      },
+      "max_attenuation_deficit_db": 2.2245154696065583e-07,
+      "metrics": {
+        "min_H2_db": 29.999999777548453,
+        "min_H3_db": 30.00000000928769,
+        "worst_IL_db": 0.982542177069669
+      },
+      "normalized_vector_distance": 0.05738761132105687,
+      "physical_pass": true,
+      "strict30_pass": false,
+      "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+    },
+    {
+      "actual_id": "B-28-1-normalized",
+      "il_delta_vs_external_reference_db": 0.15470426653300495,
+      "il_delta_vs_source_17_db": -0.00020491839992420324,
+      "locations": {
+        "H2": {
+          "case": "B71",
+          "frequency_mhz": 1326.0,
+          "il_db": 29.99999956056881,
+          "region": "H2",
+          "segment": 2,
+          "setting": "B71",
+          "subband": ""
+        },
+        "H3": {
+          "case": "B71",
+          "frequency_mhz": 1989.0,
+          "il_db": 29.999999903142303,
+          "region": "H3",
+          "segment": 3,
+          "setting": "B71",
+          "subband": ""
+        },
+        "pass_il": {
+          "case": "B8",
+          "frequency_mhz": 960.0,
+          "il_db": 0.9825454149958562,
+          "region": "DL",
+          "segment": 25,
+          "setting": "B8",
+          "subband": ""
+        }
+      },
+      "max_attenuation_deficit_db": 4.394311901023684e-07,
+      "metrics": {
+        "min_H2_db": 29.99999956056881,
+        "min_H3_db": 29.999999903142303,
+        "worst_IL_db": 0.9825454149958562
+      },
+      "normalized_vector_distance": 0.0524491477586046,
+      "physical_pass": true,
+      "strict30_pass": false,
+      "vector_sha256": "62f741c96a48fe7e07ad1b633b0b579ab3a972213a4caf93ccf6f1b931b95f6f"
+    }
+  ]
+}
