@@ -37,6 +37,9 @@ def _grid(circuit, evaluator, points):
 
 
 def _forward(circuit, x, points, meter, mandatory):
+    if meter.frequency_samples_requested + 28 * points > meter.max_samples:
+        raise SampleBudgetExceeded(f'RF sample budget {meter.max_samples}: '
+                                   f'{meter.frequency_samples_requested} consumed, {28 * points} requested')
     evaluator = circuit.forward_evaluator(points)
     segments = _grid(circuit, evaluator, points)
     with meter.timed():
@@ -63,14 +66,15 @@ def _forward(circuit, x, points, meter, mandatory):
             'min_h3_db': min(r['worst_il_db'] for r in rows if r['role'] == 2)}
 
 
-def _independent(circuit, x, forward_meter, mna_meter):
+def _independent(circuit, x, forward_meter, mna_meter, samples=None):
     evaluator = circuit.forward_evaluator(3)
     _grid(circuit, evaluator, 3)
     with forward_meter.timed():
         reference = np.asarray(forward_meter.forward(evaluator, x), float)
     if reference.shape != (84,) or not np.all(np.isfinite(reference)):
         raise ValueError('independent reference incomplete')
-    samples = []
+    if samples is None:
+        samples = []
     losses = ('inductor_loss_w', 'capacitor_loss_w', 'input_s2p_loss_w',
               'output_s2p_loss_w', 'load_power_w', 'input_power_w')
 
@@ -128,6 +132,16 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     """
     if not callable(record_sink) or type(run_dense) is not bool or type(run_independent) is not bool:
         raise ValueError('explicit selection and durable record_sink required')
+    # Preserve the caller's raw result before identity checks, including cases
+    # rejected at the boundary. This is not evidence of a valid candidate.
+    record_sink({'schema': 'post-search-validation-preflight-1',
+                 'optimization_record': deepcopy(optimization_record),
+                 'exchange_record': deepcopy(exchange_record),
+                 'source_provenance': deepcopy(source_provenance),
+                 'separate17': {'state': 'not_run'},
+                 'dense1001': {'state': 'not_run'},
+                 'independent84': {'state': 'not_run'},
+                 'candidate_promotion_blocked': True, 'rf_compliance_certified': False})
     keys = ('separate17', 'dense1001', 'independent_forward84', 'independent_mna84')
     if not isinstance(budgets, dict) or set(budgets) != set(keys):
         raise ValueError('all four explicit sample budgets required')
@@ -176,6 +190,9 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
               'separate17': {'state': 'not_run'}, 'dense1001': {'state': 'not_run'},
               'independent84': {'state': 'not_run'}, 'rf_compliance_certified': False,
               'candidate_promotion_blocked': True,
+              'cost_semantics': {'optimization': 'optimization_record.evaluation_cost; exchange_record includes exchange scans when present',
+                  'independent_mna84': 'EvaluationCost RF_forward_calls counts independent MNA sample invocations, not forward-kernel calls',
+                  'independent_forward84': 'separate forward reference calls for independent comparison'},
               'limitations': ['finite grids only; no continuous-frequency guarantee',
                               'SRF, Q(f), EM, tolerances and measurements not verified',
                               'EXP manifest and storage gates not executed']}
@@ -229,14 +246,17 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
             else 'separate17_not_passed')
     persist()
     if record['dense1001']['state'] == 'pass' and run_independent:
+        partial_samples = []
         try:
             check_identity()
-            record['independent84'] = _independent(circuit, x, meters['independent_forward84'], meters['independent_mna84'])
+            record['independent84'] = _independent(circuit, x, meters['independent_forward84'], meters['independent_mna84'], partial_samples)
             check_identity()
         except SampleBudgetExceeded as exc:
-            record['independent84'] = {'state': 'budget_exhausted', 'reason': str(exc)}
+            record['independent84'] = {'state': 'budget_exhausted', 'reason': str(exc),
+                                       'completed_samples': partial_samples}
         except Exception as exc:
-            record['independent84'] = {'state': 'failed', 'reason': str(exc), 'exception_type': type(exc).__name__}
+            record['independent84'] = {'state': 'failed', 'reason': str(exc),
+                                       'exception_type': type(exc).__name__, 'completed_samples': partial_samples}
     else:
         record['independent84']['reason'] = 'not_selected' if not run_independent else 'dense1001_not_passed'
     persist()

@@ -13,6 +13,7 @@ from test_phase2_problem_seed import make, seed
 from lpf.phase2_models.limited_candidate_evidence import _identity
 from lpf.phase2_models.post_search_validation import validate_post_search, _forward, _independent
 from lpf.phase2_models.api import NominalCircuit
+from lpf.phase2_models.independent_rf import evaluate_independent_sample
 from lpf.phase2_models.evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
 from lpf.phase2_models.staged_optimization import run_c1_staged
 
@@ -68,6 +69,26 @@ class PostSearchTests(unittest.TestCase):
             self.assertEqual(result['guard_achieved'], guard)
             self.assertEqual(result['min_h2_db'], attenuation)
 
+    def test_synthetic_dense_grid_and_budget(self):
+        base = self.c.forward_evaluator(17)
+        frequencies = np.concatenate([np.linspace(base.f[i * 17], base.f[i * 17 + 16], 1001)
+                                      for i in range(28)])
+        segment = np.repeat(np.arange(28), 1001)
+        setting = np.repeat(base.setting[::17], 1001)
+        role = np.repeat(base.role[::17], 1001)
+        fake = SimpleNamespace(f=frequencies, role=role, setting=setting, segment=segment,
+                               il=lambda x: np.where(role == 0, 1., 30.003))
+        with patch.object(NominalCircuit, 'forward_evaluator', return_value=fake):
+            meter = SampleBudgetCost(28028)
+            result = _forward(self.c, self.x, 1001, meter, 30.)
+            self.assertEqual(result['state'], 'pass')
+            self.assertFalse(result['guard_achieved'])
+            self.assertEqual(len(result['segments']), 28)
+            self.assertEqual(sum(len(s['frequencies_mhz']) for s in result['segments']), 28028)
+            self.assertEqual(meter.frequency_samples_requested, 28028)
+            with self.assertRaises(SampleBudgetExceeded):
+                _forward(self.c, self.x, 1001, SampleBudgetCost(28027), 30.)
+
     def test_real_independent_84_and_budget(self):
         forward, independent = SampleBudgetCost(84), SampleBudgetCost(84)
         result = _independent(self.c, self.x, forward, independent)
@@ -76,8 +97,20 @@ class PostSearchTests(unittest.TestCase):
         self.assertEqual(result['mna_dimension'], 9)
         self.assertEqual(forward.frequency_samples_requested, 84)
         self.assertEqual(independent.frequency_samples_requested, 84)
+        partial = []
         with self.assertRaises(SampleBudgetExceeded):
-            _independent(self.c, self.x, SampleBudgetCost(84), SampleBudgetCost(0))
+            _independent(self.c, self.x, SampleBudgetCost(84), SampleBudgetCost(3), partial)
+        self.assertEqual(len(partial), 3)
+        for key, value in (('il_db', 1000.), ('gain', 1e-15),
+                           ('power_residual_w', 1.), ('load_power_w', -1.)):
+            def corrupt(*args):
+                sample = evaluate_independent_sample(*args)
+                sample[key] = value
+                return sample
+            with self.subTest(key=key), patch(
+                    'lpf.phase2_models.post_search_validation.evaluate_independent_sample', side_effect=corrupt):
+                with self.assertRaises(ValueError):
+                    _independent(self.c, self.x, SampleBudgetCost(84), SampleBudgetCost(84))
 
     def test_explicit_dispatch_and_blocking(self):
         for state17, state1001, expect in [('fail', 'pass', []), ('pass', 'fail', []), ('pass', 'pass', [True])]:
@@ -127,10 +160,13 @@ class PostSearchTests(unittest.TestCase):
     def test_provenance_and_sink_fail_closed(self):
         wrong = self.x.copy()
         wrong[0] += .01
+        snapshots = []
         with self.assertRaisesRegex(ValueError, 'provenance mismatch'):
             validate_post_search(self.c, wrong, optimization_record=self.raw,
                 source_provenance=self.source, budgets=self.budgets, run_dense=True,
-                run_independent=True, record_sink=lambda _: None)
+                run_independent=True, record_sink=snapshots.append)
+        self.assertEqual(snapshots[0]['optimization_record'], self.raw)
+        self.assertEqual(snapshots[0]['separate17']['state'], 'not_run')
         with self.assertRaisesRegex(RuntimeError, 'sink'):
             validate_post_search(self.c, self.x, optimization_record=self.raw,
                 source_provenance=self.source, budgets=self.budgets, run_dense=False,

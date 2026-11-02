@@ -82,8 +82,8 @@ search_guard=True)` は、policy必須値に0.005 dBを加えた探索目標をc
 トポロジー・vector・出典・帯域・部品・role・SPDを照合する。MNAサイズは
 回路に依存する（4Lでは9×9）。有限格子や独立84点は連続帯域・物理実装の保証ではない。
 **既存EXP保存ゲートやmanifest/indexとの接続は未実装**であり、本番実験に使用しない。
-本入口は完了したC1 staged記録だけを受け、AFE結果や探索途中のexception／budget／
-stalledを含む全終了状態の保全には未対応。本入口のsinkは保存監査・Git読戻しの
+本入口はC1 staged記録と任意のAFE停止記録を受けて保存するが、全ての中断・
+保存障害・再開経路の統合は未完了。本入口のsinkは保存監査・Git読戻しの
 代わりではない。Issue #267は未完了。
 
 ### 周波数交換の固定start対照（schema 3、Issue #263）
