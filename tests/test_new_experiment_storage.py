@@ -33,7 +33,7 @@ class StoragePolicyGateTests(unittest.TestCase):
             "thresholds": {
                 "individual_new_file_soft_bytes": 131072,
                 "individual_new_file_hard_bytes": 1048576,
-                "new_experiment_curated_soft_bytes": 524288,
+                "new_experiment_curated_soft_bytes": 10000000,
             }
         })
         self.base = self.run.relative_to(self.root).as_posix()
@@ -219,6 +219,20 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.assertEqual(1, report["checkpoints"])
         self.assertTrue(report["committed_readback"])
         self.assertEqual("not_run", report["independent_validation"])
+
+    def test_exp_total_limit_is_configurable(self):
+        self.complete()
+        path = self.root / "data/phase2_git_storage_budget.json"
+        policy = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(policy["thresholds"]["new_experiment_curated_soft_bytes"], 10_000_000)
+        total = self.validate("finalize")["curated_bytes"]
+        policy["thresholds"]["new_experiment_curated_soft_bytes"] = total - 1
+        dump(path, policy)
+        with self.assertRaisesRegex(ValueError, "exceeds configured limit"):
+            self.validate("finalize")
+        policy["thresholds"]["new_experiment_curated_soft_bytes"] = total
+        dump(path, policy)
+        self.assertEqual(self.validate("finalize")["curated_bytes"], total)
 
     def test_commit_readback_detects_post_commit_mutation(self):
         filename = self.complete()
