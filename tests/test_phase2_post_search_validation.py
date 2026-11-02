@@ -140,6 +140,19 @@ class PostSearchTests(unittest.TestCase):
                 self.assertEqual(result['independent84']['state'], 'not_run')
                 self.assertEqual(result['evaluation_cost']['separate17']['frequency_samples_requested'], 0)
 
+    def test_exchange_budget_before_any_stage_is_preserved(self):
+        trace = {'stop_reason': 'budget_exhausted', 'rounds': [],
+                 'evaluation_cost': SampleBudgetCost(0).snapshot()}
+        snapshots = []
+        result = validate_post_search(self.c, self.x, optimization_record=None,
+            source_provenance=self.source, budgets=self.budgets, run_dense=True,
+            run_independent=True, record_sink=snapshots.append, exchange_record=trace)
+        self.assertIsNone(result['optimization_record'])
+        self.assertEqual(result['exchange_record'], trace)
+        self.assertEqual(result['separate17']['reason'], 'optimization_budget_exhausted')
+        self.assertEqual(result['independent84']['state'], 'not_run')
+        self.assertEqual(result['evaluation_cost']['separate17']['frequency_samples_requested'], 0)
+
     def test_exchange_stall_and_input_binding(self):
         trace = {'stop_reason': 'stalled_existing_constraint',
                  'final_vector': self.raw['stage_calls'][-1]['output_vector'],

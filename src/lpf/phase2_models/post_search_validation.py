@@ -151,20 +151,27 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
         raise ValueError('complete finite physical vector required')
     if not isinstance(source_provenance, dict) or not source_provenance:
         raise ValueError('explicit source provenance required')
-    if (not isinstance(optimization_record, dict) or
-            optimization_record.get('numerical_state') not in ('converged', 'not_converged', 'failed', 'budget_exhausted') or
-            not isinstance(optimization_record.get('evaluation_cost'), dict)):
-        raise ValueError('terminal metered optimization record required')
-    calls = optimization_record.get('stage_calls', [])
-    state = optimization_record['numerical_state']
-    if (optimization_record.get('policy_fingerprint') != circuit.policy_fingerprint or
-            optimization_record.get('definition_sha256') != definition_fingerprint(circuit.definition) or
-            optimization_record.get('source_provenance') != {'state': 'provided', 'value': source_provenance}):
-        raise ValueError('optimization vector or provenance mismatch')
-    if state in ('converged', 'not_converged') and (
-            not calls or calls[-1].get('output_vector') is None or
-            vector_fingerprint(calls[-1]['output_vector'][:-1]) != vector_fingerprint(x)):
-        raise ValueError('optimization vector or provenance mismatch')
+    if optimization_record is None:
+        # An AFE scan can exhaust its budget or fail before the first C1
+        # stage. Preserve that terminal trace, but never validate or promote it.
+        if not isinstance(exchange_record, dict) or exchange_record.get('stop_reason') not in ('failed', 'budget_exhausted'):
+            raise ValueError('terminal metered optimization record required')
+        state = exchange_record['stop_reason']
+    else:
+        if (not isinstance(optimization_record, dict) or
+                optimization_record.get('numerical_state') not in ('converged', 'not_converged', 'failed', 'budget_exhausted') or
+                not isinstance(optimization_record.get('evaluation_cost'), dict)):
+            raise ValueError('terminal metered optimization record required')
+        calls = optimization_record.get('stage_calls', [])
+        state = optimization_record['numerical_state']
+        if (optimization_record.get('policy_fingerprint') != circuit.policy_fingerprint or
+                optimization_record.get('definition_sha256') != definition_fingerprint(circuit.definition) or
+                optimization_record.get('source_provenance') != {'state': 'provided', 'value': source_provenance}):
+            raise ValueError('optimization vector or provenance mismatch')
+        if state in ('converged', 'not_converged') and (
+                not calls or calls[-1].get('output_vector') is None or
+                vector_fingerprint(calls[-1]['output_vector'][:-1]) != vector_fingerprint(x)):
+            raise ValueError('optimization vector or provenance mismatch')
     if exchange_record is not None:
         if (not isinstance(exchange_record, dict) or exchange_record.get('stop_reason') not in
                 ('scan_no_new_violation', 'stalled_existing_constraint', 'max_rounds', 'budget_exhausted', 'failed') or
@@ -190,7 +197,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
               'separate17': {'state': 'not_run'}, 'dense1001': {'state': 'not_run'},
               'independent84': {'state': 'not_run'}, 'rf_compliance_certified': False,
               'candidate_promotion_blocked': True,
-              'cost_semantics': {'optimization': 'optimization_record.evaluation_cost; exchange_record includes exchange scans when present',
+              'cost_semantics': {'optimization': 'optimization_record.evaluation_cost when available; exchange_record includes exchange scans when present',
                   'independent_mna84': 'EvaluationCost RF_forward_calls counts independent MNA sample invocations, not forward-kernel calls',
                   'independent_forward84': 'separate forward reference calls for independent comparison'},
               'limitations': ['finite grids only; no continuous-frequency guarantee',
