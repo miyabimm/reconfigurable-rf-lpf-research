@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "policy": "phase2-git-only-v1",
+  "experiment_id": "EXP-114",
+  "phase": "Phase 2",
+  "stage": "planned",
+  "selection": {
+    "top_k": 2,
+    "retain": [
+      "pareto"
+    ],
+    "rule": "Retain checked Pareto and all start status, complete vectors, recovery, costs, and exclusion/failure diagnostics. Validate all four final vectors at 17 points; only strict30 and physical PASS go to dense1001, then dense PASS to independent MNA84/power/passivity/SPD. Preserve raw until Git readback and audit.",
+    "estimated_curated_bytes": 1500000
+  },
+  "summary": null,
+  "checkpoints": [],
+  "validation_overlays": [],
+  "supporting_evidence": [],
+  "git_readback": "not_run",
+  "size_exception": null,
+  "limitations": [
+    "Planned only; optimization and post-optimization validation not_run.",
+    "Finite-grid diagnostics are not continuous-frequency or implementation guarantees."
+  ]
+}
