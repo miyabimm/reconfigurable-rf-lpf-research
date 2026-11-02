@@ -1,7 +1,7 @@
 {
   "checkpoints": [],
   "experiment_id": "EXP-114",
-  "git_readback": "not_run",
+  "git_readback": "passed",
   "limitations": [
     "4 local SLSQP starts only; convergence is not RF compliance or global optimality.",
     "All 4 final 17-point evaluations fail strict30 without rounding; dense1001 and independent MNA/power/passivity were not run because no arm passed the gate.",
@@ -23,7 +23,7 @@
     "top_k": 2
   },
   "size_exception": null,
-  "stage": "preservation_incomplete",
+  "stage": "complete",
   "summary": {
     "path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
     "sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7"
