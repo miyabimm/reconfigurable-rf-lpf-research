@@ -116,7 +116,8 @@ def _independent(circuit, x, forward_meter, mna_meter):
 
 
 def validate_post_search(circuit, vector, *, optimization_record, source_provenance,
-                         budgets, run_dense, run_independent, record_sink):
+                         budgets, run_dense, run_independent, record_sink,
+                         exchange_record=None):
     """Run one explicitly selected candidate; emit raw and every gate to sink.
 
     budgets gives separate maximum requested samples for separate17, dense1001,
@@ -137,21 +138,38 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     if not isinstance(source_provenance, dict) or not source_provenance:
         raise ValueError('explicit source provenance required')
     if (not isinstance(optimization_record, dict) or
-            optimization_record.get('numerical_state') not in ('converged', 'not_converged') or
+            optimization_record.get('numerical_state') not in ('converged', 'not_converged', 'failed', 'budget_exhausted') or
             not isinstance(optimization_record.get('evaluation_cost'), dict)):
-        raise ValueError('completed metered optimization record required')
+        raise ValueError('terminal metered optimization record required')
     calls = optimization_record.get('stage_calls', [])
-    if (not calls or calls[-1].get('output_vector') is None or
-            vector_fingerprint(calls[-1]['output_vector'][:-1]) != vector_fingerprint(x) or
-            optimization_record.get('policy_fingerprint') != circuit.policy_fingerprint or
+    state = optimization_record['numerical_state']
+    if (optimization_record.get('policy_fingerprint') != circuit.policy_fingerprint or
             optimization_record.get('definition_sha256') != definition_fingerprint(circuit.definition) or
             optimization_record.get('source_provenance') != {'state': 'provided', 'value': source_provenance}):
         raise ValueError('optimization vector or provenance mismatch')
+    if state in ('converged', 'not_converged') and (
+            not calls or calls[-1].get('output_vector') is None or
+            vector_fingerprint(calls[-1]['output_vector'][:-1]) != vector_fingerprint(x)):
+        raise ValueError('optimization vector or provenance mismatch')
+    if exchange_record is not None:
+        if (not isinstance(exchange_record, dict) or exchange_record.get('stop_reason') not in
+                ('scan_no_new_violation', 'stalled_existing_constraint', 'max_rounds', 'budget_exhausted', 'failed') or
+                not isinstance(exchange_record.get('evaluation_cost'), dict)):
+            raise ValueError('terminal metered exchange record required')
+        final_vector = exchange_record.get('final_vector')
+        if final_vector is not None and vector_fingerprint(final_vector[:-1]) != vector_fingerprint(x):
+            raise ValueError('exchange vector mismatch')
+        if exchange_record['stop_reason'] not in ('failed', 'budget_exhausted'):
+            rounds = exchange_record.get('rounds')
+            if (final_vector is None or not isinstance(rounds, list) or not rounds or
+                    rounds[-1].get('inner') != optimization_record):
+                raise ValueError('exchange and final staged record mismatch')
     identity = _identity(circuit, x)
     identity_keys = ('git_head', 'source_tree_sha256', 'source_worktree_dirty', 'input_sha256', 'environment')
     if any(source_provenance.get(k) != identity[k] for k in identity_keys):
         raise ValueError('optimization source, environment or inputs mismatch')
     record = {'schema': 'post-search-validation-1', 'optimization_record': deepcopy(optimization_record),
+              'exchange_record': deepcopy(exchange_record),
               'source_provenance': deepcopy(source_provenance), 'identity': identity,
               'definition': asdict(circuit.definition), 'vector': x.tolist(),
               'vector_sha256': vector_fingerprint(x), 'budgets': dict(budgets),
@@ -169,6 +187,13 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
             raise ValueError('identity_changed_during_validation')
 
     persist()  # raw optimization result and provenance before any validation
+    stop_reason = exchange_record.get('stop_reason') if exchange_record else None
+    if state in ('failed', 'budget_exhausted') or stop_reason in ('failed', 'budget_exhausted'):
+        reason = f'optimization_{stop_reason if stop_reason in ("failed", "budget_exhausted") else state}'
+        for key in ('separate17', 'dense1001', 'independent84'):
+            record[key] = {'state': 'not_run', 'reason': reason}
+        persist()
+        return record
     try:
         check_identity()
         box = circuit_box(circuit)

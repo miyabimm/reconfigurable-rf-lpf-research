@@ -1,6 +1,7 @@
 """Post-search dispatch and fail-closed checks; no production dense run."""
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -93,6 +94,35 @@ class PostSearchTests(unittest.TestCase):
                 self.assertEqual(called, expect)
                 self.assertEqual(result['independent84']['state'], 'pass' if expect else 'not_run')
                 self.assertFalse(result['rf_compliance_certified'])
+
+    def test_terminal_failures_are_preserved_without_validation(self):
+        for state in ('failed', 'budget_exhausted'):
+            with self.subTest(state=state):
+                self.raw['numerical_state'] = state
+                self.raw['exception'] = {'type': 'test', 'message': state}
+                result, snapshots = self.invoke()
+                self.assertEqual(snapshots[0]['optimization_record'], self.raw)
+                self.assertEqual(result['separate17'], {'state': 'not_run', 'reason': 'optimization_' + state})
+                self.assertEqual(result['dense1001']['state'], 'not_run')
+                self.assertEqual(result['independent84']['state'], 'not_run')
+                self.assertEqual(result['evaluation_cost']['separate17']['frequency_samples_requested'], 0)
+
+    def test_exchange_stall_and_input_binding(self):
+        trace = {'stop_reason': 'stalled_existing_constraint',
+                 'final_vector': self.raw['stage_calls'][-1]['output_vector'],
+                 'rounds': [{'inner': deepcopy(self.raw)}],
+                 'evaluation_cost': self.raw['evaluation_cost']}
+        snapshots = []
+        result = validate_post_search(self.c, self.x, optimization_record=self.raw,
+            source_provenance=self.source, budgets=self.budgets, run_dense=False,
+            run_independent=False, record_sink=snapshots.append, exchange_record=trace)
+        self.assertEqual(result['exchange_record']['stop_reason'], 'stalled_existing_constraint')
+        self.assertEqual(result['dense1001']['reason'], 'not_selected')
+        trace['rounds'][0]['inner']['numerical_state'] = 'failed'
+        with self.assertRaisesRegex(ValueError, 'final staged record mismatch'):
+            validate_post_search(self.c, self.x, optimization_record=self.raw,
+                source_provenance=self.source, budgets=self.budgets, run_dense=False,
+                run_independent=False, record_sink=snapshots.append, exchange_record=trace)
 
     def test_provenance_and_sink_fail_closed(self):
         wrong = self.x.copy()

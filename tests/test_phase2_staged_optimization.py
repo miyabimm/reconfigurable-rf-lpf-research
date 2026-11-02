@@ -66,6 +66,9 @@ class StageTests(unittest.TestCase):
         self.assertEqual(seen, [(30., 30.005), (30., 30.005)])
         self.assertEqual(result['search_guard']['mandatory_stop_db'], 30.)
         self.assertEqual(result['search_guard']['search_stop_db'], 30.005)
+        candidate = record_candidate('guarded', self.p.circuit,
+                                     result['stage_calls'][-1]['output_vector'][:-1], staged_record=result)
+        self.assertEqual(recheck_record(candidate).as_dict()['numerical']['state'], 'converged')
         for row in result['stage_calls']:
             observed = row['observation']['sampled_rf']
             residual = np.asarray(observed['residuals_db'])
