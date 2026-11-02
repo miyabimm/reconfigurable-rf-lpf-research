@@ -1,0 +1,52 @@
+{
+  "completed": [
+    {
+      "id": "B-31-1-baseline",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-115/validation/B-31-1-baseline-grid17.json",
+      "sha256": "9352309fdcd420fce78ab2a7a040fd7294fcf9d8e4fca840eca84bf3e636d56b",
+      "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+    },
+    {
+      "id": "B-31-1-exchange",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-115/validation/B-31-1-exchange-grid17.json",
+      "sha256": "44857daafd555aac2827ccb19847dceb3771423805c1c0daee5383b53ddee0b4",
+      "vector_sha256": "cc951fdfd565d080d1d27ad4ddfef2a7ec3630ae8df62b383e0c85b67f28c034"
+    },
+    {
+      "id": "B-28-1-baseline",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-115/validation/B-28-1-baseline-grid17.json",
+      "sha256": "1100da2edaf9f9f68d2a732d6221471d0133ea68dbd06fac3f40139f6a76066a",
+      "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+    },
+    {
+      "id": "B-28-1-exchange",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-115/validation/B-28-1-exchange-grid17.json",
+      "sha256": "07047d6971e8cf9fd4144d0a3f34e12fae85f939b1929bc3a71c36b0405604f0",
+      "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+    }
+  ],
+  "cost": {
+    "RF_forward_calls": 4,
+    "box_rejections": 0,
+    "cache_hits": 0,
+    "component_checks": 4,
+    "component_rejections": 0,
+    "cpu_seconds": 0.008822918999999985,
+    "forward_failures": 0,
+    "frequency_samples_completed": 1904,
+    "frequency_samples_requested": 1904,
+    "role_rejections": 0,
+    "solver_constraint_calls": 0,
+    "solver_objective_calls": 0,
+    "spd_rejections": 0,
+    "wall_seconds": 0.04116852200240828
+  },
+  "experiment_id": "EXP-115",
+  "g1_sha256": "cd61bd5cc1ace74d7fd148dc4ef0064f2398d6647321e4eecd5affa0fcda9d38",
+  "in_progress": null,
+  "main_sha": "905a2fa48ecfea3a54d1aae4414788de9296d193",
+  "purpose": "independent_final_17_forward",
+  "raw_sha256": "6eca3cd3458c092689a4f4c15a064903a3db60a716c9840e3206cfbad6feadb4",
+  "script_sha256": "ee2967a067f33f4c3938496093182a7b35f6afe3f112cd8dbf0ff0f3fb768231",
+  "status": "complete"
+}

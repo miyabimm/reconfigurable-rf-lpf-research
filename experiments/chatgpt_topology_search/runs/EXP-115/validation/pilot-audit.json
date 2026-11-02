@@ -1,0 +1,18 @@
+{
+  "actual_caps_pass": true,
+  "classification": "read_only_post_pilot_audit",
+  "curated_raw_reconstruction": "passed",
+  "experiment_id": "EXP-115",
+  "first_inner_A_B_vectors_status_and_budgets_identical": true,
+  "pilot_forward_calls": 525,
+  "pilot_order": [
+    "B-31-1-baseline",
+    "B-31-1-exchange"
+  ],
+  "pilot_raw_sha256_before_remaining": "ce4319274bdfda3486d77a4908f5feb5d3ffe0dc9a555417b920ecf0e03c5513",
+  "pilot_recheck_samples": 1360,
+  "pilot_requested_samples": 35608,
+  "pilot_snapshot_sha256": "fb8e4e8713bebb93bbbba053591aa007080601793f9bec2d9ec1cf026d8d80cc",
+  "remaining_started_after_audit": true,
+  "storage_audit": "passed_before_remaining"
+}

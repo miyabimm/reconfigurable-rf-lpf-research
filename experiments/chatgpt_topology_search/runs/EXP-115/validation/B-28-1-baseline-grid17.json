@@ -1,0 +1,380 @@
+{
+  "actual_id": "B-28-1-baseline",
+  "box_pass": true,
+  "candidate_promotion_blocked": true,
+  "component": {
+    "candidate_promotion_blocked": true,
+    "checked_settings": 6,
+    "component_policy_pass": true,
+    "connection_role_audit": {
+      "all_declared_roles_supported_by_l_tree": true,
+      "branches": [
+        {
+          "declared_role": "bridge",
+          "declared_role_supported_by_l_tree": true,
+          "edge": [
+            0,
+            3
+          ],
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals"
+        },
+        {
+          "declared_role": "bridge",
+          "declared_role_supported_by_l_tree": true,
+          "edge": [
+            1,
+            2
+          ],
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals"
+        }
+      ],
+      "physical_layout_checked": false,
+      "unsupported_role_indices": []
+    },
+    "connection_role_evidence_incomplete": false,
+    "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+    "constraint_id": "RF-T008",
+    "independent_mna_checked": false,
+    "installed_variable_c_branches": 2,
+    "min_L_eigenvalue_H": 2.4951551265427592e-09,
+    "physical_q_srf_em_checked": false,
+    "promotion_blockers": [
+      "independent_mna_not_checked",
+      "dense_rf_not_checked"
+    ],
+    "rf_performance_checked": false
+  },
+  "coordinates": "physical",
+  "delta_IL_17_db": 0.0,
+  "dense1001": "not_run",
+  "evaluation_cost": {
+    "RF_forward_calls": 1,
+    "box_rejections": 0,
+    "cache_hits": 0,
+    "component_checks": 1,
+    "component_rejections": 0,
+    "cpu_seconds": 0.0017848689999999667,
+    "forward_failures": 0,
+    "frequency_samples_completed": 476,
+    "frequency_samples_requested": 476,
+    "role_rejections": 0,
+    "solver_constraint_calls": 0,
+    "solver_objective_calls": 0,
+    "spd_rejections": 0,
+    "wall_seconds": 0.009530749986879528
+  },
+  "evidence_class": "separate_final_forward_only_finite_grid",
+  "experiment_id": "EXP-115",
+  "final_stage_output_sha256": "2066afb834141f477eece332cf308e64b3962edbb8e04106cd7ea33a2db44f03",
+  "grid": {
+    "frequency_samples": 476,
+    "points_per_interval": 17,
+    "segments": 28,
+    "settings": 6
+  },
+  "independent_mna_power_passivity": "not_run",
+  "initial_worst_IL_17_db": 0.982542177069669,
+  "locations": {
+    "H2": {
+      "case": "B71",
+      "frequency_mhz": 1326.0,
+      "il_db": 29.999999777548453,
+      "region": "H2",
+      "segment": 2,
+      "subband": ""
+    },
+    "H3": {
+      "case": "B12",
+      "frequency_mhz": 2097.0,
+      "il_db": 30.00000000928769,
+      "region": "H3",
+      "segment": 7,
+      "subband": ""
+    },
+    "pass_il": {
+      "case": "B8",
+      "frequency_mhz": 960.0,
+      "il_db": 0.982542177069669,
+      "region": "DL",
+      "segment": 25,
+      "subband": ""
+    }
+  },
+  "low_IL_maintained_experiment_label": true,
+  "max_attenuation_deficit_db": 2.2245154696065583e-07,
+  "method": "baseline",
+  "metrics": {
+    "min_H2_db": 29.999999777548453,
+    "min_H3_db": 30.00000000928769,
+    "worst_IL_db": 0.982542177069669
+  },
+  "physical_pass": true,
+  "role_pass": true,
+  "segments": [
+    {
+      "case": "B71",
+      "frequency_mhz": 698.0,
+      "il_db": 0.8382276397452998,
+      "region": "UL",
+      "segment": 0,
+      "subband": ""
+    },
+    {
+      "case": "B71",
+      "frequency_mhz": 652.0,
+      "il_db": 0.8158281005836578,
+      "region": "DL",
+      "segment": 1,
+      "subband": ""
+    },
+    {
+      "case": "B71",
+      "frequency_mhz": 1326.0,
+      "il_db": 29.999999777548453,
+      "region": "H2",
+      "segment": 2,
+      "subband": ""
+    },
+    {
+      "case": "B71",
+      "frequency_mhz": 1989.0,
+      "il_db": 30.000000022670065,
+      "region": "H3",
+      "segment": 3,
+      "subband": ""
+    },
+    {
+      "case": "B12",
+      "frequency_mhz": 716.0,
+      "il_db": 0.8614192656214705,
+      "region": "UL",
+      "segment": 4,
+      "subband": ""
+    },
+    {
+      "case": "B12",
+      "frequency_mhz": 746.0,
+      "il_db": 0.8762129241470558,
+      "region": "DL",
+      "segment": 5,
+      "subband": ""
+    },
+    {
+      "case": "B12",
+      "frequency_mhz": 1398.0,
+      "il_db": 29.99999986205617,
+      "region": "H2",
+      "segment": 6,
+      "subband": ""
+    },
+    {
+      "case": "B12",
+      "frequency_mhz": 2097.0,
+      "il_db": 30.00000000928769,
+      "region": "H3",
+      "segment": 7,
+      "subband": ""
+    },
+    {
+      "case": "B28",
+      "frequency_mhz": 748.0,
+      "il_db": 0.8723452984071576,
+      "region": "UL",
+      "segment": 8,
+      "subband": ""
+    },
+    {
+      "case": "B28",
+      "frequency_mhz": 803.0,
+      "il_db": 0.9311067314146376,
+      "region": "DL",
+      "segment": 9,
+      "subband": ""
+    },
+    {
+      "case": "B28",
+      "frequency_mhz": 1406.0,
+      "il_db": 29.999999848988843,
+      "region": "H2",
+      "segment": 10,
+      "subband": ""
+    },
+    {
+      "case": "B28",
+      "frequency_mhz": 2244.0,
+      "il_db": 30.000000051674878,
+      "region": "H3",
+      "segment": 11,
+      "subband": ""
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 787.0,
+      "il_db": 0.8436710440152486,
+      "region": "UL",
+      "segment": 12,
+      "subband": "B13"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 798.0,
+      "il_db": 0.8489621204233373,
+      "region": "UL",
+      "segment": 13,
+      "subband": "B14"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 756.0,
+      "il_db": 0.8327143806666859,
+      "region": "DL",
+      "segment": 14,
+      "subband": "B13"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 768.0,
+      "il_db": 0.8363118821844839,
+      "region": "DL",
+      "segment": 15,
+      "subband": "B14"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 1555.25,
+      "il_db": 30.186534716241184,
+      "region": "H2",
+      "segment": 16,
+      "subband": "B13"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 1576.0,
+      "il_db": 30.37446076279678,
+      "region": "H2",
+      "segment": 17,
+      "subband": "B14"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 2331.0,
+      "il_db": 35.84332005487705,
+      "region": "H3",
+      "segment": 18,
+      "subband": "B13"
+    },
+    {
+      "case": "B13+B14",
+      "frequency_mhz": 2394.0,
+      "il_db": 35.656212903686175,
+      "region": "H3",
+      "segment": 19,
+      "subband": "B14"
+    },
+    {
+      "case": "B26",
+      "frequency_mhz": 814.0,
+      "il_db": 0.9415954166782252,
+      "region": "UL",
+      "segment": 20,
+      "subband": ""
+    },
+    {
+      "case": "B26",
+      "frequency_mhz": 894.0,
+      "il_db": 0.9463164696205735,
+      "region": "DL",
+      "segment": 21,
+      "subband": ""
+    },
+    {
+      "case": "B26",
+      "frequency_mhz": 1628.0,
+      "il_db": 30.000000145355745,
+      "region": "H2",
+      "segment": 22,
+      "subband": ""
+    },
+    {
+      "case": "B26",
+      "frequency_mhz": 2547.0,
+      "il_db": 30.000000034159783,
+      "region": "H3",
+      "segment": 23,
+      "subband": ""
+    },
+    {
+      "case": "B8",
+      "frequency_mhz": 915.0,
+      "il_db": 0.922522286491519,
+      "region": "UL",
+      "segment": 24,
+      "subband": ""
+    },
+    {
+      "case": "B8",
+      "frequency_mhz": 960.0,
+      "il_db": 0.982542177069669,
+      "region": "DL",
+      "segment": 25,
+      "subband": ""
+    },
+    {
+      "case": "B8",
+      "frequency_mhz": 1760.0,
+      "il_db": 30.00000003959165,
+      "region": "H2",
+      "segment": 26,
+      "subband": ""
+    },
+    {
+      "case": "B8",
+      "frequency_mhz": 2640.0,
+      "il_db": 30.00000001815937,
+      "region": "H3",
+      "segment": 27,
+      "subband": ""
+    }
+  ],
+  "source_ref": {
+    "actual_id": "B-28-1-physical",
+    "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+    "raw_path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+    "raw_sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+    "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814",
+    "summary_path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+    "summary_sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7",
+    "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+  },
+  "strict30_pass": false,
+  "vector": [
+    2.5231084610484524,
+    25.73401530624057,
+    3.6627547728022964,
+    7.950118072865671,
+    4.390819174095009,
+    1.592835278092626,
+    0.3222545833700626,
+    0.02,
+    -0.1,
+    0.01691618630359255,
+    -0.06815807011315582,
+    0.2,
+    0.2000000000000001,
+    0.065734759976128,
+    1.1871094398739592,
+    3.0,
+    0.9384483480886404,
+    3.0,
+    0.8743677210720067,
+    0.009663111427513688,
+    0.2615911844902862,
+    1.7251707761870096,
+    0.18546824096143003,
+    0.0,
+    0.0
+  ],
+  "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+}
