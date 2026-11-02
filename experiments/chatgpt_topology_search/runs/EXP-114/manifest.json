@@ -382,11 +382,47 @@
   "evidence": [
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
-      "sha256": "c4e831aa5e8685a89d29a3bc5c33c9c4ac8ba3b651ffd8b3f8abc6e96195e07b"
+      "sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-physical-grid17.json",
+      "sha256": "a6606b1e5f974947506f34bdce31fa3c0377736bdd1c2871a22ff409cd1b92f1"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-normalized-grid17.json",
+      "sha256": "ce8518ad1693644e8fc3c021f2a6abee5be6bb86bbbec1fc76ac67925f60f790"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+      "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-normalized-grid17.json",
+      "sha256": "2ad68e4599fb946aa196797805de29f6cb6cdff2f7e2b3a51a2e3e141f08d093"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/independent-spd.json",
+      "sha256": "1c0d96f6d8df5ef80ff90536e5b991d5ae7573f438ca1c958d47749a4d09474b"
     },
     {
       "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-stop.json",
       "sha256": "4de7fd4f1b8c0ef4ad502498e7b7da5f30b4d0879a7dd8049c0a8cad0917e35f"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/recovery17.py",
+      "sha256": "ea6c490636d04f3adaeb3d9fe9f988ccca9f26b6e403d77ba790fd40b68270ab"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+      "sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-original-marker.json",
+      "sha256": "4c3f4750f91811379159644d1a63a61d17ce7b10b410cdf0d081a7d985fdc2c1"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-recovery-1.json",
+      "sha256": "b9aab09f564e28df9f00c663f606f25f6d6ca5778f603796aeb2e2c61adcf251"
     }
   ],
   "execution": {
@@ -396,11 +432,13 @@
   },
   "experiment_id": "EXP-114",
   "limitations": [
-    "Best-found finite coarse/fine grid observations only; no global optimum claim.",
-    "17-point, dense1001, independent MNA/power/passivity, continuous/physical validation not_run.",
-    "Logical references are shared results, not additional physical trials.",
-    "Candidate promotion blocked; retain raw until explicit audited Git preservation.",
-    "Post-optimization 17-point validation stopped on KeyError before any validation RF forward; raw in-progress marker retained, no automatic retry. Independent review/recovery decision required."
+    "4 local SLSQP starts only; convergence is not RF compliance or global optimality.",
+    "All 4 final 17-point evaluations fail strict30 without rounding; dense1001 and independent MNA/power/passivity were not run because no arm passed the gate.",
+    "EXP-113 initial dense1001 was a separate pre-optimization diagnostic, not post-optimization validation.",
+    "External EXP-062 IL is an external different-grid/depth reference; its numerical delta is not a like-for-like ranking.",
+    "Finite 17-point grid does not prove continuous-frequency behavior; Q(f), SRF, EM, tolerance, measurement and implementation remain unverified.",
+    "Original pre-forward KeyError STOP and original 476-reservation marker are retained; recovery actual forward cost is separately measured.",
+    "Raw retained until audited preservation; no candidate promotion."
   ],
   "objective": "full_lpf",
   "phase": "Phase 2",
@@ -1088,10 +1126,14 @@
     "validation": "All 4 final vectors: 17 points per interval; only strict30 plus physical PASS to dense1001; only dense PASS to independent branch-current MNA84, power, passivity and SPD."
   },
   "validation": {
-    "analysis_grid": null,
+    "analysis_grid": {
+      "points_per_interval": 17,
+      "segments": 28,
+      "settings": 6
+    },
     "implementation": "not_run",
     "independent": "not_run",
     "independent_grid": null,
-    "numerical": "not_run"
+    "numerical": "failed"
   }
 }

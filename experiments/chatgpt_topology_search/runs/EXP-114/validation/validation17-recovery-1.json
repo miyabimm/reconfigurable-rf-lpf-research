@@ -1,0 +1,56 @@
+{
+  "attempt": "EXP-114-validation17-recovery-1",
+  "completed": [
+    {
+      "id": "B-31-1-physical",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-physical-grid17.json",
+      "sha256": "a6606b1e5f974947506f34bdce31fa3c0377736bdd1c2871a22ff409cd1b92f1",
+      "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+    },
+    {
+      "id": "B-31-1-normalized",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-normalized-grid17.json",
+      "sha256": "ce8518ad1693644e8fc3c021f2a6abee5be6bb86bbbec1fc76ac67925f60f790",
+      "vector_sha256": "749f22558b6b7070e320211e67ef816c38e38bee0b2f5b32cc03c509cbd2a926"
+    },
+    {
+      "id": "B-28-1-physical",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+      "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814",
+      "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+    },
+    {
+      "id": "B-28-1-normalized",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-normalized-grid17.json",
+      "sha256": "2ad68e4599fb946aa196797805de29f6cb6cdff2f7e2b3a51a2e3e141f08d093",
+      "vector_sha256": "62f741c96a48fe7e07ad1b633b0b579ab3a972213a4caf93ccf6f1b931b95f6f"
+    }
+  ],
+  "cost": {
+    "RF_forward_calls": 4,
+    "box_rejections": 0,
+    "cache_hits": 0,
+    "component_checks": 4,
+    "component_rejections": 0,
+    "cpu_seconds": 0.011558795000000455,
+    "forward_failures": 0,
+    "frequency_samples_completed": 1904,
+    "frequency_samples_requested": 1904,
+    "role_rejections": 0,
+    "solver_constraint_calls": 0,
+    "solver_objective_calls": 0,
+    "spd_rejections": 0,
+    "wall_seconds": 1.335188930039294
+  },
+  "g1_sha256": "bbd0ee6eca7014d1523131e3d753c92410ca7994959d8bf42d5116d0624cfb65",
+  "in_progress": null,
+  "main_sha": "0a333aa2505f8ff787452f45c46f3fe34abc4b67",
+  "original_raw_sha256": {
+    "results/EXP-114-pilot.log": "e81177c527a9e072ecb201ff482794c36833d30ccd599f755f6fb84f408c7d6b",
+    "results/EXP-114-remaining.log": "7e00746972ad329a58a7862c8e6bf5d0291a8384814d46daffd9b409b910b037",
+    "results/EXP-114/run.json": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+    "results/EXP-114/validation17-progress.json": "4c3f4750f91811379159644d1a63a61d17ce7b10b410cdf0d081a7d985fdc2c1"
+  },
+  "source_script_sha256": "ea6c490636d04f3adaeb3d9fe9f988ccca9f26b6e403d77ba790fd40b68270ab",
+  "status": "complete"
+}
