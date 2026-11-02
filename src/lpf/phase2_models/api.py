@@ -155,14 +155,14 @@ class NominalCircuit:
             ],
         }
 
-    def forward_evaluator(self, points_per_interval):
+    def forward_evaluator(self, points_per_interval, *, extra_frequencies=()):
         """Unchecked forward kernel for numerical/optimization work only.
 
         Optimization iterates may temporarily violate component limits;
         results MUST pass validate_components and independent verification
         before any candidate can be recorded or compared.
         """
-        return self._adapter.evaluator(points_per_interval)
+        return self._adapter.evaluator(points_per_interval, extra_frequencies=extra_frequencies)
 
 
 def build_nominal_circuit(policy, definition):

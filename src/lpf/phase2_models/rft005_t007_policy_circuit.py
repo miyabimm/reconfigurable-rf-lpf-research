@@ -170,5 +170,6 @@ class PolicyBoundRFT005T007Circuit:
             "physical_q_srf_em_checked": False,
         }
 
-    def evaluator(self, points):
-        return CoupledLCEvaluator(self.policy, points, self.topology, self.schema)
+    def evaluator(self, points, *, extra_frequencies=()):
+        return CoupledLCEvaluator(self.policy, points, self.topology, self.schema,
+                                  extra_frequencies=extra_frequencies)

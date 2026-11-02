@@ -37,6 +37,22 @@ class StageTests(unittest.TestCase):
                                fine_points=2, optimize_stage=callback)
         return record, calls
 
+    def test_exchange_extras_apply_to_both_grids_and_warm_t_is_preserved(self):
+        calls = []
+        warm = np.asarray(self.seed['vector'], float).copy()
+        warm[-1] += 0.1
+        def callback(problem, x, maxiter, target):
+            calls.append((problem, x.copy()))
+            return x, status(0)
+        result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+            fine_points=2, optimize_stage=callback, warm_start_vector=warm,
+            extra_frequencies=((0, 670.5),))
+        self.assertEqual(result['numerical_state'], 'converged')
+        np.testing.assert_array_equal(calls[0][1], warm)
+        for problem, _ in calls:
+            self.assertIn(670.5, problem.evaluator.f[problem.evaluator.segment == 0])
+        self.assertEqual(result['frequency_exchange_input']['warm_start_vector'], warm.tolist())
+
     def test_success_and_separate_gates(self):
         result, calls = self.run_codes([0, 0])
         self.assertEqual([c[1] for c in calls], [240, 120])

@@ -15,7 +15,7 @@ from .problem_seed import circuit_box, make_seed
 class SampledEpigraph:
     """Bind one approved nominal circuit and its explicit finite grid."""
 
-    def __init__(self, circuit, points_per_interval):
+    def __init__(self, circuit, points_per_interval, *, extra_frequencies=()):
         if not isinstance(circuit, NominalCircuit):
             raise TypeError("Expected an approved NominalCircuit")
         self.circuit = circuit
@@ -32,7 +32,8 @@ class SampledEpigraph:
         )
         if not np.isfinite(self.mandatory_stop_db):
             raise ValueError("Invalid mandatory stopband limit")
-        self.evaluator = circuit.forward_evaluator(points_per_interval)
+        self.evaluator = circuit.forward_evaluator(
+            points_per_interval, extra_frequencies=extra_frequencies)
         self.points_per_interval = points_per_interval
         self.policy_id = circuit.policy_id
         self.policy_fingerprint = circuit.policy_fingerprint

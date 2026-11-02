@@ -173,7 +173,7 @@ class _StageAbort(Exception):
 
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
-                  cost_meter=None):
+                  cost_meter=None, extra_frequencies=(), warm_start_vector=None):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -201,11 +201,14 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
         if not isinstance(source_provenance, dict):
             raise TypeError("source_provenance must be a dict")
         json.dumps(source_provenance, allow_nan=False)
-    coarse = SampledEpigraph(circuit, coarse_points)
-    fine = SampledEpigraph(circuit, fine_points)
+    extra_frequencies = tuple(extra_frequencies)
+    seed_problem = SampledEpigraph(circuit, coarse_points)
+    coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies)
+              if extra_frequencies else seed_problem)
+    fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies)
     if not isinstance(seed_record, dict):
         raise TypeError("Expected C1 seed record")
-    replay_problem = cost_meter.epigraph(coarse) if cost_meter is not None else coarse
+    replay_problem = cost_meter.epigraph(seed_problem) if cost_meter is not None else seed_problem
     with cost_meter.timed() if cost_meter is not None else nullcontext():
         replay = replay_problem.seed(seed_record["input_vector"], policy_id=seed_record["policy_id"],
             policy_fingerprint=seed_record["policy_fingerprint"],
@@ -216,6 +219,14 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
             json.dumps(seed_record, sort_keys=True, allow_nan=False)):
         raise ValueError("Seed record does not match C1 deterministic replay")
     initial = np.asarray(replay["vector"], dtype=float)
+    if warm_start_vector is not None:
+        initial = np.asarray(warm_start_vector, dtype=float).copy()
+        x, _ = coarse._split(initial)
+        circuit.validate_components(x)
+        if any((lo is not None and v < lo) or (hi is not None and v > hi)
+               for v, (lo, hi) in zip(initial, coarse.box.bounds)) or any(
+                   initial[i] <= coarse.box.bounds[i][0] for i in coarse.box.open_lower):
+            raise ValueError('Warm start outside component or epigraph box')
     csha = definition_fingerprint(circuit.definition)
     policy = circuit.resolved_policy
     record = {"schema": "c1-staged-v2-record-1", "iteration_policy_id": TERMINATION_AWARE_POLICY_ID,
@@ -238,6 +249,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                        "dense_rf": "not_run", "continuous_frequency": "not_run",
                        "physical": "not_run", "owner_approval": "not_run"},
         "candidate_promotion_blocked": True, "rf_compliance_certified": False}
+    if extra_frequencies or warm_start_vector is not None:
+        record['frequency_exchange_input'] = {
+            'extra_frequencies': [list(point) for point in extra_frequencies],
+            'warm_start_vector': initial.tolist()}
     calls = record["stage_calls"]
     started = time.monotonic()
 
