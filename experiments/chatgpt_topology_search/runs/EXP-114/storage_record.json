@@ -1,25 +1,38 @@
 {
-  "schema_version": 1,
-  "policy": "phase2-git-only-v1",
+  "checkpoints": [],
   "experiment_id": "EXP-114",
+  "git_readback": "not_run",
+  "limitations": [
+    "Best-found finite coarse/fine grid observations only; no global optimum claim.",
+    "17-point, dense1001, independent MNA/power/passivity, continuous/physical validation not_run.",
+    "Logical references are shared results, not additional physical trials.",
+    "Candidate promotion blocked; retain raw until explicit audited Git preservation.",
+    "Post-optimization 17-point validation stopped on KeyError before any validation RF forward; raw in-progress marker retained, no automatic retry. Independent review/recovery decision required."
+  ],
   "phase": "Phase 2",
-  "stage": "planned",
+  "policy": "phase2-git-only-v1",
+  "schema_version": 1,
   "selection": {
-    "top_k": 2,
+    "estimated_curated_bytes": 1500000,
     "retain": [
       "pareto"
     ],
     "rule": "Retain checked Pareto and all start status, complete vectors, recovery, costs, and exclusion/failure diagnostics. Validate all four final vectors at 17 points; only strict30 and physical PASS go to dense1001, then dense PASS to independent MNA84/power/passivity/SPD. Preserve raw until Git readback and audit.",
-    "estimated_curated_bytes": 1500000
+    "top_k": 2
   },
-  "summary": null,
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
-  "git_readback": "not_run",
   "size_exception": null,
-  "limitations": [
-    "Planned only; optimization and post-optimization validation not_run.",
-    "Finite-grid diagnostics are not continuous-frequency or implementation guarantees."
-  ]
+  "stage": "preservation_incomplete",
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+    "sha256": "c4e831aa5e8685a89d29a3bc5c33c9c4ac8ba3b651ffd8b3f8abc6e96195e07b"
+  },
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/validation17-stop.json",
+      "reason": "Post-optimization validation stopped before first RF forward; preserve fail-closed marker and accounting.",
+      "role": "representative_failure",
+      "sha256": "4de7fd4f1b8c0ef4ad502498e7b7da5f30b4d0879a7dd8049c0a8cad0917e35f"
+    }
+  ],
+  "validation_overlays": []
 }
