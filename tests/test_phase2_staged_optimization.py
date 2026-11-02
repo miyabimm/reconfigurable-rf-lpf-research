@@ -56,6 +56,27 @@ class StageTests(unittest.TestCase):
         self.assertEqual(candidate.as_dict()['numerical']['state'], 'converged')
         self.assertEqual(recheck_record(candidate).as_dict()['numerical']['state'], 'converged')
 
+    def test_search_guard_is_opt_in_and_propagated_to_both_stages(self):
+        seen = []
+        def callback(problem, vector, maxiter, target):
+            seen.append((problem.mandatory_stop_db, problem.search_stop_db))
+            return vector, status(0)
+        result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+                               fine_points=2, optimize_stage=callback, search_guard=True)
+        self.assertEqual(seen, [(30., 30.005), (30., 30.005)])
+        self.assertEqual(result['search_guard']['mandatory_stop_db'], 30.)
+        self.assertEqual(result['search_guard']['search_stop_db'], 30.005)
+        for row in result['stage_calls']:
+            observed = row['observation']['sampled_rf']
+            residual = np.asarray(observed['residuals_db'])
+            problem = __import__('lpf.phase2_models.sampled_epigraph', fromlist=['SampledEpigraph']).SampledEpigraph(
+                self.p.circuit, row['grid']['points_per_interval'], search_guard=True)
+            self.assertAlmostEqual(observed['min_h2_db'],
+                                   30.005 + min(residual[problem.evaluator.role == 1]))
+        with self.assertRaises(TypeError):
+            run_c1_staged(self.p.circuit, self.seed, coarse_points=1, fine_points=2,
+                          optimize_stage=callback, search_guard='yes')
+
     def test_success_and_separate_gates(self):
         result, calls = self.run_codes([0, 0])
         self.assertEqual([c[1] for c in calls], [240, 120])

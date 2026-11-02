@@ -152,8 +152,8 @@ def _observe(problem, vector):
                 "h2_min_residual_db": float(np.min(residual[role == 1])),
                 "h3_min_residual_db": float(np.min(residual[role == 2])),
                 "worst_il_db": float(vector[-1] - np.min(residual[role == 0])),
-                "min_h2_db": float(problem.mandatory_stop_db + np.min(residual[role == 1])),
-                "min_h3_db": float(problem.mandatory_stop_db + np.min(residual[role == 2])),
+                "min_h2_db": float(problem.search_stop_db + np.min(residual[role == 1])),
+                "min_h3_db": float(problem.search_stop_db + np.min(residual[role == 2])),
                 "all_sampled_inequalities_nonnegative": bool(np.all(residual >= 0)),
             }
         except SampleBudgetExceeded:
@@ -173,7 +173,8 @@ class _StageAbort(Exception):
 
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
-                  cost_meter=None, extra_frequencies=(), warm_start_vector=None):
+                  cost_meter=None, extra_frequencies=(), warm_start_vector=None,
+                  search_guard=False):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -203,9 +204,11 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
         json.dumps(source_provenance, allow_nan=False)
     extra_frequencies = tuple(extra_frequencies)
     seed_problem = SampledEpigraph(circuit, coarse_points)
-    coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies)
-              if extra_frequencies else seed_problem)
-    fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies)
+    coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies,
+                              search_guard=search_guard)
+              if extra_frequencies or search_guard else seed_problem)
+    fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies,
+                           search_guard=search_guard)
     if not isinstance(seed_record, dict):
         raise TypeError("Expected C1 seed record")
     replay_problem = cost_meter.epigraph(seed_problem) if cost_meter is not None else seed_problem
@@ -249,6 +252,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                        "dense_rf": "not_run", "continuous_frequency": "not_run",
                        "physical": "not_run", "owner_approval": "not_run"},
         "candidate_promotion_blocked": True, "rf_compliance_certified": False}
+    if search_guard:
+        record['search_guard'] = {'guard_db': coarse.search_guard_db,
+                                  'mandatory_stop_db': coarse.mandatory_stop_db,
+                                  'search_stop_db': coarse.search_stop_db}
     if extra_frequencies or warm_start_vector is not None:
         record['frequency_exchange_input'] = {
             'extra_frequencies': [list(point) for point in extra_frequencies],

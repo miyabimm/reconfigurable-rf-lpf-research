@@ -71,6 +71,15 @@ class ExchangeTests(unittest.TestCase):
         self.assertEqual(result['stop_reason'], 'budget_exhausted')
         self.assertEqual(result['evaluation_cost']['frequency_samples_requested'], 15)
 
+    def test_search_guard_does_not_relabel_mandatory_pass(self):
+        values = lambda p, x: 1. if p[0] == 0 else 30.003
+        result, _ = self.invoke(values, stop_db=30.005, mandatory_stop_db=30., max_rounds=1)
+        self.assertTrue(result['initial_scan_strict30'])
+        self.assertFalse(result['initial_scan_search_target'])
+        self.assertTrue(result['rounds'][0]['scan_strict30'])
+        self.assertFalse(result['rounds'][0]['scan_search_target'])
+        self.assertNotEqual(result['stop_reason'], 'scan_no_new_violation')
+
     def test_real_c1_adapter_with_mock_solver_and_shared_meter(self):
         from test_phase2_problem_seed import make, seed
         from lpf.phase2_models.frequency_exchange_c1 import run_c1_frequency_exchange
@@ -83,11 +92,15 @@ class ExchangeTests(unittest.TestCase):
                 start = seed(coarse, x)
                 stages = []
                 def optimizer(p, vector, maxiter, target):
+                    self.assertEqual(p.search_stop_db, 30.005)
                     stages.append((p.points_per_interval, maxiter))
                     return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
                 meter = SampleBudgetCost(10000)
                 result = run_c1_frequency_exchange(problem.circuit, start, cost_meter=meter,
-                                                   optimize_stage=optimizer, max_rounds=1)
+                                                   optimize_stage=optimizer, max_rounds=1,
+                                                   search_guard=True)
+                self.assertEqual(result['stop_db'], 30.005)
+                self.assertEqual(result['mandatory_stop_db'], 30.)
                 self.assertEqual(stages, [(2, 240), (3, 120)])
                 self.assertEqual(result['stop_reason'], 'max_rounds')
                 self.assertEqual(meter.frequency_samples_requested, 476 * 2 + 56 + 56 + 84)
