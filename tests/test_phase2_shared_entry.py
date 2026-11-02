@@ -790,6 +790,106 @@ class FrozenConfigTests(unittest.TestCase):
         path.write_text(yaml.safe_dump(config))
         return path, config, circuit
 
+    def explicit_fixture(self, root):
+        import yaml
+        from lpf.phase2_models.experiment_config import stable_identity
+        path, config, circuit = self.fixture(root)
+        plan_path = root / config['plan']['path']
+        envelope = json.loads(plan_path.read_text())
+        source = envelope['input_source']
+        actual, logical = [], []
+        for row, seed in zip(source['actual_starts'][:2], (23, 24)):
+            ref_path = root / f'source-{seed}.json'
+            ref_path.write_text(json.dumps({k: row['start'][k] for k in ('vector', 'vector_sha256')}))
+            ref = dict(path=ref_path.name, sha256=hashlib.sha256(ref_path.read_bytes()).hexdigest(),
+                       vector_sha256=row['start']['vector_sha256'])
+            for mode in ('physical', 'normalized'):
+                ident = f'{seed}-{mode}'
+                actual.append(dict(id=ident, start=deepcopy(row['start']), coordinates=mode, source_ref=ref))
+                logical.append(dict(id=ident, seed=seed, method=mode,
+                    vector_sha256=ref['vector_sha256'], actual_start_id=ident))
+        config.update(schema_version=2, seeds=[23, 24], pilot_seeds=[23], methods=['physical', 'normalized'])
+        config['budgets']['actual_starts'] = 4
+        source.update(seeds=[23, 24], pilot_seeds=[23], actual_starts=actual, logical_starts=logical)
+        def save():
+            digest = canonical_config_hash(stable_identity(source))
+            envelope['input_source_sha256'] = config['plan']['sha256'] = digest
+            plan_path.write_text(json.dumps(envelope))
+            path.write_text(yaml.safe_dump(config))
+        save()
+        return path, config, circuit, source, save
+
+    def test_explicit_coordinate_pairs_portability_and_rejections(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.experiment_run import phase_ids
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path, config, _, source, save = self.explicit_fixture(root)
+            loaded = load_plan(root, path)
+            self.assertEqual(phase_ids(loaded, 'pilot'), ['23-physical', '23-normalized'])
+            self.assertEqual(phase_ids(loaded, 'remaining'), ['24-physical', '24-normalized'])
+            frozen = json.loads(json.dumps(loaded['input_source']))
+            plan = root / config['plan']['path']
+            before = plan.read_bytes()
+            plan.unlink()
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('static only')):
+                self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
+            plan.write_bytes(before)
+            for field, value in [('coordinates', 'physical'), ('coordinates', 'unknown')]:
+                old = source['actual_starts'][1][field]
+                source['actual_starts'][1][field] = value
+                save()
+                with self.assertRaises(ValueError):
+                    load_plan(root, path)
+                source['actual_starts'][1][field] = old
+            save()
+            (root / 'source-23.json').write_text('{}')
+            with self.assertRaisesRegex(ValueError, 'source reference SHA'):
+                load_plan(root, path, frozen_input=frozen)
+
+    def test_explicit_mock_dispatch_preserves_four_arms_and_noop(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.experiment_run import run_plan, _curated_result, restore_curated_result
+        import lpf.phase2_models.experiment_run as runner
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', root])
+            (root / '.gitignore').write_text('results/\n')
+            path, _, _, _, _ = self.explicit_fixture(root)
+            loaded = load_plan(root, path)
+            calls = []
+            def mock(p, x, budget, target, *, coordinates):
+                calls.append(coordinates)
+                return x, dict(success=False, status=8, message='mock', nit=1, nfev=1)
+            gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                        g1_sha256='b' * 64, manifest={}, storage={})
+            with patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_load_g1_plan', return_value=loaded), patch.object(runner, '_package'):
+                run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                final = run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(calls, ['physical'] * 2 + ['normalized'] * 2 + ['physical'] * 2 + ['normalized'] * 2)
+                self.assertEqual(len(final['completed']), 4)
+                for key, result in final['completed'].items():
+                    curated = _curated_result(result, actual_start_id=key, input_source=loaded['input_source'])
+                    self.assertEqual(curated['coordinates'], loaded['actual'][key]['coordinates'])
+                    self.assertEqual(restore_curated_result(curated, loaded['input_source']), _curated_result(result))
+                raw = root / 'results/EXP-999/run.json'
+                before = raw.read_bytes()
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                    run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(raw.read_bytes(), before)
+                self.assertEqual(len(calls), 8)
+                def failing(*args, **kwargs):
+                    raise ValueError('explicit-arm exception')
+                with self.assertRaisesRegex(RuntimeError, 'retain marker'):
+                    run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=failing)
+                stopped = root / 'results/EXP-998/run.json'
+                body = json.loads(stopped.read_text())['body']
+                self.assertEqual(body['in_progress'], '23-physical')
+                self.assertEqual(body['completed'], {})
+                with self.assertRaisesRegex(ValueError, 'Unknown in-progress'):
+                    run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=mock)
+
     def test_yaml_read_only_hash_stability_and_invalid_inputs(self):
         import yaml
         from lpf.phase2_models.experiment_config import load_plan, plan_preview

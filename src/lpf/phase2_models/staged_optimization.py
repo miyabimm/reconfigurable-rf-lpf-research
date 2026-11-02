@@ -7,6 +7,7 @@ policy. Numerical convergence, sampled RF observations, component checks and
 candidate promotion are explicitly separate.
 """
 from contextlib import nullcontext
+from functools import partial
 from copy import deepcopy
 from dataclasses import asdict
 import hashlib
@@ -266,7 +267,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
         tick = time.monotonic()
         before_cost = cost_meter.snapshot() if cost_meter is not None else None
         try:
-            if cost_meter is not None and optimize_stage is scipy_slsqp_stage:
+            if cost_meter is not None and (optimize_stage is scipy_slsqp_stage or
+                    (isinstance(optimize_stage, partial) and optimize_stage.func is scipy_slsqp_stage)):
                 raw_vector, raw_status = optimize_stage(
                     problem, x.copy(), maxiter, target, cost_meter=cost_meter)
             elif cost_meter is not None:

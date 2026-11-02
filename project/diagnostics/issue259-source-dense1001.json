@@ -1,0 +1,334 @@
+{
+  "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+  "diagnostics": [
+    {
+      "candidate_id": "B-31-1",
+      "components": {
+        "candidate_promotion_blocked": true,
+        "checked_settings": 6,
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                3
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                1,
+                2
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_incomplete": false,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "independent_mna_checked": false,
+        "installed_variable_c_branches": 2,
+        "min_L_eigenvalue_H": 4.474095440712543e-09,
+        "physical_q_srf_em_checked": false,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false
+      },
+      "delta_dense_minus_grid17": {
+        "min_H2_db": 0.0,
+        "min_H3_db": -2.492518031971258e-06,
+        "worst_IL_db": 0.0
+      },
+      "evaluation_cost": {
+        "RF_forward_calls": 1,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 0,
+        "component_rejections": 0,
+        "cpu_seconds": 0.08402386600000078,
+        "forward_failures": 0,
+        "frequency_samples_completed": 28028,
+        "frequency_samples_requested": 28028,
+        "role_rejections": 0,
+        "solver_constraint_calls": 0,
+        "solver_objective_calls": 0,
+        "spd_rejections": 0,
+        "wall_seconds": 0.08417200497933663
+      },
+      "grid": {
+        "frequency_samples": 28028,
+        "points_per_interval": 1001,
+        "segments": 28,
+        "settings": 6
+      },
+      "full_matrix_eigenvalues_nH": [
+        4.474095440712542,
+        5.509245408814913,
+        7.210151303539989,
+        23.367197400614927
+      ],
+      "metrics": {
+        "locations": [
+          {
+            "case": "B8",
+            "frequency_mhz": 960.0,
+            "segment": 25
+          },
+          {
+            "case": "B71",
+            "frequency_mhz": 1326.0,
+            "segment": 2
+          },
+          {
+            "case": "B8",
+            "frequency_mhz": 2725.05,
+            "segment": 27
+          }
+        ],
+        "min_H2_db": 29.999999297517157,
+        "min_H3_db": 29.977324261472894,
+        "min_L_eigenvalue_nH": 4.474095440712542,
+        "worst_IL_db": 0.8801666159536757
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-31-1-grid17.json",
+        "sha256": "8e1e418a9844b32715eb9caa8553a3014fcb138d6a9d3ab11d57306581052ba8",
+        "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+      },
+      "strict30_pass": false,
+      "vector": [
+        4.530156849713734,
+        23.31113596556562,
+        5.696784215570115,
+        7.022612522832906,
+        1.1928649525007526,
+        1.2266937480463014,
+        0.26509234748754373,
+        0.02,
+        -0.1,
+        5.159170308777975e-05,
+        -0.08422741635281443,
+        0.4179336656783661,
+        0.20000000000000004,
+        0.05607296891335961,
+        1.348199997364001,
+        0.027621391821095985,
+        1.0964829812077765,
+        0.021606778603962724,
+        0.9542579435248505,
+        0.0,
+        0.6602773484360126,
+        3.0,
+        0.47981755379283975,
+        2.999999999999999,
+        0.0
+      ]
+    },
+    {
+      "candidate_id": "B-28-1",
+      "components": {
+        "candidate_promotion_blocked": true,
+        "checked_settings": 6,
+        "component_policy_pass": true,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "branches": [
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                0,
+                3
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            },
+            {
+              "declared_role": "bridge",
+              "declared_role_supported_by_l_tree": true,
+              "edge": [
+                1,
+                2
+              ],
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals"
+            }
+          ],
+          "physical_layout_checked": false,
+          "unsupported_role_indices": []
+        },
+        "connection_role_evidence_incomplete": false,
+        "constraint_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+        "constraint_id": "RF-T008",
+        "independent_mna_checked": false,
+        "installed_variable_c_branches": 2,
+        "min_L_eigenvalue_H": 2.4865497573673898e-09,
+        "physical_q_srf_em_checked": false,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false
+      },
+      "delta_dense_minus_grid17": {
+        "min_H2_db": 0.0,
+        "min_H3_db": 0.0,
+        "worst_IL_db": 0.0
+      },
+      "evaluation_cost": {
+        "RF_forward_calls": 1,
+        "box_rejections": 0,
+        "cache_hits": 0,
+        "component_checks": 0,
+        "component_rejections": 0,
+        "cpu_seconds": 0.056495660999999586,
+        "forward_failures": 0,
+        "frequency_samples_completed": 28028,
+        "frequency_samples_requested": 28028,
+        "role_rejections": 0,
+        "solver_constraint_calls": 0,
+        "solver_objective_calls": 0,
+        "spd_rejections": 0,
+        "wall_seconds": 0.05649557200376876
+      },
+      "grid": {
+        "frequency_samples": 28028,
+        "points_per_interval": 1001,
+        "segments": 28,
+        "settings": 6
+      },
+      "full_matrix_eigenvalues_nH": [
+        2.4865497573673894,
+        3.6203285560365193,
+        7.96240342173904,
+        25.646535217600906
+      ],
+      "metrics": {
+        "locations": [
+          {
+            "case": "B8",
+            "frequency_mhz": 960.0,
+            "segment": 25
+          },
+          {
+            "case": "B12",
+            "frequency_mhz": 1398.0,
+            "segment": 6
+          },
+          {
+            "case": "B8",
+            "frequency_mhz": 2640.0,
+            "segment": 27
+          }
+        ],
+        "min_H2_db": 29.999510296895615,
+        "min_H3_db": 29.99928110649733,
+        "min_L_eigenvalue_nH": 2.4865497573673894,
+        "worst_IL_db": 0.9827503333957804
+      },
+      "source_ref": {
+        "path": "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-28-1-grid17.json",
+        "sha256": "9296b39924dca72910ab9cf1fdaf3b43bcd73f4ea073cff0238fd4f34e958e40",
+        "vector_sha256": "ea8bb64ed3dd90957f7065ef553933775979e95f77fb6d35d024379902b8f609"
+      },
+      "strict30_pass": false,
+      "vector": [
+        2.5144098064949976,
+        25.615502504522116,
+        3.6516501936075727,
+        7.934254448119169,
+        4.409407176306017,
+        1.5983834893453468,
+        0.32353653995950804,
+        0.02000000080744758,
+        -0.09999999897361649,
+        0.016668676234860912,
+        -0.06827079976135973,
+        0.2000000010546686,
+        0.2000002626869614,
+        0.06613667934850204,
+        1.1891792794587097,
+        2.843473042545662,
+        0.9407552129106759,
+        3.0,
+        0.8749062395124719,
+        0.009663111427513688,
+        0.2615911844902862,
+        1.7953691382059558,
+        0.18581119380879937,
+        0.0,
+        4.14240236747672e-07
+      ]
+    }
+  ],
+  "environment": {
+    "dependencies": {
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    },
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.15"
+  },
+  "issue": 259,
+  "spd_method": "Full signed matrix from decoded circuit via evaluator.topology.matrices; NumPy eigvalsh separate from component validator call, not an independent matrix implementation.",
+  "thread_environment": {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"},
+  "limitations": [
+    "Read-only finite-grid diagnosis; no RF certification or candidate promotion.",
+    "Independent MNA/power/passivity not_run on these source vectors; no continuous-band guarantee.",
+    "Normalized coordinates also change physical finite-difference widths; not a pure coordinate causal experiment.",
+    "EXP-062 best is an external reference, never a warm start."
+  ],
+  "main_sha": "8977b561770edd43f1fada2bdc3bd1c00d5dd7be",
+  "objective": "full_lpf",
+  "optimization": "not_run",
+  "policy_id": "RF-T008",
+  "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+  "reference_planes": "external_ports",
+  "rf_inputs": {
+    "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+    "s2p_sha256": {
+      "input_parasitic": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+      "output_parasitic": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+    }
+  },
+  "seed_preparation_cost": {
+    "RF_forward_calls": 2,
+    "box_rejections": 0,
+    "cache_hits": 0,
+    "component_checks": 2,
+    "component_rejections": 0,
+    "cpu_seconds": 0.002860199999998869,
+    "forward_failures": 0,
+    "frequency_samples_completed": 112,
+    "frequency_samples_requested": 112,
+    "role_rejections": 0,
+    "solver_constraint_calls": 0,
+    "solver_objective_calls": 0,
+    "spd_rejections": 0,
+    "wall_seconds": 0.0028595239855349064
+  },
+  "source_head": "8977b561770edd43f1fada2bdc3bd1c00d5dd7be",
+  "sources": {
+    "experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json": "4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b",
+    "experiments/chatgpt_topology_search/runs/EXP-062/manifest.json": "9b5301ffc24bd1130fb7263b61626fff902ff378f23e92c180fc3c3876cb3f3a",
+    "experiments/chatgpt_topology_search/runs/EXP-062/validation/a6_best_mna.json": "65a0e12fb8da7b36586c70c0b7dccb2cf58cddcf6b8d2b368c6873ef77a96889",
+    "experiments/chatgpt_topology_search/runs/EXP-113/manifest.json": "9287a2d89c63b3ca02d338e4de04046cd07fc227d4c5656bb28baff9f1cd98ce",
+    "experiments/chatgpt_topology_search/runs/EXP-113/run_summary.json": "14da3dc0b194bdd1e9042158abce148da425131c9d33b7da825aa4e2fde89fda",
+    "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-28-1-grid17.json": "9296b39924dca72910ab9cf1fdaf3b43bcd73f4ea073cff0238fd4f34e958e40",
+    "experiments/chatgpt_topology_search/runs/EXP-113/validation/B-31-1-grid17.json": "8e1e418a9844b32715eb9caa8553a3014fcb138d6a9d3ab11d57306581052ba8"
+  },
+  "total_dense_frequency_samples": 56056
+}

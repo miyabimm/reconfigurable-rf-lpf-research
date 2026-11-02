@@ -96,6 +96,27 @@ class StageTests(unittest.TestCase):
         self.assertEqual(meter.RF_forward_calls, 2)
         self.assertEqual(snapshots[-1]['numerical_state'], 'budget_exhausted')
 
+    def test_normalized_partial_keeps_solver_meter_and_sample_ceiling(self):
+        from functools import partial
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        meter = SampleBudgetCost(56)
+        def solver(objective, x, **kwargs):
+            objective(x)
+            residuals = kwargs['constraints'][0]['fun']
+            residuals(x)
+            residuals(x)  # same frozen ceiling, no hidden forward
+            self.fail('must stop at sample ceiling')
+        with patch('lpf.phase2_models.staged_optimization.minimize', side_effect=solver):
+            result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
+                fine_points=2, cost_meter=meter,
+                optimize_stage=partial(scipy_slsqp_stage, coordinates='normalized'))
+        self.assertEqual(result['numerical_state'], 'budget_exhausted')
+        self.assertEqual(meter.frequency_samples_requested, 56)
+        self.assertEqual(meter.RF_forward_calls, 2)
+        self.assertEqual(meter.solver_objective_calls, 1)
+        self.assertEqual(meter.solver_constraint_calls, 2)
+        self.assertGreater(meter.cpu_seconds, 0)
+
     def test_shared_cost_preserves_v2_recovery_and_stage_deltas(self):
         from lpf.phase2_models.evaluation_cost import SampleBudgetCost
         meter = SampleBudgetCost(1000)

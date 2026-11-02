@@ -70,6 +70,27 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
   保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
   Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
 
+### 明示source × 座標対照（schema 2、Issue #259）
+
+`project/experiments/issue259.yaml` は同じ共通CLIの明示opt-in入力。schema 1と既定solverは不変更。
+`issue259-starts.json` はGit原本の最終物理vectorから現行 `SampledEpigraph.seed` で
+再初期化した完全C1記録を保持し、負の旧tを継承しない。schema 2では各actualに
+`source_ref: {path, sha256, vector_sha256}` と `coordinates: physical|normalized` を要求し、
+同じseedの2 armはsource参照とC1記録が完全一致しなければ拒否する。
+固有start identityは `(vector SHA, coordinates)`。common nominalや他armへの計算共有はない。
+G1には完全vector・source参照・座標モードを保存し、G1以後はprepared planを開かず、
+参照原本のSHAも静的照合する（完全checkout必須）。pilot/remaining・原子保存・費用上限は既存経路を再利用する。
+例外はschema 2ではmarkerを保持して全体STOP（sample capの `budget_exhausted` は区別）。
+
+```bash
+uv run --frozen python scripts/run_phase2_shared.py plan --config project/experiments/issue259.yaml
+```
+
+元2候補のread-only dense診断は `project/diagnostics/issue259-source-dense1001.json`。
+これは新EXPのG0/G1・最適化・最終独立検証の証拠ではない。コードの独立レビューとmain統合、
+新EXPのmain予約・G1保存/遠隔読戻し後にだけ4 armを開始する。正規化は物理的な差分幅も変えるため、
+純粋な座標変換だけの因果効果とは解釈しない。17点/1001点/独立MNAは本番後の別工程のまま。
+
 ## 限定1-start driver（RF-T005 / RF-T008 rev3・合法3L/4L）
 
 `scripts/run_phase2_shared.py` の `prepare_one_start` / `one_start_gate` は引き続きread-only。
