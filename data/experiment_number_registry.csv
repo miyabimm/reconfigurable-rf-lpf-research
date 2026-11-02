@@ -113,3 +113,4 @@ EXP-111,reserved,miyabimm,issue237-pair7-B,Issue 237 pair 7 mode B physical vs n
 EXP-112,reserved,miyabimm,issue237-pair9-B,Issue 237 pair 9 mode B physical vs normalized saved EXP-094 coarse2 fine3 seed23,RF-T008,2026-11-01T05:32:39Z,main_reservation_workflow
 EXP-113,completed,miyabimm,issue250-fixed4l-seed23-34-v1,Issue250 fixed4L D/A/B-2 paired SLSQP comparison; seeds23-34; 73logical/58actual,RF-T008,2026-11-02T12:27:11Z,main_reservation_workflow
 EXP-114,reserved,miyabimm,issue259-coordinate-comparison,Issue 259: EXP-113 B-31-1 and B-28-1 physical versus normalized SLSQP comparison,RF-T008,2026-11-02T14:38:57Z,main_reservation_workflow
+EXP-115,reserved,miyabimm,issue-263-afe-comparison,Issue 263 fixed 2-start baseline versus active frequency exchange,RF-T008,2026-11-02T16:48:45Z,main_reservation_workflow
