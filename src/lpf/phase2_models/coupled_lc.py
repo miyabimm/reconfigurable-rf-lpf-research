@@ -278,7 +278,7 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
     Neither the RF constraint nor the independent MNA is implicitly proven.
     """
 
-    def __init__(self, policy, points, topology, schema):
+    def __init__(self, policy, points, topology, schema, *, extra_frequencies=()):
         if not isinstance(topology, CoupledLCTopology):
             raise TypeError("Expected CoupledLCTopology")
         if not isinstance(schema, ParameterVectorSchema):
@@ -291,7 +291,7 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
         self.schema = schema
         self.source_ohms = _fixed_port_impedance(policy, "source_ohms")
         self.load_ohms = _fixed_port_impedance(policy, "load_ohms")
-        super().__init__(policy, points)
+        super().__init__(policy, points, extra_frequencies=extra_frequencies)
 
     def il(self, vector):
         if isinstance(vector, CircuitValues):

@@ -1,0 +1,42 @@
+schema_version: 3
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+plan:
+  path: project/experiments/issue263-starts.json
+  sha256: 1680dc6e4fdfc2dc1858d7d83c60f3c69910083657206e669ee09299786f33b2
+iteration_policy_id: slsqp-staged-v2
+grids:
+  coarse_points: 2
+  fine_points: 3
+samples_per_start: 750000
+seeds:
+- 31
+- 28
+methods:
+- baseline
+- exchange
+pilot_seeds:
+- 31
+frequency_exchange:
+  mode: opt_in
+  scan_points: 17
+  max_additions: 4
+  max_rounds: 3
+selection:
+  intermediate_points: 17
+  dense_points: 1001
+  independent_points: 3
+  top_k_per_method: 2
+budgets:
+  logical_starts: 4
+  actual_starts: 4
+  stages: 32
+  optimization_samples: 3000000
+  screen_forwards: 2
+  screen_samples: 112
+  intermediate_samples: 1904
+  dense_samples: 112112

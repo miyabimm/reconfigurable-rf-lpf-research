@@ -149,8 +149,9 @@ class PolicyBoundRFT008Circuit:
             "physical_q_srf_em_checked": False,
         }
 
-    def evaluator(self, points):
+    def evaluator(self, points, *, extra_frequencies=()):
         """Construct generic forward sampled evaluator with this RF policy."""
         return CoupledLCEvaluator(
-            self.policy, points, self.topology, self.schema
+            self.policy, points, self.topology, self.schema,
+            extra_frequencies=extra_frequencies
         )

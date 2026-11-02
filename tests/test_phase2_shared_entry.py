@@ -819,6 +819,121 @@ class FrozenConfigTests(unittest.TestCase):
         save()
         return path, config, circuit, source, save
 
+    def exchange_fixture(self, root):
+        path, config, circuit, source, save = self.explicit_fixture(root)
+        raw_source = {'executable_plan': {'actual_starts': []}}
+        for seed, row in zip((23, 24), source['actual_starts'][::2]):
+            raw_source['executable_plan']['actual_starts'].append(
+                dict(id=str(seed), seed_record=row['start']['seed_record']))
+        body = {'input_source': raw_source, 'completed': {}}
+        summary = {'actual_results': {}}
+        for seed, row in zip((23, 24), source['actual_starts'][::2]):
+            final = row['start']['seed_record']['vector']
+            body['completed'][str(seed)] = {'staged_record': {'stage_calls': [{'output_vector': final}]}}
+            summary['actual_results'][str(seed)] = dict(
+                seed_ref=dict(actual_start_id=str(seed), input_source_sha256=canonical_config_hash(raw_source),
+                              seed_record_sha256=canonical_config_hash(row['start']['seed_record'])),
+                stage_calls=[dict(output_vector=final)])
+        raw_path, summary_path = root / 'raw.json', root / 'summary.json'
+        raw_path.write_text(json.dumps(dict(body=body, sha256=canonical_config_hash(body))))
+        summary_path.write_text(json.dumps(summary))
+        for i, row in enumerate(source['actual_starts']):
+            seed = (23, 24)[i // 2]
+            row['method'] = ('baseline', 'exchange')[i % 2]
+            row['coordinates'] = 'physical'
+            row['source_ref'].update(raw_path='raw.json', raw_sha256=hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+                summary_path='summary.json', summary_sha256=hashlib.sha256(summary_path.read_bytes()).hexdigest(),
+                actual_id=str(seed))
+        for i, row in enumerate(source['logical_starts']):
+            row['method'] = ('baseline', 'exchange')[i % 2]
+        config.update(schema_version=3, methods=['baseline', 'exchange'],
+            frequency_exchange=dict(mode='opt_in', scan_points=17, max_additions=4, max_rounds=3))
+        config['budgets']['stages'] = source['limits']['max_stages'] = 32
+        source['limits']['max_stages_per_start'] = 12
+        save()
+        return path, config, circuit, source, save
+
+    def test_exchange_plan_and_mock_dispatch(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.experiment_run import run_plan, _curated_result, restore_curated_result
+        import lpf.phase2_models.experiment_run as runner
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', root])
+            (root / '.gitignore').write_text('results/\n')
+            path, config, _, source, save = self.exchange_fixture(root)
+            loaded = load_plan(root, path)
+            frozen = json.loads(json.dumps(loaded['input_source']))
+            self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
+            calls = []
+            def mock(p, x, budget, target, *, coordinates):
+                calls.append((coordinates, p.points_per_interval))
+                return x, dict(success=True, status=0, message='mock', nit=1, nfev=1)
+            gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                        g1_sha256='b' * 64, manifest={}, storage={})
+            actual_package = runner._package
+            with patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_package'):
+                pilot = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                self.assertEqual(len(pilot['completed']), 2)
+                final = run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(len(final['completed']), 4)
+                for key, result in final['completed'].items():
+                    exchange = result['frequency_exchange']
+                    self.assertLessEqual(len(exchange['rounds']), 1 if loaded['actual'][key]['method'] == 'baseline' else 3)
+                    self.assertEqual(exchange['evaluation_cost'], result['staged_record']['evaluation_cost'])
+                    curated = _curated_result(result, actual_start_id=key, input_source=loaded['input_source'])
+                    self.assertEqual(restore_curated_result(curated, loaded['input_source']), _curated_result(result))
+                self.assertTrue(all(c[0] == 'physical' for c in calls))
+                from lpf.phase2_models.evaluation_cost import EvaluationCost
+                gate['run'].mkdir(parents=True)
+                gate['manifest'] = {'execution': {}}
+                gate['storage'] = {'checkpoints': [], 'validation_overlays': []}
+                with patch('scripts.audit_new_experiment_storage.validate_run'):
+                    actual_package(root, gate, loaded, final, EvaluationCost())
+                saved_summary = json.loads((gate['run'] / 'run_summary.json').read_text())
+                self.assertEqual(saved_summary['attempts']['attempted'], 4)
+                self.assertTrue(all('frequency_exchange' in v for v in saved_summary['actual_results'].values()))
+                raw = root / 'results/EXP-999/run.json'
+                before = raw.read_bytes()
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                    run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(raw.read_bytes(), before)
+                def failed(*args, **kwargs):
+                    raise ValueError('mock stage failure')
+                with self.assertRaisesRegex(RuntimeError, 'Inner optimizer'):
+                    run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=failed)
+                failed_raw = json.loads((root / 'results/EXP-998/run.json').read_text())['body']
+                self.assertIsNotNone(failed_raw['in_progress'])
+                self.assertEqual(failed_raw['exchange_record']['stop_reason'], 'failed')
+                self.assertEqual(failed_raw['completed'], {})
+                with self.assertRaisesRegex(ValueError, 'Unknown in-progress'):
+                    run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=mock)
+                loaded['config']['samples_per_start'] = 476
+                limited = run_plan(root, path, 'EXP-997', 'pilot', optimize_stage=mock)
+                for item in limited['completed'].values():
+                    self.assertEqual(item['staged_record']['numerical_state'], 'budget_exhausted')
+                    self.assertEqual(item['frequency_exchange']['stop_reason'], 'budget_exhausted')
+                    self.assertIsNone(item['candidate'])
+                    self.assertEqual(item['staged_record']['evaluation_cost']['frequency_samples_requested'], 476)
+                run_plan(root, path, 'EXP-997', 'pilot', optimize_stage=mock)
+            source['actual_starts'][0]['source_ref']['raw_sha256'] = '0' * 64
+            source['actual_starts'][1]['source_ref']['raw_sha256'] = '0' * 64
+            save()
+            with self.assertRaisesRegex(ValueError, 'raw/curated'):
+                load_plan(root, path)
+            raw_path = root / 'raw.json'
+            raw = json.loads(raw_path.read_text())
+            raw['body']['completed']['23']['staged_record']['stage_calls'][-1]['output_vector'][0] += 0.1
+            raw['sha256'] = canonical_config_hash(raw['body'])
+            raw_path.write_text(json.dumps(raw))
+            for row in source['actual_starts'][:2]:
+                row['source_ref']['raw_sha256'] = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+            save()
+            with self.assertRaisesRegex(ValueError, 'raw/curated final vector'):
+                load_plan(root, path)
+
     def test_explicit_coordinate_pairs_portability_and_rejections(self):
         from lpf.phase2_models.experiment_config import load_plan
         from lpf.phase2_models.experiment_run import phase_ids

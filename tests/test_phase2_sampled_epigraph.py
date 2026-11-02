@@ -48,6 +48,25 @@ class SampledEpigraphTests(unittest.TestCase):
                 self.assertEqual(jac.shape, (56, len(x)))
                 np.testing.assert_allclose(jac[:, -1], p.evaluator.role == 0, atol=1e-8)
 
+    def test_explicit_segment_frequencies_preserve_uniform_grid_and_roles(self):
+        c = circuit("RF-T008")
+        base = SampledEpigraph(c, 3)
+        extra = SampledEpigraph(c, 3, extra_frequencies=((0, 670.5), (2, 1350.5)))
+        for seg in range(28):
+            a = base.evaluator.segment == seg
+            b = extra.evaluator.segment == seg
+            np.testing.assert_array_equal(extra.evaluator.f[b][:3], base.evaluator.f[a])
+            self.assertTrue(np.all(extra.evaluator.role[b] == base.evaluator.role[a][0]))
+            self.assertTrue(np.all(extra.evaluator.setting[b] == base.evaluator.setting[a][0]))
+        x = np.array([2., 3., 4., .1, .01, -.02, .01, 7.])
+        values = extra.evaluator.il(x[:-1])
+        np.testing.assert_allclose(extra.residuals(x), np.where(
+            extra.evaluator.role == 0, x[-1] - values, values - 30))
+        for invalid in (((0, 670.5), (0, 670.5)), ((0, 663.),),
+                        ((0, 700.),), ((28, 1.),), ((0, float('nan')),)):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                SampledEpigraph(c, 3, extra_frequencies=invalid)
+
     def test_invalid_vectors_and_non_spd(self):
         p = SampledEpigraph(circuit("RF-T005"), 1)
         x = np.array([2., 3., 4., .1, .01, -.02, .01, 7.])

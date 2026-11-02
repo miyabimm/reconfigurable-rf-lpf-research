@@ -75,18 +75,40 @@ def validated_band_segments(records):
 class SampledExternalEvaluator:
     """28-interval sampling and frozen input/output S2P; no topology assumed."""
 
-    def __init__(self, policy, points):
+    def __init__(self, policy, points, *, extra_frequencies=()):
         if type(points) is not int or points < 1:
             raise ValueError("points must be an integer >= 1")
         with rf_input_file(ROOT, policy["bands_file"]).open(newline="", encoding="utf-8") as f:
             records = list(csv.DictReader(f))
+        segments = validated_band_segments(records)
+        extras = [[] for _ in segments]
+        seen = set()
+        for item in extra_frequencies:
+            try:
+                seg, mhz = item
+            except (TypeError, ValueError) as exc:
+                raise ValueError("Expected (segment_id, frequency_MHz)") from exc
+            if (type(seg) is not int or not 0 <= seg < len(segments) or
+                    isinstance(mhz, (bool, str, bytes))):
+                raise ValueError("Invalid segment or frequency")
+            try:
+                mhz = float(mhz)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("Invalid frequency") from exc
+            _, _, low, high = segments[seg]
+            key = (seg, mhz)
+            if (not np.isfinite(mhz) or not low <= mhz <= high or key in seen or
+                    mhz in np.linspace(low, high, points)):
+                raise ValueError("Duplicate or out-of-interval frequency")
+            seen.add(key)
+            extras[seg].append(mhz)
         frequency, setting, role, segment = [], [], [], []
-        for seg, (case_index, role_index, low, high) in enumerate(
-                validated_band_segments(records)):
-            frequency.extend(np.linspace(low, high, points))
-            setting.extend([case_index] * points)
-            role.extend([role_index] * points)
-            segment.extend([seg] * points)
+        for seg, (case_index, role_index, low, high) in enumerate(segments):
+            grid = list(np.linspace(low, high, points)) + sorted(extras[seg])
+            frequency.extend(grid)
+            setting.extend([case_index] * len(grid))
+            role.extend([role_index] * len(grid))
+            segment.extend([seg] * len(grid))
         self.f = np.asarray(frequency, float)
         self.omega = 2e6 * np.pi * self.f
         self.setting = np.asarray(setting, int)

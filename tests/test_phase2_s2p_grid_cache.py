@@ -6,6 +6,7 @@ matrix data across different circuit instances. It is a finite-grid test.
 """
 import copy
 import csv
+import hashlib
 import sys
 import unittest
 from pathlib import Path
@@ -81,6 +82,20 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
         np.testing.assert_array_equal(a.pre[0], prev)
         self.assertTrue(np.all(np.isfinite(a.pre)))
         self.assertTrue(np.all(np.isfinite(a.post)))
+
+    def test_uniform_grid_fingerprints_remain_unchanged(self):
+        expected = {2: '1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d',
+                    3: '1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786',
+                    17: 'fc6c7a269bc2aecefe747b06909a0fc79d43ee435c38ae8d4ba2d81db339fa28',
+                    1001: 'd0696e28439da33f36ea66eef9243a8ae98f89a7e63763f3e480b4dc0fd7585f'}
+        for points, digest in expected.items():
+            with self.subTest(points=points):
+                grid = SampledExternalEvaluator(self.policy, points)
+                sha = hashlib.sha256()
+                for values, dtype in ((grid.f, '<f8'), (grid.setting, '<i8'),
+                                      (grid.role, '<i8'), (grid.segment, '<i8')):
+                    sha.update(np.asarray(values, dtype=dtype).tobytes())
+                self.assertEqual(sha.hexdigest(), digest)
 
     def test_band_csv_validation_fails_closed_instead_of_reclassifying_h3(self):
         with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
