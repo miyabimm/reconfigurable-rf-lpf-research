@@ -76,8 +76,11 @@ def load_plan(root, config_path, *, frozen_input=None):
         raise ValueError('Config must be in checkout')
     config = yaml.load(path.read_text(), Loader=_Loader)
     _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets')
-    if type(config['schema_version']) is not int or config['schema_version'] != 1:
+    if type(config['schema_version']) is not int or config['schema_version'] not in (1, 2):
         raise ValueError('Unsupported config schema')
+    explicit = config['schema_version'] == 2
+    if explicit and config['methods'] != ['physical', 'normalized']:
+        raise ValueError('Explicit coordinate comparison requires physical/normalized arms')
     _fields(config['rf'], 'id effective_sha256 allow_trial')
     _fields(config['plan'], 'path sha256')
     _fields(config['grids'], 'coarse_points fine_points')
@@ -126,12 +129,15 @@ def load_plan(root, config_path, *, frozen_input=None):
         # prepared-start shape for the common validation below, without RF.
         starts = []
         for item in source['actual_starts']:
-            _fields(item, 'id vector vector_sha256 seed seed_record seed_record_sha256')
+            _fields(item, 'id vector vector_sha256 seed seed_record seed_record_sha256' +
+                    (' coordinates source_ref' if explicit else ''))
             record = item['seed_record']
             if (canonical_config_hash(record) != item['seed_record_sha256'] or
                     record['seed'] != item['seed']):
                 raise ValueError('G1 C1 seed record SHA mismatch')
-            starts.append(dict(id=item['id'], start=dict(vector=item['vector'],
+            starts.append(dict(id=item['id'],
+                **({k: item[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
+                start=dict(vector=item['vector'],
                 vector_sha256=item['vector_sha256'], seed_record=record,
                 policy_id=source['policy_id'], policy_sha256=source['policy_sha256'],
                 definition_sha256=source['definition_sha256'], jitter_fraction=0)))
@@ -175,11 +181,25 @@ def load_plan(root, config_path, *, frozen_input=None):
     by_id, shas = {}, set()
     box = circuit_box(circuit)
     for row in actual:
-        _fields(row, 'id start')
+        _fields(row, 'id start' + (' coordinates source_ref' if explicit else ''))
         start = row['start']
+        if explicit:
+            if row['coordinates'] not in config['methods']:
+                raise ValueError('Unknown coordinate mode')
+            ref = row['source_ref']
+            _fields(ref, 'path sha256 vector_sha256')
+            ref_path = (root / ref['path']).resolve()
+            if (not ref_path.is_relative_to(root) or file_sha256(ref_path) != ref['sha256'] or
+                    ref['vector_sha256'] != start['vector_sha256']):
+                raise ValueError('Explicit source reference SHA mismatch')
+            original = _read(ref_path)
+            if (original['vector'] != start['vector'] or
+                    original['vector_sha256'] != ref['vector_sha256']):
+                raise ValueError('Explicit source vector mismatch')
         vector = start['vector']
         sha = vector_fingerprint(vector)
-        if sha in shas or sha != start['vector_sha256'] or len(vector) != circuit.schema.vector_length:
+        identity = (sha, row['coordinates']) if explicit else sha
+        if identity in shas or sha != start['vector_sha256'] or len(vector) != circuit.schema.vector_length:
             raise ValueError('Duplicate or invalid actual vector SHA/schema')
         for i, (v, (lo, hi)) in enumerate(zip(vector, box.bounds[:-1])):
             if v < lo or v > hi or (i in box.open_lower and v == lo):
@@ -202,7 +222,7 @@ def load_plan(root, config_path, *, frozen_input=None):
             raise ValueError('C1 seed binding mismatch')
         _number(abs(seed['vector'][-1]))
         by_id[row['id']] = dict(row, seed_record=seed)
-        shas.add(sha)
+        shas.add(identity)
     referenced = set()
     pairs = set()
     group_counts = {}
@@ -212,6 +232,9 @@ def load_plan(root, config_path, *, frozen_input=None):
         target = by_id.get(row['actual_start_id'])
         if target is None or row['vector_sha256'] != target['start']['vector_sha256']:
             raise ValueError('Logical/actual binding mismatch')
+        if explicit and (row['method'] != target['coordinates'] or
+                         row['seed'] != target['seed_record']['seed']):
+            raise ValueError('Logical coordinate/source binding mismatch')
         if row['method'] == 'common':
             common_count += 1
             if row['seed'] is not None:
@@ -223,9 +246,17 @@ def load_plan(root, config_path, *, frozen_input=None):
             pairs.add(pair)
             group_counts[pair] = group_counts.get(pair, 0) + 1
         referenced.add(row['actual_start_id'])
-    if (common_count != 1 or len(set(group_counts.values())) != 1 or referenced != set(by_id) or
+    if (common_count != (0 if explicit else 1) or len(set(group_counts.values())) != 1 or
+            (explicit and (set(group_counts.values()) != {1} or len(actual) != len(logical))) or
+            referenced != set(by_id) or
             pairs != {(m, s) for m in config['methods'] for s in config['seeds']}):
         raise ValueError('Incomplete logical/actual or paired seed mapping')
+    if explicit:
+        for seed in config['seeds']:
+            paired = [by_id[r['actual_start_id']] for r in logical if r['seed'] == seed]
+            if (len({canonical_config_hash(r['source_ref']) for r in paired}) != 1 or
+                    len({canonical_config_hash(r['seed_record']) for r in paired}) != 1):
+                raise ValueError('Coordinate arms must share exact source and C1 seed')
     cost = source['screen_cost']
     for v in cost.values():
         _number(v)
@@ -247,7 +278,9 @@ def load_plan(root, config_path, *, frozen_input=None):
     executable['screen_by_group'] = (source['screen_by_group'] if frozen_input is not None else
         [dict(seed=p['seed'], method=p['method'], cost=p['cost'], pool_sha256=canonical_config_hash(p))
          for p in source.get('pools', [])])
-    executable['actual_starts'] = [dict(id=row['id'], vector=row['start']['vector'],
+    executable['actual_starts'] = [dict(id=row['id'],
+        **({k: row[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
+        vector=row['start']['vector'],
         vector_sha256=row['start']['vector_sha256'], seed=row['start']['seed_record']['seed'],
         seed_record=row['start']['seed_record'],
         seed_record_sha256=canonical_config_hash(row['start']['seed_record'])) for row in actual]

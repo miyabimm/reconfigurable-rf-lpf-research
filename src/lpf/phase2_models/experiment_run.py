@@ -1,5 +1,6 @@
 """Sequential frozen-start dispatcher. No optimizer, retry policy or RF validator here."""
 from copy import deepcopy
+from functools import partial
 import hashlib
 import fcntl
 import json
@@ -235,10 +236,18 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
             _save(raw, state)
             if (raw.parent / 'STOP').exists():
                 raise ValueError('STOP at stage boundary; preserve in-progress marker')
+        # Keep the injected callback for isolated mocks; the production callback
+        # is explicitly configured per frozen arm. C2 passes the same meter
+        # through this partial, including solver callback/CPU accounting.
+        stage_callback = (partial(optimize_stage, coordinates=start['coordinates'])
+                          if 'coordinates' in start else optimize_stage)
         staged = run_c1_staged(circuit, start['seed_record'],
-            **loaded['config']['grids'], optimize_stage=optimize_stage,
+            **loaded['config']['grids'], optimize_stage=stage_callback,
             cost_meter=SampleBudgetCost(loaded['config']['samples_per_start']),
             source_provenance=provenance, record_sink=sink)
+        if (loaded['config']['schema_version'] == 2 and staged.get('exception') and
+                staged['numerical_state'] != 'budget_exhausted'):
+            raise RuntimeError('Explicit-arm stage exception; retain marker and STOP without retry')
         if (staged.get('exception') or {}).get('type') in ('OSError', 'MemoryError', 'TimeoutError'):
             raise RuntimeError('System failure during stage; retain unknown in-progress evidence')
         # Provenance/storage failures are global STOP, not numerical failures.
@@ -278,6 +287,9 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
     if (seed['seed_record'] != result['seed_record'] or
             canonical_config_hash(seed['seed_record']) != seed['seed_record_sha256']):
         raise ValueError('Curated G1 seed binding mismatch')
+    if 'coordinates' in seed:
+        curated['coordinates'] = seed['coordinates']
+        curated['source_ref'] = deepcopy(seed['source_ref'])
     curated.pop('seed_record')
     curated['seed_ref'] = dict(actual_start_id=actual_start_id,
         input_source_sha256=canonical_config_hash(input_source),
@@ -316,6 +328,10 @@ def restore_curated_result(curated, input_source):
             if r['id'] == ref['actual_start_id']]
     if len(rows) != 1 or canonical_config_hash(rows[0]['seed_record']) != ref['seed_record_sha256']:
         raise ValueError('Curated G1 seed SHA mismatch')
+    if 'coordinates' in rows[0]:
+        for key in ('coordinates', 'source_ref'):
+            if restored.pop(key) != rows[0][key]:
+                raise ValueError('Curated coordinate/source binding mismatch')
     restored['seed_record'] = deepcopy(rows[0]['seed_record'])
     vectors = {'seed': restored['seed_record']['vector']}
     for index, call in enumerate(restored['stage_calls']):
