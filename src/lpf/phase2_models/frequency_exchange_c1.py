@@ -6,7 +6,7 @@ The exchange scan is not independent final validation.
 import numpy as np
 
 from .frequency_exchange import run_frequency_exchange
-from .staged_optimization import run_c1_staged, scipy_slsqp_stage
+from .staged_optimization import run_c1_staged, scipy_slsqp_stage, _check_guard_source
 from .sampled_epigraph import SEARCH_GUARD_DB
 
 
@@ -18,6 +18,8 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
     """Use unchanged v2 for each exchange round, preserving the physical x and t."""
     if type(search_guard) is not bool:
         raise TypeError('search_guard must be bool')
+    if search_guard:
+        _check_guard_source(source_provenance)
     mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
     evaluator = circuit.forward_evaluator(scan_points)
     segments = []

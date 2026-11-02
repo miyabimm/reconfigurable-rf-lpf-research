@@ -98,7 +98,9 @@ class ExchangeTests(unittest.TestCase):
                 meter = SampleBudgetCost(10000)
                 result = run_c1_frequency_exchange(problem.circuit, start, cost_meter=meter,
                                                    optimize_stage=optimizer, max_rounds=1,
-                                                   search_guard=True)
+                                                   search_guard=True,
+                                                   source_provenance={'kind': 'synthetic', 'git_head': 'a' * 40,
+                                                       'dirty_patch_sha256': 'b' * 64, 'input_source_sha256': 'c' * 64})
                 self.assertEqual(result['stop_db'], 30.005)
                 self.assertEqual(result['mandatory_stop_db'], 30.)
                 self.assertEqual(stages, [(2, 240), (3, 120)])

@@ -62,7 +62,9 @@ class StageTests(unittest.TestCase):
             seen.append((problem.mandatory_stop_db, problem.search_stop_db))
             return vector, status(0)
         result = run_c1_staged(self.p.circuit, self.seed, coarse_points=1,
-                               fine_points=2, optimize_stage=callback, search_guard=True)
+                               fine_points=2, optimize_stage=callback, search_guard=True,
+                               source_provenance={'kind': 'synthetic', 'git_head': 'a' * 40,
+                                                  'dirty_patch_sha256': 'b' * 64, 'input_source_sha256': 'c' * 64})
         self.assertEqual(seen, [(30., 30.005), (30., 30.005)])
         self.assertEqual(result['search_guard']['mandatory_stop_db'], 30.)
         self.assertEqual(result['search_guard']['search_stop_db'], 30.005)
@@ -79,6 +81,9 @@ class StageTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             run_c1_staged(self.p.circuit, self.seed, coarse_points=1, fine_points=2,
                           optimize_stage=callback, search_guard='yes')
+        with self.assertRaisesRegex(ValueError, 'source provenance'):
+            run_c1_staged(self.p.circuit, self.seed, coarse_points=1, fine_points=2,
+                          optimize_stage=callback, search_guard=True)
 
     def test_success_and_separate_gates(self):
         result, calls = self.run_codes([0, 0])

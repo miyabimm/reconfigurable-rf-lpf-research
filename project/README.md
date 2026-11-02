@@ -74,8 +74,9 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
 
 `run_c1_staged(..., search_guard=True)` と `run_c1_frequency_exchange(...,
 search_guard=True)` は、policy必須値に0.005 dBを加えた探索目標をcoarse/fineと
-周波数交換に渡す。既定は旧条件のまま。必須30 dBと探索目標は別であり、
-探索ガードは最終PASS閾値や許容差ではない。
+周波数交換に渡す。guard有効時は `source_provenance` に `kind`、`git_head`、
+`dirty_patch_sha256`、`input_source_sha256` が必要（型・形式を検査、自己申告の認証ではない）。
+既定は旧条件のまま。必須30 dBと探索目標は別であり、探索ガードは最終PASS閾値や許容差ではない。
 
 `post_search_validation.validate_post_search` は明示的な候補・予算・sinkに対する
 17点→選別された1001点→独立MNAの開発中入口。rawを先にsinkへ渡し、policy・

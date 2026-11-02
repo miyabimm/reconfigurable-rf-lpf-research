@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import platform
+import re
 import sys
 import time
 
@@ -171,6 +172,17 @@ class _StageAbort(Exception):
     """Stop v2 safely on numerical/callback failure; retain recorded calls."""
 
 
+def _check_guard_source(source_provenance):
+    if not isinstance(source_provenance, dict):
+        raise ValueError('Guarded search requires explicit source provenance')
+    for name, length in (('git_head', 40), ('dirty_patch_sha256', 64), ('input_source_sha256', 64)):
+        value = source_provenance.get(name)
+        if not isinstance(value, str) or re.fullmatch(r'[0-9a-f]{' + str(length) + r'}', value) is None:
+            raise ValueError('Guarded search requires explicit source ' + name)
+    if source_provenance.get('kind') not in ('synthetic', 'frozen', 'recorded'):
+        raise ValueError('Guarded search requires source provenance kind')
+
+
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
                   cost_meter=None, extra_frequencies=(), warm_start_vector=None,
@@ -198,10 +210,14 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     """
     if not callable(optimize_stage):
         raise TypeError("optimize_stage must be callable")
+    if type(search_guard) is not bool:
+        raise TypeError("search_guard must be bool")
     if source_provenance is not None:
         if not isinstance(source_provenance, dict):
             raise TypeError("source_provenance must be a dict")
         json.dumps(source_provenance, allow_nan=False)
+    if search_guard:
+        _check_guard_source(source_provenance)
     extra_frequencies = tuple(extra_frequencies)
     seed_problem = SampledEpigraph(circuit, coarse_points)
     coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies,
