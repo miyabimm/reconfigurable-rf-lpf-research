@@ -74,22 +74,24 @@ class ExchangeTests(unittest.TestCase):
     def test_real_c1_adapter_with_mock_solver_and_shared_meter(self):
         from test_phase2_problem_seed import make, seed
         from lpf.phase2_models.frequency_exchange_c1 import run_c1_frequency_exchange
-        problem, x = make('RF-T008', 4)
         # The production contract fixes coarse=2 and derives t from that grid.
         from lpf.phase2_models.sampled_epigraph import SampledEpigraph
-        coarse = SampledEpigraph(problem.circuit, 2)
-        start = seed(coarse, x)
-        stages = []
-        def optimizer(p, vector, maxiter, target):
-            stages.append((p.points_per_interval, maxiter))
-            return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
-        meter = SampleBudgetCost(10000)
-        result = run_c1_frequency_exchange(problem.circuit, start, cost_meter=meter,
-                                           optimize_stage=optimizer, max_rounds=1)
-        self.assertEqual(stages, [(2, 240), (3, 120)])
-        self.assertEqual(result['stop_reason'], 'max_rounds')
-        self.assertEqual(meter.frequency_samples_requested, 476 * 2 + 56 + 56 + 84)
-        self.assertEqual(result['final_validation'], 'not_run')
+        for inductors in (3, 4):
+            with self.subTest(inductors=inductors):
+                problem, x = make('RF-T008', inductors)
+                coarse = SampledEpigraph(problem.circuit, 2)
+                start = seed(coarse, x)
+                stages = []
+                def optimizer(p, vector, maxiter, target):
+                    stages.append((p.points_per_interval, maxiter))
+                    return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
+                meter = SampleBudgetCost(10000)
+                result = run_c1_frequency_exchange(problem.circuit, start, cost_meter=meter,
+                                                   optimize_stage=optimizer, max_rounds=1)
+                self.assertEqual(stages, [(2, 240), (3, 120)])
+                self.assertEqual(result['stop_reason'], 'max_rounds')
+                self.assertEqual(meter.frequency_samples_requested, 476 * 2 + 56 + 56 + 84)
+                self.assertEqual(result['final_validation'], 'not_run')
 
     def test_callback_failure_and_bad_scan_fail_closed(self):
         def bad(*args):

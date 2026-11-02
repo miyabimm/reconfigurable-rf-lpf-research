@@ -126,15 +126,20 @@ def _numerical(circuit, vector, staged, seed, cost_meter=None):
             raise ValueError("C2 input/budget replay mismatch")
         return np.asarray(old["output_vector"], float), old["status"]
     source = staged["source_provenance"]
+    exchange_input = staged.get('frequency_exchange_input')
     actual = run_c1_staged(circuit, seed,
         coarse_points=staged["grids"]["coarse"]["points_per_interval"],
         fine_points=staged["grids"]["fine"]["points_per_interval"], optimize_stage=replay,
         source_provenance=source["value"] if source["state"] == "provided" else None,
-        cost_meter=cost_meter)
+        cost_meter=cost_meter,
+        **({'extra_frequencies': tuple((int(seg), float(f)) for seg, f in exchange_input['extra_frequencies']),
+            'warm_start_vector': exchange_input['warm_start_vector']} if exchange_input else {}))
     # Reuse the existing v2 controller and C1 observations, not a second set of
     # retry/status/epigraph rules. Timing/environment of the saved run are kept.
     keys = ("iteration_policy_id", "budget", "seed", "bands_sha256", "s2p_sha256",
             "grids", "stage_calls", "attempts", "controller", "numerical_state", "validation")
+    if exchange_input is not None and actual.get('frequency_exchange_input') != exchange_input:
+        raise ValueError('C2 frequency exchange input mismatch')
     if index != len(calls) or any(_without_timing(_copy(actual[k])) != _without_timing(staged[k]) for k in keys):
         raise ValueError("C2 status/attempt/observation replay mismatch")
     return {"state": state, "vector_binding": "final_c2_output",

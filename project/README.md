@@ -70,6 +70,25 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
   保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
   Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
 
+### 周波数交換の固定start対照（schema 3、Issue #263）
+
+`project/experiments/issue263.yaml` は共通CLIの明示opt-in。2 source × baseline/exchangeを
+`RF-T008 rev3/full_lpf`・物理座標・同一sample上限で凍結する。元vectorはEXP-114の17点記録、
+raw最終stage、curatedの3者とSHAで照合するため、`plan` と `run` は完全evidence checkoutが必要。
+`project/experiments/issue263-starts.json` は元物理vectorからcoarse2でtを再seedした準備入力で、
+準備時の112 samplesは探索・最終検証ではない。`plan` はread-only、G1後の `run` はG1入力を使い、
+準備planを再読込せず元証拠を静的照合する。baselineにも同じ17点開始・終端scanを課金する。
+
+```bash
+uv run --frozen python scripts/run_phase2_shared.py plan --config project/experiments/issue263.yaml
+```
+
+exchangeは各周で既存v2を使い、coarse/fineの両方に同じ追加点を反映する。内部scanと最終独立
+17点判定は別であり、CLIはdense1001・独立MNA・電力・受動性を実行しない。低IL維持は同じ17点
+開始値比+0.05dB以下の実験ラベルで、最適化制約ではない。失敗・中断はmarkerとrawを保持し再試行しない。
+**コードDraft PRの独立レビュー・CI・main統合前にEXP予約や実SLSQPを開始しない。** その後もG0/G1、
+pilot保存監査、remaining、最終独立検証、証拠保全は別工程。有限格子は連続周波数・実装保証ではない。
+
 ### 明示source × 座標対照（schema 2、Issue #259）
 
 `project/experiments/issue259.yaml` は同じ共通CLIの明示opt-in入力。schema 1と既定solverは不変更。

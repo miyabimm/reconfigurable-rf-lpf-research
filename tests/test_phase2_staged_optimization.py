@@ -52,6 +52,9 @@ class StageTests(unittest.TestCase):
         for problem, _ in calls:
             self.assertIn(670.5, problem.evaluator.f[problem.evaluator.segment == 0])
         self.assertEqual(result['frequency_exchange_input']['warm_start_vector'], warm.tolist())
+        candidate = record_candidate('exchange-test', self.p.circuit, warm[:-1], staged_record=result)
+        self.assertEqual(candidate.as_dict()['numerical']['state'], 'converged')
+        self.assertEqual(recheck_record(candidate).as_dict()['numerical']['state'], 'converged')
 
     def test_success_and_separate_gates(self):
         result, calls = self.run_codes([0, 0])

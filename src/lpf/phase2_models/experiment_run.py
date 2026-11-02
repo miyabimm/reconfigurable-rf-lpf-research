@@ -7,12 +7,14 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import time
 
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.experiment_manifest import _environment, file_sha256
 from .experiment_config import load_plan
 from .evaluation_cost import SampleBudgetCost, EvaluationCost
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage
+from .frequency_exchange_c1 import run_c1_frequency_exchange
 from .candidate_records import record_candidate, CandidateRecord, recheck_record, pareto_report
 from .synthetic_runner import _read
 
@@ -230,6 +232,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         _gate(root, experiment_id, loaded, resuming=bool(state['completed']))
         start = loaded['actual'][key]
         state.update(in_progress=key, staged_record=None)
+        if loaded['config']['schema_version'] == 3:
+            state['exchange_record'] = None
         _save(raw, state)
         def sink(record):
             state['staged_record'] = record
@@ -241,11 +245,37 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         # through this partial, including solver callback/CPU accounting.
         stage_callback = (partial(optimize_stage, coordinates=start['coordinates'])
                           if 'coordinates' in start else optimize_stage)
-        staged = run_c1_staged(circuit, start['seed_record'],
-            **loaded['config']['grids'], optimize_stage=stage_callback,
-            cost_meter=SampleBudgetCost(loaded['config']['samples_per_start']),
-            source_provenance=provenance, record_sink=sink)
-        if (loaded['config']['schema_version'] == 2 and staged.get('exception') and
+        meter = SampleBudgetCost(loaded['config']['samples_per_start'])
+        exchange_result = None
+        if loaded['config']['schema_version'] == 3:
+            def exchange_sink(record):
+                state['exchange_record'] = record
+                _save(raw, state)
+                if (raw.parent / 'STOP').exists():
+                    raise ValueError('STOP at exchange boundary; retain in-progress marker')
+            settings = loaded['config']['frequency_exchange']
+            started = time.monotonic()
+            exchange_result = run_c1_frequency_exchange(circuit, start['seed_record'],
+                cost_meter=meter, optimize_stage=stage_callback, source_provenance=provenance,
+                stage_sink=sink, exchange_sink=exchange_sink,
+                scan_points=settings['scan_points'], max_additions=settings['max_additions'],
+                max_rounds=settings['max_rounds'] if start['method'] == 'exchange' else 1)
+            staged = deepcopy(state['staged_record'])
+            if staged is None:
+                staged = dict(seed=start['seed_record'], numerical_state='budget_exhausted',
+                              exception=None, controller=None, stage_calls=[], elapsed_seconds=0.,
+                              source_provenance=dict(state='provided', value=provenance),
+                              definition_sha256=loaded['config']['definition_sha256'],
+                              policy_fingerprint=circuit.policy_fingerprint)
+            if exchange_result['stop_reason'] == 'budget_exhausted':
+                staged['numerical_state'] = 'budget_exhausted'
+            staged['evaluation_cost'] = meter.snapshot()
+            staged['elapsed_seconds'] = time.monotonic() - started
+        else:
+            staged = run_c1_staged(circuit, start['seed_record'],
+                **loaded['config']['grids'], optimize_stage=stage_callback,
+                cost_meter=meter, source_provenance=provenance, record_sink=sink)
+        if (loaded['config']['schema_version'] >= 2 and staged.get('exception') and
                 staged['numerical_state'] != 'budget_exhausted'):
             raise RuntimeError('Explicit-arm stage exception; retain marker and STOP without retry')
         if (staged.get('exception') or {}).get('type') in ('OSError', 'MemoryError', 'TimeoutError'):
@@ -256,7 +286,11 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         state['recheck_cost'] = recheck_cost.snapshot()
         state['completed'][key] = dict(seed_record=start['seed_record'],
             staged_record=staged, candidate=candidate)
+        if exchange_result is not None:
+            state['completed'][key]['frequency_exchange'] = exchange_result
         state.update(in_progress=None, staged_record=None)
+        if loaded['config']['schema_version'] == 3:
+            state['exchange_record'] = None
         _save(raw, state)
     if phase == 'pilot':
         state['pilot_complete'] = True
@@ -280,6 +314,14 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
         exception=staged['exception'], evaluation_cost=staged['evaluation_cost'],
         controller=staged['controller'],
         stage_calls=[{k: deepcopy(call[k]) for k in keys if k in call} for call in staged['stage_calls']])
+    if 'frequency_exchange' in result:
+        exchange = deepcopy(result['frequency_exchange'])
+        for row in exchange['rounds']:
+            if 'inner' in row:
+                inner = row['inner']
+                row['inner'] = _curated_result(dict(seed_record=result['seed_record'], staged_record=inner))
+                row['inner'].pop('seed_record')
+        curated['frequency_exchange'] = exchange
     if input_source is None and actual_start_id is None:
         return curated  # Preserve the legacy one-start representation.
     seed = next(row for row in input_source['executable_plan']['actual_starts']
@@ -290,6 +332,8 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
     if 'coordinates' in seed:
         curated['coordinates'] = seed['coordinates']
         curated['source_ref'] = deepcopy(seed['source_ref'])
+    if 'method' in seed:
+        curated['method'] = seed['method']
     curated.pop('seed_record')
     curated['seed_ref'] = dict(actual_start_id=actual_start_id,
         input_source_sha256=canonical_config_hash(input_source),
@@ -332,6 +376,8 @@ def restore_curated_result(curated, input_source):
         for key in ('coordinates', 'source_ref'):
             if restored.pop(key) != rows[0][key]:
                 raise ValueError('Curated coordinate/source binding mismatch')
+    if 'method' in rows[0] and restored.pop('method') != rows[0]['method']:
+        raise ValueError('Curated exchange method mismatch')
     restored['seed_record'] = deepcopy(rows[0]['seed_record'])
     vectors = {'seed': restored['seed_record']['vector']}
     for index, call in enumerate(restored['stage_calls']):

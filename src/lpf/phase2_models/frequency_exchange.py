@@ -59,7 +59,10 @@ def run_frequency_exchange(circuit, initial, segments, *, inner, scan, cost_mete
     vector = np.asarray(initial, dtype=float)
     if vector.ndim != 1 or len(vector) < 2 or not np.all(np.isfinite(vector)):
         raise ValueError('Complete finite physical vector and t required')
-    circuit.validate_components(vector[:-1])
+    component = circuit.validate_components(vector[:-1])
+    if isinstance(component, dict) and (component.get('component_policy_pass') is False or
+            component.get('connection_role_evidence_incomplete') is True):
+        raise ValueError('Initial component or connection-role validation failed')
     trace = {'rounds': [], 'added_frequencies': [], 'stop_reason': None,
              'rf_compliance_certified': False, 'final_validation': 'not_run'}
 

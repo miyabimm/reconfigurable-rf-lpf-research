@@ -1,0 +1,649 @@
+{
+  "input_source": {
+    "actual_starts": [
+      {
+        "coordinates": "physical",
+        "id": "B-31-1-baseline",
+        "method": "baseline",
+        "source_ref": {
+          "actual_id": "B-31-1-physical",
+          "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-physical-grid17.json",
+          "raw_path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+          "raw_sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+          "sha256": "a6606b1e5f974947506f34bdce31fa3c0377736bdd1c2871a22ff409cd1b92f1",
+          "summary_path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+          "summary_sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7",
+          "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+        },
+        "start": {
+          "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+          "jitter_fraction": 0,
+          "policy_id": "RF-T008",
+          "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "schema_sha256": "1f0d300d70093b1ba7a47b1653c7ec78870e55e642c42e815404d86025e0973c",
+          "seed_record": {
+            "candidate_promotion_blocked": true,
+            "changes": [],
+            "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+            "input_vector": [
+              4.530156849713734,
+              23.31113596556562,
+              5.696784215570115,
+              7.022612522832906,
+              1.1928649525007526,
+              1.2266937480463014,
+              0.26509234748754373,
+              0.02,
+              -0.1,
+              5.159170308777975e-05,
+              -0.08422741635281443,
+              0.4179336656783661,
+              0.20000000000000004,
+              0.05607296891335961,
+              1.348199997364001,
+              0.027621391821095985,
+              1.0964829812077765,
+              0.021606778603962724,
+              0.9542579435248505,
+              0.0,
+              0.6602773484360126,
+              3.0,
+              0.47981755379283975,
+              2.999999999999999,
+              0.0
+            ],
+            "input_vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd",
+            "jitter_fraction": 0.0,
+            "points_per_interval": 2,
+            "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "policy_id": "RF-T008",
+            "seed": 31,
+            "vector": [
+              4.530156849713734,
+              23.31113596556562,
+              5.696784215570115,
+              7.022612522832906,
+              1.1928649525007526,
+              1.2266937480463014,
+              0.26509234748754373,
+              0.02,
+              -0.1,
+              5.159170308777975e-05,
+              -0.08422741635281443,
+              0.4179336656783661,
+              0.20000000000000004,
+              0.05607296891335961,
+              1.348199997364001,
+              0.027621391821095985,
+              1.0964829812077765,
+              0.021606778603962724,
+              0.9542579435248505,
+              0.0,
+              0.6602773484360126,
+              3.0,
+              0.47981755379283975,
+              2.999999999999999,
+              0.0,
+              0.8801666159536757
+            ]
+          },
+          "vector": [
+            4.530156849713734,
+            23.31113596556562,
+            5.696784215570115,
+            7.022612522832906,
+            1.1928649525007526,
+            1.2266937480463014,
+            0.26509234748754373,
+            0.02,
+            -0.1,
+            5.159170308777975e-05,
+            -0.08422741635281443,
+            0.4179336656783661,
+            0.20000000000000004,
+            0.05607296891335961,
+            1.348199997364001,
+            0.027621391821095985,
+            1.0964829812077765,
+            0.021606778603962724,
+            0.9542579435248505,
+            0.0,
+            0.6602773484360126,
+            3.0,
+            0.47981755379283975,
+            2.999999999999999,
+            0.0
+          ],
+          "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+        }
+      },
+      {
+        "coordinates": "physical",
+        "id": "B-31-1-exchange",
+        "method": "exchange",
+        "source_ref": {
+          "actual_id": "B-31-1-physical",
+          "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-31-1-physical-grid17.json",
+          "raw_path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+          "raw_sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+          "sha256": "a6606b1e5f974947506f34bdce31fa3c0377736bdd1c2871a22ff409cd1b92f1",
+          "summary_path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+          "summary_sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7",
+          "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+        },
+        "start": {
+          "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+          "jitter_fraction": 0,
+          "policy_id": "RF-T008",
+          "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "schema_sha256": "1f0d300d70093b1ba7a47b1653c7ec78870e55e642c42e815404d86025e0973c",
+          "seed_record": {
+            "candidate_promotion_blocked": true,
+            "changes": [],
+            "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+            "input_vector": [
+              4.530156849713734,
+              23.31113596556562,
+              5.696784215570115,
+              7.022612522832906,
+              1.1928649525007526,
+              1.2266937480463014,
+              0.26509234748754373,
+              0.02,
+              -0.1,
+              5.159170308777975e-05,
+              -0.08422741635281443,
+              0.4179336656783661,
+              0.20000000000000004,
+              0.05607296891335961,
+              1.348199997364001,
+              0.027621391821095985,
+              1.0964829812077765,
+              0.021606778603962724,
+              0.9542579435248505,
+              0.0,
+              0.6602773484360126,
+              3.0,
+              0.47981755379283975,
+              2.999999999999999,
+              0.0
+            ],
+            "input_vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd",
+            "jitter_fraction": 0.0,
+            "points_per_interval": 2,
+            "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "policy_id": "RF-T008",
+            "seed": 31,
+            "vector": [
+              4.530156849713734,
+              23.31113596556562,
+              5.696784215570115,
+              7.022612522832906,
+              1.1928649525007526,
+              1.2266937480463014,
+              0.26509234748754373,
+              0.02,
+              -0.1,
+              5.159170308777975e-05,
+              -0.08422741635281443,
+              0.4179336656783661,
+              0.20000000000000004,
+              0.05607296891335961,
+              1.348199997364001,
+              0.027621391821095985,
+              1.0964829812077765,
+              0.021606778603962724,
+              0.9542579435248505,
+              0.0,
+              0.6602773484360126,
+              3.0,
+              0.47981755379283975,
+              2.999999999999999,
+              0.0,
+              0.8801666159536757
+            ]
+          },
+          "vector": [
+            4.530156849713734,
+            23.31113596556562,
+            5.696784215570115,
+            7.022612522832906,
+            1.1928649525007526,
+            1.2266937480463014,
+            0.26509234748754373,
+            0.02,
+            -0.1,
+            5.159170308777975e-05,
+            -0.08422741635281443,
+            0.4179336656783661,
+            0.20000000000000004,
+            0.05607296891335961,
+            1.348199997364001,
+            0.027621391821095985,
+            1.0964829812077765,
+            0.021606778603962724,
+            0.9542579435248505,
+            0.0,
+            0.6602773484360126,
+            3.0,
+            0.47981755379283975,
+            2.999999999999999,
+            0.0
+          ],
+          "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+        }
+      },
+      {
+        "coordinates": "physical",
+        "id": "B-28-1-baseline",
+        "method": "baseline",
+        "source_ref": {
+          "actual_id": "B-28-1-physical",
+          "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+          "raw_path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+          "raw_sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+          "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814",
+          "summary_path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+          "summary_sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7",
+          "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+        },
+        "start": {
+          "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+          "jitter_fraction": 0,
+          "policy_id": "RF-T008",
+          "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "schema_sha256": "1f0d300d70093b1ba7a47b1653c7ec78870e55e642c42e815404d86025e0973c",
+          "seed_record": {
+            "candidate_promotion_blocked": true,
+            "changes": [],
+            "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+            "input_vector": [
+              2.5231084610484524,
+              25.73401530624057,
+              3.6627547728022964,
+              7.950118072865671,
+              4.390819174095009,
+              1.592835278092626,
+              0.3222545833700626,
+              0.02,
+              -0.1,
+              0.01691618630359255,
+              -0.06815807011315582,
+              0.2,
+              0.2000000000000001,
+              0.065734759976128,
+              1.1871094398739592,
+              3.0,
+              0.9384483480886404,
+              3.0,
+              0.8743677210720067,
+              0.009663111427513688,
+              0.2615911844902862,
+              1.7251707761870096,
+              0.18546824096143003,
+              0.0,
+              0.0
+            ],
+            "input_vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a",
+            "jitter_fraction": 0.0,
+            "points_per_interval": 2,
+            "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "policy_id": "RF-T008",
+            "seed": 28,
+            "vector": [
+              2.5231084610484524,
+              25.73401530624057,
+              3.6627547728022964,
+              7.950118072865671,
+              4.390819174095009,
+              1.592835278092626,
+              0.3222545833700626,
+              0.02,
+              -0.1,
+              0.01691618630359255,
+              -0.06815807011315582,
+              0.2,
+              0.2000000000000001,
+              0.065734759976128,
+              1.1871094398739592,
+              3.0,
+              0.9384483480886404,
+              3.0,
+              0.8743677210720067,
+              0.009663111427513688,
+              0.2615911844902862,
+              1.7251707761870096,
+              0.18546824096143003,
+              0.0,
+              0.0,
+              0.982542177069669
+            ]
+          },
+          "vector": [
+            2.5231084610484524,
+            25.73401530624057,
+            3.6627547728022964,
+            7.950118072865671,
+            4.390819174095009,
+            1.592835278092626,
+            0.3222545833700626,
+            0.02,
+            -0.1,
+            0.01691618630359255,
+            -0.06815807011315582,
+            0.2,
+            0.2000000000000001,
+            0.065734759976128,
+            1.1871094398739592,
+            3.0,
+            0.9384483480886404,
+            3.0,
+            0.8743677210720067,
+            0.009663111427513688,
+            0.2615911844902862,
+            1.7251707761870096,
+            0.18546824096143003,
+            0.0,
+            0.0
+          ],
+          "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+        }
+      },
+      {
+        "coordinates": "physical",
+        "id": "B-28-1-exchange",
+        "method": "exchange",
+        "source_ref": {
+          "actual_id": "B-28-1-physical",
+          "path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/B-28-1-physical-grid17.json",
+          "raw_path": "experiments/chatgpt_topology_search/runs/EXP-114/validation/raw-run.json",
+          "raw_sha256": "aabdcb43896996fed417e34daaab61c1b3c3d2ea95136a740144a7b6171c015d",
+          "sha256": "6e422a2b39c7ec62bc04abd6a356e1f962dfc24650b774348594ee0b6ee84814",
+          "summary_path": "experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json",
+          "summary_sha256": "4c789e9bbcdf5246b3fad03839656235a1857d59db7647bb7ead6ef4a3fc54f7",
+          "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+        },
+        "start": {
+          "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+          "jitter_fraction": 0,
+          "policy_id": "RF-T008",
+          "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+          "schema_sha256": "1f0d300d70093b1ba7a47b1653c7ec78870e55e642c42e815404d86025e0973c",
+          "seed_record": {
+            "candidate_promotion_blocked": true,
+            "changes": [],
+            "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+            "input_vector": [
+              2.5231084610484524,
+              25.73401530624057,
+              3.6627547728022964,
+              7.950118072865671,
+              4.390819174095009,
+              1.592835278092626,
+              0.3222545833700626,
+              0.02,
+              -0.1,
+              0.01691618630359255,
+              -0.06815807011315582,
+              0.2,
+              0.2000000000000001,
+              0.065734759976128,
+              1.1871094398739592,
+              3.0,
+              0.9384483480886404,
+              3.0,
+              0.8743677210720067,
+              0.009663111427513688,
+              0.2615911844902862,
+              1.7251707761870096,
+              0.18546824096143003,
+              0.0,
+              0.0
+            ],
+            "input_vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a",
+            "jitter_fraction": 0.0,
+            "points_per_interval": 2,
+            "policy_fingerprint": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+            "policy_id": "RF-T008",
+            "seed": 28,
+            "vector": [
+              2.5231084610484524,
+              25.73401530624057,
+              3.6627547728022964,
+              7.950118072865671,
+              4.390819174095009,
+              1.592835278092626,
+              0.3222545833700626,
+              0.02,
+              -0.1,
+              0.01691618630359255,
+              -0.06815807011315582,
+              0.2,
+              0.2000000000000001,
+              0.065734759976128,
+              1.1871094398739592,
+              3.0,
+              0.9384483480886404,
+              3.0,
+              0.8743677210720067,
+              0.009663111427513688,
+              0.2615911844902862,
+              1.7251707761870096,
+              0.18546824096143003,
+              0.0,
+              0.0,
+              0.982542177069669
+            ]
+          },
+          "vector": [
+            2.5231084610484524,
+            25.73401530624057,
+            3.6627547728022964,
+            7.950118072865671,
+            4.390819174095009,
+            1.592835278092626,
+            0.3222545833700626,
+            0.02,
+            -0.1,
+            0.01691618630359255,
+            -0.06815807011315582,
+            0.2,
+            0.2000000000000001,
+            0.065734759976128,
+            1.1871094398739592,
+            3.0,
+            0.9384483480886404,
+            3.0,
+            0.8743677210720067,
+            0.009663111427513688,
+            0.2615911844902862,
+            1.7251707761870096,
+            0.18546824096143003,
+            0.0,
+            0.0
+          ],
+          "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+        }
+      }
+    ],
+    "definition": {
+      "capacitor_placement": {
+        "fixed_edges": [
+          [
+            0,
+            1
+          ],
+          [
+            4,
+            -1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            -1
+          ]
+        ],
+        "ic_fixed_edges": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "node_count": 5,
+        "variable_edges": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "coupling_pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "fixed_c_types": [
+        "GJM01",
+        "GJM01",
+        "GJM01",
+        "PCB_PATTERN_C"
+      ],
+      "inductor_tree": {
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "load_node": 2,
+        "node_count": 5,
+        "source_node": 0
+      },
+      "inductor_types": [
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV",
+        "LQP02HV"
+      ],
+      "physical_order": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "variable_roles": [
+        "bridge",
+        "bridge"
+      ]
+    },
+    "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+    "limits": {
+      "coarse_maxiter": 240,
+      "coarse_points": 2,
+      "fine_maxiter": 120,
+      "fine_points": 3,
+      "iteration_policy_id": "slsqp-staged-v2",
+      "max_dense_samples": 112112,
+      "max_intermediate_samples": 1904,
+      "max_optimization_samples": 3000000,
+      "max_samples_per_start": 750000,
+      "max_screen_forwards": 2,
+      "max_screen_samples": 112,
+      "max_stages": 32,
+      "max_stages_per_start": 12,
+      "max_starts": 4,
+      "rescue_coarse_maxiter": 500,
+      "rescue_fine_maxiter": 280,
+      "top_k_per_method": 2
+    },
+    "logical_starts": [
+      {
+        "actual_start_id": "B-31-1-baseline",
+        "id": "B-31-1-baseline",
+        "method": "baseline",
+        "seed": 31,
+        "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+      },
+      {
+        "actual_start_id": "B-31-1-exchange",
+        "id": "B-31-1-exchange",
+        "method": "exchange",
+        "seed": 31,
+        "vector_sha256": "9e2b6dcde716b2aa1af36b8fa749fd974de7c7f3eb41b1168aed0ffa460817cd"
+      },
+      {
+        "actual_start_id": "B-28-1-baseline",
+        "id": "B-28-1-baseline",
+        "method": "baseline",
+        "seed": 28,
+        "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+      },
+      {
+        "actual_start_id": "B-28-1-exchange",
+        "id": "B-28-1-exchange",
+        "method": "exchange",
+        "seed": 28,
+        "vector_sha256": "258373bdb54f8b75c996f5d3f22ea7ec28f4662410b8175e3e896bfcc340631a"
+      }
+    ],
+    "objective": "full_lpf",
+    "pilot_seeds": [
+      31
+    ],
+    "policy_id": "RF-T008",
+    "policy_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+    "screen_cost": {
+      "RF_forward_calls": 2,
+      "box_rejections": 0,
+      "cache_hits": 0,
+      "component_checks": 4,
+      "component_rejections": 0,
+      "cpu_seconds": 0.003374757000000006,
+      "forward_failures": 0,
+      "frequency_samples_completed": 112,
+      "frequency_samples_requested": 112,
+      "role_rejections": 0,
+      "solver_constraint_calls": 0,
+      "solver_objective_calls": 0,
+      "spd_rejections": 0,
+      "wall_seconds": 0.0033786330022849143
+    },
+    "seeds": [
+      31,
+      28
+    ]
+  },
+  "input_source_sha256": "1680dc6e4fdfc2dc1858d7d83c60f3c69910083657206e669ee09299786f33b2"
+}

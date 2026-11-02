@@ -75,12 +75,19 @@ def load_plan(root, config_path, *, frozen_input=None):
     if not path.is_relative_to(root):
         raise ValueError('Config must be in checkout')
     config = yaml.load(path.read_text(), Loader=_Loader)
-    _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets')
-    if type(config['schema_version']) is not int or config['schema_version'] not in (1, 2):
+    if not isinstance(config, dict) or type(config.get('schema_version')) is not int or config['schema_version'] not in (1, 2, 3):
         raise ValueError('Unsupported config schema')
-    explicit = config['schema_version'] == 2
-    if explicit and config['methods'] != ['physical', 'normalized']:
+    exchange = config['schema_version'] == 3
+    _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets' +
+            (' frequency_exchange' if exchange else ''))
+    explicit = config['schema_version'] >= 2
+    if config['schema_version'] == 2 and config['methods'] != ['physical', 'normalized']:
         raise ValueError('Explicit coordinate comparison requires physical/normalized arms')
+    if exchange:
+        _fields(config['frequency_exchange'], 'mode scan_points max_additions max_rounds')
+        if (config['methods'] != ['baseline', 'exchange'] or
+                config['frequency_exchange'] != dict(mode='opt_in', scan_points=17, max_additions=4, max_rounds=3)):
+            raise ValueError('Unsupported frequency exchange comparison contract')
     _fields(config['rf'], 'id effective_sha256 allow_trial')
     _fields(config['plan'], 'path sha256')
     _fields(config['grids'], 'coarse_points fine_points')
@@ -130,13 +137,14 @@ def load_plan(root, config_path, *, frozen_input=None):
         starts = []
         for item in source['actual_starts']:
             _fields(item, 'id vector vector_sha256 seed seed_record seed_record_sha256' +
-                    (' coordinates source_ref' if explicit else ''))
+                    (' coordinates source_ref' if explicit else '') + (' method' if exchange else ''))
             record = item['seed_record']
             if (canonical_config_hash(record) != item['seed_record_sha256'] or
                     record['seed'] != item['seed']):
                 raise ValueError('G1 C1 seed record SHA mismatch')
             starts.append(dict(id=item['id'],
                 **({k: item[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
+                **({'method': item['method']} if exchange else {}),
                 start=dict(vector=item['vector'],
                 vector_sha256=item['vector_sha256'], seed_record=record,
                 policy_id=source['policy_id'], policy_sha256=source['policy_sha256'],
@@ -167,7 +175,7 @@ def load_plan(root, config_path, *, frozen_input=None):
     b = STANDARD_SLSQP_BUDGET
     expected.update(coarse_maxiter=b.coarse, fine_maxiter=b.fine,
                     rescue_coarse_maxiter=b.recovery_coarse, rescue_fine_maxiter=b.recovery_fine,
-                    max_stages_per_start=4)
+                    max_stages_per_start=12 if exchange else 4)
     if limits != expected:
         raise ValueError('Prepared budget differs from config/standard v2')
     actual, logical = source['actual_starts'], source['logical_starts']
@@ -175,19 +183,21 @@ def load_plan(root, config_path, *, frozen_input=None):
     _ids([r['id'] for r in logical])
     budget = config['budgets']
     if (len(logical) != budget['logical_starts'] or len(actual) != budget['actual_starts'] or
-            len(actual) > len(logical) or budget['stages'] != 4 * len(logical) or
+            len(actual) > len(logical) or budget['stages'] != (4 * len(logical) * 2 if exchange else 4 * len(logical)) or
             budget['optimization_samples'] != len(logical) * config['samples_per_start']):
         raise ValueError('Start/stage/sample count mismatch')
     by_id, shas = {}, set()
     box = circuit_box(circuit)
     for row in actual:
-        _fields(row, 'id start' + (' coordinates source_ref' if explicit else ''))
+        _fields(row, 'id start' + (' coordinates source_ref' if explicit else '') + (' method' if exchange else ''))
         start = row['start']
         if explicit:
-            if row['coordinates'] not in config['methods']:
+            if (row['coordinates'] != 'physical' if exchange else row['coordinates'] not in config['methods']):
                 raise ValueError('Unknown coordinate mode')
+            if exchange and row['method'] not in config['methods']:
+                raise ValueError('Unknown exchange method')
             ref = row['source_ref']
-            _fields(ref, 'path sha256 vector_sha256')
+            _fields(ref, 'path sha256 vector_sha256' + (' raw_path raw_sha256 summary_path summary_sha256 actual_id' if exchange else ''))
             ref_path = (root / ref['path']).resolve()
             if (not ref_path.is_relative_to(root) or file_sha256(ref_path) != ref['sha256'] or
                     ref['vector_sha256'] != start['vector_sha256']):
@@ -196,9 +206,26 @@ def load_plan(root, config_path, *, frozen_input=None):
             if (original['vector'] != start['vector'] or
                     original['vector_sha256'] != ref['vector_sha256']):
                 raise ValueError('Explicit source vector mismatch')
+            if exchange:
+                for key in ('raw', 'summary'):
+                    evidence = (root / ref[key + '_path']).resolve()
+                    if not evidence.is_relative_to(root) or file_sha256(evidence) != ref[key + '_sha256']:
+                        raise ValueError('Source raw/curated reference SHA mismatch')
+                raw = _read(root / ref['raw_path'])
+                if canonical_config_hash(raw['body']) != raw['sha256']:
+                    raise ValueError('Source raw checksum mismatch')
+                source_result = raw['body']['completed'][ref['actual_id']]
+                source_final = source_result['staged_record']['stage_calls'][-1]['output_vector']
+                from .experiment_run import restore_curated_result
+                curated = _read(root / ref['summary_path'])['actual_results'][ref['actual_id']]
+                restored = restore_curated_result(curated, raw['body']['input_source'])
+                if (source_final != restored['stage_calls'][-1]['output_vector'] or
+                        source_final[:-1] != start['vector'] or
+                        vector_fingerprint(source_final[:-1]) != ref['vector_sha256']):
+                    raise ValueError('Source raw/curated final vector mismatch')
         vector = start['vector']
         sha = vector_fingerprint(vector)
-        identity = (sha, row['coordinates']) if explicit else sha
+        identity = (sha, row['method'] if exchange else row['coordinates']) if explicit else sha
         if identity in shas or sha != start['vector_sha256'] or len(vector) != circuit.schema.vector_length:
             raise ValueError('Duplicate or invalid actual vector SHA/schema')
         for i, (v, (lo, hi)) in enumerate(zip(vector, box.bounds[:-1])):
@@ -232,7 +259,7 @@ def load_plan(root, config_path, *, frozen_input=None):
         target = by_id.get(row['actual_start_id'])
         if target is None or row['vector_sha256'] != target['start']['vector_sha256']:
             raise ValueError('Logical/actual binding mismatch')
-        if explicit and (row['method'] != target['coordinates'] or
+        if explicit and (row['method'] != (target['method'] if exchange else target['coordinates']) or
                          row['seed'] != target['seed_record']['seed']):
             raise ValueError('Logical coordinate/source binding mismatch')
         if row['method'] == 'common':
@@ -280,6 +307,7 @@ def load_plan(root, config_path, *, frozen_input=None):
          for p in source.get('pools', [])])
     executable['actual_starts'] = [dict(id=row['id'],
         **({k: row[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
+        **({'method': row['method']} if exchange else {}),
         vector=row['start']['vector'],
         vector_sha256=row['start']['vector_sha256'], seed=row['start']['seed_record']['seed'],
         seed_record=row['start']['seed_record'],
