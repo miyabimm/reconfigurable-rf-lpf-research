@@ -11,7 +11,7 @@
   "thresholds": {
     "individual_new_file_soft_bytes": 131072,
     "individual_new_file_hard_bytes": 1048576,
-    "new_experiment_curated_soft_bytes": 524288,
+    "new_experiment_curated_soft_bytes": 10000000,
     "total_tracked_bytes_review_bytes": 26214400
   },
   "rules": {

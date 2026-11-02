@@ -122,7 +122,7 @@ python scripts/audit_new_experiment_storage.py audit
 
 ## 4. 容量基準・例外
 
-既存の data/phase2_git_storage_budget.json を値の正本とする。単一ファイル128KiB超は手動レビュー目安、1MiB超は原則保存不可。新規EXPの選別済み一式512KiB超はレビュー後に例外承認が必要。tracked総容量25MiBで増加傾向を監査する。これらはGitHub公式の一律hard limitではない。個別例外は storage_record.size_exception に approved_by / approval_url / reason を記録し、**所有者の明示承認**に紐付ける。監査器は1MiBと512KiBを機械判定し、manifestとstorage_record自身もEXP保存容量へ算入する。128KiB超はsoft_file_review_pathsへ報告する。25MiBはGit追跡treeの増加傾向を手動・定期的に再監査するレビュー指標であり、Git pack/全履歴の大きさと混同しない。機械的な旧資料削除の根拠にはしない。
+既存の data/phase2_git_storage_budget.json を値の正本とする。単一ファイル128KiB超は手動レビュー目安、1MiB超は原則保存不可。新規EXPの選別済み一式は **10MB（十進10,000,000 bytes）** を基準とし、超過する場合だけレビュー後に所有者の容量例外承認が必要（2026-11-02の所有者決定、Issue #256）。tracked総容量25MiBで増加傾向を監査する。これらはGitHub公式の一律hard limitではない。個別例外は storage_record.size_exception に approved_by / approval_url / reason を記録し、**所有者の明示承認**に紐付ける。監査器は1MiBと10,000,000 bytesを機械判定し、manifestとstorage_record自身もEXP保存容量へ算入する。128KiB超はsoft_file_review_pathsへ報告する。25MiBはGit追跡treeの増加傾向を手動・定期的に再監査するレビュー指標であり、Git pack/全履歴の大きさと混同しない。機械的な旧資料削除の根拠にはしない。
 
 ## 5. テスト・コード・文書を増やさない原則
 

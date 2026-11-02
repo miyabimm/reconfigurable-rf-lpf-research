@@ -330,7 +330,7 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         require(summary_ref is not None, "complete run requires a summary")
         require(record.get("git_readback") == "passed", "no HEAD readback confirmation")
         require(total <= budget["new_experiment_curated_soft_bytes"] or exception is not None,
-                "curated run exceeds 512KiB without documented owner exception")
+                f"curated run exceeds configured limit ({budget['new_experiment_curated_soft_bytes']} bytes) without documented owner exception")
     soft_review = sorted(
         name for name in paths
         if (root / name).stat().st_size > budget["individual_new_file_soft_bytes"]
