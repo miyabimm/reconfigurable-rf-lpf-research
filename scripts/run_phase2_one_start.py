@@ -46,10 +46,10 @@ def _supported(circuit):
         raise ValueError('Circuit differs from approved nominal model')
 
 
-def candidate_checkpoint(circuit, row):
+def candidate_checkpoint(circuit, row, *, cost_meter=None):
     """Actual stamped values -> existing checkpoint schema, never RF PASS."""
     _supported(circuit)
-    checked = recheck_record(CandidateRecord.from_json(json.dumps(row))).as_dict()
+    checked = recheck_record(CandidateRecord.from_json(json.dumps(row)), cost_meter=cost_meter).as_dict()
     d, t, s = circuit.definition, circuit.topology, circuit.schema
     if (checked['policy_id'] != circuit.policy_id or
             checked['policy_sha256'] != circuit.policy_fingerprint or
@@ -283,8 +283,8 @@ def _package(root, run, circuit, state, manifest, storage):
     validate_run(root, state['experiment_id'], mode='audit')
 
 
-def finalize_one_start(root, experiment_id):
-    """Explicit G3/G4 commits -> byte readback -> final record commit -> audit.
+def finalize_experiment(root, experiment_id):
+    """Shared single-EXP G3/G4 commits -> byte readback -> record commit -> audit.
 
     Does not push, delete raw or certify RF. A failure leaves raw intact and a
     preservation_incomplete record, including when a Git commit/readback fails.
@@ -314,7 +314,7 @@ def finalize_one_start(root, experiment_id):
         def commit(message):
             subprocess.check_call(['git', 'add', '--', run.relative_to(root).as_posix()], cwd=root)
             subprocess.check_call(['git', 'commit', '-m', message], cwd=root)
-        commit(experiment_id + ': preserve one-start evidence')
+        commit(experiment_id + ': preserve experiment evidence')
         for ref in manifest['evidence'] + [{'path': (run / name).relative_to(root).as_posix()}
                 for name in ('manifest.json', 'storage_record.json')]:
             tracked_file(root, ref['path'], committed=True)
@@ -329,3 +329,7 @@ def finalize_one_start(root, experiment_id):
         storage['limitations'] = LIMITATIONS + ['G3/G4 failed; retain raw: ' + str(exc)]
         atomic_write_json(run / 'storage_record.json', storage)
         raise
+
+
+# Preserve the original public API; the implementation is EXP-, not start-count-specific.
+finalize_one_start = finalize_experiment

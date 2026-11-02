@@ -732,5 +732,370 @@ class SharedEntryTests(unittest.TestCase):
                     summary = json.loads(summary_path.read_text())
 
 
+class FrozenConfigTests(unittest.TestCase):
+    """Reusable YAML/dispatch contracts, never real SciPy or a scientific EXP."""
+
+    def fixture(self, root):
+        import yaml
+        from lpf.phase2_models.sampled_epigraph import SampledEpigraph
+        from lpf.phase2_models.problem_seed import definition_fingerprint
+        from lpf.phase2_models.experiment_config import stable_identity
+        from lpf.checkpoint_io import atomic_write_json
+        p, x = make('RF-T008', 4)
+        p = SampledEpigraph(p.circuit, 2)
+        circuit = p.circuit
+        actual, logical = [], []
+        for i, seed in enumerate((23, 24, 25)):
+            vector = x.copy()
+            vector[0] += i * .1
+            sha = vector_fingerprint(vector)
+            record = p.seed(vector, policy_id=circuit.policy_id,
+                policy_fingerprint=circuit.policy_fingerprint,
+                definition_sha256=definition_fingerprint(circuit.definition), input_sha256=sha,
+                seed=seed, jitter_fraction=0)
+            record = json.loads(json.dumps(record))
+            actual.append(dict(id=f's{i}', start=dict(vector=vector.tolist(), vector_sha256=sha,
+                seed_record=record, policy_id=circuit.policy_id, policy_sha256=circuit.policy_fingerprint,
+                definition_sha256=definition_fingerprint(circuit.definition),
+                schema_sha256=canonical_config_hash(asdict(circuit.schema)), jitter_fraction=0)))
+            logical.append(dict(id=f'logical-{i}', method='M', seed=seed,
+                                actual_start_id=f's{i}', vector_sha256=sha))
+        # One shared nominal reference, with no additional actual computation.
+        logical.append(dict(id='common', method='common', seed=None,
+            actual_start_id='s0', vector_sha256=actual[0]['start']['vector_sha256']))
+        config = dict(schema_version=1, rf=dict(id=circuit.policy_id,
+            effective_sha256=circuit.policy_fingerprint, allow_trial=True), objective='full_lpf',
+            definition_sha256=definition_fingerprint(circuit.definition),
+            plan=dict(path='results/plan.json', sha256='0' * 64), iteration_policy_id='slsqp-staged-v2',
+            grids=dict(coarse_points=2, fine_points=3), samples_per_start=1_500_000,
+            seeds=[23, 24, 25], methods=['M'], pilot_seeds=[23, 24],
+            selection=dict(intermediate_points=17, dense_points=1001, independent_points=3, top_k_per_method=5),
+            budgets=dict(logical_starts=4, actual_starts=3, stages=16, optimization_samples=6_000_000,
+                screen_forwards=1, screen_samples=56, intermediate_samples=1904, dense_samples=28028))
+        limits = dict(max_starts=4, max_stages=16, max_samples_per_start=1_500_000,
+            max_optimization_samples=6_000_000, max_screen_forwards=1, max_screen_samples=56,
+            max_intermediate_samples=1904, max_dense_samples=28028, top_k_per_method=5,
+            coarse_points=2, fine_points=3, coarse_maxiter=240, fine_maxiter=120,
+            rescue_coarse_maxiter=500, rescue_fine_maxiter=280, max_stages_per_start=4,
+            iteration_policy_id='slsqp-staged-v2')
+        source = dict(policy_id=circuit.policy_id, policy_sha256=circuit.policy_fingerprint,
+            objective='full_lpf', definition=asdict(circuit.definition), definition_sha256=config['definition_sha256'],
+            seeds=[23, 24, 25], pilot_seeds=[23, 24], actual_starts=actual, logical_starts=logical,
+            limits=limits, screen_cost=dict(RF_forward_calls=0, frequency_samples_requested=0,
+                                           wall_seconds=1, cpu_seconds=2))
+        digest = canonical_config_hash(stable_identity(json.loads(json.dumps(source))))
+        config['plan']['sha256'] = digest
+        atomic_write_json(root / 'results/plan.json', dict(input_source=source, input_source_sha256=digest))
+        path = root / 'results/config.yaml'
+        path.write_text(yaml.safe_dump(config))
+        return path, config, circuit
+
+    def test_yaml_read_only_hash_stability_and_invalid_inputs(self):
+        import yaml
+        from lpf.phase2_models.experiment_config import load_plan, plan_preview
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path, config, circuit = self.fixture(root)
+            before = {p: p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            preview = plan_preview(root, path)
+            self.assertEqual(before, {p: p.read_bytes() for p in root.rglob('*') if p.is_file()})
+            self.assertEqual(preview['execution'], 'not_run')
+            loaded = load_plan(root, path)
+            self.assertEqual(len(loaded['actual']), 3)
+            plan = root / 'results/plan.json'
+            value = json.loads(plan.read_text())
+            value['input_source']['screen_cost']['wall_seconds'] = 9999
+            plan.write_text(json.dumps(value))
+            self.assertEqual(loaded['input_source_sha256'], load_plan(root, path)['input_source_sha256'])
+            for mutation in (
+                lambda c: c.update(unknown=1), lambda c: c.update(schema_version=2),
+                lambda c: c.update(seeds=[23, 23]), lambda c: c.update(samples_per_start=float('nan')),
+                lambda c: c['rf'].update(id='RF-F003'), lambda c: c['plan'].update(sha256='a' * 64),
+                lambda c: c['selection'].update(dense_points=-1)):
+                bad = deepcopy(config)
+                mutation(bad)
+                path.write_text(yaml.safe_dump(bad))
+                with self.assertRaises((ValueError, TypeError)):
+                    load_plan(root, path)
+            # Even a newly matching plan SHA cannot bless an illegal vector.
+            from lpf.phase2_models.experiment_config import stable_identity
+            bad_plan = deepcopy(value)
+            start = bad_plan['input_source']['actual_starts'][0]['start']
+            start['vector'][0] = -1.
+            start['vector_sha256'] = vector_fingerprint(start['vector'])
+            new_sha = canonical_config_hash(stable_identity(bad_plan['input_source']))
+            bad_plan['input_source_sha256'] = new_sha
+            bad_config = deepcopy(config)
+            bad_config['plan']['sha256'] = new_sha
+            plan.write_text(json.dumps(bad_plan))
+            path.write_text(yaml.safe_dump(bad_config))
+            with self.assertRaisesRegex(ValueError, 'outside policy box'):
+                load_plan(root, path)
+            path.write_text(yaml.safe_dump(config) + '\nschema_version: 1\n')
+            with self.assertRaisesRegex(ValueError, 'Duplicate'):
+                load_plan(root, path)
+
+    def test_g1_complete_seed_input_without_preparation_or_rf(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path, config, _ = self.fixture(root)
+            original = load_plan(root, path)
+            frozen = json.loads(json.dumps(original['input_source']))
+            (root / config['plan']['path']).unlink()
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                       side_effect=AssertionError('G1 static load must not evaluate RF')):
+                portable = load_plan(root, path, frozen_input=frozen)
+                self.assertEqual(portable['input_source_sha256'], original['input_source_sha256'])
+                for key in original['actual']:
+                    self.assertEqual(portable['actual'][key]['seed_record'], original['actual'][key]['seed_record'])
+                corrupt = deepcopy(frozen)
+                corrupt['executable_plan']['actual_starts'][0]['seed_record']['vector'][-1] += .1
+                with self.assertRaisesRegex(ValueError, 'C1 seed record SHA mismatch'):
+                    load_plan(root, path, frozen_input=corrupt)
+                changed = deepcopy(frozen)
+                changed['config_sha256'] = '0' * 64
+                with self.assertRaisesRegex(ValueError, 'G1 config/plan SHA mismatch'):
+                    load_plan(root, path, frozen_input=changed)
+
+    def test_mock_phases_shared_mapping_restart_and_atomic_stop(self):
+        from lpf.phase2_models.experiment_run import run_plan, phase_ids
+        from lpf.phase2_models.experiment_config import load_plan
+        import lpf.phase2_models.experiment_run as runner
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', root])
+            (root / '.gitignore').write_text('results/\n')
+            path, config, circuit = self.fixture(root)
+            loaded = load_plan(root, path)
+            self.assertEqual(phase_ids(loaded, 'pilot'), ['s0', 's1'])
+            self.assertEqual(phase_ids(loaded, 'remaining'), ['s2'])
+            calls = []
+            def mock(p, x, budget, target):
+                calls.append(budget)
+                # Status4/8 is a result, not a global STOP or budget extension.
+                return x, dict(success=False, status=4 if len(calls) % 2 else 8,
+                               message='mock', nit=1, nfev=1)
+            gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                        g1_sha256='b' * 64, manifest={}, storage={})
+            with patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_package') as package:
+                with self.assertRaisesRegex(ValueError, 'Pilot'):
+                    run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                pilot = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                self.assertTrue(pilot['pilot_complete'])
+                self.assertEqual(len(calls), 4)
+                self.assertEqual(len(pilot['completed']), 2)
+                raw = root / 'results/EXP-999/run.json'
+                before = raw.read_bytes()
+                package_count = package.call_count
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                           side_effect=AssertionError('completed phase must not evaluate RF')):
+                    repeated = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                self.assertEqual(json.loads(json.dumps(pilot)), repeated)
+                self.assertEqual(raw.read_bytes(), before)
+                self.assertEqual(package.call_count, package_count)
+                self.assertEqual(len(calls), 4)  # completed results never dispatched twice
+                final = run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(len(final['completed']), 3)
+                self.assertEqual(len(calls), 6)
+                self.assertTrue(package.called)
+                for result in final['completed'].values():
+                    self.assertEqual(result['staged_record']['numerical_state'], 'not_converged')
+                    self.assertLessEqual(result['staged_record']['evaluation_cost']['frequency_samples_requested'], 1_500_000)
+                # Simulate external termination after dispatch, with durable marker.
+                raw = root / 'results/EXP-999/run.json'
+                from lpf.phase2_models.experiment_run import _save
+                final['in_progress'] = 's2'
+                _save(raw, final)
+                before = raw.read_bytes()
+                with self.assertRaisesRegex(ValueError, 'Unknown in-progress'):
+                    run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
+                self.assertEqual(raw.read_bytes(), before)
+                self.assertEqual(len(calls), 6)
+
+    def test_budget_exhaustion_partial_failure_and_interrupt_are_distinct(self):
+        from lpf.phase2_models.experiment_run import run_plan
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        import lpf.phase2_models.experiment_run as runner
+        for mode in ('budget', 'exception', 'interrupt', 'stop', 'storage'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                subprocess.check_call(['git', 'init', '-q', root])
+                (root / '.gitignore').write_text('results/\n')
+                path, _, _ = self.fixture(root)
+                loaded = load_plan(root, path)
+                gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                            g1_sha256='b' * 64, manifest={}, storage={})
+                calls = []
+                original_write = runner.atomic_write_json
+                def write_snapshot(destination, payload):
+                    if mode == 'storage' and payload['body']['staged_record'] is not None:
+                        raise OSError('mock atomic storage failure')
+                    return original_write(destination, payload)
+                def solver(p, x, budget, target):
+                    calls.append(budget)
+                    if mode == 'budget':
+                        p.residuals(x)
+                    elif mode == 'exception':
+                        raise RuntimeError('mock numerical exception')
+                    elif mode == 'interrupt':
+                        raise KeyboardInterrupt('external interruption')
+                    else:
+                        # A STOP arriving during the solver is a global stop.
+                        (root / 'results/EXP-999/STOP').touch()
+                    return x, dict(success=True, status=0, message='mock', nit=0, nfev=0)
+                with patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
+                     patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                     patch.object(runner, 'SampleBudgetCost', side_effect=lambda n: SampleBudgetCost(196)), \
+                     patch.object(runner, 'atomic_write_json', side_effect=write_snapshot):
+                    if mode in ('interrupt', 'stop', 'storage'):
+                        with self.assertRaises((KeyboardInterrupt, ValueError, OSError)):
+                            run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=solver)
+                        saved = json.loads((root / 'results/EXP-999/run.json').read_text())['body']
+                        self.assertEqual(saved['in_progress'], 's0')
+                        self.assertFalse(saved['completed'])
+                        with self.assertRaisesRegex(ValueError, 'Unknown in-progress'):
+                            run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=solver)
+                    else:
+                        saved = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=solver)
+                        self.assertEqual(len(saved['completed']), 2)
+                        for result in saved['completed'].values():
+                            staged = result['staged_record']
+                            self.assertEqual(staged['numerical_state'],
+                                             'budget_exhausted' if mode == 'budget' else 'failed')
+                            self.assertIsNone(result['candidate'])
+                            self.assertLessEqual(staged['evaluation_cost']['frequency_samples_requested'], 196)
+
+    @patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+           lambda ev, x: np.where(ev.role == 0, .25, 36.))
+    def test_multistart_real_remote_gate_storage_and_finalize(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.experiment_run import run_plan, _gate
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, remote = Path(tmp) / 'repo', Path(tmp) / 'remote.git'
+            repo.mkdir()
+            def git(*args):
+                return subprocess.check_output(['git', *map(str, args)], cwd=repo,
+                                               stderr=subprocess.PIPE, text=True).strip()
+            git('init', '-q', '-b', 'main')
+            git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
+            git('init', '--bare', '-q', remote)
+            git('remote', 'add', 'origin', remote)
+            names = subprocess.check_output(['git', 'ls-files', '-z', '--', 'src', 'scripts',
+                'project', 'rf', 'pyproject.toml', 'uv.lock'], cwd=ROOT).split(b'\0')
+            for name in filter(None, names):
+                p = Path(name.decode())
+                (repo / p).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / p, repo / p)
+            (repo / '.gitignore').write_text('results/\n__pycache__/\n*.pyc\n')
+            path, config, circuit = self.fixture(repo)
+            loaded = load_plan(repo, path)
+            ledger = repo / PATH
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            rows = [dict(experiment_id=f'EXP-{n:03}', state='legacy_gap_retired' if n in (18, 19)
+                         else 'legacy_recorded', owner='', request_id='', purpose='', constraint_id='',
+                         reserved_at_utc='', origin='') for n in range(1, 50)]
+            rows, ident, _ = next_reservation(rows, owner='fixture', purpose='mock only',
+                request_id='fixture-multi', constraint_id='RF-T008', reserved_at_utc='2026-11-02T00:00:00Z')
+            ledger.write_text(as_csv(rows))
+            (repo / 'data/phase2_git_storage_budget.json').write_text(json.dumps(dict(thresholds=dict(
+                individual_new_file_soft_bytes=131072, individual_new_file_hard_bytes=1048576,
+                new_experiment_curated_soft_bytes=524288))))
+            run = repo / 'experiments/chatgpt_topology_search/runs' / ident
+            run.mkdir(parents=True)
+            git('add', '.')
+            git('commit', '-qm', 'fixture source and G0')
+            git('push', '-qu', 'origin', 'main')
+            manifest = new_manifest(ident, 'fixture multi mock only', dict(
+                input_source=loaded['input_source'], input_source_sha256=loaded['input_source_sha256']),
+                objective='full_lpf', seed=23, root=repo, constraint_id='RF-T008', allow_trial=True)
+            storage = dict(schema_version=1, policy='phase2-git-only-v1', experiment_id=ident,
+                phase='Phase 2', stage='planned', selection=dict(top_k=5, retain=['pareto'],
+                    rule='Retain checked Pareto and all start status/vector diagnostics; mock only.',
+                    estimated_curated_bytes=200000), summary=None, checkpoints=[], validation_overlays=[],
+                git_readback='not_run', size_exception=None, limitations=[])
+            (run / 'manifest.json').write_text(json.dumps(manifest))
+            (run / 'storage_record.json').write_text(json.dumps(storage))
+            git('add', '.')
+            git('commit', '-qm', 'fixture G1')
+            # Local planned evidence is insufficient before actual remote readback.
+            with self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                _gate(repo, ident, loaded, resuming=False)
+            git('push', '-q', 'origin', 'main')
+            # Start from another complete checkout containing only remote G1
+            # evidence and YAML: no ignored preparation plan or result files.
+            portable_config = repo / 'fixture.yaml'
+            shutil.copyfile(path, portable_config)
+            git('add', 'fixture.yaml')
+            git('commit', '-qm', 'fixture portable config')
+            git('push', '-q', 'origin', 'main')
+            fresh = Path(tmp) / 'fresh'
+            git('clone', '-q', '--branch', 'main', remote, fresh)
+            repo = fresh
+            path = repo / 'fixture.yaml'
+            run = repo / 'experiments/chatgpt_topology_search/runs' / ident
+            self.assertFalse((repo / config['plan']['path']).exists())
+            git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
+            checked = _gate(repo, ident, loaded, resuming=False)
+            self.assertEqual(checked['source_sha'], manifest['code']['execution_sha'])
+            calls = []
+            def solver(p, x, budget, target):
+                calls.append(budget)
+                return x, dict(success=True, status=0, message='mock', nit=1, nfev=1)
+            with patch('lpf.phase2_models.staged_optimization.minimize', side_effect=AssertionError('no SciPy')):
+                pilot = run_plan(repo, path, ident, 'pilot', optimize_stage=solver)
+                self.assertTrue(pilot['pilot_complete'])
+                self.assertEqual(json.loads((run / 'manifest.json').read_text())['execution']['status'], 'running')
+                # A repeated completed phase must be a byte-identical no-op,
+                # including raw/summary/checkpoints/manifest/storage and costs.
+                before = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
+                raw = repo / 'results' / ident / 'run.json'
+                before[raw.relative_to(repo)] = raw.read_bytes()
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                           side_effect=AssertionError('no-op must not evaluate RF')):
+                    repeated = run_plan(repo, path, ident, 'pilot', optimize_stage=solver)
+                self.assertEqual(json.loads(json.dumps(pilot)), repeated)
+                self.assertEqual(before, {p: (repo / p).read_bytes() for p in before})
+                self.assertEqual(len(calls), 4)
+                with self.assertRaisesRegex(ValueError, 'unfinalized preservation state'):
+                    finalize_one_start(repo, ident)
+                final = run_plan(repo, path, ident, 'remaining', optimize_stage=solver)
+                self.assertEqual(len(final['completed']), 3)
+                self.assertEqual(len(calls), 6)
+                summary = json.loads((run / 'run_summary.json').read_text())
+                self.assertEqual(summary['attempts'], dict(planned=3, attempted=3, converged=3,
+                    nonconverged=0, failed=0, not_started=0))
+                self.assertEqual(summary['selected_candidate_count'], 3)
+                self.assertGreater(summary['costs']['recheck']['RF_forward_calls'], 0)
+                preserved = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
+                preserved[raw.relative_to(repo)] = raw.read_bytes()
+                for phase in ('remaining', 'pilot'):
+                    with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                               side_effect=AssertionError('completed phase must not evaluate RF')):
+                        repeated = run_plan(repo, path, ident, phase, optimize_stage=solver)
+                    self.assertEqual(json.loads(json.dumps(final)), repeated)
+                    self.assertEqual(preserved, {p: (repo / p).read_bytes() for p in preserved})
+                    self.assertEqual(len(calls), 6)
+                result = finalize_one_start(repo, ident)
+                self.assertIsNotNone(result)
+                self.assertEqual(json.loads((run / 'storage_record.json').read_text())['git_readback'], 'passed')
+                preserved = (run / 'storage_record.json').read_bytes()
+                with self.assertRaisesRegex(ValueError, 'Finalized evidence'):
+                    run_plan(repo, path, ident, 'remaining', optimize_stage=solver)
+                self.assertEqual(preserved, (run / 'storage_record.json').read_bytes())
+                self.assertEqual(len(calls), 6)
+
+    def test_gate_rejects_sparse_before_dispatch(self):
+        from lpf.phase2_models.experiment_run import _gate
+        with patch('scripts.run_phase2_shared._complete_checkout', side_effect=ValueError('Full checkout required')):
+            with self.assertRaisesRegex(ValueError, 'Full checkout'):
+                _gate(ROOT, 'EXP-999', {}, resuming=False)
+
+
 if __name__ == '__main__':
     unittest.main()

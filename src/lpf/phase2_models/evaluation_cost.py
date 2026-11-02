@@ -79,6 +79,12 @@ class EvaluationCost:
             return function(vector)
         return measured
 
+    def evaluator(self, evaluator):
+        """Shallow metered view including summary's internal il call."""
+        measured = copy(evaluator)
+        measured.il = lambda vector: self.forward(evaluator, vector)
+        return measured
+
     def epigraph(self, problem):
         """Private shallow view: do not mutate the caller's C1 problem/circuit.
 

@@ -15,6 +15,61 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
 - Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
 
+## 共通YAML CLI（コード検証と本番実験は別）
+
+`scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
+
+```bash
+uv run --frozen python scripts/run_phase2_shared.py plan --config project/experiments/issue250.yaml
+# 以下は別工程のG0/G1と実験Issueの起動指示が必要。コードレビューでは実行しない。
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+uv run --frozen python scripts/run_phase2_shared.py run --config project/experiments/issue250.yaml --experiment-id EXP-NNN --phase pilot
+uv run --frozen python scripts/run_phase2_shared.py run --config project/experiments/issue250.yaml --experiment-id EXP-NNN --phase remaining
+# 実験Issueで予定した検証証拠も揃え、curated diff確認後にGit保存を確定（push/削除なし）。
+uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP-NNN
+```
+
+- `plan` はread-only。SafeLoaderで未知・重複キー、未対応schema、RF/definition/vector/SHA、
+  box/role/SPD、seed/比較群・logical→actual・予算を照合し、既存manifestの
+  `search_scope.input_source` / `input_source_sha256` に入れる凍結対象を標準出力へ返す。
+  `plan.sha256` はprepared JSONの `input_source` から `wall_seconds` / `cpu_seconds` だけを
+  再帰除外したcanonical SHA。YAML自体のcanonical SHA、完全実行vector/C1 SHA、群別screen費用も凍結する。
+  YAMLに部品bounds、S2P、solver maxiterを重複定義しない。
+- Issue250例はPR #251で取得済みのローカルprepared入力を、**追加RF計算なし**で時間非依存に
+  正規化した `results/issue250/frozen-plan.json`（SHAはYAMLに固定）を参照する。
+  このファイルはG1前のread-only `plan` に必要（欠落時は停止）。完全環境で準備入力を確保し、
+  再計算時のSHA差をレビューしてからG1へ進む。既存準備原本とplan SHAは書換えない。
+  G1 manifestには完全vector・完全C1 seed_recordとそのSHA・比較群・screen費用を保存する。
+  G1後の `run` はYAMLとGit保存済み実行入力だけを読み、ローカル準備planを一切開かない。
+  新しい完全checkoutでもpilot/remainingの入力を復元でき、既存C1 APIの実行前replayで
+  seed_recordの数値も照合する。未確定の実行結果までG1から復元できるという意味ではなく、
+  結果rawの喪失や途中不明は引き続きfail-closedで自動再計算しない。
+  全poolの候補・除外理由などの詳細screen診断はG1ではSHA参照のみで、完全保全済みとはしない。
+  必要なscreen診断のA/B分類・保全と容量確認は#250のG1工程で行い、無条件に1.8MBを複製しない。
+  保存容量例外や証拠分類が必要なら既存ポリシーでSTOPする。
+- `run` は完全checkout・最新remote mainのG0、main上planned manifest/storageの実byte読戻し、
+  実行ソース/環境/全入力の一致を必須とする。storage選別はYAMLのtop Kと `retain=["pareto"]`、
+  ruleに全除外・失敗診断保持を明記し、容量を事前見積もりする。追加owner認証は要求しない。
+- 同一EXPの固有startを既存v2へ一度ずつ渡す。pilotに共通nominalと対象seedが参照する固有startを含め、
+  remainingとの重複は計算しない。pilot終了時にも既存manifest/storage/summaryへ保存・監査する。
+  remainingは明示的な別呼出しとpilot保存監査PASSを要し、自動で次phaseへ進まない。
+  保存完了済みphaseの再指定はG1/raw/保存監査の静的照合後にno-opで返し、RF forward・費用加算・
+  raw/summary/manifest/storage/checkpointの書換えをしない。RF再検査はphase保存処理の計画内費用であり、
+  操作上の再読込では実施しない。
+- start前markerとstage snapshotは原子的な `results/EXP-NNN/run.json` に保存。
+  確定結果だけskipし、途中不明・STOP・システム中断・保存/provenance障害は全体STOP、raw保持。
+  status4/8、数値例外、`budget_exhausted` は個別結果。v2以外の救済はしない。
+  操作はWSL/Linuxの単一プロセス・直列のみ（EXP単位の排他lock、並列workerなし）。
+  pilot〜remaining中は実行checkoutのHEAD/ソース/環境を保持し、Git確定は別のfinalize工程で行う。
+  確定済みGit証拠はrunで再更新しない。
+- optimization（seed replay/solver/stage観測を同一sample上限へ算入）、screen、候補再検査の
+  forward/sample費用を分離する。73論理参照を58固有試行へ水増ししない。
+  各方式/seedの論理IDと共有actual結果参照を保存し、A/B paired解析に使える。
+- 17点/dense1001/独立MNA・power・独立SPDは別証拠で `not_run`。このCLIはそれらを起動しない。
+  自動候補昇格、Git push、raw削除はない。Issue #250では予定した17点/1001点/MNA等の最終検証証拠を
+  保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
+  Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
+
 ## 限定1-start driver（RF-T005 / RF-T008 rev3・合法3L/4L）
 
 `scripts/run_phase2_shared.py` の `prepare_one_start` / `one_start_gate` は引き続きread-only。
