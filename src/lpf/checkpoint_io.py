@@ -16,8 +16,12 @@ def canonical_config_hash(config) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def atomic_write_json(path, payload) -> None:
-    """Write a JSON checkpoint with fsync plus same-directory atomic replace."""
+def atomic_write_json(path, payload, *, compact=False) -> None:
+    """Write JSON with fsync plus same-directory atomic replace.
+
+    compact is opt-in for new curated evidence only, with finite JSON values.
+    Legacy formatting/serialization remains unchanged for existing callers.
+    """
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
@@ -25,7 +29,10 @@ def atomic_write_json(path, payload) -> None:
     )
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-            json.dump(payload, stream, ensure_ascii=False, sort_keys=True, indent=2)
+            json.dump(payload, stream, ensure_ascii=False, sort_keys=True,
+                      indent=None if compact else 2,
+                      separators=(",", ":") if compact else None,
+                      **({'allow_nan': False} if compact else {}))
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())

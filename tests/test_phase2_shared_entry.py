@@ -1090,6 +1090,60 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(preserved, (run / 'storage_record.json').read_bytes())
                 self.assertEqual(len(calls), 6)
 
+    def test_curated_lossless_vectors_and_fail_closed_references(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        from lpf.phase2_models.experiment_run import _curated_result, restore_curated_result
+        from lpf.phase2_models.staged_optimization import run_c1_staged
+        from lpf.checkpoint_io import atomic_write_json
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path, _, circuit = self.fixture(root)
+            loaded = load_plan(root, path)
+            seed = loaded['actual']['s0']['seed_record']
+            for mode in ('normal', 'recovery', 'failure', 'exception', 'budget'):
+                calls = []
+                def solver(p, x, budget, target):
+                    calls.append(budget)
+                    if mode == 'exception':
+                        raise RuntimeError('mock failure')
+                    if mode == 'budget':
+                        p.residuals(x)
+                    # Exercise both a changed output and an exact warm reference.
+                    y = x.copy()
+                    y[0] += .001
+                    code = 9 if mode == 'recovery' and len(calls) == 1 else (8 if mode == 'failure' else 0)
+                    return y, dict(status=code, success=code == 0, message=mode, nit=1, nfev=2)
+                from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+                staged = run_c1_staged(circuit, seed, coarse_points=2, fine_points=3,
+                                       optimize_stage=solver,
+                                       cost_meter=SampleBudgetCost(196 if mode == 'budget' else 1_500_000))
+                result = dict(seed_record=seed, staged_record=staged)
+                old = _curated_result(result)
+                new = _curated_result(result, actual_start_id='s0', input_source=loaded['input_source'])
+                self.assertEqual(old, restore_curated_result(new, loaded['input_source']))
+                if mode == 'budget':
+                    self.assertEqual(old['numerical_state'], 'budget_exhausted')
+                corrupt = deepcopy(new)
+                corrupt['stage_calls'][0]['input_vector']['sha256'] = '0' * 64
+                with self.assertRaisesRegex(ValueError, 'vector reference/SHA'):
+                    restore_curated_result(corrupt, loaded['input_source'])
+                atomic_write_json(root / 'compact.json', new, compact=True)
+                self.assertEqual(json.loads((root / 'compact.json').read_text()), new)
+                bad = deepcopy(loaded['input_source'])
+                bad['config_sha256'] = '0' * 64
+                with self.assertRaisesRegex(ValueError, 'G1 input SHA'):
+                    restore_curated_result(new, bad)
+                bad = deepcopy(new)
+                bad['stage_calls'][0]['input_vector']['vector_ref'] = '0'
+                with self.assertRaisesRegex(ValueError, 'vector reference'):
+                    restore_curated_result(bad, loaded['input_source'])
+            atomic_write_json(root / 'legacy.json', {'日本語': [1., 2.]})
+            self.assertIn('\n  ', (root / 'legacy.json').read_text())
+            before = (root / 'compact.json').read_bytes()
+            with self.assertRaises(ValueError):
+                atomic_write_json(root / 'compact.json', {'bad': float('nan')}, compact=True)
+            self.assertEqual(before, (root / 'compact.json').read_bytes())
+
     def test_gate_rejects_sparse_before_dispatch(self):
         from lpf.phase2_models.experiment_run import _gate
         with patch('scripts.run_phase2_shared._complete_checkout', side_effect=ValueError('Full checkout required')):

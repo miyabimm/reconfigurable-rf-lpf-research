@@ -260,17 +260,75 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
     return state
 
 
-def _curated_result(result):
+def _curated_result(result, *, actual_start_id=None, input_source=None):
     staged = result['staged_record']
     # Keep complete vectors/status/recovery and costs, not bulky per-sample
     # residuals or redundant candidate copies. Raw is retained, never deleted.
     keys = ('call_index', 'attempt_index', 'stage', 'maxiter', 'input_vector',
             'input_vector_sha256', 'warm_start_source', 'output_vector', 'status',
             'exception', 'elapsed_seconds', 'evaluation_cost', 'exit_cause')
-    return dict(seed_record=result['seed_record'], numerical_state=staged['numerical_state'],
+    curated = dict(seed_record=result['seed_record'], numerical_state=staged['numerical_state'],
         exception=staged['exception'], evaluation_cost=staged['evaluation_cost'],
         controller=staged['controller'],
-        stage_calls=[{k: call[k] for k in keys if k in call} for call in staged['stage_calls']])
+        stage_calls=[{k: deepcopy(call[k]) for k in keys if k in call} for call in staged['stage_calls']])
+    if input_source is None and actual_start_id is None:
+        return curated  # Preserve the legacy one-start representation.
+    seed = next(row for row in input_source['executable_plan']['actual_starts']
+                if row['id'] == actual_start_id)
+    if (seed['seed_record'] != result['seed_record'] or
+            canonical_config_hash(seed['seed_record']) != seed['seed_record_sha256']):
+        raise ValueError('Curated G1 seed binding mismatch')
+    curated.pop('seed_record')
+    curated['seed_ref'] = dict(actual_start_id=actual_start_id,
+        input_source_sha256=canonical_config_hash(input_source),
+        seed_record_sha256=seed['seed_record_sha256'])
+    # Backward-only references; no tolerance, rounding, clipping or inferred
+    # solver warm start. Unmatched vectors (including restart inputs) stay full.
+    vectors = [('seed', seed['seed_record']['vector'])]
+    for index, call in enumerate(curated['stage_calls']):
+        for field in ('input_vector', 'output_vector'):
+            if field not in call:
+                continue
+            vector = call[field]
+            match = next((ref for ref, value in vectors
+                          if canonical_config_hash(value) == canonical_config_hash(vector)), None)
+            if match is not None:
+                call[field] = dict(vector_ref=match, sha256=canonical_config_hash(vector))
+        if 'output_vector' in staged['stage_calls'][index]:
+            vectors.append((str(index), staged['stage_calls'][index]['output_vector']))
+    # Exercise the very same reader used by review/reconstruction before saving.
+    if restore_curated_result(curated, input_source) != _curated_result(result):
+        raise ValueError('Curated result is not lossless')
+    return curated
+
+
+def restore_curated_result(curated, input_source):
+    """Losslessly read a new curated row using only the immutable G1 input.
+
+    No raw, RF calls or local prepared plan required. Reject bad bindings,
+    dangling/forward references and vector SHA mismatches, rather than guessing.
+    """
+    restored = deepcopy(curated)
+    ref = restored.pop('seed_ref')
+    if canonical_config_hash(input_source) != ref['input_source_sha256']:
+        raise ValueError('Curated G1 input SHA mismatch')
+    rows = [r for r in input_source['executable_plan']['actual_starts']
+            if r['id'] == ref['actual_start_id']]
+    if len(rows) != 1 or canonical_config_hash(rows[0]['seed_record']) != ref['seed_record_sha256']:
+        raise ValueError('Curated G1 seed SHA mismatch')
+    restored['seed_record'] = deepcopy(rows[0]['seed_record'])
+    vectors = {'seed': restored['seed_record']['vector']}
+    for index, call in enumerate(restored['stage_calls']):
+        for field in ('input_vector', 'output_vector'):
+            value = call.get(field)
+            if isinstance(value, dict):
+                target = value['vector_ref']
+                if target not in vectors or canonical_config_hash(vectors[target]) != value['sha256']:
+                    raise ValueError('Curated vector reference/SHA mismatch')
+                call[field] = deepcopy(vectors[target])
+        if 'output_vector' in call:
+            vectors[str(index)] = call['output_vector']
+    return restored
 
 
 def _package(root, gate, loaded, state, recheck_cost):
@@ -294,24 +352,22 @@ def _package(root, gate, loaded, state, recheck_cost):
     physical = {k: sum(c[k] for c in costs) for k in costs[0]} if costs else {}
     summary = dict(experiment_id=state['identity']['experiment_id'], attempts=counts,
         selected_candidate_count=len(selected), best_found=selected, limitations=LIMITATIONS,
-        input_source_sha256=loaded['input_source_sha256'], logical_starts=loaded['logical'],
-        comparison_groups=[dict(seed=seed, method=method,
-            logical_start_ids=[r['id'] for r in loaded['logical']
-                               if r['method'] == 'common' or (r['seed'] == seed and r['method'] == method)],
-            actual_result_refs=list(dict.fromkeys(r['actual_start_id'] for r in loaded['logical']
-                               if r['method'] == 'common' or (r['seed'] == seed and r['method'] == method))))
-            for seed in loaded['config']['seeds'] for method in loaded['config']['methods']],
-        actual_results={key: _curated_result(value) for key, value in results.items()},
+        input_source_sha256=loaded['input_source_sha256'], execution_identity=state['identity'],
+        # G1 is the sole authority for logical/actual and method/seed mappings,
+        # grid, RF/source/environment and screen costs. Do not copy those tables.
+        actual_results={key: _curated_result(value, actual_start_id=key,
+            input_source=loaded['input_source']) for key, value in results.items()},
         pareto=report, validation=state['validation'],
-        costs=dict(physical_optimization=physical, screen=loaded['input_source']['executable_plan']['screen_cost'],
-                   screen_by_group=loaded['input_source']['executable_plan']['screen_by_group'],
-                   logical_shared='Reference actual_start_id; never sum duplicated solver results.',
+        costs=dict(physical_optimization=physical,
+                   logical_shared='G1 logical_starts reference actual_start_id; never sum shared results.',
                    recheck=recheck_cost.snapshot()))
     if not selected:
         summary['no_candidate_reason'] = 'No checked finite-grid eligible Pareto candidate.'
     validate_summary(summary, state['identity']['experiment_id'], len(selected))
     def save(path, body):
-        atomic_write_json(path, body)
+        atomic_write_json(path, body, compact=True)
+        if _read(path) != body:
+            raise ValueError('Curated JSON readback mismatch')
         return dict(path=path.relative_to(root).as_posix(), sha256=file_sha256(path))
     storage['checkpoints'] = [dict(candidate_id=key, selection_reason='pareto',
         **save(run / 'checkpoints' / (key + '.json'), candidate_checkpoint(loaded['circuit'], results[key]['candidate'],
