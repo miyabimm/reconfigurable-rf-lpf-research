@@ -115,6 +115,21 @@ def _candidate(circuit, key, staged, provenance, cost_meter):
                             source_provenance=provenance, cost_meter=cost_meter).as_dict()
 
 
+def _load_g1_plan(root, config_path, experiment_id):
+    """Read portable executable inputs from G1, never from ignored preparation.
+
+    This is a static load only. _gate must still verify the exact remote G1
+    bytes, source/environment and reservation before any execution or no-op.
+    """
+    from scripts.audit_new_experiment_storage import find_run
+    manifest = _read(find_run(root, experiment_id) / 'manifest.json')
+    scope = manifest['search_scope']
+    frozen = scope['input_source']
+    if canonical_config_hash(frozen) != scope['input_source_sha256']:
+        raise ValueError('G1 input checksum mismatch')
+    return load_plan(root, config_path, frozen_input=frozen)
+
+
 def run_plan(root, config_path, experiment_id, phase, *, optimize_stage=scipy_slsqp_stage):
     """Explicit G0/G1-gated run; mock injection is only for isolated tests.
 
@@ -126,7 +141,7 @@ def run_plan(root, config_path, experiment_id, phase, *, optimize_stage=scipy_sl
             for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')):
         raise ValueError('Explicit BLAS/OMP/MKL thread settings of 1 required')
     root = Path(root).resolve()
-    loaded = load_plan(root, config_path)
+    loaded = _load_g1_plan(root, config_path, experiment_id)
     raw = root / 'results' / experiment_id / 'run.json'
     gate = _gate(root, experiment_id, loaded, resuming=raw.exists())
     # WSL/Linux execution: reject concurrent invocations of the same EXP.
@@ -175,21 +190,32 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
                     staged['numerical_state'] not in ('converged', 'not_converged', 'budget_exhausted', 'failed')):
                 raise ValueError('Unclassified or mismatched saved outcome')
             if result['candidate'] is not None:
-                recheck_record(CandidateRecord.from_json(json.dumps(result['candidate'])), cost_meter=recheck_cost)
+                # Loading is structural only. RF replay is planned packaging
+                # work, not a side effect of reading a completed phase.
+                candidate = CandidateRecord.from_json(json.dumps(result['candidate'])).as_dict()
+                if (candidate['staged_record'] != staged or candidate['seed_record'] != result['seed_record'] or
+                        candidate['candidate_id'] != key or candidate['source_provenance']['value'] != provenance):
+                    raise ValueError('Saved candidate/start binding mismatch')
     else:
         if raw.parent.exists():
             raise ValueError('Unclassified existing raw directory; investigate manually')
         raw.parent.mkdir(parents=True)
         state = dict(identity=identity, input_source=loaded['input_source'], completed={},
-                     in_progress=None, staged_record=None, pilot_complete=False,
+                     in_progress=None, staged_record=None, pilot_complete=False, completed_phases=[],
                      validation=dict(intermediate_17='not_run', dense_1001='not_run',
                          independent_mna='not_run', power_balance='not_run', spd_independent='not_run'),
                      preservation='preservation_incomplete', recheck_cost=recheck_cost.snapshot())
         _save(raw, state)
     ids = phase_ids(loaded, phase)
-    if phase == 'remaining' and (not state['pilot_complete'] or
+    if phase == 'remaining' and (not state['pilot_complete'] or 'pilot' not in state['completed_phases'] or
             not set(phase_ids(loaded, 'pilot')) <= set(state['completed'])):
         raise ValueError('Pilot must be complete and preserved before remaining')
+    if phase in state['completed_phases']:
+        if not set(ids) <= set(state['completed']):
+            raise ValueError('Completed phase missing confirmed results')
+        # G1/raw/storage consistency has been checked without any RF calls.
+        # Do not repackage, charge rechecks, or rewrite evidence on repeated run.
+        return state
     circuit = loaded['circuit']
     for key in ids:
         if key in state['completed']:
@@ -197,7 +223,7 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         if (raw.parent / 'STOP').exists():
             raise ValueError('STOP present; raw retained')
         # Recheck source/config and evidence before each physical start.
-        current = load_plan(root, config_path)
+        current = _load_g1_plan(root, config_path, experiment_id)
         if current['input_source'] != loaded['input_source']:
             raise ValueError('Plan changed during execution')
         _gate(root, experiment_id, loaded, resuming=bool(state['completed']))
@@ -229,6 +255,7 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
     _package(root, gate, loaded, state, recheck_cost)
     state['recheck_cost'] = recheck_cost.snapshot()
     state['preservation'] = 'awaiting_git_readback'
+    state['completed_phases'].append(phase)
     _save(raw, state)
     return state
 

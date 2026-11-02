@@ -835,6 +835,29 @@ class FrozenConfigTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Duplicate'):
                 load_plan(root, path)
 
+    def test_g1_complete_seed_input_without_preparation_or_rf(self):
+        from lpf.phase2_models.experiment_config import load_plan
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path, config, _ = self.fixture(root)
+            original = load_plan(root, path)
+            frozen = json.loads(json.dumps(original['input_source']))
+            (root / config['plan']['path']).unlink()
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                       side_effect=AssertionError('G1 static load must not evaluate RF')):
+                portable = load_plan(root, path, frozen_input=frozen)
+                self.assertEqual(portable['input_source_sha256'], original['input_source_sha256'])
+                for key in original['actual']:
+                    self.assertEqual(portable['actual'][key]['seed_record'], original['actual'][key]['seed_record'])
+                corrupt = deepcopy(frozen)
+                corrupt['executable_plan']['actual_starts'][0]['seed_record']['vector'][-1] += .1
+                with self.assertRaisesRegex(ValueError, 'C1 seed record SHA mismatch'):
+                    load_plan(root, path, frozen_input=corrupt)
+                changed = deepcopy(frozen)
+                changed['config_sha256'] = '0' * 64
+                with self.assertRaisesRegex(ValueError, 'G1 config/plan SHA mismatch'):
+                    load_plan(root, path, frozen_input=changed)
+
     def test_mock_phases_shared_mapping_restart_and_atomic_stop(self):
         from lpf.phase2_models.experiment_run import run_plan, phase_ids
         from lpf.phase2_models.experiment_config import load_plan
@@ -855,14 +878,24 @@ class FrozenConfigTests(unittest.TestCase):
                                message='mock', nit=1, nfev=1)
             gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
                         g1_sha256='b' * 64, manifest={}, storage={})
-            with patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package') as package:
+            with patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_package') as package:
                 with self.assertRaisesRegex(ValueError, 'Pilot'):
                     run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
                 pilot = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
                 self.assertTrue(pilot['pilot_complete'])
                 self.assertEqual(len(calls), 4)
                 self.assertEqual(len(pilot['completed']), 2)
-                run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                raw = root / 'results/EXP-999/run.json'
+                before = raw.read_bytes()
+                package_count = package.call_count
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                           side_effect=AssertionError('completed phase must not evaluate RF')):
+                    repeated = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                self.assertEqual(json.loads(json.dumps(pilot)), repeated)
+                self.assertEqual(raw.read_bytes(), before)
+                self.assertEqual(package.call_count, package_count)
                 self.assertEqual(len(calls), 4)  # completed results never dispatched twice
                 final = run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
                 self.assertEqual(len(final['completed']), 3)
@@ -884,6 +917,7 @@ class FrozenConfigTests(unittest.TestCase):
 
     def test_budget_exhaustion_partial_failure_and_interrupt_are_distinct(self):
         from lpf.phase2_models.experiment_run import run_plan
+        from lpf.phase2_models.experiment_config import load_plan
         from lpf.phase2_models.evaluation_cost import SampleBudgetCost
         import lpf.phase2_models.experiment_run as runner
         for mode in ('budget', 'exception', 'interrupt', 'stop', 'storage'):
@@ -892,6 +926,7 @@ class FrozenConfigTests(unittest.TestCase):
                 subprocess.check_call(['git', 'init', '-q', root])
                 (root / '.gitignore').write_text('results/\n')
                 path, _, _ = self.fixture(root)
+                loaded = load_plan(root, path)
                 gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
                             g1_sha256='b' * 64, manifest={}, storage={})
                 calls = []
@@ -913,6 +948,7 @@ class FrozenConfigTests(unittest.TestCase):
                         (root / 'results/EXP-999/STOP').touch()
                     return x, dict(success=True, status=0, message='mock', nit=0, nfev=0)
                 with patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
+                     patch.object(runner, '_load_g1_plan', return_value=loaded), \
                      patch.object(runner, 'SampleBudgetCost', side_effect=lambda n: SampleBudgetCost(196)), \
                      patch.object(runner, 'atomic_write_json', side_effect=write_snapshot):
                     if mode in ('interrupt', 'stop', 'storage'):
@@ -990,6 +1026,21 @@ class FrozenConfigTests(unittest.TestCase):
             with self.assertRaises((ValueError, subprocess.CalledProcessError)):
                 _gate(repo, ident, loaded, resuming=False)
             git('push', '-q', 'origin', 'main')
+            # Start from another complete checkout containing only remote G1
+            # evidence and YAML: no ignored preparation plan or result files.
+            portable_config = repo / 'fixture.yaml'
+            shutil.copyfile(path, portable_config)
+            git('add', 'fixture.yaml')
+            git('commit', '-qm', 'fixture portable config')
+            git('push', '-q', 'origin', 'main')
+            fresh = Path(tmp) / 'fresh'
+            git('clone', '-q', '--branch', 'main', remote, fresh)
+            repo = fresh
+            path = repo / 'fixture.yaml'
+            run = repo / 'experiments/chatgpt_topology_search/runs' / ident
+            self.assertFalse((repo / config['plan']['path']).exists())
+            git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
             checked = _gate(repo, ident, loaded, resuming=False)
             self.assertEqual(checked['source_sha'], manifest['code']['execution_sha'])
             calls = []
@@ -1000,6 +1051,17 @@ class FrozenConfigTests(unittest.TestCase):
                 pilot = run_plan(repo, path, ident, 'pilot', optimize_stage=solver)
                 self.assertTrue(pilot['pilot_complete'])
                 self.assertEqual(json.loads((run / 'manifest.json').read_text())['execution']['status'], 'running')
+                # A repeated completed phase must be a byte-identical no-op,
+                # including raw/summary/checkpoints/manifest/storage and costs.
+                before = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
+                raw = repo / 'results' / ident / 'run.json'
+                before[raw.relative_to(repo)] = raw.read_bytes()
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                           side_effect=AssertionError('no-op must not evaluate RF')):
+                    repeated = run_plan(repo, path, ident, 'pilot', optimize_stage=solver)
+                self.assertEqual(json.loads(json.dumps(pilot)), repeated)
+                self.assertEqual(before, {p: (repo / p).read_bytes() for p in before})
+                self.assertEqual(len(calls), 4)
                 with self.assertRaisesRegex(ValueError, 'unfinalized preservation state'):
                     finalize_one_start(repo, ident)
                 final = run_plan(repo, path, ident, 'remaining', optimize_stage=solver)
@@ -1010,6 +1072,15 @@ class FrozenConfigTests(unittest.TestCase):
                     nonconverged=0, failed=0, not_started=0))
                 self.assertEqual(summary['selected_candidate_count'], 3)
                 self.assertGreater(summary['costs']['recheck']['RF_forward_calls'], 0)
+                preserved = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
+                preserved[raw.relative_to(repo)] = raw.read_bytes()
+                for phase in ('remaining', 'pilot'):
+                    with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                               side_effect=AssertionError('completed phase must not evaluate RF')):
+                        repeated = run_plan(repo, path, ident, phase, optimize_stage=solver)
+                    self.assertEqual(json.loads(json.dumps(final)), repeated)
+                    self.assertEqual(preserved, {p: (repo / p).read_bytes() for p in preserved})
+                    self.assertEqual(len(calls), 6)
                 result = finalize_one_start(repo, ident)
                 self.assertIsNotNone(result)
                 self.assertEqual(json.loads((run / 'storage_record.json').read_text())['git_readback'], 'passed')

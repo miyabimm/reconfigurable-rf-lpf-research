@@ -59,11 +59,14 @@ def _ids(values, *, integers=False):
             raise ValueError('Invalid ID')
 
 
-def load_plan(root, config_path):
+def load_plan(root, config_path, *, frozen_input=None):
     """Validate frozen vectors, provenance and mapping without RF forwards.
 
     plan.sha256 hashes stable input_source (not timing or envelope metadata).
-    G1 must preserve the returned input_source in the existing strict manifest.
+    G1 preserves the returned complete executable input in the existing strict
+    manifest. With frozen_input, validate only that G1 input and YAML; never
+    open the local preparation plan or perform RF. The existing staged C1 API
+    deterministically replays each saved seed before optimizer dispatch.
     A prepared plan is not itself G0/G1 or permission to execute.
     """
     root = Path(root).resolve()
@@ -106,11 +109,34 @@ def load_plan(root, config_path):
     plan_path = (root / config['plan']['path']).resolve()
     if not plan_path.is_relative_to(root):
         raise ValueError('Plan outside checkout')
-    envelope = _read(plan_path)
-    source = stable_identity(envelope['input_source'])
-    digest = canonical_config_hash(source)
-    if digest != config['plan']['sha256'] or digest != envelope['input_source_sha256']:
-        raise ValueError('Prepared plan SHA mismatch')
+    if frozen_input is None:
+        envelope = _read(plan_path)
+        source = stable_identity(envelope['input_source'])
+        digest = canonical_config_hash(source)
+        if digest != config['plan']['sha256'] or digest != envelope['input_source_sha256']:
+            raise ValueError('Prepared plan SHA mismatch')
+    else:
+        _fields(frozen_input, 'config executable_plan rf_inputs config_sha256 plan_sha256')
+        if (frozen_input['config'] != config or
+                frozen_input['config_sha256'] != canonical_config_hash(config) or
+                frozen_input['plan_sha256'] != config['plan']['sha256']):
+            raise ValueError('G1 config/plan SHA mismatch')
+        source = dict(frozen_input['executable_plan'])
+        # G1 includes the full C1 record, not just its hash. Restore the same
+        # prepared-start shape for the common validation below, without RF.
+        starts = []
+        for item in source['actual_starts']:
+            _fields(item, 'id vector vector_sha256 seed seed_record seed_record_sha256')
+            record = item['seed_record']
+            if (canonical_config_hash(record) != item['seed_record_sha256'] or
+                    record['seed'] != item['seed']):
+                raise ValueError('G1 C1 seed record SHA mismatch')
+            starts.append(dict(id=item['id'], start=dict(vector=item['vector'],
+                vector_sha256=item['vector_sha256'], seed_record=record,
+                policy_id=source['policy_id'], policy_sha256=source['policy_sha256'],
+                definition_sha256=source['definition_sha256'], jitter_fraction=0)))
+        source['actual_starts'] = starts
+        digest = frozen_input['plan_sha256']
     if (source['policy_id'] != config['rf']['id'] or
             source['policy_sha256'] != config['rf']['effective_sha256'] or
             source['objective'] != config['objective'] or source['seeds'] != config['seeds'] or
@@ -163,7 +189,7 @@ def load_plan(root, config_path):
             raise ValueError('Unproven connection role')
         if (start['policy_id'] != circuit.policy_id or start['policy_sha256'] != circuit.policy_fingerprint or
                 start['definition_sha256'] != config['definition_sha256'] or
-                start['schema_sha256'] != canonical_config_hash(asdict(circuit.schema)) or
+                (frozen_input is None and start['schema_sha256'] != canonical_config_hash(asdict(circuit.schema))) or
                 start['jitter_fraction'] != 0):
             raise ValueError('Start provenance mismatch')
         seed = start['seed_record']
@@ -218,10 +244,12 @@ def load_plan(root, config_path):
     executable = {k: source[k] for k in ('policy_id', 'policy_sha256', 'objective',
         'definition', 'definition_sha256', 'seeds', 'pilot_seeds', 'actual_starts',
         'logical_starts', 'screen_cost', 'limits')}
-    executable['screen_by_group'] = [dict(seed=p['seed'], method=p['method'], cost=p['cost'],
-        pool_sha256=canonical_config_hash(p)) for p in source.get('pools', [])]
+    executable['screen_by_group'] = (source['screen_by_group'] if frozen_input is not None else
+        [dict(seed=p['seed'], method=p['method'], cost=p['cost'], pool_sha256=canonical_config_hash(p))
+         for p in source.get('pools', [])])
     executable['actual_starts'] = [dict(id=row['id'], vector=row['start']['vector'],
         vector_sha256=row['start']['vector_sha256'], seed=row['start']['seed_record']['seed'],
+        seed_record=row['start']['seed_record'],
         seed_record_sha256=canonical_config_hash(row['start']['seed_record'])) for row in actual]
     policy = circuit.resolved_policy
     rf_inputs = dict(bands_sha256=file_sha256(rf_input_file(ROOT, policy['bands_file'])), s2p_sha256={})
@@ -233,6 +261,8 @@ def load_plan(root, config_path):
         rf_inputs['s2p_sha256'][role] = observed
     frozen = dict(config=config, executable_plan=executable, rf_inputs=rf_inputs,
                   config_sha256=canonical_config_hash(config), plan_sha256=digest)
+    if frozen_input is not None and frozen != frozen_input:
+        raise ValueError('G1 executable input differs from validated RF/plan')
     return dict(circuit=circuit, config=config, actual=by_id, logical=logical,
                 input_source=frozen, input_source_sha256=canonical_config_hash(frozen))
 
