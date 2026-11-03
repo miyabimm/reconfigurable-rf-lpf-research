@@ -1,4 +1,4 @@
-# WIP: plan SHA must be frozen after reviewed-main initialization; do not execute.
+# EXP-116: plan SHA frozen after reviewed-main initialization; G1 required before execution.
 schema_version: 4
 rf:
   id: RF-T008
@@ -14,7 +14,7 @@ topology_reference:
   sha256: 4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b
 plan:
   path: results/issue270/starts.json
-  sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+  sha256: 'dc004caf80cabe8bf5f3fd4308ecdda81108757fe5cdce3abf3b37d0c41d961c'
 iteration_policy_id: slsqp-staged-v2
 grids:
   coarse_points: 2
