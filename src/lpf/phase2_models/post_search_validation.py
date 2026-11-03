@@ -21,6 +21,10 @@ from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprin
 from .sampled_epigraph import SEARCH_GUARD_DB
 
 
+class ValidationCounterexample(ValueError):
+    """A completed check observed a concrete numerical or physical violation."""
+
+
 def _grid(circuit, evaluator, points):
     with rf_input_file(ROOT, circuit.resolved_policy['bands_file']).open(newline='', encoding='utf-8') as f:
         segments = validated_band_segments(list(csv.DictReader(f)))
@@ -96,16 +100,18 @@ def _independent(circuit, x, forward_meter, mna_meter, samples=None):
                 not math.isclose(float(evaluator.f[i]) * 1e6, frequency, rel_tol=0, abs_tol=1e-6)):
             raise ValueError('independent grid mismatch')
         numbers = {k: float(result[k]) for k in ('gain', 'il_db', 'power_residual_w', *losses)}
-        if not all(math.isfinite(v) for v in numbers.values()) or numbers['gain'] <= 0:
+        if not all(math.isfinite(v) for v in numbers.values()):
             raise ValueError('independent sample nonfinite')
-        if any(numbers[k] < -1e-12 for k in losses) or abs(numbers['power_residual_w']) > 1e-12:
-            raise ValueError('independent passivity or power balance failed')
-        if abs(numbers['il_db'] - float(reference[i])) > 1e-9:
-            raise ValueError('independent forward IL mismatch')
-        if abs(numbers['gain'] - 10 ** (-float(reference[i]) / 10)) > 1e-9:
-            raise ValueError('independent forward gain mismatch')
         samples.append({'segment': segment, 'setting': setting, 'frequency_hz': frequency,
                         'forward_il_db': float(reference[i]), **numbers})
+        if numbers['gain'] <= 0:
+            raise ValidationCounterexample('independent nonpositive gain')
+        if any(numbers[k] < -1e-12 for k in losses) or abs(numbers['power_residual_w']) > 1e-12:
+            raise ValidationCounterexample('independent passivity or power balance failed')
+        if abs(numbers['il_db'] - float(reference[i])) > 1e-9:
+            raise ValidationCounterexample('independent forward IL mismatch')
+        if abs(numbers['gain'] - 10 ** (-float(reference[i]) / 10)) > 1e-9:
+            raise ValidationCounterexample('independent forward gain mismatch')
 
     scan = scan_independent_rf(circuit, x, points_per_interval=3, coverage='canonical',
                                _sample_observer=observe, _sample_executor=execute)
@@ -224,15 +230,26 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
         outside = [i for i, (v, (lo, hi)) in enumerate(zip(x, box.bounds[:-1]))
                    if (lo is not None and v < lo) or (hi is not None and v > hi)]
         outside += [i for i in box.open_lower if x[i] <= box.bounds[i][0]]
-        component = circuit.validate_components(x)
-        if outside or component.get('component_policy_pass') is not True or component.get('connection_role_evidence_incomplete') is not False:
-            raise ValueError('box, component, role or model SPD validation failed')
+        if outside:
+            raise ValidationCounterexample('vector outside policy box')
+        try:
+            component = circuit.validate_components(x)
+        except ValueError as exc:
+            raise ValidationCounterexample(str(exc)) from exc
+        if component.get('component_policy_pass') is False:
+            raise ValidationCounterexample('component policy failed')
+        if (component.get('component_policy_pass') is not True or
+                component.get('connection_role_evidence_incomplete') is not False):
+            raise ValueError('component or connection-role evidence incomplete')
         record['component'] = {'state': 'pass', 'detail': component}
         record['separate17'] = _forward(circuit, x, 17, meters['separate17'],
             float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db']))
         check_identity()
     except SampleBudgetExceeded as exc:
         record['separate17'] = {'state': 'budget_exhausted', 'reason': str(exc)}
+    except ValidationCounterexample as exc:
+        record['component'] = {'state': 'fail', 'reason': str(exc)}
+        record['separate17'] = {'state': 'not_run', 'reason': 'component_validation_failed'}
     except Exception as exc:
         record['separate17'] = {'state': 'failed', 'reason': str(exc), 'exception_type': type(exc).__name__}
     persist()
@@ -261,6 +278,9 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
         except SampleBudgetExceeded as exc:
             record['independent84'] = {'state': 'budget_exhausted', 'reason': str(exc),
                                        'completed_samples': partial_samples}
+        except ValidationCounterexample as exc:
+            record['independent84'] = {'state': 'fail', 'reason': str(exc),
+                                       'samples_including_failure': partial_samples}
         except Exception as exc:
             record['independent84'] = {'state': 'failed', 'reason': str(exc),
                                        'exception_type': type(exc).__name__, 'completed_samples': partial_samples}

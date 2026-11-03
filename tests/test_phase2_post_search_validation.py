@@ -1,5 +1,6 @@
 """Post-search dispatch and fail-closed checks; no production dense run."""
 import sys
+import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -12,6 +13,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from test_phase2_problem_seed import make, seed
 from lpf.phase2_models.limited_candidate_evidence import _identity
 from lpf.phase2_models.post_search_validation import validate_post_search, _forward, _independent
+from lpf.phase2_models.post_search_journal import PostSearchJournal, candidate_binding, aggregate_selected
+from lpf.checkpoint_io import canonical_config_hash
+from lpf.phase2_models.post_search_evidence import verify_candidate_evidence
 from lpf.phase2_models.api import NominalCircuit
 from lpf.phase2_models.independent_rf import evaluate_independent_sample
 from lpf.phase2_models.evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
@@ -109,8 +113,11 @@ class PostSearchTests(unittest.TestCase):
                 return sample
             with self.subTest(key=key), patch(
                     'lpf.phase2_models.post_search_validation.evaluate_independent_sample', side_effect=corrupt):
+                failure_samples = []
                 with self.assertRaises(ValueError):
-                    _independent(self.c, self.x, SampleBudgetCost(84), SampleBudgetCost(84))
+                    _independent(self.c, self.x, SampleBudgetCost(84), SampleBudgetCost(84), failure_samples)
+                self.assertEqual(len(failure_samples), 1)
+                self.assertEqual(failure_samples[0][key], value)
 
     def test_explicit_dispatch_and_blocking(self):
         for state17, state1001, expect in [('fail', 'pass', []), ('pass', 'fail', []), ('pass', 'pass', [True])]:
@@ -169,6 +176,125 @@ class PostSearchTests(unittest.TestCase):
             validate_post_search(self.c, self.x, optimization_record=self.raw,
                 source_provenance=self.source, budgets=self.budgets, run_dense=False,
                 run_independent=False, record_sink=snapshots.append, exchange_record=trace)
+
+    def test_static_evidence_rejects_forged_pass_and_missing_coverage(self):
+        original = NominalCircuit.forward_evaluator
+        base = self.c.forward_evaluator(17)
+        def synthetic(circuit, points, **kwargs):
+            if points == 3:
+                return original(circuit, points, **kwargs)
+            frequencies = np.concatenate([np.linspace(base.f[i * 17], base.f[i * 17 + 16], points)
+                                          for i in range(28)])
+            roles = np.repeat(base.role[::17], points)
+            return SimpleNamespace(f=frequencies, role=roles,
+                setting=np.repeat(base.setting[::17], points), segment=np.repeat(np.arange(28), points),
+                il=lambda x: np.where(roles == 0, 1., 30.003))
+        kwargs = dict(optimization_record=self.raw, source_provenance=self.source,
+                      budgets=self.budgets, run_dense=True, run_independent=True)
+        binding = candidate_binding('a', self.c, self.x, **kwargs)
+        snapshots = []
+        with patch.object(NominalCircuit, 'forward_evaluator', synthetic):
+            report = validate_post_search(self.c, self.x, record_sink=snapshots.append, **kwargs)
+        self.assertEqual(report['dense1001']['state'], 'pass')
+        self.assertFalse(report['dense1001']['guard_achieved'])
+        self.assertEqual(report['independent84']['state'], 'pass')
+        self.assertTrue(verify_candidate_evidence(self.c, binding, report))
+        for mutate in (
+            lambda r: r['dense1001']['segments'].pop(),
+            lambda r: r['dense1001']['segments'][0].update(setting=99),
+            lambda r: r['dense1001']['segments'][2].update(worst_il_db=29.),
+            lambda r: r['independent84']['samples'].pop(),
+            lambda r: r['independent84']['samples'][0].update(power_residual_w=1.),
+            lambda r: r['evaluation_cost']['independent_mna84'].update(frequency_samples_completed=0),
+        ):
+            damaged = deepcopy(report)
+            mutate(damaged)
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                verify_candidate_evidence(self.c, binding, damaged)
+
+    def test_frozen_set_aggregation_is_independent_and_not_vacuous(self):
+        def report(component, scan, dense, mna):
+            return {'schema': 'post-search-validation-1', 'component': {'state': component},
+                    'separate17': {'state': scan}, 'dense1001': {'state': dense},
+                    'independent84': {'state': mna}}
+        good = report('pass', 'pass', 'pass', 'pass')
+        fail17 = report('pass', 'fail', 'not_run', 'not_run')
+        mna_fail = report('pass', 'pass', 'pass', 'fail')
+        partial = report('pass', 'pass', 'budget_exhausted', 'not_run')
+        self.assertEqual(aggregate_selected([], {})['validation'],
+                         {'numerical': 'not_run', 'independent': 'not_run'})
+        cases = [({'a': good, 'b': fail17}, ('failed', 'not_run')),
+                 ({'a': good, 'b': mna_fail}, ('passed', 'failed')),
+                 ({'a': good, 'b': partial}, ('not_run', 'not_run')),
+                 ({'a': good, 'b': good}, ('passed', 'passed')),
+                 ({'a': good}, ('not_run', 'not_run'))]
+        for values, expected in cases:
+            with self.subTest(expected=expected):
+                actual = aggregate_selected(['a', 'b'], values)['validation']
+                self.assertEqual((actual['numerical'], actual['independent']), expected)
+        with self.assertRaises(ValueError):
+            aggregate_selected(['a'], {'unselected': good})
+
+    def test_selection_journal_freeze_and_interruption(self):
+        kwargs = dict(optimization_record=self.raw, source_provenance=self.source,
+                      budgets=self.budgets, run_dense=False, run_independent=False)
+        binding = candidate_binding('a', self.c, self.x, **kwargs)
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'raw'
+            journal = PostSearchJournal.create(path, [binding])
+            with self.assertRaises(FileExistsError):
+                PostSearchJournal.create(path, [binding])
+            with self.assertRaisesRegex(ValueError, 'frozen selection'):
+                journal.run_candidate('a', self.c, self.x, **(kwargs | {'run_dense': True}))
+            self.assertIsNone(PostSearchJournal(path).state['in_progress'])
+            with patch('lpf.phase2_models.post_search_validation._forward', side_effect=KeyboardInterrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    journal.run_candidate('a', self.c, self.x, **kwargs)
+            saved = PostSearchJournal(path)
+            self.assertEqual(saved.state['in_progress'], 'a')
+            self.assertEqual(saved.state['candidates']['a']['state'], 'running')
+            self.assertEqual(saved.summary()['validation'], {'numerical': 'not_run', 'independent': 'not_run'})
+            with self.assertRaisesRegex(ValueError, 'automatic retry prohibited'):
+                saved.run_candidate('a', self.c, self.x, **kwargs)
+
+    def test_journal_success_is_bound_and_not_repeatable(self):
+        kwargs = dict(optimization_record=self.raw, source_provenance=self.source,
+                      budgets=self.budgets, run_dense=False, run_independent=False)
+        binding = candidate_binding('a', self.c, self.x, **kwargs)
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'raw'
+            journal = PostSearchJournal.create(path, [binding])
+            result = journal.run_candidate('a', self.c, self.x, **kwargs)
+            saved = PostSearchJournal(path)
+            self.assertEqual(canonical_config_hash(saved.state['candidates']['a']['report']), canonical_config_hash(result))
+            self.assertIsNone(saved.state['in_progress'])
+            self.assertEqual(saved.summary()['validation']['independent'], 'not_run')
+            with self.assertRaisesRegex(ValueError, 'already attempted'):
+                saved.run_candidate('a', self.c, self.x, **kwargs)
+
+    def test_journal_storage_failure_retains_marker_and_blocks_retry(self):
+        kwargs = dict(optimization_record=self.raw, source_provenance=self.source,
+                      budgets=self.budgets, run_dense=False, run_independent=False)
+        binding = candidate_binding('a', self.c, self.x, **kwargs)
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'raw'
+            journal = PostSearchJournal.create(path, [binding])
+            from lpf.checkpoint_io import atomic_write_json
+            count = 0
+            def fail_second(*args, **kwargs):
+                nonlocal count
+                count += 1
+                if count == 2:
+                    raise OSError('synthetic storage failure')
+                return atomic_write_json(*args, **kwargs)
+            with patch('lpf.phase2_models.post_search_journal.atomic_write_json', side_effect=fail_second):
+                with self.assertRaisesRegex(OSError, 'synthetic storage failure'):
+                    journal.run_candidate('a', self.c, self.x, **kwargs)
+            saved = PostSearchJournal(path)
+            self.assertEqual(saved.state['in_progress'], 'a')
+            self.assertEqual(saved.summary()['validation'], {'numerical': 'not_run', 'independent': 'not_run'})
+            with self.assertRaisesRegex(ValueError, 'automatic retry prohibited'):
+                saved.run_candidate('a', self.c, self.x, **kwargs)
 
     def test_provenance_and_sink_fail_closed(self):
         wrong = self.x.copy()
