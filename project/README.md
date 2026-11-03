@@ -70,6 +70,29 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
   保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
   Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
 
+### 探索ガードと探索後検証の開発中 API（Issue #267）
+
+`run_c1_staged(..., search_guard=True)` と `run_c1_frequency_exchange(...,
+search_guard=True)` は、policy必須値に0.005 dBを加えた探索目標をcoarse/fineと
+周波数交換に渡す。guard有効時は `source_provenance` に `kind`、`git_head`、
+`dirty_patch_sha256`、`input_source_sha256` が必要（型・形式を検査、自己申告の認証ではない）。
+既定は旧条件のまま。必須30 dBと探索目標は別であり、探索ガードは最終PASS閾値や許容差ではない。
+
+`post_search_validation.validate_post_search` は明示的な候補・予算・sinkに対する
+17点→選別された1001点→独立MNAの開発中入口。rawを先にsinkへ渡し、policy・
+トポロジー・vector・出典・帯域・部品・role・SPDを照合する。MNAサイズは
+回路に依存する（4Lでは9×9）。有限格子や独立84点は連続帯域・物理実装の保証ではない。
+`experiment_post_search` は、完全checkoutで既存G0/G1と候補checkpointを照合し、
+G1の `post_search_validation` 計画によりguard・選別上限・各費用上限を固定する試作API。
+検証前に選別集合とvector/SHAを凍結し、候補を明示的に一件ずつ実行、独立MNAの
+途中点もrawへ原子的に保存する。中断・保存障害時はmarkerを残し、自動再試行しない。
+候補別overlayと独立したnumerical/independent集約値を既存manifest/index/storageへ
+接続し、既存の明示的finalize・Git byte読戻し・監査を別途必要とする。
+対象は現在の共通実行経路で保存された候補に限る。コードレビューとCIによる共通実装の
+検証は、実EXPにおけるG0〜G4運用・RF適合・実装可能性の検証とは独立である。
+実EXP・本番探索・実回路dense1001・科学適合の検証は未実施であり、コードレビューや
+sink・一時checkoutのテストは、実験実行の許可、実EXP保存監査、科学的PASSの代わりではない。
+
 ### 周波数交換の固定start対照（schema 3、Issue #263）
 
 `project/experiments/issue263.yaml` は共通CLIの明示opt-in。2 source × baseline/exchangeを

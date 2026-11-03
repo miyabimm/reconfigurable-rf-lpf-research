@@ -1130,6 +1130,37 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(raw.read_bytes(), before)
                 self.assertEqual(len(calls), 6)
 
+    def test_g1_opt_in_dispatch_and_curated_guard(self):
+        from lpf.phase2_models.experiment_run import run_plan, _curated_result, restore_curated_result
+        from lpf.phase2_models.experiment_config import load_plan
+        import lpf.phase2_models.experiment_run as runner
+        for enabled in (False, True):
+            with self.subTest(enabled=enabled), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                subprocess.check_call(['git', 'init', '-q', root])
+                (root / '.gitignore').write_text('results/\n')
+                path, _, circuit = self.fixture(root)
+                loaded = load_plan(root, path)
+                scope = {'post_search_validation': {'search_guard': True}} if enabled else {}
+                gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                            g1_sha256='b' * 64, manifest={'search_scope': scope}, storage={})
+                observed = []
+                def mock(problem, vector, budget, target):
+                    observed.append((problem.mandatory_stop_db, problem.search_stop_db))
+                    return vector, dict(success=True, status=0, message='mock', nit=0, nfev=0)
+                with patch.object(runner, '_gate', return_value=gate), \
+                     patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                     patch.object(runner, '_package'):
+                    result = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
+                self.assertTrue(observed)
+                for mandatory, target in observed:
+                    self.assertEqual(target, mandatory + (.005 if enabled else 0.))
+                for key, row in result['completed'].items():
+                    curated = _curated_result(row, actual_start_id=key, input_source=loaded['input_source'])
+                    self.assertEqual('search_guard' in curated, enabled)
+                    restored = restore_curated_result(curated, loaded['input_source'])
+                    self.assertEqual(restored, _curated_result(row))
+
     def test_budget_exhaustion_partial_failure_and_interrupt_are_distinct(self):
         from lpf.phase2_models.experiment_run import run_plan
         from lpf.phase2_models.experiment_config import load_plan

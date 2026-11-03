@@ -6,14 +6,21 @@ The exchange scan is not independent final validation.
 import numpy as np
 
 from .frequency_exchange import run_frequency_exchange
-from .staged_optimization import run_c1_staged, scipy_slsqp_stage
+from .staged_optimization import run_c1_staged, scipy_slsqp_stage, _check_guard_source
+from .sampled_epigraph import SEARCH_GUARD_DB
 
 
 def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
                               optimize_stage=scipy_slsqp_stage, source_provenance=None,
                               exchange_sink=None, stage_sink=None,
-                              scan_points=17, max_additions=4, max_rounds=3):
+                              scan_points=17, max_additions=4, max_rounds=3,
+                              search_guard=False):
     """Use unchanged v2 for each exchange round, preserving the physical x and t."""
+    if type(search_guard) is not bool:
+        raise TypeError('search_guard must be bool')
+    if search_guard:
+        _check_guard_source(source_provenance)
+    mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
     evaluator = circuit.forward_evaluator(scan_points)
     segments = []
     for segment in sorted(set(evaluator.segment.tolist())):
@@ -30,7 +37,8 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
         record = run_c1_staged(c, seed_record, coarse_points=2, fine_points=3,
             optimize_stage=optimize_stage, cost_meter=meter,
             source_provenance=source_provenance, record_sink=stage_sink,
-            extra_frequencies=extras, warm_start_vector=None if first else vector)
+            extra_frequencies=extras, warm_start_vector=None if first else vector,
+            search_guard=search_guard)
         first = False
         if record['numerical_state'] not in ('converged', 'not_converged'):
             return vector, record
@@ -48,5 +56,6 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
     return run_frequency_exchange(circuit, seed_record['vector'], segments,
         inner=inner, scan=scan, cost_meter=cost_meter, scan_points=scan_points,
         max_additions=max_additions, max_rounds=max_rounds,
-        stop_db=float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db']),
+        stop_db=mandatory + (SEARCH_GUARD_DB if search_guard else 0.0),
+        mandatory_stop_db=mandatory,
         record_sink=exchange_sink)

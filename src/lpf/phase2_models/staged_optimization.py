@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import platform
+import re
 import sys
 import time
 
@@ -152,8 +153,8 @@ def _observe(problem, vector):
                 "h2_min_residual_db": float(np.min(residual[role == 1])),
                 "h3_min_residual_db": float(np.min(residual[role == 2])),
                 "worst_il_db": float(vector[-1] - np.min(residual[role == 0])),
-                "min_h2_db": float(problem.mandatory_stop_db + np.min(residual[role == 1])),
-                "min_h3_db": float(problem.mandatory_stop_db + np.min(residual[role == 2])),
+                "min_h2_db": float(problem.search_stop_db + np.min(residual[role == 1])),
+                "min_h3_db": float(problem.search_stop_db + np.min(residual[role == 2])),
                 "all_sampled_inequalities_nonnegative": bool(np.all(residual >= 0)),
             }
         except SampleBudgetExceeded:
@@ -171,9 +172,21 @@ class _StageAbort(Exception):
     """Stop v2 safely on numerical/callback failure; retain recorded calls."""
 
 
+def _check_guard_source(source_provenance):
+    if not isinstance(source_provenance, dict):
+        raise ValueError('Guarded search requires explicit source provenance')
+    for name, length in (('git_head', 40), ('dirty_patch_sha256', 64), ('input_source_sha256', 64)):
+        value = source_provenance.get(name)
+        if not isinstance(value, str) or re.fullmatch(r'[0-9a-f]{' + str(length) + r'}', value) is None:
+            raise ValueError('Guarded search requires explicit source ' + name)
+    if source_provenance.get('kind') not in ('synthetic', 'frozen', 'recorded'):
+        raise ValueError('Guarded search requires source provenance kind')
+
+
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
-                  cost_meter=None, extra_frequencies=(), warm_start_vector=None):
+                  cost_meter=None, extra_frequencies=(), warm_start_vector=None,
+                  search_guard=False):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -197,15 +210,21 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     """
     if not callable(optimize_stage):
         raise TypeError("optimize_stage must be callable")
+    if type(search_guard) is not bool:
+        raise TypeError("search_guard must be bool")
     if source_provenance is not None:
         if not isinstance(source_provenance, dict):
             raise TypeError("source_provenance must be a dict")
         json.dumps(source_provenance, allow_nan=False)
+    if search_guard:
+        _check_guard_source(source_provenance)
     extra_frequencies = tuple(extra_frequencies)
     seed_problem = SampledEpigraph(circuit, coarse_points)
-    coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies)
-              if extra_frequencies else seed_problem)
-    fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies)
+    coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies,
+                              search_guard=search_guard)
+              if extra_frequencies or search_guard else seed_problem)
+    fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies,
+                           search_guard=search_guard)
     if not isinstance(seed_record, dict):
         raise TypeError("Expected C1 seed record")
     replay_problem = cost_meter.epigraph(seed_problem) if cost_meter is not None else seed_problem
@@ -249,6 +268,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                        "dense_rf": "not_run", "continuous_frequency": "not_run",
                        "physical": "not_run", "owner_approval": "not_run"},
         "candidate_promotion_blocked": True, "rf_compliance_certified": False}
+    if search_guard:
+        record['search_guard'] = {'guard_db': coarse.search_guard_db,
+                                  'mandatory_stop_db': coarse.mandatory_stop_db,
+                                  'search_stop_db': coarse.search_stop_db}
     if extra_frequencies or warm_start_vector is not None:
         record['frequency_exchange_input'] = {
             'extra_frequencies': [list(point) for point in extra_frequencies],

@@ -12,10 +12,14 @@ from .api import NominalCircuit, build_nominal_circuit
 from .problem_seed import circuit_box, make_seed
 
 
+# Numerical search margin only; never an RF acceptance tolerance.
+SEARCH_GUARD_DB = 0.005
+
+
 class SampledEpigraph:
     """Bind one approved nominal circuit and its explicit finite grid."""
 
-    def __init__(self, circuit, points_per_interval, *, extra_frequencies=()):
+    def __init__(self, circuit, points_per_interval, *, extra_frequencies=(), search_guard=False):
         if not isinstance(circuit, NominalCircuit):
             raise TypeError("Expected an approved NominalCircuit")
         self.circuit = circuit
@@ -26,12 +30,16 @@ class SampledEpigraph:
             raise ValueError("Circuit policy, definition or schema mismatch")
         if circuit.policy_id not in ("RF-T005", "RF-T007", "RF-T008"):
             raise ValueError("Unsupported trial policy")
+        if type(search_guard) is not bool:
+            raise TypeError("search_guard must be bool")
+        self.search_guard_db = SEARCH_GUARD_DB if search_guard else 0.0
         self.box = circuit_box(circuit)
         self.mandatory_stop_db = float(
             policy["evaluation"]["full_phase2"]["minimum_h2_h3_db"]
         )
         if not np.isfinite(self.mandatory_stop_db):
             raise ValueError("Invalid mandatory stopband limit")
+        self.search_stop_db = self.mandatory_stop_db + self.search_guard_db
         self.evaluator = circuit.forward_evaluator(
             points_per_interval, extra_frequencies=extra_frequencies)
         self.points_per_interval = points_per_interval
@@ -63,4 +71,4 @@ class SampledEpigraph:
         x, t = self._split(vector)
         il = self.evaluator.il(x)
         role = self.evaluator.role
-        return np.where(role == 0, t - il, il - self.mandatory_stop_db)
+        return np.where(role == 0, t - il, il - self.search_stop_db)

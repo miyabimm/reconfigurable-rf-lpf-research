@@ -21,7 +21,8 @@ class FrequencyExchangeError(RuntimeError):
 
 def run_frequency_exchange(circuit, initial, segments, *, inner, scan, cost_meter,
                            coarse_points=2, fine_points=3, scan_points=17,
-                           max_additions=4, max_rounds=3, stop_db=30., record_sink=None):
+                           max_additions=4, max_rounds=3, stop_db=30., record_sink=None,
+                           mandatory_stop_db=None):
     """Run callback-driven exchange. No retries; all coordinates remain physical.
 
     segments: iterable of (integer ID, role 0/1/2, low MHz, high MHz).
@@ -43,6 +44,10 @@ def run_frequency_exchange(circuit, initial, segments, *, inner, scan, cost_mete
             raise ValueError(f'Invalid {name}')
     if not math.isfinite(stop_db):
         raise ValueError('Invalid stopband threshold')
+    if mandatory_stop_db is None:
+        mandatory_stop_db = stop_db
+    if not math.isfinite(mandatory_stop_db) or mandatory_stop_db > stop_db:
+        raise ValueError('Invalid mandatory stopband threshold')
     metadata = {}
     for seg, role, low, high in segments:
         if (type(seg) is not int or seg < 0 or seg in metadata or
@@ -84,7 +89,11 @@ def run_frequency_exchange(circuit, initial, segments, *, inner, scan, cost_mete
         initial_values, initial_roles, _ = measure(vector)
         baseline = float(np.max(initial_values[initial_roles == 0]))
         trace['initial_worst_il_db'] = baseline
-        trace['initial_scan_strict30'] = bool(np.all(initial_values[initial_roles != 0] >= stop_db))
+        trace['initial_scan_strict30'] = bool(np.all(initial_values[initial_roles != 0] >= mandatory_stop_db))
+        if mandatory_stop_db != stop_db:
+            trace['initial_scan_search_target'] = bool(np.all(initial_values[initial_roles != 0] >= stop_db))
+            trace['stop_db'] = stop_db
+            trace['mandatory_stop_db'] = mandatory_stop_db
         trace['first_strict_scan'] = ({'round': 0, 'evaluation_cost': cost_meter.snapshot()}
                                       if trace['initial_scan_strict30'] else None)
         persist()
@@ -117,10 +126,12 @@ def run_frequency_exchange(circuit, initial, segments, *, inner, scan, cost_mete
                        min_h3_db=float(np.min(values[roles == 2])),
                        delta_il_db=worst_il - baseline,
                        low_il_maintained=bool(worst_il - baseline <= 0.05),
-                       scan_strict30=bool(np.all(values[roles != 0] >= stop_db)),
+                       scan_strict30=bool(np.all(values[roles != 0] >= mandatory_stop_db)),
                        max_violation_db=ranked[0][0] if ranked else 0.,
                        worst_violation=list(ranked[0]) if ranked else None,
                        positive_violations=[list(p) for p in ranked], selected=[])
+            if mandatory_stop_db != stop_db:
+                row['scan_search_target'] = bool(np.all(values[roles != 0] >= stop_db))
             row['evaluation_cost_after_scan'] = cost_meter.snapshot()
             if row['scan_strict30'] and trace['first_strict_scan'] is None:
                 trace['first_strict_scan'] = {'round': round_index + 1,
