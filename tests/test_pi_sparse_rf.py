@@ -1,4 +1,5 @@
 """Live RF API in an actual Pi sparse checkout; no historical evidence needed."""
+import os
 import unittest
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from lpf.port_parasitics import get_two_port_s
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@unittest.skipUnless(os.environ.get('PI_SPARSE_RF') == '1', 'requires a Pi sparse checkout')
 class PiSparseRFTests(unittest.TestCase):
     def test_current_rf_api_without_historical_directories(self):
         for name in ('docs', 'data', 'experiments'):
