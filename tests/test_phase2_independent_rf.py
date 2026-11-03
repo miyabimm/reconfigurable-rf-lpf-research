@@ -1,6 +1,5 @@
 """Limited fixed-vector parity and power evidence; not a dense RF run."""
 import json
-import importlib.util
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -319,19 +318,22 @@ class IndependentRFTests(unittest.TestCase):
              ('GJM01','PCB_PATTERN_C','PCB_PATTERN_C','PCB_PATTERN_C'), ('bridge','bridge'), paired=True), x58),
         ]
         archive = RUNS / 'EXP-043'
-        spec = importlib.util.spec_from_file_location('frozen_043_b2', archive / 'search_3l.py')
-        source = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(source)
+        # Frozen circuit definitions accompany the saved vectors as test fixtures;
+        # never import or execute the historical experiment's search script.
+        configs = {
+            'zero_gjm_double': (('PCB', 'PCB', 'PCB'), ((3, -1), (0, 1), (1, 2))),
+            'two_gjm_bridge': (('GJM', 'GJM', 'PCB'), ((3, -1), (0, 2), (1, 2))),
+        }
         for name in ('zero_gjm_double', 'two_gjm_bridge'):
             row = json.loads((archive / 'checkpoints' / (name + '.json')).read_text())
             self.assertEqual(row['experiment'], 'EXP-043')
             self.assertEqual(row['variant'], name)
-            types, edges = source.CONFIGS[name]
+            types, edges = configs[name]
             config = CircuitDefinition(
-                inductor_tree=InductorTree(4, source.L_EDGES),
+                inductor_tree=InductorTree(4, ((0, 1), (1, 2), (1, 3))),
                 inductor_types=('LQP02HV',)*3, physical_order=(0,2,1),
                 coupling_pairs=((0,2),(2,1)),
-                capacitor_placement=CapacitorPlacement(4, source.CF_EDGES, edges),
+                capacitor_placement=CapacitorPlacement(4, ((0, 1), (1, 2), (3, -1)), edges),
                 fixed_c_types=tuple('GJM01' if t == 'GJM' else 'PCB_PATTERN_C' for t in types),
                 variable_roles=tuple('shunt_to_ground' if -1 in e else 'bridge' for e in edges))
             cases.append(('RF-T005', config, row['vector']))
