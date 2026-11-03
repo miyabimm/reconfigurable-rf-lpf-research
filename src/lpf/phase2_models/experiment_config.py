@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 
 import yaml
+import numpy as np
+from scipy.stats import qmc
 
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.constraint_versions import load_constraint, rf_input_file
@@ -75,14 +77,31 @@ def load_plan(root, config_path, *, frozen_input=None):
     if not path.is_relative_to(root):
         raise ValueError('Config must be in checkout')
     config = yaml.load(path.read_text(), Loader=_Loader)
-    if not isinstance(config, dict) or type(config.get('schema_version')) is not int or config['schema_version'] not in (1, 2, 3):
+    if not isinstance(config, dict) or type(config.get('schema_version')) is not int or config['schema_version'] not in (1, 2, 3, 4):
         raise ValueError('Unsupported config schema')
     exchange = config['schema_version'] == 3
+    continuation = config['schema_version'] == 4
     _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets' +
-            (' frequency_exchange' if exchange else ''))
+            (' frequency_exchange' if exchange else '') + (' continuation' if continuation else ''))
     explicit = config['schema_version'] >= 2
     if config['schema_version'] == 2 and config['methods'] != ['physical', 'normalized']:
         raise ValueError('Explicit coordinate comparison requires physical/normalized arms')
+    if continuation:
+        _fields(config['continuation'], 'mode il_only_bands thresholds_db final_guard_db scan_points max_additions max_rounds')
+        if (config['methods'] != ['A', 'B', 'C', 'D'] or config['seeds'] != [0, 23] or
+                config['pilot_seeds'] != [0] or config['samples_per_start'] != 1_500_000 or
+                config['rf'] != dict(id='RF-T008',
+                    effective_sha256='7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4',
+                    allow_trial=True) or
+                not isinstance(config['budgets'], dict) or
+                any(config['budgets'].get(k) != v for k, v in {
+                    'logical_starts': 8, 'actual_starts': 8, 'stages': 296,
+                    'optimization_samples': 12_000_000, 'intermediate_samples': 3808,
+                    'dense_samples': 224224}.items()) or
+                config['continuation'] != dict(mode='opt_in',
+                    il_only_bands=['B8', 'B8+B71', 'all'], thresholds_db=[10, 20, 25, 28],
+                    final_guard_db=30.005, scan_points=17, max_additions=4, max_rounds=3)):
+            raise ValueError('Unsupported continuation comparison contract')
     if exchange:
         _fields(config['frequency_exchange'], 'mode scan_points max_additions max_rounds')
         if (config['methods'] != ['baseline', 'exchange'] or
@@ -137,14 +156,14 @@ def load_plan(root, config_path, *, frozen_input=None):
         starts = []
         for item in source['actual_starts']:
             _fields(item, 'id vector vector_sha256 seed seed_record seed_record_sha256' +
-                    (' coordinates source_ref' if explicit else '') + (' method' if exchange else ''))
+                    (' coordinates source_ref' if explicit else '') + (' method' if exchange or continuation else ''))
             record = item['seed_record']
             if (canonical_config_hash(record) != item['seed_record_sha256'] or
                     record['seed'] != item['seed']):
                 raise ValueError('G1 C1 seed record SHA mismatch')
             starts.append(dict(id=item['id'],
                 **({k: item[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
-                **({'method': item['method']} if exchange else {}),
+                **({'method': item['method']} if exchange or continuation else {}),
                 start=dict(vector=item['vector'],
                 vector_sha256=item['vector_sha256'], seed_record=record,
                 policy_id=source['policy_id'], policy_sha256=source['policy_sha256'],
@@ -175,7 +194,7 @@ def load_plan(root, config_path, *, frozen_input=None):
     b = STANDARD_SLSQP_BUDGET
     expected.update(coarse_maxiter=b.coarse, fine_maxiter=b.fine,
                     rescue_coarse_maxiter=b.recovery_coarse, rescue_fine_maxiter=b.recovery_fine,
-                    max_stages_per_start=12 if exchange else 4)
+                    max_stages_per_start=60 if continuation else 12 if exchange else 4)
     if limits != expected:
         raise ValueError('Prepared budget differs from config/standard v2')
     actual, logical = source['actual_starts'], source['logical_starts']
@@ -183,29 +202,46 @@ def load_plan(root, config_path, *, frozen_input=None):
     _ids([r['id'] for r in logical])
     budget = config['budgets']
     if (len(logical) != budget['logical_starts'] or len(actual) != budget['actual_starts'] or
-            len(actual) > len(logical) or budget['stages'] != (4 * len(logical) * 2 if exchange else 4 * len(logical)) or
+            len(actual) > len(logical) or budget['stages'] != (296 if continuation else 4 * len(logical) * 2 if exchange else 4 * len(logical)) or
             budget['optimization_samples'] != len(logical) * config['samples_per_start']):
         raise ValueError('Start/stage/sample count mismatch')
     by_id, shas = {}, set()
     box = circuit_box(circuit)
     for row in actual:
-        _fields(row, 'id start' + (' coordinates source_ref' if explicit else '') + (' method' if exchange else ''))
+        _fields(row, 'id start' + (' coordinates source_ref' if explicit else '') + (' method' if exchange or continuation else ''))
         start = row['start']
         if explicit:
-            if (row['coordinates'] != 'physical' if exchange else row['coordinates'] not in config['methods']):
+            if (row['coordinates'] != 'physical' if exchange or continuation else row['coordinates'] not in config['methods']):
                 raise ValueError('Unknown coordinate mode')
-            if exchange and row['method'] not in config['methods']:
-                raise ValueError('Unknown exchange method')
+            if (exchange or continuation) and row['method'] not in config['methods']:
+                raise ValueError('Unknown comparison method')
             ref = row['source_ref']
-            _fields(ref, 'path sha256 vector_sha256' + (' raw_path raw_sha256 summary_path summary_sha256 actual_id' if exchange else ''))
-            ref_path = (root / ref['path']).resolve()
-            if (not ref_path.is_relative_to(root) or file_sha256(ref_path) != ref['sha256'] or
-                    ref['vector_sha256'] != start['vector_sha256']):
-                raise ValueError('Explicit source reference SHA mismatch')
-            original = _read(ref_path)
-            if (original['vector'] != start['vector'] or
-                    original['vector_sha256'] != ref['vector_sha256']):
-                raise ValueError('Explicit source vector mismatch')
+            if continuation:
+                _fields(ref, 'kind seed sobol_index vector_sha256 initialization_cost')
+                if (ref['kind'] not in ('nominal', 'sobol') or ref['seed'] != 23 or
+                        ref['vector_sha256'] != start['vector_sha256'] or
+                        (ref['kind'] == 'nominal' and ref['sobol_index'] is not None) or
+                        (ref['kind'] == 'sobol' and (type(ref['sobol_index']) is not int or
+                                                       not 0 <= ref['sobol_index'] < 16))):
+                    raise ValueError('Invalid generated start reference')
+                _fields(ref['initialization_cost'], 'RF_forward_calls frequency_samples_requested frequency_samples_completed')
+                if (any(type(v) is not int or v < 0 for v in ref['initialization_cost'].values()) or
+                        ref['initialization_cost']['frequency_samples_requested'] !=
+                            56 * ref['initialization_cost']['RF_forward_calls'] or
+                        ref['initialization_cost']['frequency_samples_completed'] !=
+                            ref['initialization_cost']['frequency_samples_requested'] or
+                        ref['initialization_cost']['RF_forward_calls'] != (1 if ref['kind'] == 'nominal' else 2)):
+                    raise ValueError('Invalid initialization sample allocation')
+            else:
+                _fields(ref, 'path sha256 vector_sha256' + (' raw_path raw_sha256 summary_path summary_sha256 actual_id' if exchange else ''))
+                ref_path = (root / ref['path']).resolve()
+                if (not ref_path.is_relative_to(root) or file_sha256(ref_path) != ref['sha256'] or
+                        ref['vector_sha256'] != start['vector_sha256']):
+                    raise ValueError('Explicit source reference SHA mismatch')
+                original = _read(ref_path)
+                if (original['vector'] != start['vector'] or
+                        original['vector_sha256'] != ref['vector_sha256']):
+                    raise ValueError('Explicit source vector mismatch')
             if exchange:
                 for key in ('raw', 'summary'):
                     evidence = (root / ref[key + '_path']).resolve()
@@ -225,7 +261,7 @@ def load_plan(root, config_path, *, frozen_input=None):
                     raise ValueError('Source raw/curated final vector mismatch')
         vector = start['vector']
         sha = vector_fingerprint(vector)
-        identity = (sha, row['method'] if exchange else row['coordinates']) if explicit else sha
+        identity = (sha, row['method'] if exchange or continuation else row['coordinates']) if explicit else sha
         if identity in shas or sha != start['vector_sha256'] or len(vector) != circuit.schema.vector_length:
             raise ValueError('Duplicate or invalid actual vector SHA/schema')
         for i, (v, (lo, hi)) in enumerate(zip(vector, box.bounds[:-1])):
@@ -243,7 +279,7 @@ def load_plan(root, config_path, *, frozen_input=None):
         if (not isinstance(seed, dict) or list(seed['input_vector']) != vector or seed['changes'] or
                 seed['input_vector_sha256'] != sha or seed['definition_sha256'] != config['definition_sha256'] or
                 seed['policy_fingerprint'] != circuit.policy_fingerprint or seed['policy_id'] != circuit.policy_id or
-                type(seed['seed']) is not int or seed['seed'] not in config['seeds'] or
+                type(seed['seed']) is not int or (seed['seed'] != 23 if continuation else seed['seed'] not in config['seeds']) or
                 seed['jitter_fraction'] != 0 or seed['points_per_interval'] != 2 or
                 list(seed['vector'][:-1]) != vector):
             raise ValueError('C1 seed binding mismatch')
@@ -259,8 +295,9 @@ def load_plan(root, config_path, *, frozen_input=None):
         target = by_id.get(row['actual_start_id'])
         if target is None or row['vector_sha256'] != target['start']['vector_sha256']:
             raise ValueError('Logical/actual binding mismatch')
-        if explicit and (row['method'] != (target['method'] if exchange else target['coordinates']) or
-                         row['seed'] != target['seed_record']['seed']):
+        if explicit and (row['method'] != (target['method'] if exchange or continuation else target['coordinates']) or
+                         (row['seed'] != (0 if target['source_ref']['kind'] == 'nominal' else 23)
+                          if continuation else row['seed'] != target['seed_record']['seed'])):
             raise ValueError('Logical coordinate/source binding mismatch')
         if row['method'] == 'common':
             common_count += 1
@@ -284,7 +321,43 @@ def load_plan(root, config_path, *, frozen_input=None):
             if (len({canonical_config_hash(r['source_ref']) for r in paired}) != 1 or
                     len({canonical_config_hash(r['seed_record']) for r in paired}) != 1):
                 raise ValueError('Coordinate arms must share exact source and C1 seed')
+    if continuation:
+        # Reconstruct the first distinct legal point of the existing Sobol
+        # block without any RF forward or use of a historical best vector.
+        nominal_rows = [r for r in actual if r['source_ref']['kind'] == 'nominal']
+        sobol_rows = [r for r in actual if r['source_ref']['kind'] == 'sobol']
+        nominal = np.asarray(nominal_rows[0]['start']['vector'], dtype=float)
+        bounds = np.asarray(box.bounds[:-1], dtype=float)
+        if not np.array_equal(nominal, bounds.mean(axis=1)):
+            raise ValueError('Nominal must be the legal policy-box midpoint')
+        block = qmc.Sobol(d=len(nominal), scramble=True, seed=23).random_base2(4)
+        first = None
+        for i, unit in enumerate(block):
+            vector = bounds[:, 0] + unit * (bounds[:, 1] - bounds[:, 0])
+            if any(vector[j] <= bounds[j, 0] for j in box.open_lower):
+                continue
+            try:
+                check = circuit.validate_components(vector)
+                if check['connection_role_evidence_incomplete'] or np.array_equal(vector, nominal):
+                    continue
+            except ValueError:
+                continue
+            first = (i, vector_fingerprint(vector))
+            break
+        if first is None or any((r['source_ref']['sobol_index'], r['start']['vector_sha256']) != first
+                                for r in sobol_rows):
+            raise ValueError('Sobol vector is not the first legal distinct block candidate')
     cost = source['screen_cost']
+    if continuation:
+        _fields(source.get('initialization_timing'), 'elapsed_wall_s elapsed_cpu_s')
+        for value in source['initialization_timing'].values():
+            _number(value)
+        from .evaluation_cost import EvaluationCost
+        expected_cost_fields = set(EvaluationCost().snapshot()) - {'wall_seconds', 'cpu_seconds'}
+        if (not isinstance(cost, dict) or set(cost) != expected_cost_fields or
+                cost['RF_forward_calls'] != 2 or cost['frequency_samples_requested'] != 112 or
+                cost['frequency_samples_completed'] != 112 or cost['forward_failures'] != 0):
+            raise ValueError('Incomplete or inconsistent physical initialization cost')
     for v in cost.values():
         _number(v)
     if 'pools' in source:
@@ -302,12 +375,14 @@ def load_plan(root, config_path, *, frozen_input=None):
     executable = {k: source[k] for k in ('policy_id', 'policy_sha256', 'objective',
         'definition', 'definition_sha256', 'seeds', 'pilot_seeds', 'actual_starts',
         'logical_starts', 'screen_cost', 'limits')}
+    if continuation:
+        executable['initialization_timing'] = source['initialization_timing']
     executable['screen_by_group'] = (source['screen_by_group'] if frozen_input is not None else
         [dict(seed=p['seed'], method=p['method'], cost=p['cost'], pool_sha256=canonical_config_hash(p))
          for p in source.get('pools', [])])
     executable['actual_starts'] = [dict(id=row['id'],
         **({k: row[k] for k in ('coordinates', 'source_ref')} if explicit else {}),
-        **({'method': row['method']} if exchange else {}),
+        **({'method': row['method']} if exchange or continuation else {}),
         vector=row['start']['vector'],
         vector_sha256=row['start']['vector_sha256'], seed=row['start']['seed_record']['seed'],
         seed_record=row['start']['seed_record'],
@@ -326,6 +401,67 @@ def load_plan(root, config_path, *, frozen_input=None):
         raise ValueError('G1 executable input differs from validated RF/plan')
     return dict(circuit=circuit, config=config, actual=by_id, logical=logical,
                 input_source=frozen, input_source_sha256=canonical_config_hash(frozen))
+
+
+def prepare_continuation_starts(circuit, config):
+    """Build one nominal/Sobol pair and its eight frozen references.
+
+    This performs two finite-grid forward calls, not optimization or final RF
+    validation. The caller is responsible for the reviewed-main, checkout and
+    durable-output gates before invoking it. Shared generation cost is measured
+    once and conservatively allocated independently to every logical arm.
+    """
+    import time
+    from .evaluation_cost import EvaluationCost
+    from .multistart import generate_starts
+    from .sampled_epigraph import SampledEpigraph
+    from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET
+
+    if (config.get('schema_version') != 4 or config.get('methods') != ['A', 'B', 'C', 'D'] or
+            circuit.policy_id != 'RF-T008' or circuit.policy_fingerprint != config['rf']['effective_sha256'] or
+            definition_fingerprint(circuit.definition) != config['definition_sha256']):
+        raise ValueError('Continuation preparation config/circuit mismatch')
+    bounds = np.asarray(circuit_box(circuit).bounds[:-1], float)
+    nominal = bounds.mean(axis=1)
+    meter = EvaluationCost()
+    wall, cpu = time.perf_counter(), time.process_time()
+    generated = generate_starts(SampledEpigraph(circuit, 2), nominal, seed=23, count=2, cost_meter=meter)
+    timing = dict(elapsed_wall_s=time.perf_counter() - wall, elapsed_cpu_s=time.process_time() - cpu)
+    cost = meter.snapshot()
+    if (cost['RF_forward_calls'] != 2 or cost['frequency_samples_requested'] != 112 or
+            cost['frequency_samples_completed'] != 112 or cost['forward_failures'] != 0):
+        raise ValueError('Unexpected initialization forwards; stop and inspect')
+    actual, logical = [], []
+    for index, start in enumerate(generated['starts']):
+        kind = ('nominal', 'sobol')[index]
+        count = index + 1
+        reference = dict(kind=kind, seed=23, sobol_index=start['sobol_index'],
+            vector_sha256=start['vector_sha256'], initialization_cost=dict(
+                RF_forward_calls=count, frequency_samples_requested=count * 56,
+                frequency_samples_completed=count * 56))
+        for method in config['methods']:
+            key = f'{kind}-{method}'
+            actual.append(dict(id=key, start=start, method=method, coordinates='physical', source_ref=reference))
+            logical.append(dict(id=key, seed=0 if index == 0 else 23, method=method,
+                vector_sha256=start['vector_sha256'], actual_start_id=key))
+    b, budget = STANDARD_SLSQP_BUDGET, config['budgets']
+    limits = dict(max_starts=budget['logical_starts'], max_stages=budget['stages'],
+        max_samples_per_start=config['samples_per_start'], max_optimization_samples=budget['optimization_samples'],
+        max_screen_forwards=budget['screen_forwards'], max_screen_samples=budget['screen_samples'],
+        max_intermediate_samples=budget['intermediate_samples'], max_dense_samples=budget['dense_samples'],
+        top_k_per_method=config['selection']['top_k_per_method'], **config['grids'],
+        iteration_policy_id=config['iteration_policy_id'], coarse_maxiter=b.coarse, fine_maxiter=b.fine,
+        rescue_coarse_maxiter=b.recovery_coarse, rescue_fine_maxiter=b.recovery_fine,
+        max_stages_per_start=60)
+    source = dict(policy_id=circuit.policy_id, policy_sha256=circuit.policy_fingerprint,
+        objective=config['objective'], definition=asdict(circuit.definition),
+        definition_sha256=config['definition_sha256'], seeds=config['seeds'], pilot_seeds=config['pilot_seeds'],
+        actual_starts=actual, logical_starts=logical, screen_cost=cost,
+        initialization_timing=timing, limits=limits)
+    source = stable_identity(source)
+    digest = canonical_config_hash(source)
+    return dict(input_source=source, input_source_sha256=digest,
+                candidate_promotion_blocked=True, rf_compliance_certified=False)
 
 
 def plan_preview(root, config_path):

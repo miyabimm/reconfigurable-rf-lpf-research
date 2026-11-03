@@ -13,7 +13,7 @@ from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.experiment_manifest import _environment, file_sha256
 from .experiment_config import load_plan
 from .evaluation_cost import SampleBudgetCost, EvaluationCost
-from .staged_optimization import run_c1_staged, scipy_slsqp_stage
+from .staged_optimization import run_c1_staged, run_c1_continuation, scipy_slsqp_stage, _json_value
 from .frequency_exchange_c1 import run_c1_frequency_exchange
 from .candidate_records import record_candidate, CandidateRecord, recheck_record, pareto_report
 from .synthetic_runner import _read
@@ -60,9 +60,17 @@ def _gate(root, experiment_id, loaded, *, resuming):
             storage['selection']['top_k'] != config['selection']['top_k_per_method'] or
             storage['selection']['retain'] != ['pareto']):
         raise ValueError('G1 frozen plan/RF/environment/selection mismatch')
+    if config['schema_version'] == 4 and 'post_search_validation' not in manifest['search_scope']:
+        raise ValueError('Continuation requires a frozen post-search validation plan')
     if 'post_search_validation' in manifest['search_scope']:
         from .experiment_post_search import _check_plan
-        _check_plan(manifest['search_scope']['post_search_validation'], [], config)
+        post_plan = manifest['search_scope']['post_search_validation']
+        _check_plan(post_plan, [], config)
+        if config['schema_version'] == 4 and (
+                post_plan['max_selected'] != 8 or post_plan['separate17'] != 3808 or
+                post_plan['dense1001'] != 224224 or
+                post_plan['independent_forward84'] != 672 or post_plan['independent_mna84'] != 672):
+            raise ValueError('Continuation post-search plan must cover all eight vectors')
     source = manifest['code']['execution_sha']
     paths = ('src', 'scripts', 'project', 'rf', 'pyproject.toml', 'uv.lock')
     if (manifest['code']['working_tree_dirty'] or
@@ -148,6 +156,8 @@ def run_plan(root, config_path, experiment_id, phase, *, optimize_stage=scipy_sl
         raise ValueError('Explicit BLAS/OMP/MKL thread settings of 1 required')
     root = Path(root).resolve()
     loaded = _load_g1_plan(root, config_path, experiment_id)
+    if loaded['config']['schema_version'] == 4:
+        raise ValueError('Continuation dispatch and post-search evidence are not implemented')
     raw = root / 'results' / experiment_id / 'run.json'
     gate = _gate(root, experiment_id, loaded, resuming=raw.exists())
     # WSL/Linux execution: reject concurrent invocations of the same EXP.
@@ -195,6 +205,17 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
                     staged['evaluation_cost']['frequency_samples_requested'] > loaded['config']['samples_per_start'] or
                     staged['numerical_state'] not in ('converged', 'not_converged', 'budget_exhausted', 'failed')):
                 raise ValueError('Unclassified or mismatched saved outcome')
+            if loaded['config']['schema_version'] == 4:
+                continuation = result.get('continuation', {})
+                anchor = CandidateRecord.from_json(json.dumps(result['validation_anchor'])).as_dict()
+                if (continuation.get('method') != loaded['actual'][key]['method'] or
+                        result['initialization_allocation'] != loaded['actual'][key]['source_ref']['initialization_cost'] or
+                        not isinstance(continuation.get('last_valid_vector'), list) or
+                        anchor['vector'] != continuation['last_valid_vector'][:-1] or
+                        anchor['candidate_id'] != key or
+                        anchor['source_provenance']['value'] != provenance or
+                        anchor['numerical']['state'] != 'not_run'):
+                    raise ValueError('Saved continuation anchor or initialization mismatch')
             if result['candidate'] is not None:
                 # Loading is structural only. RF replay is planned packaging
                 # work, not a side effect of reading a completed phase.
@@ -239,6 +260,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         state.update(in_progress=key, staged_record=None)
         if loaded['config']['schema_version'] == 3:
             state['exchange_record'] = None
+        if loaded['config']['schema_version'] == 4:
+            state['continuation_record'] = None
         _save(raw, state)
         def sink(record):
             state['staged_record'] = record
@@ -250,9 +273,34 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         # through this partial, including solver callback/CPU accounting.
         stage_callback = (partial(optimize_stage, coordinates=start['coordinates'])
                           if 'coordinates' in start else optimize_stage)
-        meter = SampleBudgetCost(loaded['config']['samples_per_start'])
+        allocation = (start['source_ref']['initialization_cost']
+                      if loaded['config']['schema_version'] == 4 else None)
+        meter = SampleBudgetCost(loaded['config']['samples_per_start'], initial_allocation=allocation)
         exchange_result = None
-        if loaded['config']['schema_version'] == 3:
+        continuation_result = None
+        if loaded['config']['schema_version'] == 4:
+            def continuation_sink(record):
+                state['continuation_record'] = record
+                _save(raw, state)
+                if (raw.parent / 'STOP').exists():
+                    raise ValueError('STOP at continuation boundary; preserve in-progress marker')
+            started = time.monotonic()
+            continuation_result = run_c1_continuation(circuit, start['seed_record'],
+                method=start['method'], cost_meter=meter, optimize_stage=stage_callback,
+                source_provenance=provenance, record_sink=continuation_sink)
+            staged = deepcopy(continuation_result.get('final_stage'))
+            if staged is None:
+                staged = dict(seed=start['seed_record'], numerical_state='failed', exception=None,
+                    controller=None, stage_calls=[], source_provenance=dict(state='provided', value=provenance),
+                    definition_sha256=loaded['config']['definition_sha256'],
+                    policy_fingerprint=circuit.policy_fingerprint)
+            if continuation_result['state'] != 'completed':
+                staged['numerical_state'] = continuation_result['state']
+                staged['exception'] = continuation_result.get('exception')
+            staged['evaluation_cost'] = meter.snapshot()
+            staged['elapsed_seconds'] = time.monotonic() - started
+            exchange_result = continuation_result['final_exchange']
+        elif loaded['config']['schema_version'] == 3:
             def exchange_sink(record):
                 state['exchange_record'] = record
                 _save(raw, state)
@@ -288,15 +336,27 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
             raise RuntimeError('System failure during stage; retain unknown in-progress evidence')
         # Provenance/storage failures are global STOP, not numerical failures.
         _gate(root, experiment_id, loaded, resuming=True)
-        candidate = _candidate(circuit, key, staged, provenance, recheck_cost)
+        candidate = (_candidate(circuit, key, staged, provenance, recheck_cost)
+                     if continuation_result is None or
+                        (continuation_result['state'] == 'completed' and staged['stage_calls']) else None)
         state['recheck_cost'] = recheck_cost.snapshot()
         state['completed'][key] = dict(seed_record=start['seed_record'],
             staged_record=staged, candidate=candidate)
         if exchange_result is not None:
             state['completed'][key]['frequency_exchange'] = exchange_result
+        if continuation_result is not None:
+            state['completed'][key]['continuation'] = continuation_result
+            state['completed'][key]['initialization_allocation'] = deepcopy(allocation)
+            # Preserve every last legal physical vector, including budget and
+            # intermediate nonconvergence, as an unpromoted diagnostic anchor.
+            anchor = continuation_result['last_valid_vector'][:-1]
+            state['completed'][key]['validation_anchor'] = record_candidate(
+                key, circuit, anchor, source_provenance=provenance).as_dict()
         state.update(in_progress=None, staged_record=None)
         if loaded['config']['schema_version'] == 3:
             state['exchange_record'] = None
+        if loaded['config']['schema_version'] == 4:
+            state['continuation_record'] = None
         _save(raw, state)
     if phase == 'pilot':
         state['pilot_complete'] = True
@@ -322,6 +382,29 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
         stage_calls=[{k: deepcopy(call[k]) for k in keys if k in call} for call in staged['stage_calls']])
     if 'search_guard' in staged:
         curated['search_guard'] = deepcopy(staged['search_guard'])
+    if 'continuation' in result:
+        curated['initialization_allocation'] = deepcopy(result['initialization_allocation'])
+        continuation = deepcopy(result['continuation'])
+        # The final exchange is stored once in the adjacent frequency_exchange
+        # field. Intermediate full vectors, status and observations remain
+        # reviewable while bulky per-sample residual arrays stay in raw.
+        continuation.pop('final_exchange', None)
+        continuation.pop('final_stage', None)
+        for item in continuation['stages']:
+            inner = item.get('record')
+            if inner is None:
+                continue
+            compact = _curated_result(dict(seed_record=result['seed_record'], staged_record=inner))
+            compact.pop('seed_record')
+            compact['working_configuration'] = deepcopy(inner['working_configuration'])
+            compact['working_initial_vector'] = deepcopy(inner['working_initial_vector'])
+            for source_call, saved_call in zip(inner['stage_calls'], compact['stage_calls']):
+                observation = deepcopy(source_call.get('observation'))
+                if observation is not None:
+                    observation.get('sampled_rf', {}).pop('residuals_db', None)
+                    saved_call['observation'] = _json_value(observation)
+            item['record'] = compact
+        curated['continuation'] = continuation
     if 'frequency_exchange' in result:
         exchange = deepcopy(result['frequency_exchange'])
         for row in exchange['rounds']:
@@ -439,15 +522,21 @@ def _package(root, gate, loaded, state, recheck_cost):
         if _read(path) != body:
             raise ValueError('Curated JSON readback mismatch')
         return dict(path=path.relative_to(root).as_posix(), sha256=file_sha256(path))
-    storage['checkpoints'] = [dict(candidate_id=key, selection_reason='pareto',
-        **save(run / 'checkpoints' / (key + '.json'), candidate_checkpoint(loaded['circuit'], results[key]['candidate'],
-                                                                      cost_meter=recheck_cost)))
-        for key in selected]
+    if loaded['config']['schema_version'] == 4:
+        storage['checkpoints'] = [dict(candidate_id=key, selection_reason='other',
+            **save(run / 'checkpoints' / (key + '.json'), candidate_checkpoint(
+                loaded['circuit'], result['validation_anchor'], cost_meter=recheck_cost)))
+            for key, result in results.items()]
+    else:
+        storage['checkpoints'] = [dict(candidate_id=key, selection_reason='pareto',
+            **save(run / 'checkpoints' / (key + '.json'), candidate_checkpoint(loaded['circuit'], results[key]['candidate'],
+                                                                          cost_meter=recheck_cost)))
+            for key in selected]
     # Old selected checkpoints may no longer be Pareto after remaining starts.
     # Never delete evidence: retain them as representative diagnostics instead.
     existing = list((run / 'checkpoints').glob('*.json')) if (run / 'checkpoints').exists() else []
     for path in existing:
-        if path.stem not in selected:
+        if path.stem not in {item['candidate_id'] for item in storage['checkpoints']}:
             storage['checkpoints'].append(dict(candidate_id=path.stem, selection_reason='other',
                 path=path.relative_to(root).as_posix(), sha256=file_sha256(path)))
     summary['selected_candidate_count'] = len(storage['checkpoints'])

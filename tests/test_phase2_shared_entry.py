@@ -853,6 +853,121 @@ class FrozenConfigTests(unittest.TestCase):
         save()
         return path, config, circuit, source, save
 
+    def test_continuation_plan_read_only_and_fail_closed_dispatch(self):
+        import yaml
+        from lpf.phase2_models.experiment_config import load_plan, stable_identity
+        from lpf.phase2_models.experiment_run import run_plan
+        from lpf.phase2_models.multistart import generate_starts
+        from lpf.phase2_models.sampled_epigraph import SampledEpigraph
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', root])
+            (root / '.gitignore').write_text('results/\n')
+            path, config, circuit = self.fixture(root)
+            plan_path = root / config['plan']['path']
+            envelope = json.loads(plan_path.read_text())
+            source = envelope['input_source']
+            from lpf.phase2_models.problem_seed import circuit_box
+            nominal = np.asarray(circuit_box(circuit).bounds[:-1], float).mean(axis=1)
+            starts = generate_starts(SampledEpigraph(circuit, 2), nominal, seed=23, count=2)['starts']
+            actual, logical = [], []
+            for i, start in enumerate(starts):
+                kind = ('nominal', 'sobol')[i]
+                count = i + 1
+                ref = dict(kind=kind, seed=23, sobol_index=start['sobol_index'],
+                    vector_sha256=start['vector_sha256'], initialization_cost=dict(
+                        RF_forward_calls=count, frequency_samples_requested=count * 56,
+                        frequency_samples_completed=count * 56))
+                for method in ('A', 'B', 'C', 'D'):
+                    key = f'{kind}-{method}'
+                    actual.append(dict(id=key, start=start, method=method,
+                                       coordinates='physical', source_ref=ref))
+                    logical.append(dict(id=key, method=method, seed=(0 if i == 0 else 23),
+                                        actual_start_id=key, vector_sha256=start['vector_sha256']))
+            config.update(schema_version=4, methods=['A', 'B', 'C', 'D'], seeds=[0, 23], pilot_seeds=[0],
+                continuation=dict(mode='opt_in', il_only_bands=['B8', 'B8+B71', 'all'],
+                    thresholds_db=[10, 20, 25, 28], final_guard_db=30.005,
+                    scan_points=17, max_additions=4, max_rounds=3))
+            config['budgets'].update(logical_starts=8, actual_starts=8, stages=296,
+                optimization_samples=12_000_000, screen_forwards=2, screen_samples=112,
+                intermediate_samples=3808, dense_samples=224224)
+            from lpf.phase2_models.evaluation_cost import EvaluationCost
+            screen_cost = EvaluationCost().snapshot()
+            screen_cost.update(RF_forward_calls=2, frequency_samples_requested=112,
+                               frequency_samples_completed=112)
+            source.update(seeds=[0, 23], pilot_seeds=[0], actual_starts=actual, logical_starts=logical,
+                          screen_cost=screen_cost, initialization_timing=dict(elapsed_wall_s=0.1, elapsed_cpu_s=0.1))
+            source['limits'].update(max_starts=8, max_stages=296, max_stages_per_start=60,
+                max_optimization_samples=12_000_000, max_screen_forwards=2, max_screen_samples=112,
+                max_intermediate_samples=3808, max_dense_samples=224224)
+            from lpf.phase2_models.experiment_config import prepare_continuation_starts
+            prepared = prepare_continuation_starts(circuit, config)
+            self.assertEqual([r['start']['vector_sha256'] for r in prepared['input_source']['actual_starts']],
+                             [r['start']['vector_sha256'] for r in actual])
+            self.assertEqual(prepared['input_source']['screen_cost']['frequency_samples_requested'], 112)
+            self.assertFalse(prepared['rf_compliance_certified'])
+            def save():
+                digest = canonical_config_hash(stable_identity(source))
+                envelope['input_source_sha256'] = config['plan']['sha256'] = digest
+                plan_path.write_text(json.dumps(envelope))
+                path.write_text(yaml.safe_dump(config))
+            save()
+            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('RF')):
+                loaded = load_plan(root, path)
+                frozen = json.loads(json.dumps(loaded['input_source']))
+                self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
+            self.assertEqual(len(loaded['actual']), 8)
+            import lpf.phase2_models.experiment_run as runner
+            with patch.object(runner, '_load_g1_plan', return_value=loaded):
+                with self.assertRaisesRegex(ValueError, 'not implemented'):
+                    run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=lambda *args: None)
+            gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                        g1_sha256='b' * 64, manifest={}, storage={})
+            def optimizer(problem, vector, maxiter, target, *, coordinates):
+                return vector, dict(success=True, status=0, message='mock', nit=1, nfev=1)
+            raw = root / 'results/EXP-999/run.json'
+            import lpf.phase2_models.frequency_exchange_c1 as exchange_adapter
+            original_exchange = exchange_adapter.run_c1_frequency_exchange
+            actual_package = runner._package
+            def one_exchange_round(*args, **kwargs):
+                return original_exchange(*args, **(kwargs | {'max_rounds': 1}))
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_package'), patch.object(runner, '_candidate', return_value=None), \
+                 patch.object(exchange_adapter, 'run_c1_frequency_exchange', side_effect=one_exchange_round):
+                pilot = runner._dispatch_loaded(root, path, 'EXP-999', 'pilot', optimizer, loaded, gate, raw)
+                self.assertEqual(len(pilot['completed']), 4)
+                final = runner._dispatch_loaded(root, path, 'EXP-999', 'remaining', optimizer, loaded, gate, raw)
+                self.assertEqual(len(final['completed']), 8)
+                for key, item in final['completed'].items():
+                    self.assertEqual(item['continuation']['state'], 'completed')
+                    allocation = loaded['actual'][key]['source_ref']['initialization_cost']
+                    self.assertGreaterEqual(item['staged_record']['evaluation_cost']['frequency_samples_requested'],
+                                            allocation['frequency_samples_requested'])
+                    curated = runner._curated_result(item, actual_start_id=key,
+                                                     input_source=loaded['input_source'])
+                    self.assertEqual(runner.restore_curated_result(curated, loaded['input_source']),
+                                     runner._curated_result(item))
+                before = raw.read_bytes()
+                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                    runner._dispatch_loaded(root, path, 'EXP-999', 'remaining', optimizer, loaded, gate, raw)
+                self.assertEqual(raw.read_bytes(), before)
+                gate['run'].mkdir(parents=True)
+                gate['manifest'] = {'execution': {}}
+                gate['storage'] = {'checkpoints': [], 'validation_overlays': []}
+                with patch('scripts.audit_new_experiment_storage.validate_run'):
+                    actual_package(root, gate, loaded, final, EvaluationCost())
+                summary = json.loads((gate['run'] / 'run_summary.json').read_text())
+                storage = json.loads((gate['run'] / 'storage_record.json').read_text())
+                self.assertEqual(summary['attempts']['attempted'], 8)
+                self.assertEqual(len(storage['checkpoints']), 8)
+                self.assertTrue(all(item['selection_reason'] == 'other' for item in storage['checkpoints']))
+                self.assertTrue(all('continuation' in row for row in summary['actual_results'].values()))
+            source['actual_starts'][4]['source_ref']['sobol_index'] += 1
+            save()
+            with self.assertRaises(ValueError):
+                load_plan(root, path)
+
     def test_exchange_plan_and_mock_dispatch(self):
         from lpf.phase2_models.experiment_config import load_plan
         from lpf.phase2_models.experiment_run import run_plan, _curated_result, restore_curated_result

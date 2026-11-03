@@ -162,7 +162,8 @@ def _independent(circuit, x, forward_meter, mna_meter, samples=None, progress=No
 
 def validate_post_search(circuit, vector, *, optimization_record, source_provenance,
                          budgets, run_dense, run_independent, record_sink,
-                         exchange_record=None, validation_identity=None):
+                         exchange_record=None, validation_identity=None,
+                         validate_terminal_anchor=False):
     """Run one explicitly selected candidate; emit raw and every gate to sink.
 
     budgets gives separate maximum requested samples for separate17, dense1001,
@@ -170,8 +171,12 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     explicit, and a preceding mandatory failure or exception always blocks it.
     The sink must durably preserve snapshots or raise; this function does not
     manipulate EXP manifests, storage records or historical evidence.
+    The explicit terminal-anchor mode evaluates a separately bound last legal
+    vector even after nonconvergence or exhaustion; it never changes optimizer
+    status or unblocks promotion. The caller must bind that vector to raw data.
     """
-    if not callable(record_sink) or type(run_dense) is not bool or type(run_independent) is not bool:
+    if (not callable(record_sink) or type(run_dense) is not bool or type(run_independent) is not bool or
+            type(validate_terminal_anchor) is not bool):
         raise ValueError('explicit selection and durable record_sink required')
     # Preserve the caller's raw result before identity checks, including cases
     # rejected at the boundary. This is not evidence of a valid candidate.
@@ -194,6 +199,8 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     if not isinstance(source_provenance, dict) or not source_provenance:
         raise ValueError('explicit source provenance required')
     if optimization_record is None:
+        if validate_terminal_anchor:
+            raise ValueError('Terminal anchor validation requires a metered optimization record')
         # An AFE scan can exhaust its budget or fail before the first C1
         # stage. Preserve that terminal trace, but never validate or promote it.
         if not isinstance(exchange_record, dict) or exchange_record.get('stop_reason') not in ('failed', 'budget_exhausted'):
@@ -210,7 +217,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
                 optimization_record.get('definition_sha256') != definition_fingerprint(circuit.definition) or
                 optimization_record.get('source_provenance') != {'state': 'provided', 'value': source_provenance}):
             raise ValueError('optimization vector or provenance mismatch')
-        if state in ('converged', 'not_converged') and (
+        if not validate_terminal_anchor and state in ('converged', 'not_converged') and (
                 not calls or calls[-1].get('output_vector') is None or
                 vector_fingerprint(calls[-1]['output_vector'][:-1]) != vector_fingerprint(x)):
             raise ValueError('optimization vector or provenance mismatch')
@@ -220,7 +227,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
                 not isinstance(exchange_record.get('evaluation_cost'), dict)):
             raise ValueError('terminal metered exchange record required')
         final_vector = exchange_record.get('final_vector')
-        if final_vector is not None and vector_fingerprint(final_vector[:-1]) != vector_fingerprint(x):
+        if not validate_terminal_anchor and final_vector is not None and vector_fingerprint(final_vector[:-1]) != vector_fingerprint(x):
             raise ValueError('exchange vector mismatch')
         if exchange_record['stop_reason'] not in ('failed', 'budget_exhausted'):
             rounds = exchange_record.get('rounds')
@@ -258,6 +265,9 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
               'limitations': ['finite grids only; no continuous-frequency guarantee',
                               'SRF, Q(f), EM, tolerances and measurements not verified',
                               'EXP manifest and storage gates not executed']}
+    if validate_terminal_anchor:
+        record['validation_mode'] = 'terminal_physical_anchor'
+        record['limitations'].append('Terminal anchor validation is separate from optimizer convergence and promotion.')
     def persist():
         record['evaluation_cost'] = {k: v.snapshot() for k, v in meters.items()}
         try:
@@ -270,7 +280,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
 
     persist()  # raw optimization result and provenance before any validation
     stop_reason = exchange_record.get('stop_reason') if exchange_record else None
-    if state in ('failed', 'budget_exhausted') or stop_reason in ('failed', 'budget_exhausted'):
+    if not validate_terminal_anchor and (state in ('failed', 'budget_exhausted') or stop_reason in ('failed', 'budget_exhausted')):
         reason = f'optimization_{stop_reason if stop_reason in ("failed", "budget_exhausted") else state}'
         for key in ('separate17', 'dense1001', 'independent84'):
             record[key] = {'state': 'not_run', 'reason': reason}
@@ -308,7 +318,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
         record['separate17'] = {'state': 'failed', 'reason': str(exc), 'exception_type': type(exc).__name__}
     persist()
     if (record['separate17']['state'] == 'pass' and run_dense and
-            optimization_record['numerical_state'] == 'converged'):
+            (validate_terminal_anchor or optimization_record['numerical_state'] == 'converged')):
         try:
             check_identity()
             record['dense1001'] = _forward(circuit, x, 1001, meters['dense1001'],

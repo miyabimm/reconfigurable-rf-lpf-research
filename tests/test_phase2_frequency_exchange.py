@@ -58,6 +58,27 @@ class ExchangeTests(unittest.TestCase):
         self.assertEqual(result['evaluation_cost']['frequency_samples_requested'], 60)
         self.assertFalse(result['rf_compliance_certified'])
 
+    def test_frozen_initial_cost_allocation_counts_against_sample_ceiling(self):
+        from lpf.phase2_models.evaluation_cost import SampleBudgetExceeded
+        allocation = dict(RF_forward_calls=2, frequency_samples_requested=112,
+                          frequency_samples_completed=112)
+        meter = SampleBudgetCost(117, initial_allocation=allocation)
+        values = Samples(list(range(5)), lambda p, x: float(p))
+        meter.forward(values, [0.])
+        self.assertEqual(meter.frequency_samples_requested, 117)
+        self.assertEqual(meter.RF_forward_calls, 3)
+        with self.assertRaises(SampleBudgetExceeded):
+            meter.forward(values, [0.])
+        self.assertEqual(meter.frequency_samples_requested, 117)
+        for bad in (dict(allocation, RF_forward_calls=0),
+                    dict(allocation, frequency_samples_completed=111),
+                    dict(allocation, frequency_samples_requested=-1),
+                    dict(allocation, extra=0)):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                SampleBudgetCost(117, initial_allocation=bad)
+        with self.assertRaises(ValueError):
+            SampleBudgetCost(111, initial_allocation=allocation)
+
     def test_no_violation_stall_limit_and_budget(self):
         clean = lambda p, x: 1. if p[0] == 0 else 30.
         result, calls = self.invoke(clean)

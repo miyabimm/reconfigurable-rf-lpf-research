@@ -201,7 +201,8 @@ def _check_guard_source(source_provenance):
 def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
                   cost_meter=None, extra_frequencies=(), warm_start_vector=None,
-                  search_guard=False, working_configuration=None):
+                  search_guard=False, working_configuration=None,
+                  require_legal_output=False):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -228,8 +229,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     """
     if not callable(optimize_stage):
         raise TypeError("optimize_stage must be callable")
-    if type(search_guard) is not bool:
-        raise TypeError("search_guard must be bool")
+    if type(search_guard) is not bool or type(require_legal_output) is not bool:
+        raise TypeError("search_guard and require_legal_output must be bool")
     if source_provenance is not None:
         if not isinstance(source_provenance, dict):
             raise TypeError("source_provenance must be a dict")
@@ -389,7 +390,7 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                 stage["observation"] = _observe(problem, output)
             if stage["observation"]["sampled_rf"]["state"] != "observed":
                 raise ValueError("Stage output cannot be evaluated on its finite grid")
-            if working_configuration is not None:
+            if working_configuration is not None or require_legal_output:
                 component = stage["observation"]["component_policy"]
                 detail = component.get("detail", {})
                 if (stage["observation"]["box"]["state"] != "pass" or
@@ -488,6 +489,22 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         first = circuit.schema.vector_length - len(CASES) * nv + CASES.index(case) * nv
         return tuple(range(first, first + nv))
 
+    def retain_valid_stage(snapshot):
+        calls = snapshot.get('stage_calls', [])
+        if not calls:
+            return
+        call = calls[-1]
+        observation = call.get('observation') or {}
+        component = observation.get('component_policy') or {}
+        detail = component.get('detail') or {}
+        if (call.get('output_vector') is not None and call.get('exception') is None and
+                observation.get('sampled_rf', {}).get('state') == 'observed' and
+                observation.get('box', {}).get('state') == 'pass' and
+                component.get('state') == 'pass' and
+                detail.get('component_policy_pass') is True and
+                detail.get('connection_role_evidence_incomplete') is False):
+            result['last_valid_vector'] = deepcopy(call['output_vector'])
+
     def stage(label, settings, threshold, fixed):
         nonlocal v
         item = {'label': label, 'input_vector': v.tolist(), 'record': None}
@@ -495,6 +512,7 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         persist()
         def stage_snapshot(snapshot):
             item['record'] = snapshot
+            retain_valid_stage(snapshot)
             persist()
         record = run_c1_staged(circuit, seed_record, coarse_points=2, fine_points=3,
             optimize_stage=optimize_stage, source_provenance=source_provenance,
@@ -504,6 +522,7 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         item['record'] = record
         if record['numerical_state'] != 'converged':
             result['state'] = record['numerical_state']
+            result['exception'] = deepcopy(record['exception'])
             persist()
             return False
         v = np.asarray(record['stage_calls'][-1]['output_vector'], dtype=float)
@@ -556,13 +575,18 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         def exchange_snapshot(snapshot):
             result['final_exchange'] = snapshot
             persist()
+        def final_stage_snapshot(snapshot):
+            result['final_stage'] = snapshot
+            retain_valid_stage(snapshot)
+            persist()
         exchange = run_c1_frequency_exchange(circuit, seed_record, cost_meter=cost_meter,
             optimize_stage=optimize_stage, source_provenance=source_provenance,
-            exchange_sink=exchange_snapshot, search_guard=True, warm_start_vector=v)
+            exchange_sink=exchange_snapshot, stage_sink=final_stage_snapshot,
+            search_guard=True, warm_start_vector=v)
         result['final_exchange'] = exchange
         result['state'] = ('budget_exhausted' if exchange['stop_reason'] == 'budget_exhausted'
                            else 'completed')
-        if exchange.get('final_vector') is not None:
+        if result['state'] == 'completed' and exchange.get('final_vector') is not None:
             result['last_valid_vector'] = exchange['final_vector']
     except SinkFailure:
         raise

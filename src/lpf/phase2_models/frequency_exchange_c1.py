@@ -39,7 +39,7 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
             source_provenance=source_provenance, record_sink=stage_sink,
             extra_frequencies=extras,
             warm_start_vector=(None if first and warm_start_vector is None else vector),
-            search_guard=search_guard)
+            search_guard=search_guard, require_legal_output=warm_start_vector is not None)
         first = False
         if record['numerical_state'] not in ('converged', 'not_converged'):
             return vector, record

@@ -169,6 +169,17 @@ class SampledEpigraphTests(unittest.TestCase):
             optimize_stage=optimizer, record_sink=lambda snapshot: None)
         self.assertEqual(result['state'], 'budget_exhausted')
         self.assertEqual(result['last_valid_vector'], list(start['vector']))
+        from lpf.phase2_models.evaluation_cost import SampleBudgetExceeded
+        def interrupted_fine(problem, vector, maxiter, target):
+            if problem.points_per_interval == 3:
+                raise SampleBudgetExceeded('mock budget')
+            vector[0] += 0.1
+            return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
+        result = run_c1_continuation(p.circuit, start, method='B',
+            cost_meter=SampleBudgetCost(10000), source_provenance=source,
+            optimize_stage=interrupted_fine, record_sink=lambda snapshot: None)
+        self.assertEqual(result['state'], 'budget_exhausted')
+        self.assertAlmostEqual(result['last_valid_vector'][0], physical[0] + 0.1)
         def nonconverged(problem, vector, maxiter, target):
             return vector, dict(success=False, status=4, message='failed', nit=1, nfev=1)
         result = run_c1_continuation(p.circuit, start, method='B',
@@ -177,12 +188,39 @@ class SampledEpigraphTests(unittest.TestCase):
         self.assertEqual(result['state'], 'not_converged')
         self.assertEqual(len(result['stages']), 1)
         self.assertIsNone(result['final_exchange'])
+        snapshots = []
+        def illegal_final(problem, vector, maxiter, target):
+            vector[0] = -1.
+            return vector, dict(success=True, status=0, message='bad', nit=1, nfev=1)
+        result = run_c1_continuation(p.circuit, start, method='A',
+            cost_meter=SampleBudgetCost(10000), source_provenance=source,
+            optimize_stage=illegal_final, record_sink=snapshots.append)
+        self.assertEqual(result['state'], 'failed')
+        self.assertEqual(len(result['final_stage']['stage_calls']), 1)
+        self.assertEqual(result['final_stage']['numerical_state'], 'failed')
+        self.assertTrue(any(row.get('final_stage', {}).get('stage_calls') for row in snapshots))
+        self.assertEqual(result['last_valid_vector'], list(start['vector']))
         def broken_sink(_):
             raise OSError('storage unavailable')
         with self.assertRaises(Exception):
             run_c1_continuation(p.circuit, start, method='A',
                 cost_meter=SampleBudgetCost(10000), source_provenance=source,
                 optimize_stage=optimizer, record_sink=broken_sink)
+
+    def test_scipy_fixed_coordinate_with_synthetic_problem(self):
+        from types import SimpleNamespace
+        from lpf.phase2_models.problem_seed import VectorBox
+        from lpf.phase2_models.staged_optimization import scipy_slsqp_stage
+        problem = SimpleNamespace(
+            box=VectorBox(((1., 1.), (0., 5.), (None, None)), ()),
+            objective=lambda v: v[-1],
+            residuals=lambda v: np.array([v[-1] - (v[1] - 2.) ** 2 - 1.]))
+        output, status = scipy_slsqp_stage(problem, [1., 0., 5.], 30, None)
+        self.assertTrue(status['success'])
+        self.assertEqual(output[0], 1.)
+        self.assertAlmostEqual(output[1], 2., places=3)
+        self.assertAlmostEqual(output[2], 1., places=4)
+        self.assertGreaterEqual(problem.residuals(output)[0], -1e-6)
 
     def test_invalid_vectors_and_non_spd(self):
         p = SampledEpigraph(circuit("RF-T005"), 1)

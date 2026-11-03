@@ -115,6 +115,12 @@ class ProblemSeedTests(unittest.TestCase):
             if n == 3:
                 x[6] = 0.
             a = generate_starts(p, x, seed=23)
+            from lpf.phase2_models.evaluation_cost import EvaluationCost
+            meter = EvaluationCost()
+            pair = generate_starts(p, x, seed=23, count=2, cost_meter=meter)
+            self.assertEqual(pair['starts'], a['starts'][:2])
+            self.assertEqual(meter.RF_forward_calls, 2)
+            self.assertEqual(meter.frequency_samples_requested, 56)
             self.assertEqual(a, generate_starts(p, x, seed=23))
             self.assertNotEqual(a, generate_starts(p, x, seed=24))
             self.assertEqual([s['id'].split('-')[-1] for s in a['starts']], ['0', '1', '2'])

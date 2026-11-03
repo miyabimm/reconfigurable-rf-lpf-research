@@ -34,14 +34,14 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
                     warm_sha256=None, count=3, cost_meter=None,
                     for_exploration=False, selection=None, max_initial_samples=None,
                     candidate_pool='sobol'):
-    """Exactly nominal/design (or verified warm) + two scrambled Sobol starts.
+    """By default nominal/design (or verified warm) + two scrambled Sobol starts.
 
     One fixed Sobol block of 16 is inspected, with no clipping, epsilon floor,
     retries or projection across definitions. Insufficient legal distinct starts
     raises with diagnostics. Warm JSON must explicitly bind policy, definition,
     schema and full vector; a length-compatible legacy vector is not sufficient.
     This preparation runs forward diagnostics, not optimization or RF validation.
-    Opt-in count uses the SAME block/order, never retries. Pass cost_meter to
+    Opt-in count (2..17) uses the SAME block/order, never retries. Pass cost_meter to
     charge all initialization forwards (also on failure); default three-start
     vectors, records and behavior remain unchanged.
     selection='rf_pareto' (RF-T008/coarse2/count=3 only) evaluates the entire
@@ -96,8 +96,8 @@ def generate_starts(problem, nominal_vector, *, seed, warm_checkpoint=None,
             report['exception'] = f'{type(exc).__name__}: {exc}'
             update_cost()
             return StartSelectionError(str(exc), report)
-    if type(count) is not int or not 3 <= count <= 17:
-        raise ValueError('count must be between 3 and 17 (one fixed Sobol block)')
+    if type(count) is not int or not 2 <= count <= 17:
+        raise ValueError('count must be between 2 and 17 (one fixed Sobol block)')
     if cost_meter is not None and selection is None:
         # Shallow metered view includes seed forward calls, without changing C1.
         problem = cost_meter.epigraph(problem)
