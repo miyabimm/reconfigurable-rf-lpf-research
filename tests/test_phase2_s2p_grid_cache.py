@@ -9,6 +9,7 @@ import csv
 import hashlib
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
@@ -88,14 +89,20 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
                     3: '1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786',
                     17: 'fc6c7a269bc2aecefe747b06909a0fc79d43ee435c38ae8d4ba2d81db339fa28',
                     1001: 'd0696e28439da33f36ea66eef9243a8ae98f89a7e63763f3e480b4dc0fd7585f'}
-        for points, digest in expected.items():
-            with self.subTest(points=points):
-                grid = SampledExternalEvaluator(self.policy, points)
-                sha = hashlib.sha256()
-                for values, dtype in ((grid.f, '<f8'), (grid.setting, '<i8'),
-                                      (grid.role, '<i8'), (grid.segment, '<i8')):
-                    sha.update(np.asarray(values, dtype=dtype).tobytes())
-                self.assertEqual(sha.hexdigest(), digest)
+        # This checks only grid bytes; real S2P SHA, interpolation, and both
+        # cascades are independently exercised by the other tests in this suite
+        # and by the forward/MNA tests. Avoid 2 * 28,028 redundant lookups.
+        identity = np.eye(2, dtype=complex)
+        with patch('lpf.phase2_models._grid.get_two_port_s', new=lambda *a, **k: identity), \
+                patch('lpf.phase2_models._grid.s_to_abcd', new=lambda s: s):
+            for points, digest in expected.items():
+                with self.subTest(points=points):
+                    grid = SampledExternalEvaluator(self.policy, points)
+                    sha = hashlib.sha256()
+                    for values, dtype in ((grid.f, '<f8'), (grid.setting, '<i8'),
+                                          (grid.role, '<i8'), (grid.segment, '<i8')):
+                        sha.update(np.asarray(values, dtype=dtype).tobytes())
+                    self.assertEqual(sha.hexdigest(), digest)
 
     def test_band_csv_validation_fails_closed_instead_of_reclassifying_h3(self):
         with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:

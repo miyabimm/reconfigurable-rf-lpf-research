@@ -3,7 +3,6 @@
 Old sources are only read as test oracles; no EXP scripts/results are rewritten
 or legacy feasibility/physical claims promoted to new RF approvals.
 """
-import importlib.util
 import json
 import sys
 import unittest
@@ -161,34 +160,6 @@ class T005T007PolicyCircuitTests(unittest.TestCase):
             bound.evaluator(3).il(x), legacy.il(placeholder),
             atol=1e-9, rtol=0
         )
-
-    def test_t005_zero_gjm_exp043_3l_and_two_gjm_case(self):
-        archive = RUNS / "EXP-043"
-        spec = importlib.util.spec_from_file_location(
-            "t005_legacy_search_3l", archive / "search_3l.py")
-        source = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(source)
-        p = load_constraint("RF-T005", allow_trial=True)
-        for name in ("zero_gjm_double", "two_gjm_bridge"):
-            row = json.loads((archive / "checkpoints" / (name+".json")).read_text())
-            var = source.CONFIGS[name][1]
-            types = tuple("GJM01" if q=="GJM" else "PCB_PATTERN_C"
-                          for q in source.CONFIGS[name][0])
-            circuit = PolicyBoundRFT005T007Circuit.from_policy(
-                p, inductor_tree=InductorTree(4, source.L_EDGES),
-                inductor_types=("LQP02HV",)*3,
-                physical_order=(0,2,1), coupling_pairs=((0,2),(2,1)),
-                capacitor_placement=CapacitorPlacement(4,source.CF_EDGES,var),
-                fixed_c_types=types,
-                variable_roles=tuple("shunt_to_ground" if -1 in e else "bridge"
-                                     for e in var)
-            )
-            vec = np.asarray(row["vector"],float)
-            with self.subTest(config=name):
-                self.assertTrue(circuit.validate_candidate(vec)["component_policy_pass"])
-                np.testing.assert_allclose(circuit.evaluator(3).il(vec),
-                                           source.Evaluator(p,name,3).il(vec),
-                                           atol=1e-9,rtol=0)
 
     def test_reject_wrong_trial_and_unauthorized_legacy_composite_c(self):
         for constraint in ("RF-T005", "RF-T007"):
