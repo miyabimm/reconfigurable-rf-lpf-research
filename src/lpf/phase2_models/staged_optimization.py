@@ -470,6 +470,7 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         raise ValueError('Initial component or connection-role validation failed')
     result = {'method': method, 'state': 'running', 'stages': [],
               'last_valid_vector': v.tolist(), 'final_exchange': None,
+              'first_strict_sampled': None, 'first_strict_17_scan': None,
               'rf_compliance_certified': False, 'final_validation': 'not_run'}
 
     class SinkFailure(Exception):
@@ -504,6 +505,16 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
                 detail.get('component_policy_pass') is True and
                 detail.get('connection_role_evidence_incomplete') is False):
             result['last_valid_vector'] = deepcopy(call['output_vector'])
+            settings = (snapshot.get('working_configuration') or {}).get('settings')
+            rf = observation['sampled_rf']
+            mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+            if (result['first_strict_sampled'] is None and
+                    (settings is None or set(settings) == set(CASES)) and
+                    rf['min_h2_db'] >= mandatory and rf['min_h3_db'] >= mandatory):
+                result['first_strict_sampled'] = dict(
+                    points_per_interval=call['grid']['points_per_interval'],
+                    worst_il_db=rf['worst_il_db'], min_h2_db=rf['min_h2_db'],
+                    min_h3_db=rf['min_h3_db'], evaluation_cost=cost_meter.snapshot())
 
     def stage(label, settings, threshold, fixed):
         nonlocal v
@@ -574,6 +585,8 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         persist()
         def exchange_snapshot(snapshot):
             result['final_exchange'] = snapshot
+            if result['first_strict_17_scan'] is None and snapshot.get('first_strict_scan') is not None:
+                result['first_strict_17_scan'] = deepcopy(snapshot['first_strict_scan'])
             persist()
         def final_stage_snapshot(snapshot):
             result['final_stage'] = snapshot

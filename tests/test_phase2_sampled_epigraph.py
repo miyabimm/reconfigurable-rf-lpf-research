@@ -206,6 +206,13 @@ class SampledEpigraphTests(unittest.TestCase):
             run_c1_continuation(p.circuit, start, method='A',
                 cost_meter=SampleBudgetCost(10000), source_provenance=source,
                 optimize_stage=optimizer, record_sink=broken_sink)
+        def late_failure(snapshot):
+            if snapshot.get('final_stage', {}).get('stage_calls'):
+                raise OSError('late storage failure')
+        with self.assertRaisesRegex(Exception, 'record sink failed'):
+            run_c1_continuation(p.circuit, start, method='A',
+                cost_meter=SampleBudgetCost(10000), source_provenance=source,
+                optimize_stage=optimizer, record_sink=late_failure)
 
     def test_scipy_fixed_coordinate_with_synthetic_problem(self):
         from types import SimpleNamespace

@@ -1,0 +1,48 @@
+# WIP: plan SHA must be frozen after reviewed-main initialization; do not execute.
+schema_version: 4
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+definition_source:
+  path: project/experiments/issue270-definition.json
+  sha256: 07e64095710452a12c1f71f84feaabad35ad4613e6f68646e4a27ce5cb3ccff0
+topology_reference:
+  path: experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json
+  sha256: 4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b
+plan:
+  path: results/issue270/starts.json
+  sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+iteration_policy_id: slsqp-staged-v2
+grids:
+  coarse_points: 2
+  fine_points: 3
+samples_per_start: 1500000
+# 0 is a nominal label, not a Sobol random seed.
+seeds: [0, 23]
+pilot_seeds: [0]
+methods: [A, B, C, D]
+continuation:
+  mode: opt_in
+  il_only_bands: [B8, B8+B71, all]
+  thresholds_db: [10, 20, 25, 28]
+  final_guard_db: 30.005
+  scan_points: 17
+  max_additions: 4
+  max_rounds: 3
+selection:
+  intermediate_points: 17
+  dense_points: 1001
+  independent_points: 3
+  top_k_per_method: 2
+budgets:
+  logical_starts: 8
+  actual_starts: 8
+  stages: 296
+  optimization_samples: 12000000
+  screen_forwards: 2
+  screen_samples: 112
+  intermediate_samples: 3808
+  dense_samples: 224224

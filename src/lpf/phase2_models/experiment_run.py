@@ -19,6 +19,10 @@ from .candidate_records import record_candidate, CandidateRecord, recheck_record
 from .synthetic_runner import _read
 
 
+CONTINUATION_RETENTION_RULE = (
+    'Retain every attempted start as a non-promoted last-valid physical diagnostic anchor; '
+    'preserve all intermediate stage outcomes and terminal reasons.')
+
 LIMITATIONS = [
     'Best-found finite coarse/fine grid observations only; no global optimum claim.',
     '17-point, dense1001, independent MNA/power/passivity, continuous/physical validation not_run.',
@@ -56,10 +60,16 @@ def _gate(root, experiment_id, loaded, *, resuming):
             manifest['search_scope'].get('input_source_sha256') != loaded['input_source_sha256'] or
             manifest['constraints']['constraint_id'] != config['rf']['id'] or
             manifest['constraints']['effective_constraint_sha256'] != config['rf']['effective_sha256'] or
-            manifest['environment'] != _environment() or manifest['random_seed'] != config['seeds'][0] or
+            manifest['environment'] != _environment() or
+            manifest['random_seed'] != (23 if config['schema_version'] == 4 else config['seeds'][0]) or
             storage['selection']['top_k'] != config['selection']['top_k_per_method'] or
-            storage['selection']['retain'] != ['pareto']):
+            storage['selection']['retain'] != (['other'] if config['schema_version'] == 4 else ['pareto'])):
         raise ValueError('G1 frozen plan/RF/environment/selection mismatch')
+    if config['schema_version'] == 4 and (
+            storage['selection'].get('rule') != CONTINUATION_RETENTION_RULE or
+            type(storage['selection'].get('estimated_curated_bytes')) is not int or
+            not 0 < storage['selection']['estimated_curated_bytes'] <= 10_000_000):
+        raise ValueError('Continuation requires all-anchor retention and bounded storage estimate')
     if config['schema_version'] == 4 and 'post_search_validation' not in manifest['search_scope']:
         raise ValueError('Continuation requires a frozen post-search validation plan')
     if 'post_search_validation' in manifest['search_scope']:
@@ -83,6 +93,14 @@ def _gate(root, experiment_id, loaded, *, resuming):
     if names != _git(ROOT, 'ls-files', '-z', '--', *paths).split(b'\0')[:-1] or any(
             file_sha256(root / n.decode()) != file_sha256(ROOT / n.decode()) for n in names):
         raise ValueError('Executing checkout differs from G1 source')
+    if config['schema_version'] == 4:
+        from .experiment_config import continuation_program_sha256
+        preparation = loaded['input_source']['executable_plan']['preparation_source']
+        if (preparation['experiment_id'] != experiment_id or
+                continuation_program_sha256(root) != preparation['program_sha256'] or
+                subprocess.run(['git', 'merge-base', '--is-ancestor', preparation['git_head'], source],
+                               cwd=root).returncode):
+            raise ValueError('Preparation program or source ancestry differs from G1')
     local_storage = _read(run / 'storage_record.json')
     if local_storage['stage'] == 'complete':
         raise ValueError('Finalized evidence is immutable; use storage-audit')
@@ -156,8 +174,6 @@ def run_plan(root, config_path, experiment_id, phase, *, optimize_stage=scipy_sl
         raise ValueError('Explicit BLAS/OMP/MKL thread settings of 1 required')
     root = Path(root).resolve()
     loaded = _load_g1_plan(root, config_path, experiment_id)
-    if loaded['config']['schema_version'] == 4:
-        raise ValueError('Continuation dispatch and post-search evidence are not implemented')
     raw = root / 'results' / experiment_id / 'run.json'
     gate = _gate(root, experiment_id, loaded, resuming=raw.exists())
     # WSL/Linux execution: reject concurrent invocations of the same EXP.
@@ -275,7 +291,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
                           if 'coordinates' in start else optimize_stage)
         allocation = (start['source_ref']['initialization_cost']
                       if loaded['config']['schema_version'] == 4 else None)
-        meter = SampleBudgetCost(loaded['config']['samples_per_start'], initial_allocation=allocation)
+        meter = (SampleBudgetCost(loaded['config']['samples_per_start']) if allocation is None else
+                 SampleBudgetCost(loaded['config']['samples_per_start'], initial_allocation=allocation))
         exchange_result = None
         continuation_result = None
         if loaded['config']['schema_version'] == 4:
@@ -336,9 +353,11 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
             raise RuntimeError('System failure during stage; retain unknown in-progress evidence')
         # Provenance/storage failures are global STOP, not numerical failures.
         _gate(root, experiment_id, loaded, resuming=True)
+        # Continuation retains all physical anchors and defers comparisons to
+        # the separate common 17/dense/independent gates. Do not run the old
+        # coarse-grid candidate replay or promote intermediate results.
         candidate = (_candidate(circuit, key, staged, provenance, recheck_cost)
-                     if continuation_result is None or
-                        (continuation_result['state'] == 'completed' and staged['stage_calls']) else None)
+                     if continuation_result is None else None)
         state['recheck_cost'] = recheck_cost.snapshot()
         state['completed'][key] = dict(seed_record=start['seed_record'],
             staged_record=staged, candidate=candidate)
@@ -402,6 +421,9 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
                 observation = deepcopy(source_call.get('observation'))
                 if observation is not None:
                     observation.get('sampled_rf', {}).pop('residuals_db', None)
+                    component = observation.get('component_policy', {})
+                    if 'detail' in component:
+                        component['detail_sha256'] = canonical_config_hash(component.pop('detail'))
                     saved_call['observation'] = _json_value(observation)
             item['record'] = compact
         curated['continuation'] = continuation
@@ -514,8 +536,28 @@ def _package(root, gate, loaded, state, recheck_cost):
         costs=dict(physical_optimization=physical,
                    logical_shared='G1 logical_starts reference actual_start_id; never sum shared results.',
                    recheck=recheck_cost.snapshot()))
+    if loaded['config']['schema_version'] == 4:
+        allocation_keys = ('RF_forward_calls', 'frequency_samples_requested', 'frequency_samples_completed')
+        allocated = {k: sum(r['initialization_allocation'][k] for r in results.values()) for k in allocation_keys}
+        actual = dict(physical)
+        for key in allocation_keys:
+            if key in actual:
+                actual[key] -= allocated[key]
+        summary['costs'] = dict(
+            accounted_search_including_allocated_initialization=physical,
+            optimization_actual_excluding_initialization=actual,
+            allocated_initialization=allocated,
+            initialization_actual=loaded['input_source']['executable_plan']['screen_cost'],
+            initialization_actual_timing=loaded['input_source']['executable_plan']['initialization_timing'],
+            allocation_semantics='Each arm includes its frozen shared RF initialization allocation; physical initialization is measured once. Shared initialization CPU/wall is reported once, not assigned to individual arms.',
+            recheck=recheck_cost.snapshot())
+        summary['limitations'] = LIMITATIONS + [
+            'All checkpoints are last legal diagnostic anchors, not Pareto or RF-eligible promotions.']
+        summary['checkpoint_semantics'] = 'All attempted starts, including nonconverged or budget-exhausted anchors.'
     if not selected:
-        summary['no_candidate_reason'] = 'No checked finite-grid eligible Pareto candidate.'
+        summary['no_candidate_reason'] = ('All checkpoints are unpromoted diagnostic anchors; independent validation is separate.'
+                                          if loaded['config']['schema_version'] == 4 else
+                                          'No checked finite-grid eligible Pareto candidate.')
     validate_summary(summary, state['identity']['experiment_id'], len(selected))
     def save(path, body):
         atomic_write_json(path, body, compact=True)
@@ -547,7 +589,7 @@ def _package(root, gate, loaded, state, recheck_cost):
                                  evaluation_count=None)
     refs = storage['checkpoints'] + storage['validation_overlays'] + storage.get('supporting_evidence', [])
     manifest['evidence'] = [storage['summary']] + [{k: ref[k] for k in ('path', 'sha256')} for ref in refs]
-    manifest['limitations'] = storage['limitations'] = LIMITATIONS
+    manifest['limitations'] = storage['limitations'] = summary['limitations']
     storage.update(stage='running' if counts['not_started'] else 'preservation_incomplete', git_readback='not_run')
     save(run / 'manifest.json', manifest)
     save(run / 'storage_record.json', storage)

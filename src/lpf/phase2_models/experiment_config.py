@@ -1,5 +1,7 @@
 """Small frozen prepared-start contract; loading never evaluates RF or writes files."""
 import math
+import hashlib
+import subprocess
 from dataclasses import asdict
 import re
 from pathlib import Path
@@ -61,6 +63,50 @@ def _ids(values, *, integers=False):
             raise ValueError('Invalid ID')
 
 
+def continuation_program_sha256(root):
+    """Hash tracked program bytes and names, independent of YAML and timing."""
+    root = Path(root).resolve()
+    names = subprocess.check_output(['git', 'ls-files', '-z', '--', 'src', 'scripts',
+                                     'pyproject.toml', 'uv.lock'], cwd=root).split(b'\0')
+    program = {name.decode(): hashlib.sha256((root / name.decode()).read_bytes()).hexdigest()
+               for name in names if name}
+    if not program:
+        raise ValueError('Tracked program sources are missing')
+    return canonical_config_hash(program)
+
+
+def _check_continuation_reference(root, config, circuit):
+    """Check topology and row/slot structure, never read historical values as a start."""
+    documents = {}
+    for key in ('definition_source', 'topology_reference'):
+        ref = config[key]
+        _fields(ref, 'path sha256')
+        path = (Path(root) / ref['path']).resolve()
+        if (not path.is_relative_to(Path(root).resolve()) or
+                not isinstance(ref['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', ref['sha256']) or
+                file_sha256(path) != ref['sha256']):
+            raise ValueError('Continuation source path/SHA mismatch: ' + key)
+        documents[key] = _read(path)
+    if canonical_config_hash(documents['definition_source']) != canonical_config_hash(asdict(circuit.definition)):
+        raise ValueError('Definition source differs from circuit')
+    checkpoint = documents['topology_reference']
+    topology = checkpoint['topology']
+    d = circuit.definition
+    expected = dict(L_edges=d.inductor_tree.edges,
+        fixed_GJM_edges=[edge for edge, kind in zip(d.capacitor_placement.fixed_edges, d.fixed_c_types) if kind == 'GJM01'],
+        PCB_C_edges=[edge for edge, kind in zip(d.capacitor_placement.fixed_edges, d.fixed_c_types) if kind == 'PCB_PATTERN_C'],
+        variable_C_edges=d.capacitor_placement.variable_edges,
+        IC_fixed_C_parallel_edges=d.capacitor_placement.ic_fixed_edges)
+    actual = {key: topology.get(key) for key in expected}
+    components = checkpoint['components'][:len(d.inductor_types)]
+    slots = [row['pair'] for row in checkpoint['couplings']]
+    if (canonical_config_hash(actual) != canonical_config_hash(expected) or
+            [item['type'] for item in components] != list(d.inductor_types) or
+            checkpoint['chip_row'] != [f'L{i}' for i in d.physical_order] or
+            slots != [[f'L{a}', f'L{b}'] for a, b in d.coupling_pairs]):
+        raise ValueError('Topology reference does not match definition/physical row/slots')
+
+
 def load_plan(root, config_path, *, frozen_input=None):
     """Validate frozen vectors, provenance and mapping without RF forwards.
 
@@ -82,7 +128,8 @@ def load_plan(root, config_path, *, frozen_input=None):
     exchange = config['schema_version'] == 3
     continuation = config['schema_version'] == 4
     _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets' +
-            (' frequency_exchange' if exchange else '') + (' continuation' if continuation else ''))
+            (' frequency_exchange' if exchange else '') +
+            (' continuation definition_source topology_reference' if continuation else ''))
     explicit = config['schema_version'] >= 2
     if config['schema_version'] == 2 and config['methods'] != ['physical', 'normalized']:
         raise ValueError('Explicit coordinate comparison requires physical/normalized arms')
@@ -183,6 +230,8 @@ def load_plan(root, config_path, *, frozen_input=None):
             definition_fingerprint(circuit.definition) != config['definition_sha256'] or
             source['definition_sha256'] != config['definition_sha256']):
         raise ValueError('RF or exact definition SHA mismatch')
+    if continuation:
+        _check_continuation_reference(root, config, circuit)
     limits = source['limits']
     expected = dict(max_starts=config['budgets']['logical_starts'], max_stages=config['budgets']['stages'],
         max_samples_per_start=config['samples_per_start'], max_optimization_samples=config['budgets']['optimization_samples'],
@@ -349,6 +398,14 @@ def load_plan(root, config_path, *, frozen_input=None):
             raise ValueError('Sobol vector is not the first legal distinct block candidate')
     cost = source['screen_cost']
     if continuation:
+        _fields(source.get('preparation_source'), 'git_head experiment_id program_sha256 definition_source topology_reference')
+        preparation = source['preparation_source']
+        if (not isinstance(preparation['git_head'], str) or not re.fullmatch('[0-9a-f]{40}', preparation['git_head']) or
+                not isinstance(preparation['experiment_id'], str) or not re.fullmatch('EXP-[0-9]{3}', preparation['experiment_id']) or
+                not isinstance(preparation['program_sha256'], str) or not re.fullmatch('[0-9a-f]{64}', preparation['program_sha256']) or
+                preparation['definition_source'] != config['definition_source'] or
+                preparation['topology_reference'] != config['topology_reference']):
+            raise ValueError('Missing or mismatched preparation provenance')
         _fields(source.get('initialization_timing'), 'elapsed_wall_s elapsed_cpu_s')
         for value in source['initialization_timing'].values():
             _number(value)
@@ -377,6 +434,7 @@ def load_plan(root, config_path, *, frozen_input=None):
         'logical_starts', 'screen_cost', 'limits')}
     if continuation:
         executable['initialization_timing'] = source['initialization_timing']
+        executable['preparation_source'] = source['preparation_source']
     executable['screen_by_group'] = (source['screen_by_group'] if frozen_input is not None else
         [dict(seed=p['seed'], method=p['method'], cost=p['cost'], pool_sha256=canonical_config_hash(p))
          for p in source.get('pools', [])])
@@ -403,6 +461,15 @@ def load_plan(root, config_path, *, frozen_input=None):
                 input_source=frozen, input_source_sha256=canonical_config_hash(frozen))
 
 
+class ContinuationPreparationError(RuntimeError):
+    """Initialization failed; retain actual consumed cost and original reason."""
+    def __init__(self, cause, cost, timing):
+        super().__init__(str(cause))
+        self.cause_type = type(cause).__name__
+        self.cost = cost
+        self.timing = timing
+
+
 def prepare_continuation_starts(circuit, config):
     """Build one nominal/Sobol pair and its eight frozen references.
 
@@ -425,12 +492,16 @@ def prepare_continuation_starts(circuit, config):
     nominal = bounds.mean(axis=1)
     meter = EvaluationCost()
     wall, cpu = time.perf_counter(), time.process_time()
-    generated = generate_starts(SampledEpigraph(circuit, 2), nominal, seed=23, count=2, cost_meter=meter)
+    try:
+        generated = generate_starts(SampledEpigraph(circuit, 2), nominal, seed=23, count=2, cost_meter=meter)
+        cost = meter.snapshot()
+        if (cost['RF_forward_calls'] != 2 or cost['frequency_samples_requested'] != 112 or
+                cost['frequency_samples_completed'] != 112 or cost['forward_failures'] != 0):
+            raise ValueError('Unexpected initialization forwards; stop and inspect')
+    except Exception as exc:
+        timing = dict(elapsed_wall_s=time.perf_counter() - wall, elapsed_cpu_s=time.process_time() - cpu)
+        raise ContinuationPreparationError(exc, meter.snapshot(), timing) from exc
     timing = dict(elapsed_wall_s=time.perf_counter() - wall, elapsed_cpu_s=time.process_time() - cpu)
-    cost = meter.snapshot()
-    if (cost['RF_forward_calls'] != 2 or cost['frequency_samples_requested'] != 112 or
-            cost['frequency_samples_completed'] != 112 or cost['forward_failures'] != 0):
-        raise ValueError('Unexpected initialization forwards; stop and inspect')
     actual, logical = [], []
     for index, start in enumerate(generated['starts']):
         kind = ('nominal', 'sobol')[index]
