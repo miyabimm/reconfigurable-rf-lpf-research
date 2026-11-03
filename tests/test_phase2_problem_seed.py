@@ -153,6 +153,29 @@ class ProblemSeedTests(unittest.TestCase):
                     generate_starts(p, x, seed=23)
                 sobol.return_value.random_base2.assert_called_once_with(4)
 
+    def test_continuation_initial_forward_failure_never_skips_to_next_sobol(self):
+        from unittest.mock import patch
+        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        from lpf.phase2_models.experiment_config import prepare_continuation_starts, ContinuationPreparationError
+        p, _ = make('RF-T008', 4)
+        config = dict(schema_version=4, methods=['A', 'B', 'C', 'D'],
+                      rf={'effective_sha256': p.circuit.policy_fingerprint},
+                      definition_sha256=definition_fingerprint(p.circuit.definition))
+        original = CoupledLCEvaluator.il
+        calls = []
+        def fail_second(evaluator, vector):
+            calls.append(1)
+            if len(calls) == 2:
+                raise ValueError('synthetic forward failure')
+            return original(evaluator, vector)
+        with patch.object(CoupledLCEvaluator, 'il', fail_second):
+            with self.assertRaises(ContinuationPreparationError) as error:
+                prepare_continuation_starts(p.circuit, config)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(error.exception.cost['frequency_samples_requested'], 112)
+        self.assertEqual(error.exception.cost['frequency_samples_completed'], 56)
+        self.assertEqual(error.exception.cost['forward_failures'], 1)
+
     def test_impedance_design_prototype_pool_and_fail_closed(self):
         from lpf.phase2_models.multistart import generate_starts
         from lpf.phase2_models.designed_starts import design_candidates, impedance

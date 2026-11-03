@@ -490,7 +490,16 @@ def prepare_continuation_starts(circuit, config):
         raise ValueError('Continuation preparation config/circuit mismatch')
     bounds = np.asarray(circuit_box(circuit).bounds[:-1], float)
     nominal = bounds.mean(axis=1)
-    meter = EvaluationCost()
+    class InitialCost(EvaluationCost):
+        def forward(self, evaluator, vector):
+            try:
+                return super().forward(evaluator, vector)
+            except Exception as exc:
+                # generate_starts skips ValueError physical proposals, but a
+                # failed forward on an otherwise legal candidate is not a
+                # license to silently try a different RF start.
+                raise RuntimeError('Initialization forward failed; no retry') from exc
+    meter = InitialCost()
     wall, cpu = time.perf_counter(), time.process_time()
     try:
         generated = generate_starts(SampledEpigraph(circuit, 2), nominal, seed=23, count=2, cost_meter=meter)
