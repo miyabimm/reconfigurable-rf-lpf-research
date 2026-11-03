@@ -51,7 +51,7 @@ on:
   workflow_dispatch:
     inputs:
       integration:
-        description: 'Run full shared-entry, synthetic-runner and topology integration suites'
+        description: 'Run full shared-entry, continuation, synthetic-runner and topology integration suites'
         type: boolean
         default: false
 
@@ -159,7 +159,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
         run: |
           set -euo pipefail
-          for test_file in test_phase2_shared_entry.py test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
+          for test_file in test_phase2_shared_entry.py test_phase2_continuation_integration.py test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
             echo "Running integration module: $test_file"
             python -m unittest discover -s tests -p "$test_file" -v
           done
