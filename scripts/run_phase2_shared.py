@@ -245,6 +245,100 @@ def storage_audit(root, mode, experiment_id=None):
             'execution_allowed': False, 'candidate_promotion_blocked': True}
 
 
+def prepare_continuation_plan(root, config_path, experiment_id):
+    """Explicit reviewed-main-only initialization; writes one ignored prepared plan."""
+    import hashlib
+    import os
+    import yaml
+    from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
+    from lpf.constraint_versions import load_constraint
+    from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
+    from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+    from lpf.phase2_models.experiment_config import (_Loader, _check_continuation_reference,
+        continuation_program_sha256, ContinuationPreparationError, prepare_continuation_starts, stable_identity)
+    from lpf.phase2_models.synthetic_runner import _read
+    from scripts.experiment_id_registry import is_reserved_on_main
+
+    root = Path(root).resolve()
+    _complete_checkout(root)
+    main_sha = _fresh_main(root)
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+    if head != main_sha or subprocess.check_output(
+            ['git', 'status', '--porcelain', '--untracked-files=all', '--',
+             'src', 'scripts', 'project', 'rf', 'pyproject.toml', 'uv.lock'], cwd=root).strip():
+        raise ValueError('Preparation requires clean, reviewed origin/main source')
+    reservation = is_reserved_on_main(root, experiment_id)
+    if reservation.get('constraint_id') != 'RF-T008':
+        raise ValueError('Continuation requires an RF-T008 main reservation')
+    if any(os.environ.get(key) != '1' for key in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')):
+        raise ValueError('Explicit BLAS/OMP/MKL thread settings of 1 required')
+    config_file = (root / config_path).resolve()
+    if not config_file.is_relative_to(root):
+        raise ValueError('Config outside checkout')
+    config_bytes = config_file.read_bytes()
+    if subprocess.check_output(['git', 'show', 'origin/main:' + config_file.relative_to(root).as_posix()], cwd=root) != config_bytes:
+        raise ValueError('Preparation config differs from origin/main')
+    config = yaml.load(config_bytes, Loader=_Loader)
+    if (not isinstance(config, dict) or config.get('schema_version') != 4 or
+            config.get('methods') != ['A', 'B', 'C', 'D'] or config.get('seeds') != [0, 23] or
+            config.get('pilot_seeds') != [0] or config.get('samples_per_start') != 1_500_000 or
+            config.get('grids') != {'coarse_points': 2, 'fine_points': 3} or
+            config.get('iteration_policy_id') != 'slsqp-staged-v2' or
+            config.get('objective') != 'full_lpf' or
+            config.get('definition_sha256') != 'bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068' or
+            config.get('rf') != {'id': 'RF-T008', 'allow_trial': True,
+                'effective_sha256': '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4'} or
+            config.get('rf', {}).get('allow_trial') is not True or
+            config.get('continuation') != {'mode': 'opt_in', 'il_only_bands': ['B8', 'B8+B71', 'all'],
+                'thresholds_db': [10, 20, 25, 28], 'final_guard_db': 30.005,
+                'scan_points': 17, 'max_additions': 4, 'max_rounds': 3} or
+            config.get('selection') != {'intermediate_points': 17, 'dense_points': 1001,
+                'independent_points': 3, 'top_k_per_method': 2} or
+            config.get('budgets') != {'logical_starts': 8, 'actual_starts': 8, 'stages': 296,
+                'optimization_samples': 12_000_000, 'screen_forwards': 2, 'screen_samples': 112,
+                'intermediate_samples': 3808, 'dense_samples': 224224}):
+        raise ValueError('Invalid continuation preparation contract')
+    output = (root / config['plan']['path']).resolve()
+    if (not output.is_relative_to((root / 'results').resolve()) or output.exists() or
+            subprocess.run(['git', 'check-ignore', '-q', '--', str(output.relative_to(root))], cwd=root).returncode):
+        raise ValueError('New ignored results path required; never overwrite preparation')
+    for key in ('definition_source', 'topology_reference'):
+        ref = config[key]
+        path = (root / ref['path']).resolve()
+        if not path.is_relative_to(root):
+            raise ValueError('Source outside checkout')
+        tracked = subprocess.check_output(['git', 'show', 'origin/main:' + path.relative_to(root).as_posix()], cwd=root)
+        if tracked != path.read_bytes() or hashlib.sha256(tracked).hexdigest() != ref['sha256']:
+            raise ValueError('Source differs from frozen origin/main: ' + key)
+    definition = dict(_read(root / config['definition_source']['path']))
+    definition['inductor_tree'] = InductorTree(**definition['inductor_tree'])
+    definition['capacitor_placement'] = CapacitorPlacement(**definition['capacitor_placement'])
+    circuit = build_nominal_circuit(load_constraint(config['rf']['id'], allow_trial=True), CircuitDefinition(**definition))
+    _check_continuation_reference(root, config, circuit)
+    program_sha = continuation_program_sha256(root)
+    # The marker precedes any forward; unknown interruption cannot be retried.
+    atomic_write_json(output, dict(state='running', experiment_id=experiment_id,
+                                   git_head=head, program_sha256=program_sha), compact=True)
+    try:
+        prepared = prepare_continuation_starts(circuit, config)
+    except ContinuationPreparationError as exc:
+        atomic_write_json(output, dict(state='failed', experiment_id=experiment_id,
+            git_head=head, program_sha256=program_sha,
+            exception=dict(type=exc.cause_type, message=str(exc)),
+            initialization_cost=exc.cost, initialization_timing=exc.timing), compact=True)
+        raise
+    prepared['input_source']['preparation_source'] = dict(git_head=head, experiment_id=experiment_id,
+        program_sha256=program_sha, definition_source=config['definition_source'],
+        topology_reference=config['topology_reference'])
+    prepared['input_source'] = stable_identity(prepared['input_source'])
+    prepared['input_source_sha256'] = canonical_config_hash(prepared['input_source'])
+    atomic_write_json(output, prepared, compact=True)
+    return dict(mode='continuation_preparation', path=output.relative_to(root).as_posix(),
+                plan_sha256=prepared['input_source_sha256'], initialization_cost=prepared['input_source']['screen_cost'],
+                initialization_timing=prepared['input_source']['initialization_timing'], execution='not_run',
+                candidate_promotion_blocked=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='mode', required=True)
@@ -265,6 +359,9 @@ def main(argv=None):
     audit = sub.add_parser('storage-audit', help='read-only storage audit or finalize check')
     audit.add_argument('operation', choices=('audit', 'finalize'))
     audit.add_argument('--experiment-id')
+    prepare = sub.add_parser('prepare', help='reviewed-main-only bounded continuation start preparation')
+    prepare.add_argument('--config', required=True)
+    prepare.add_argument('--experiment-id', required=True)
     plan = sub.add_parser('plan', help='read-only frozen YAML/prepared-plan checks')
     plan.add_argument('--config', required=True)
     run = sub.add_parser('run', help='explicit G0/G1-gated frozen actual starts')
@@ -284,6 +381,8 @@ def main(argv=None):
     elif args.mode == 'manifest-preview':
         result = manifest_preview(ROOT, args.experiment_id, args.purpose, json.loads(args.scope_json),
                                   policy_id=args.policy, seed=args.seed, allow_trial=args.allow_trial)
+    elif args.mode == 'prepare':
+        result = prepare_continuation_plan(ROOT, args.config, args.experiment_id)
     elif args.mode == 'plan':
         from lpf.phase2_models.experiment_config import plan_preview
         result = plan_preview(ROOT, args.config)

@@ -159,6 +159,78 @@ class PostSearchTests(unittest.TestCase):
                 self.assertEqual(result['independent84']['state'], 'not_run')
                 self.assertEqual(result['evaluation_cost']['separate17']['frequency_samples_requested'], 0)
 
+    def test_terminal_anchor_validation_is_explicit_and_keeps_status(self):
+        for state in ('not_converged', 'failed', 'budget_exhausted'):
+            with self.subTest(state=state):
+                raw = deepcopy(self.raw)
+                raw['numerical_state'] = state
+                if state != 'not_converged':
+                    raw['exception'] = {'type': 'test', 'message': state}
+                calls = []
+                def fake_forward(c, x, points, meter, mandatory):
+                    calls.append(points)
+                    return {'state': 'pass'}
+                def fake_independent(*args):
+                    calls.append(84)
+                    return {'state': 'pass'}
+                with patch('lpf.phase2_models.post_search_validation._forward', side_effect=fake_forward), \
+                     patch('lpf.phase2_models.post_search_validation._independent', side_effect=fake_independent):
+                    result = validate_post_search(self.c, self.x, optimization_record=raw,
+                        source_provenance=self.source, budgets=self.budgets, run_dense=True,
+                        run_independent=True, record_sink=lambda _: None, validate_terminal_anchor=True)
+                self.assertEqual(calls, [17, 1001, 84])
+                self.assertEqual(result['validation_mode'], 'terminal_physical_anchor')
+                self.assertEqual(result['optimization_record']['numerical_state'], state)
+                self.assertTrue(result['candidate_promotion_blocked'])
+                self.assertFalse(result['rf_compliance_certified'])
+
+    def test_anchor_journal_binds_continuation_and_keeps_failed_status(self):
+        raw = deepcopy(self.raw)
+        raw['numerical_state'] = 'budget_exhausted'
+        raw['exception'] = {'type': 'SampleBudgetExceeded', 'message': 'limit'}
+        continuation = {'method': 'B', 'last_valid_vector': list(self.x) + [1.]}
+        kwargs = dict(optimization_record=raw, source_provenance=self.source,
+                      budgets=self.budgets, run_dense=False, run_independent=False,
+                      validate_terminal_anchor=True, continuation_record=continuation)
+        binding = candidate_binding('anchor', self.c, self.x, **kwargs)
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PostSearchJournal.create(Path(tmp) / 'journal', [binding])
+            with self.assertRaisesRegex(ValueError, 'frozen selection'):
+                journal.run_candidate('anchor', self.c, self.x,
+                    **(kwargs | {'continuation_record': continuation | {'method': 'C'}}))
+            report = journal.run_candidate('anchor', self.c, self.x, **kwargs)
+            self.assertIn(report['separate17']['state'], ('pass', 'fail'))
+            self.assertEqual(report['optimization_record']['numerical_state'], 'budget_exhausted')
+            self.assertTrue(verify_candidate_evidence(self.c, binding, report))
+            bad = dict(binding, validate_terminal_anchor=False)
+            with self.assertRaisesRegex(ValueError, 'Validation mode'):
+                verify_candidate_evidence(self.c, bad, report)
+
+    def test_continuation_anchor_raw_binding_rejects_changed_evidence(self):
+        from lpf.phase2_models.experiment_post_search import _check_bindings
+        raw = deepcopy(self.raw)
+        raw['numerical_state'] = 'budget_exhausted'
+        continuation = {'method': 'B', 'last_valid_vector': list(self.x) + [1.]}
+        source = dict(self.source, input_source_sha256='c' * 64)
+        raw['source_provenance'] = {'state': 'provided', 'value': source}
+        binding = candidate_binding('anchor', self.c, self.x, optimization_record=raw,
+            source_provenance=source, budgets=self.budgets, run_dense=True, run_independent=True,
+            validate_terminal_anchor=True, continuation_record=continuation)
+        loaded = {'config': {'schema_version': 4, 'budgets': {
+            'intermediate_samples': 3808, 'dense_samples': 224224}}, 'circuit': self.c,
+            'input_source_sha256': source['input_source_sha256'],
+            'actual': {'anchor': {'method': 'B', 'seed_record': raw['seed']}}}
+        optimization = {'identity': {'source_provenance': source}, 'completed': {'anchor': {
+            'staged_record': raw, 'continuation': continuation, 'validation_anchor': {
+                'vector_sha256': binding['vector_sha256']}}}}
+        plan = dict(schema='post-search-g1-1', selection_rule='all anchors', search_guard=True,
+                    max_selected=8, separate17=3808, dense1001=224224,
+                    independent_forward84=672, independent_mna84=672)
+        _check_bindings([binding], optimization, loaded, plan, source['git_head'])
+        optimization['completed']['anchor']['continuation']['method'] = 'C'
+        with self.assertRaisesRegex(ValueError, 'last valid anchor'):
+            _check_bindings([binding], optimization, loaded, plan, source['git_head'])
+
     def test_component_counterexample_and_missing_role_are_distinct(self):
         x = self.x.copy()
         x[0] = 1e6

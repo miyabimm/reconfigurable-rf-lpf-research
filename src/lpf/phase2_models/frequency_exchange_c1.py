@@ -14,7 +14,7 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
                               optimize_stage=scipy_slsqp_stage, source_provenance=None,
                               exchange_sink=None, stage_sink=None,
                               scan_points=17, max_additions=4, max_rounds=3,
-                              search_guard=False):
+                              search_guard=False, warm_start_vector=None):
     """Use unchanged v2 for each exchange round, preserving the physical x and t."""
     if type(search_guard) is not bool:
         raise TypeError('search_guard must be bool')
@@ -37,14 +37,23 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
         record = run_c1_staged(c, seed_record, coarse_points=2, fine_points=3,
             optimize_stage=optimize_stage, cost_meter=meter,
             source_provenance=source_provenance, record_sink=stage_sink,
-            extra_frequencies=extras, warm_start_vector=None if first else vector,
-            search_guard=search_guard)
+            extra_frequencies=extras,
+            warm_start_vector=(None if first and warm_start_vector is None else vector),
+            search_guard=search_guard, require_legal_output=warm_start_vector is not None)
         first = False
         if record['numerical_state'] not in ('converged', 'not_converged'):
             return vector, record
         calls = record['stage_calls']
         if not calls or calls[-1]['output_vector'] is None:
             raise ValueError('Missing final stage vector')
+        if warm_start_vector is not None:
+            observation = calls[-1]['observation']
+            component = observation['component_policy']
+            detail = component.get('detail', {})
+            if (observation['box']['state'] != 'pass' or component['state'] != 'pass' or
+                    detail.get('component_policy_pass') is False or
+                    detail.get('connection_role_evidence_incomplete') is True):
+                raise ValueError('Final exchange returned an illegal physical vector')
         return calls[-1]['output_vector'], record
 
     def scan(c, physical, points, meter):
@@ -53,7 +62,8 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
         with meter.timed():
             return meter.forward(evaluator, physical)
 
-    return run_frequency_exchange(circuit, seed_record['vector'], segments,
+    initial = seed_record['vector'] if warm_start_vector is None else warm_start_vector
+    return run_frequency_exchange(circuit, initial, segments,
         inner=inner, scan=scan, cost_meter=cost_meter, scan_points=scan_points,
         max_additions=max_additions, max_rounds=max_rounds,
         stop_db=mandatory + (SEARCH_GUARD_DB if search_guard else 0.0),

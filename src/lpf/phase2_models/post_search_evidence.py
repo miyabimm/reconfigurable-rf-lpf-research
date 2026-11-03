@@ -142,6 +142,10 @@ def verify_candidate_evidence(circuit, binding, report):
     """Reject incomplete or contradictory candidate evidence without RF calls."""
     if not isinstance(report, dict) or report.get('schema') != 'post-search-validation-1':
         raise ValueError('Completed post-search report required')
+    anchor_mode = binding.get('validate_terminal_anchor', False)
+    if (type(anchor_mode) is not bool or
+            report.get('validation_mode') != ('terminal_physical_anchor' if anchor_mode else None)):
+        raise ValueError('Validation mode differs from frozen binding')
     identity = report.get('identity', {})
     vector = report.get('vector')
     if (binding.get('policy_id') != circuit.policy_id or binding.get('policy_sha256') != circuit.policy_fingerprint or
@@ -204,7 +208,7 @@ def verify_candidate_evidence(circuit, binding, report):
         raise ValueError('Independent PASS lacks metered coverage')
     if report['dense1001'].get('state') in ('pass', 'fail') and (
             report['separate17'].get('state') != 'pass' or not binding['run_dense'] or
-            (report.get('optimization_record') or {}).get('numerical_state') != 'converged'):
+            (not anchor_mode and (report.get('optimization_record') or {}).get('numerical_state') != 'converged')):
         raise ValueError('Dense evidence bypasses the 17-point selection gate')
     if independent.get('state') in ('pass', 'fail') and (
             report['dense1001'].get('state') != 'pass' or not binding['run_independent']):

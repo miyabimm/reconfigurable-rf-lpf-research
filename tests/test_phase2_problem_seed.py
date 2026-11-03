@@ -115,6 +115,12 @@ class ProblemSeedTests(unittest.TestCase):
             if n == 3:
                 x[6] = 0.
             a = generate_starts(p, x, seed=23)
+            from lpf.phase2_models.evaluation_cost import EvaluationCost
+            meter = EvaluationCost()
+            pair = generate_starts(p, x, seed=23, count=2, cost_meter=meter)
+            self.assertEqual(pair['starts'], a['starts'][:2])
+            self.assertEqual(meter.RF_forward_calls, 2)
+            self.assertEqual(meter.frequency_samples_requested, 56)
             self.assertEqual(a, generate_starts(p, x, seed=23))
             self.assertNotEqual(a, generate_starts(p, x, seed=24))
             self.assertEqual([s['id'].split('-')[-1] for s in a['starts']], ['0', '1', '2'])
@@ -146,6 +152,29 @@ class ProblemSeedTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'Insufficient legal distinct'):
                     generate_starts(p, x, seed=23)
                 sobol.return_value.random_base2.assert_called_once_with(4)
+
+    def test_continuation_initial_forward_failure_never_skips_to_next_sobol(self):
+        from unittest.mock import patch
+        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        from lpf.phase2_models.experiment_config import prepare_continuation_starts, ContinuationPreparationError
+        p, _ = make('RF-T008', 4)
+        config = dict(schema_version=4, methods=['A', 'B', 'C', 'D'],
+                      rf={'effective_sha256': p.circuit.policy_fingerprint},
+                      definition_sha256=definition_fingerprint(p.circuit.definition))
+        original = CoupledLCEvaluator.il
+        calls = []
+        def fail_second(evaluator, vector):
+            calls.append(1)
+            if len(calls) == 2:
+                raise ValueError('synthetic forward failure')
+            return original(evaluator, vector)
+        with patch.object(CoupledLCEvaluator, 'il', fail_second):
+            with self.assertRaises(ContinuationPreparationError) as error:
+                prepare_continuation_starts(p.circuit, config)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(error.exception.cost['frequency_samples_requested'], 112)
+        self.assertEqual(error.exception.cost['frequency_samples_completed'], 56)
+        self.assertEqual(error.exception.cost['forward_failures'], 1)
 
     def test_impedance_design_prototype_pool_and_fail_closed(self):
         from lpf.phase2_models.multistart import generate_starts

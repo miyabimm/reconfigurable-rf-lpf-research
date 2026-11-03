@@ -70,6 +70,35 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
   保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
   Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
 
+### 段階的探索の開発途中 API（Issue #270）
+
+`run_c1_continuation` は4方式の段階制御と最終guard付き周波数交換の開発途中API。
+`generate_starts(..., count=2, seed=23)` は既存16点Sobol blockのnominalと先頭合法候補を
+同じ順序で返し、そのforwardをmeterへ課金する。候補を実験へ昇格するものではない。
+
+共通planのschema 4は、固定schedule・8 actual・1実行150万sample・予算を検査し、
+nominalをpolicy box中点、Sobolを同じblockの先頭合法点とRF forwardなしに再照合する。
+内部の `seeds: [0, 23]` の `0` はnominal pilotを識別する**ラベル**であり、Sobol seedではない。
+両startのC1 seedとSobol生成seedは23。計画では初期化費用をnominalに1 forward、Sobolに
+nominalを含む2 forwardsとして各armへ配賦し、共有生成の実消費と配賦合計を区別する。
+共有準備のCPU/wall時間は各armに全額を保守的に配賦し、実消費1回分と別表示する。
+配賦をsample meterへ加算する内部実装はあるが、実行・保存経路全体の検証は未完了。
+
+`project/experiments/issue270.yaml` は未凍結templateで、plan SHAの0は実入力ではない。
+共通CLIの `prepare --config project/experiments/issue270.yaml --experiment-id EXP-NNN` は
+完全checkout・cleanな最新main・main上のRF-T008予約G0と固定回路参照のbyteを検査してから
+nominal/Sobol計2 forwardを行い、ignored `results/` に原子的markerとprepared planを保存する。
+失敗・中断markerは自動再試行しない。**コード独立レビューとmain/CIの完了前にはこのコマンドを
+実行しない。** その後、出力SHAをYAMLへ凍結し、G1 manifest・storage、計画の遠隔byte読戻しを別途行う。
+
+実行・実験証拠の接続は開発・検証途中。schema 4の `run` はG0/G1に加え、8 anchor全保存の
+選別規則と検証予算を必須とする。G1の `random_seed` は23（0はpilotラベル）、storageの
+`retain=["other"]`、ruleは `CONTINUATION_RETENTION_RULE` と完全一致し、8候補それぞれの
+17点・条件付きdense・独立検証用の最大費用を事前固定する。
+**Draft PRの独立レビュー・main統合とCI前に本番runを行わない。**
+完成後もG0/G1と保存・最終検証を省略しない。既存formal RF、
+既定solver、旧EXPを変更せず、有限格子の探索結果はRF合格や実装保証ではない。
+
 ### 探索ガードと探索後検証の開発中 API（Issue #267）
 
 `run_c1_staged(..., search_guard=True)` と `run_c1_frequency_exchange(...,

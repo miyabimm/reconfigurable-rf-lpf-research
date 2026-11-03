@@ -20,17 +20,19 @@ from .synthetic_runner import _read
 
 def candidate_binding(candidate_id, circuit, vector, *, optimization_record,
                       source_provenance, budgets, run_dense, run_independent,
-                      exchange_record=None, validation_identity=None):
+                      exchange_record=None, validation_identity=None,
+                      validate_terminal_anchor=False, continuation_record=None):
     """Freeze the identity, selection and all limits before validation starts."""
     if not isinstance(candidate_id, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', candidate_id):
         raise ValueError('Invalid candidate ID')
-    if type(run_dense) is not bool or type(run_independent) is not bool:
+    if (type(run_dense) is not bool or type(run_independent) is not bool or
+            type(validate_terminal_anchor) is not bool):
         raise ValueError('Explicit dense and independent selection required')
     if not isinstance(budgets, dict) or set(budgets) != {
             'separate17', 'dense1001', 'independent_forward84', 'independent_mna84'} or any(
             type(n) is not int or n < 0 for n in budgets.values()):
         raise ValueError('Explicit nonnegative budgets required')
-    return {'candidate_id': candidate_id, 'policy_id': circuit.policy_id,
+    binding = {'candidate_id': candidate_id, 'policy_id': circuit.policy_id,
             'policy_sha256': circuit.policy_fingerprint,
             'definition_sha256': definition_fingerprint(circuit.definition),
             'vector': np.asarray(vector, float).tolist(), 'vector_sha256': vector_fingerprint(vector),
@@ -40,6 +42,17 @@ def candidate_binding(candidate_id, circuit, vector, *, optimization_record,
             'validation_identity_sha256': canonical_config_hash(validation_identity),
             'budgets': deepcopy(budgets), 'run_dense': run_dense,
             'run_independent': run_independent}
+    if validate_terminal_anchor:
+        if (not isinstance(continuation_record, dict) or
+                not isinstance(continuation_record.get('last_valid_vector'), (list, tuple)) or
+                len(continuation_record['last_valid_vector']) != circuit.schema.vector_length + 1 or
+                vector_fingerprint(continuation_record['last_valid_vector'][:-1]) != binding['vector_sha256']):
+            raise ValueError('Terminal anchor requires matching frozen continuation evidence')
+        binding['validate_terminal_anchor'] = True
+        binding['continuation_sha256'] = canonical_config_hash(continuation_record)
+    elif continuation_record is not None:
+        raise ValueError('Continuation evidence requires terminal-anchor mode')
+    return binding
 
 
 def _candidate_status(report):
@@ -140,7 +153,8 @@ class PostSearchJournal:
 
     def run_candidate(self, candidate_id, circuit, vector, *, optimization_record,
                       source_provenance, budgets, run_dense, run_independent,
-                      exchange_record=None, validation_identity=None):
+                      exchange_record=None, validation_identity=None,
+                      validate_terminal_anchor=False, continuation_record=None):
         with (self.directory / 'run.lock').open('a') as lock:
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -149,15 +163,18 @@ class PostSearchJournal:
             return self._run_candidate(candidate_id, circuit, vector,
                 optimization_record=optimization_record, source_provenance=source_provenance,
                 budgets=budgets, run_dense=run_dense, run_independent=run_independent,
-                exchange_record=exchange_record, validation_identity=validation_identity)
+                exchange_record=exchange_record, validation_identity=validation_identity,
+                validate_terminal_anchor=validate_terminal_anchor, continuation_record=continuation_record)
 
     def _run_candidate(self, candidate_id, circuit, vector, *, optimization_record,
                        source_provenance, budgets, run_dense, run_independent,
-                       exchange_record=None, validation_identity=None):
+                       exchange_record=None, validation_identity=None,
+                       validate_terminal_anchor=False, continuation_record=None):
         binding = candidate_binding(candidate_id, circuit, vector,
             optimization_record=optimization_record, source_provenance=source_provenance,
             budgets=budgets, run_dense=run_dense, run_independent=run_independent,
-            exchange_record=exchange_record, validation_identity=validation_identity)
+            exchange_record=exchange_record, validation_identity=validation_identity,
+            validate_terminal_anchor=validate_terminal_anchor, continuation_record=continuation_record)
         # Re-read from disk so another process or accidental edit cannot silently
         # replace the frozen plan or a persisted marker between invocations.
         fresh = type(self)(self.directory)
@@ -181,7 +198,8 @@ class PostSearchJournal:
             result = validate_post_search(circuit, vector, optimization_record=optimization_record,
                 source_provenance=source_provenance, budgets=budgets, run_dense=run_dense,
                 run_independent=run_independent, exchange_record=exchange_record,
-                validation_identity=validation_identity, record_sink=sink)
+                validation_identity=validation_identity, record_sink=sink,
+                validate_terminal_anchor=validate_terminal_anchor)
             verify_candidate_evidence(circuit, binding, result)
         except BaseException:
             # The last durable marker/snapshot remains in-progress. Never write a

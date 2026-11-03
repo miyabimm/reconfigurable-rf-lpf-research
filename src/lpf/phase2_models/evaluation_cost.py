@@ -107,11 +107,23 @@ class SampleBudgetCost(EvaluationCost):
     The ceiling is not a counter and is deliberately absent from snapshot().
     Failed forwards still consume their full requested samples, as before.
     """
-    def __init__(self, max_samples):
+    def __init__(self, max_samples, *, initial_allocation=None):
         if type(max_samples) is not int or max_samples < 0:
             raise ValueError('max_samples must be a nonnegative integer')
         super().__init__()
         self.max_samples = max_samples
+        if initial_allocation is not None:
+            fields = {'RF_forward_calls', 'frequency_samples_requested', 'frequency_samples_completed'}
+            if (not isinstance(initial_allocation, dict) or set(initial_allocation) != fields or
+                    any(type(v) is not int or v < 0 for v in initial_allocation.values()) or
+                    initial_allocation['frequency_samples_requested'] > max_samples or
+                    ((initial_allocation['RF_forward_calls'] == 0) !=
+                     (initial_allocation['frequency_samples_requested'] == 0)) or
+                    initial_allocation['frequency_samples_completed'] !=
+                        initial_allocation['frequency_samples_requested']):
+                raise ValueError('Invalid frozen initial cost allocation')
+            for name, value in initial_allocation.items():
+                setattr(self, name, value)
 
     def forward(self, evaluator, vector):
         requested = len(evaluator.f)

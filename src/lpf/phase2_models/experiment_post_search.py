@@ -146,6 +146,20 @@ def _check_bindings(bindings, optimization, loaded, plan, source_sha):
                 b['definition_sha256'] != definition_fingerprint(loaded['circuit'].definition)):
             raise ValueError('Selection differs from saved optimization result')
         staged = result['staged_record']
+        if loaded['config'].get('schema_version') == 4:
+            continuation = result.get('continuation', {})
+            final = continuation.get('last_valid_vector')
+            anchor = result.get('validation_anchor', {})
+            if (b.get('validate_terminal_anchor') is not True or
+                    b.get('continuation_sha256') != canonical_config_hash(continuation) or
+                    not isinstance(final, list) or len(final) != loaded['circuit'].schema.vector_length + 1 or
+                    vector_fingerprint(final[:-1]) != b['vector_sha256'] or
+                    anchor.get('vector_sha256') != b['vector_sha256'] or
+                    continuation.get('method') != loaded['actual'][b['candidate_id']]['method']):
+                raise ValueError('Validation vector differs from continuation last valid anchor')
+            # An intermediate or exhausted anchor is explicitly not a final
+            # guarded-search success. Its validation remains a separate record.
+            continue
         if staged.get('numerical_state') in ('converged', 'not_converged'):
             mandatory = float(loaded['circuit'].resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
             if staged.get('search_guard') != {'guard_db': SEARCH_GUARD_DB,
@@ -199,6 +213,13 @@ def _prepare_post_search(root, config_path, experiment_id, selections):
     raw = root / 'results' / experiment_id
     if not isinstance(selections, list):
         raise ValueError('Explicit selection list required')
+    if loaded['config']['schema_version'] == 4:
+        if (len(selections) != 8 or {row.get('candidate_id') for row in selections if isinstance(row, dict)} != set(loaded['actual']) or
+                any(not isinstance(row, dict) or row.get('run_dense') is not True or
+                    row.get('run_independent') is not True or row.get('budgets') != {
+                        'separate17': 476, 'dense1001': 28028,
+                        'independent_forward84': 84, 'independent_mna84': 84} for row in selections)):
+            raise ValueError('Continuation validation must freeze all eight anchors and full gate budgets')
     if subprocess.run(['git', 'check-ignore', '-q', '--', str((raw / 'post-search').relative_to(root))], cwd=root).returncode:
         raise ValueError('Post-search raw journal must be Git ignored')
     optimization = _optimization_state(raw, loaded)
@@ -214,7 +235,9 @@ def _prepare_post_search(root, config_path, experiment_id, selections):
         bindings.append(candidate_binding(row['candidate_id'], loaded['circuit'], row['vector'],
             optimization_record=result['staged_record'], exchange_record=result.get('frequency_exchange'),
             source_provenance=source, validation_identity=identity, budgets=row['budgets'],
-            run_dense=row['run_dense'], run_independent=row['run_independent']))
+            run_dense=row['run_dense'], run_independent=row['run_independent'],
+            validate_terminal_anchor=loaded['config']['schema_version'] == 4,
+            continuation_record=result.get('continuation') if loaded['config']['schema_version'] == 4 else None))
     _check_bindings(bindings, optimization, loaded, gate['manifest']['search_scope'].get('post_search_validation'),
                     gate['manifest']['code']['execution_sha'])
     _ready_and_checkpoints(root, gate, bindings)
@@ -248,7 +271,9 @@ def _run_post_search_candidate(root, config_path, experiment_id, candidate_id, *
         optimization_record=result['staged_record'], exchange_record=result.get('frequency_exchange'),
         source_provenance=optimization['identity']['source_provenance'],
         validation_identity=_identity(loaded['circuit'], vector), budgets=budgets,
-        run_dense=run_dense, run_independent=run_independent)
+        run_dense=run_dense, run_independent=run_independent,
+        validate_terminal_anchor=loaded['config']['schema_version'] == 4,
+        continuation_record=result.get('continuation') if loaded['config']['schema_version'] == 4 else None)
 
 
 def package_post_search(root, config_path, experiment_id):
