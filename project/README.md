@@ -88,9 +88,10 @@ G1の `post_search_validation` 計画によりguard・選別上限・各費用�
 途中点もrawへ原子的に保存する。中断・保存障害時はmarkerを残し、自動再試行しない。
 候補別overlayと独立したnumerical/independent集約値を既存manifest/index/storageへ
 接続し、既存の明示的finalize・Git byte読戻し・監査を別途必要とする。
-対象は現在の共通実行経路で保存された候補に限り、汎用性・例外経路の独立レビューは未了。
-Issue #267はWIPであり**マージ・本番実験に使用しない**。sinkや一時checkoutのテストは
-実EXPの保存監査や科学的PASSの代わりではない。
+対象は現在の共通実行経路で保存された候補に限る。コード主要実装は独立レビュー済みで、
+指摘された保存サマリー整合の修正は再レビュー・マージ判断を待つ。Issue #267はDraft/WIP。
+実EXP・本番探索・実回路dense1001・科学適合の検証は未実施であり、コードレビューや
+sink・一時checkoutのテストは、実験実行の許可、実EXP保存監査、科学的PASSの代わりではない。
 
 ### 周波数交換の固定start対照（schema 3、Issue #263）
 

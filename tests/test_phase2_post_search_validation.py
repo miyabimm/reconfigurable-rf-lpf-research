@@ -235,12 +235,39 @@ class PostSearchTests(unittest.TestCase):
             lambda r: r['dense1001']['segments'][2].update(worst_il_db=29.),
             lambda r: r['independent84']['samples'].pop(),
             lambda r: r['independent84']['samples'][0].update(power_residual_w=1.),
+            lambda r: r['independent84']['segments'][0]['grid_worst'].update(il_db=-999.),
+            lambda r: r['independent84']['segments'][0]['grid_worst'].update(frequency_hz=1.),
+            lambda r: r['independent84']['segments'][0].update(region='H2'),
+            lambda r: r['independent84']['summary']['H2'].update(il_db=999.),
+            lambda r: r['independent84']['summary']['pass_il'].update(frequency_hz=1.),
+            lambda r: r['independent84']['summary']['H3'].update(case='invalid'),
             lambda r: r['evaluation_cost']['independent_mna84'].update(frequency_samples_completed=0),
         ):
             damaged = deepcopy(report)
             mutate(damaged)
             with self.subTest(mutate=mutate), self.assertRaises(ValueError):
                 verify_candidate_evidence(self.c, binding, damaged)
+        # Equal ILs must retain the earliest frequency and then CSV segment order.
+        tied = deepcopy(report)
+        independent = tied['independent84']
+        for sample in independent['samples']:
+            sample.update(il_db=10., forward_il_db=10., gain=.1)
+        for i, row in enumerate(independent['segments']):
+            row['grid_worst'] = {'frequency_hz': independent['samples'][i * 3]['frequency_hz'], 'il_db': 10.}
+        fields = ('segment', 'case', 'region', 'subband', 'setting', 'canonical_setting')
+        for role, index in (('pass_il', 0), ('UL', 0), ('DL', 1), ('H2', 2), ('H3', 3)):
+            row = independent['segments'][index]
+            independent['summary'][role] = {key: row[key] for key in fields} | row['grid_worst']
+        self.assertTrue(verify_candidate_evidence(self.c, binding, tied))
+        wrong_frequency = deepcopy(tied)
+        wrong_frequency['independent84']['segments'][0]['grid_worst']['frequency_hz'] = independent['samples'][1]['frequency_hz']
+        with self.assertRaisesRegex(ValueError, 'segment worst'):
+            verify_candidate_evidence(self.c, binding, wrong_frequency)
+        wrong_segment = deepcopy(tied)
+        row = independent['segments'][4]
+        wrong_segment['independent84']['summary']['UL'] = {key: row[key] for key in fields} | row['grid_worst']
+        with self.assertRaisesRegex(ValueError, 'summary worst'):
+            verify_candidate_evidence(self.c, binding, wrong_segment)
 
     def test_frozen_set_aggregation_is_independent_and_not_vacuous(self):
         def report(component, scan, dense, mna):

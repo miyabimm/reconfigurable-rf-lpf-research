@@ -20,7 +20,8 @@ from .sampled_epigraph import SEARCH_GUARD_DB
 
 def _segments(circuit):
     with rf_input_file(ROOT, circuit.resolved_policy['bands_file']).open(newline='', encoding='utf-8') as f:
-        return validated_band_segments(list(csv.DictReader(f)))
+        rows = list(csv.DictReader(f))
+    return validated_band_segments(rows), rows
 
 
 def _verify_grid(grid, points, segments, mandatory):
@@ -72,7 +73,7 @@ def _sample_violation(sample):
             abs(sample['gain'] - 10 ** (-sample['forward_il_db'] / 10)) > 1e-9)
 
 
-def _verify_independent(result, segments, circuit, vector):
+def _verify_independent(result, segments, band_rows, circuit, vector):
     state = result.get('state')
     if state not in ('pass', 'fail'):
         return
@@ -110,10 +111,31 @@ def _verify_independent(result, segments, circuit, vector):
         eigenvalues = np.linalg.eigvalsh(matrix)
         if not np.all(np.isfinite(eigenvalues)) or eigenvalues[0] > eigenvalues[-1] * 1e-12:
             raise ValueError('Independent SPD failure not reproduced')
-    if state == 'pass' and (len(samples) != 84 or len(result.get('segments', [])) != 28 or
-            result.get('independent_spd') != 'checked_by_branch_mna_each_sample' or
-            result.get('mna_dimension') != circuit.topology.inductor_tree.node_count + len(circuit.topology.inductor_tree.edges)):
-        raise ValueError('Independent PASS lacks full MNA/SPD coverage')
+    if state == 'pass':
+        rows = result.get('segments')
+        if (len(samples) != 84 or not isinstance(rows, list) or len(rows) != 28 or
+                result.get('independent_spd') != 'checked_by_branch_mna_each_sample' or
+                result.get('mna_dimension') != circuit.topology.inductor_tree.node_count + len(circuit.topology.inductor_tree.edges)):
+            raise ValueError('Independent PASS lacks full MNA/SPD coverage')
+        worsts = []
+        for i, (band, (setting, role, _, _), row) in enumerate(zip(band_rows, segments, rows)):
+            # Match the scan's tie rule: earliest frequency in the segment.
+            chosen = min(samples[i * 3:i * 3 + 3], key=lambda s: (-1 if role == 0 else 1) * s['il_db'])
+            grid = {k: chosen[k] for k in ('frequency_hz', 'il_db')}
+            identity = {'segment': i, 'case': band['case'], 'region': band['region'],
+                        'subband': band.get('note', ''), 'setting': setting, 'canonical_setting': setting}
+            if (not isinstance(row, dict) or any(row.get(k) != v for k, v in identity.items()) or
+                    row.get('grid_worst') != grid):
+                raise ValueError('Independent segment worst point mismatch')
+            worsts.append(identity | grid)
+        # Match the scan's tie rule: CSV order for equal segment extrema.
+        summary = {}
+        for name, regions, maximize in (('pass_il', ('UL', 'DL'), True), ('UL', ('UL',), True),
+                                       ('DL', ('DL',), True), ('H2', ('H2',), False), ('H3', ('H3',), False)):
+            subset = [row for row in worsts if row['region'] in regions]
+            summary[name] = min(subset, key=lambda row: (-1 if maximize else 1) * row['il_db'])
+        if result.get('summary') != summary:
+            raise ValueError('Independent summary worst point mismatch')
 
 
 def verify_candidate_evidence(circuit, binding, report):
@@ -146,7 +168,7 @@ def verify_candidate_evidence(circuit, binding, report):
         if (type(requested) is not int or type(completed) is not int or
                 not 0 <= completed <= requested <= budget):
             raise ValueError('Candidate validation cost mismatch')
-    segments = _segments(circuit)
+    segments, band_rows = _segments(circuit)
     mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
     component = report.get('component', {})
     if component.get('state') in ('pass', 'fail'):
@@ -176,7 +198,7 @@ def verify_candidate_evidence(circuit, binding, report):
     independent = report.get('independent84')
     if not isinstance(independent, dict):
         raise ValueError('Missing independent stage')
-    _verify_independent(independent, segments, circuit, vector)
+    _verify_independent(independent, segments, band_rows, circuit, vector)
     if independent.get('state') == 'pass' and any(
             costs[k]['frequency_samples_completed'] != 84 for k in ('independent_forward84', 'independent_mna84')):
         raise ValueError('Independent PASS lacks metered coverage')
