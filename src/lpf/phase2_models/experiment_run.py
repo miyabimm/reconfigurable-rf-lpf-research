@@ -60,6 +60,9 @@ def _gate(root, experiment_id, loaded, *, resuming):
             storage['selection']['top_k'] != config['selection']['top_k_per_method'] or
             storage['selection']['retain'] != ['pareto']):
         raise ValueError('G1 frozen plan/RF/environment/selection mismatch')
+    if 'post_search_validation' in manifest['search_scope']:
+        from .experiment_post_search import _check_plan
+        _check_plan(manifest['search_scope']['post_search_validation'], [], config)
     source = manifest['code']['execution_sha']
     paths = ('src', 'scripts', 'project', 'rf', 'pyproject.toml', 'uv.lock')
     if (manifest['code']['working_tree_dirty'] or
@@ -220,6 +223,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         # Do not repackage, charge rechecks, or rewrite evidence on repeated run.
         return state
     circuit = loaded['circuit']
+    guarded = 'post_search_validation' in gate['manifest'].get('search_scope', {})
+    guard_args = {'search_guard': True} if guarded else {}
     for key in ids:
         if key in state['completed']:
             continue
@@ -259,7 +264,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
                 cost_meter=meter, optimize_stage=stage_callback, source_provenance=provenance,
                 stage_sink=sink, exchange_sink=exchange_sink,
                 scan_points=settings['scan_points'], max_additions=settings['max_additions'],
-                max_rounds=settings['max_rounds'] if start['method'] == 'exchange' else 1)
+                max_rounds=settings['max_rounds'] if start['method'] == 'exchange' else 1,
+                **guard_args)
             staged = deepcopy(state['staged_record'])
             if staged is None:
                 staged = dict(seed=start['seed_record'], numerical_state='budget_exhausted',
@@ -274,7 +280,7 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         else:
             staged = run_c1_staged(circuit, start['seed_record'],
                 **loaded['config']['grids'], optimize_stage=stage_callback,
-                cost_meter=meter, source_provenance=provenance, record_sink=sink)
+                cost_meter=meter, source_provenance=provenance, record_sink=sink, **guard_args)
         if (loaded['config']['schema_version'] >= 2 and staged.get('exception') and
                 staged['numerical_state'] != 'budget_exhausted'):
             raise RuntimeError('Explicit-arm stage exception; retain marker and STOP without retry')
@@ -314,6 +320,8 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
         exception=staged['exception'], evaluation_cost=staged['evaluation_cost'],
         controller=staged['controller'],
         stage_calls=[{k: deepcopy(call[k]) for k in keys if k in call} for call in staged['stage_calls']])
+    if 'search_guard' in staged:
+        curated['search_guard'] = deepcopy(staged['search_guard'])
     if 'frequency_exchange' in result:
         exchange = deepcopy(result['frequency_exchange'])
         for row in exchange['rounds']:

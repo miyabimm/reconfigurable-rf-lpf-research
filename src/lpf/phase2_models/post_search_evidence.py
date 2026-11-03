@@ -13,6 +13,7 @@ import numpy as np
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.constraint_versions import rf_input_file
 from ._grid import ROOT, validated_band_segments
+from .limited_candidate_evidence import _identity
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SEARCH_GUARD_DB
 
@@ -71,12 +72,13 @@ def _sample_violation(sample):
             abs(sample['gain'] - 10 ** (-sample['forward_il_db'] / 10)) > 1e-9)
 
 
-def _verify_independent(result, segments, circuit):
+def _verify_independent(result, segments, circuit, vector):
     state = result.get('state')
     if state not in ('pass', 'fail'):
         return
     samples = result.get('samples' if state == 'pass' else 'samples_including_failure')
-    if not isinstance(samples, list) or not samples or len(samples) > 84:
+    spd_failure = state == 'fail' and isinstance(result.get('failure_evidence'), dict)
+    if not isinstance(samples, list) or len(samples) > 84 or (not samples and not spd_failure):
         raise ValueError('Independent sample evidence incomplete')
     for i, sample in enumerate(samples):
         segment = i // 3
@@ -86,8 +88,28 @@ def _verify_independent(result, segments, circuit):
                 not math.isclose(sample.get('frequency_hz', float('nan')), frequency, rel_tol=0, abs_tol=1e-6)):
             raise ValueError('Independent sample grid mismatch')
         violation = _sample_violation(sample)
-        if violation != (state == 'fail' and i == len(samples) - 1):
+        if violation != (state == 'fail' and not spd_failure and i == len(samples) - 1):
             raise ValueError('Independent outcome contradicts sample')
+    if spd_failure:
+        i = len(samples)
+        if i >= 84:
+            raise ValueError('Independent SPD failure outside grid')
+        segment = i // 3
+        setting, _, low, high = segments[segment]
+        evidence = result['failure_evidence']
+        frequency = float(np.linspace(low, high, 3)[i % 3] * 1e6)
+        if (evidence.get('code') != 'mutual_not_spd' or evidence.get('segment') != segment or
+                evidence.get('setting') != setting or
+                not math.isclose(evidence.get('frequency_hz', float('nan')), frequency, rel_tol=0, abs_tol=1e-6)):
+            raise ValueError('Independent SPD failure location mismatch')
+        values = circuit.decode(vector)
+        inductances = np.asarray(values.inductances_nh) * 1e-9
+        matrix = np.diag(inductances.copy())
+        for (a, b), k in zip(circuit.topology.coupling_pairs, values.coupling_k):
+            matrix[a, b] = matrix[b, a] = k * np.sqrt(inductances[a] * inductances[b])
+        eigenvalues = np.linalg.eigvalsh(matrix)
+        if not np.all(np.isfinite(eigenvalues)) or eigenvalues[0] > eigenvalues[-1] * 1e-12:
+            raise ValueError('Independent SPD failure not reproduced')
     if state == 'pass' and (len(samples) != 84 or len(result.get('segments', [])) != 28 or
             result.get('independent_spd') != 'checked_by_branch_mna_each_sample' or
             result.get('mna_dimension') != circuit.topology.inductor_tree.node_count + len(circuit.topology.inductor_tree.edges)):
@@ -104,12 +126,15 @@ def verify_candidate_evidence(circuit, binding, report):
             binding.get('definition_sha256') != definition_fingerprint(circuit.definition) or
             report.get('vector_sha256') != binding.get('vector_sha256') or
             vector_fingerprint(vector) != binding.get('vector_sha256') or
+            canonical_config_hash(vector) != canonical_config_hash(binding.get('vector')) or
             canonical_config_hash(report.get('definition')) != canonical_config_hash(asdict(circuit.definition)) or
             identity.get('constraint_id') != circuit.policy_id or
             identity.get('constraint_fingerprint') != circuit.policy_fingerprint or
+            identity != _identity(circuit, vector) or
             canonical_config_hash(report.get('optimization_record')) != binding.get('optimization_sha256') or
             canonical_config_hash(report.get('exchange_record')) != binding.get('exchange_sha256') or
             canonical_config_hash(report.get('source_provenance')) != binding.get('source_sha256') or
+            canonical_config_hash(report.get('validation_identity')) != binding.get('validation_identity_sha256') or
             report.get('budgets') != binding.get('budgets') or
             report.get('candidate_promotion_blocked') is not True or report.get('rf_compliance_certified') is not False):
         raise ValueError('Candidate identity or frozen binding mismatch')
@@ -151,7 +176,7 @@ def verify_candidate_evidence(circuit, binding, report):
     independent = report.get('independent84')
     if not isinstance(independent, dict):
         raise ValueError('Missing independent stage')
-    _verify_independent(independent, segments, circuit)
+    _verify_independent(independent, segments, circuit, vector)
     if independent.get('state') == 'pass' and any(
             costs[k]['frequency_samples_completed'] != 84 for k in ('independent_forward84', 'independent_mna84')):
         raise ValueError('Independent PASS lacks metered coverage')

@@ -8,7 +8,9 @@ last atomic raw snapshot and require manual investigation, never automatic retry
 from copy import deepcopy
 from dataclasses import asdict
 from functools import partial
+import csv
 import hashlib
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -283,6 +285,76 @@ def _package(root, run, circuit, state, manifest, storage):
     validate_run(root, state['experiment_id'], mode='audit')
 
 
+def _post_search_finalize_guard(root, run, manifest, storage, summary):
+    """Bind new opt-in post-search evidence and index before G3 Git commits."""
+    planned = manifest['search_scope'].get('post_search_validation')
+    post = summary.get('post_search')
+    if planned is None and post is None:
+        return None
+    if planned is None or not isinstance(post, dict) or post.get('execution_state') != 'complete':
+        raise ValueError('Planned post-search evidence is missing or incomplete')
+    if any(manifest['validation'][k] != post['validation'][k] for k in ('numerical', 'independent')):
+        raise ValueError('Post-search manifest and summary status mismatch')
+    receipt = read_json(root / 'results' / manifest['experiment_id'] / 'post-search' / 'packaging.json')
+    if (receipt.get('state') != 'packaged' or receipt.get('preservation') != 'awaiting_git_readback' or
+            receipt.get('selection_sha256') != post.get('selection_sha256')):
+        raise ValueError('Post-search packaging receipt missing or mismatched')
+    allowed = [{k: v for k, v in item.items() if k in ('path', 'sha256')}
+               for item in storage['validation_overlays']]
+    def checked_ref(ref):
+        if not isinstance(ref, dict) or ref not in allowed:
+            raise ValueError('Post-search evidence not in storage')
+        path = (root / ref['path']).resolve()
+        if not path.is_relative_to(run.resolve()) or hashlib.sha256(path.read_bytes()).hexdigest() != ref['sha256']:
+            raise ValueError('Post-search evidence path or SHA mismatch')
+        return read_json(path)
+    selection = checked_ref(post['selection'])
+    if canonical_config_hash(selection) != post['selection_sha256']:
+        raise ValueError('Post-search frozen selection evidence mismatch')
+    targets = [item['candidate_id'] for item in selection['targets']]
+    if len(targets) != len(set(targets)) or set(targets) != set(post['candidates']) or set(targets) != set(post['overlays']):
+        raise ValueError('Post-search candidate set mismatch')
+    for candidate_id in targets:
+        ref = post['overlays'][candidate_id]
+        overlay = checked_ref(ref)
+        if (overlay.get('candidate_id') != candidate_id or
+                overlay.get('selection_sha256') != post['selection_sha256'] or
+                overlay.get('execution_state') != 'completed' or
+                overlay.get('validation') != post['candidates'][candidate_id]):
+            raise ValueError('Post-search candidate overlay mismatch')
+    from lpf.phase2_models.post_search_journal import aggregate_selected
+    reports = {key: checked_ref(post['overlays'][key])['report'] for key in targets}
+    aggregated = aggregate_selected(targets, reports)
+    if aggregated['validation'] != post['validation'] or aggregated['candidates'] != post['candidates']:
+        raise ValueError('Post-search aggregate mismatch')
+    index = root / 'data/experiment_index.csv'
+    from lpf.experiment_manifest import INDEX_FIELDS
+    def rows(text):
+        reader = csv.DictReader(io.StringIO(text, newline=''))
+        if tuple(reader.fieldnames or ()) != INDEX_FIELDS:
+            raise ValueError('Experiment index schema mismatch')
+        return list(reader)
+    current = rows(index.read_text(encoding='utf-8'))
+    prior = rows(subprocess.check_output(['git', 'show', 'HEAD:data/experiment_index.csv'], cwd=root, text=True))
+    if len(current) != len(prior):
+        raise ValueError('Unrelated experiment index change')
+    found = 0
+    for now, old in zip(current, prior):
+        if now['experiment_id'] != manifest['experiment_id']:
+            if now != old:
+                raise ValueError('Unrelated experiment index change')
+            continue
+        found += 1
+        for key in ('execution_status', 'numerical_validation', 'independent_validation'):
+            old[key] = now[key]
+        if now != old or (now['execution_status'], now['numerical_validation'], now['independent_validation']) != (
+                manifest['execution']['status'], post['validation']['numerical'], post['validation']['independent']):
+            raise ValueError('Experiment index and post-search manifest mismatch')
+    if found != 1:
+        raise ValueError('Post-search experiment index row missing or duplicated')
+    return index
+
+
 def finalize_experiment(root, experiment_id):
     """Shared single-EXP G3/G4 commits -> byte readback -> record commit -> audit.
 
@@ -310,13 +382,18 @@ def finalize_experiment(root, experiment_id):
         # Never include unrelated staged changes in the evidence commits.
         if subprocess.check_output(['git', 'diff', '--cached', '--name-only'], cwd=root).strip():
             raise ValueError('Index must be empty before explicit preservation commits')
+        index = _post_search_finalize_guard(root, run, manifest, storage, summary)
         validate_run(root, experiment_id, mode='audit')
         def commit(message):
-            subprocess.check_call(['git', 'add', '--', run.relative_to(root).as_posix()], cwd=root)
+            paths = [run.relative_to(root).as_posix()]
+            if index is not None:
+                paths.append(index.relative_to(root).as_posix())
+            subprocess.check_call(['git', 'add', '--', *paths], cwd=root)
             subprocess.check_call(['git', 'commit', '-m', message], cwd=root)
         commit(experiment_id + ': preserve experiment evidence')
         for ref in manifest['evidence'] + [{'path': (run / name).relative_to(root).as_posix()}
-                for name in ('manifest.json', 'storage_record.json')]:
+                for name in ('manifest.json', 'storage_record.json')] + (
+                [{'path': index.relative_to(root).as_posix()}] if index is not None else []):
             tracked_file(root, ref['path'], committed=True)
         storage.update(stage='complete', git_readback='passed')
         atomic_write_json(run / 'storage_record.json', storage)

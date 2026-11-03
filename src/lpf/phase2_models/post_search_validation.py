@@ -8,6 +8,8 @@ from copy import deepcopy
 from dataclasses import asdict
 import csv
 import math
+import re
+import subprocess
 
 import numpy as np
 
@@ -17,12 +19,21 @@ from .evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
 from .independent_rf import evaluate_independent_sample
 from .independent_scan import scan_independent_rf
 from .limited_candidate_evidence import _identity
+from .numerical_diagnostics import CircuitNumericalError
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SEARCH_GUARD_DB
 
 
+class RecordSinkFailure(RuntimeError):
+    """A snapshot write/readback failed; never reinterpret as an RF result."""
+
+
 class ValidationCounterexample(ValueError):
     """A completed check observed a concrete numerical or physical violation."""
+
+    def __init__(self, reason, *, evidence=None):
+        super().__init__(reason)
+        self.evidence = evidence
 
 
 def _grid(circuit, evaluator, points):
@@ -70,7 +81,7 @@ def _forward(circuit, x, points, meter, mandatory):
             'min_h3_db': min(r['worst_il_db'] for r in rows if r['role'] == 2)}
 
 
-def _independent(circuit, x, forward_meter, mna_meter, samples=None):
+def _independent(circuit, x, forward_meter, mna_meter, samples=None, progress=None):
     evaluator = circuit.forward_evaluator(3)
     _grid(circuit, evaluator, 3)
     with forward_meter.timed():
@@ -89,9 +100,29 @@ def _independent(circuit, x, forward_meter, mna_meter, samples=None):
         def il(self, unused):
             return evaluate_independent_sample(*self.args)
 
+    def notify(attempt):
+        if progress is not None:
+            progress(samples, attempt)
+
     def execute(c, v, frequency, setting):
-        with mna_meter.timed():
-            return mna_meter.forward(OneSample(c, v, frequency, setting), None)
+        attempt = {'segment': len(samples) // 3, 'setting': setting,
+                   'frequency_hz': float(frequency), 'state': 'dispatching'}
+        notify(attempt)
+        try:
+            with mna_meter.timed():
+                return mna_meter.forward(OneSample(c, v, frequency, setting), None)
+        except CircuitNumericalError as exc:
+            attempt.update(state='exception', exception_type=type(exc).__name__, code=exc.code)
+            notify(attempt)
+            if exc.code == 'mutual_not_spd':
+                raise ValidationCounterexample('independent inductance matrix not SPD',
+                    evidence={'code': exc.code, 'segment': len(samples) // 3,
+                              'setting': setting, 'frequency_hz': float(frequency)}) from exc
+            raise
+        except Exception as exc:
+            attempt.update(state='exception', exception_type=type(exc).__name__, message=str(exc))
+            notify(attempt)
+            raise
 
     def observe(segment, setting, frequency, result):
         i = len(samples)
@@ -101,9 +132,13 @@ def _independent(circuit, x, forward_meter, mna_meter, samples=None):
             raise ValueError('independent grid mismatch')
         numbers = {k: float(result[k]) for k in ('gain', 'il_db', 'power_residual_w', *losses)}
         if not all(math.isfinite(v) for v in numbers.values()):
+            notify({'segment': segment, 'setting': setting, 'frequency_hz': frequency,
+                    'state': 'nonfinite', 'values': {k: v if math.isfinite(v) else repr(v)
+                                                     for k, v in numbers.items()}})
             raise ValueError('independent sample nonfinite')
         samples.append({'segment': segment, 'setting': setting, 'frequency_hz': frequency,
                         'forward_il_db': float(reference[i]), **numbers})
+        notify({'segment': segment, 'setting': setting, 'frequency_hz': frequency, 'state': 'observed'})
         if numbers['gain'] <= 0:
             raise ValidationCounterexample('independent nonpositive gain')
         if any(numbers[k] < -1e-12 for k in losses) or abs(numbers['power_residual_w']) > 1e-12:
@@ -127,7 +162,7 @@ def _independent(circuit, x, forward_meter, mna_meter, samples=None):
 
 def validate_post_search(circuit, vector, *, optimization_record, source_provenance,
                          budgets, run_dense, run_independent, record_sink,
-                         exchange_record=None):
+                         exchange_record=None, validation_identity=None):
     """Run one explicitly selected candidate; emit raw and every gate to sink.
 
     budgets gives separate maximum requested samples for separate17, dense1001,
@@ -144,6 +179,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
                  'optimization_record': deepcopy(optimization_record),
                  'exchange_record': deepcopy(exchange_record),
                  'source_provenance': deepcopy(source_provenance),
+                 'validation_identity': deepcopy(validation_identity),
                  'separate17': {'state': 'not_run'},
                  'dense1001': {'state': 'not_run'},
                  'independent84': {'state': 'not_run'},
@@ -188,16 +224,29 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
             raise ValueError('exchange vector mismatch')
         if exchange_record['stop_reason'] not in ('failed', 'budget_exhausted'):
             rounds = exchange_record.get('rounds')
-            if (final_vector is None or not isinstance(rounds, list) or not rounds or
-                    rounds[-1].get('inner') != optimization_record):
+            inner = rounds[-1].get('inner') if isinstance(rounds, list) and rounds else None
+            comparable = lambda row: {k: v for k, v in row.items()
+                                      if k not in ('evaluation_cost', 'elapsed_seconds')}
+            if (final_vector is None or not isinstance(inner, dict) or
+                    comparable(inner) != comparable(optimization_record)):
                 raise ValueError('exchange and final staged record mismatch')
     identity = _identity(circuit, x)
     identity_keys = ('git_head', 'source_tree_sha256', 'source_worktree_dirty', 'input_sha256', 'environment')
-    if any(source_provenance.get(k) != identity[k] for k in identity_keys):
+    identity_source = source_provenance if validation_identity is None else validation_identity
+    if not isinstance(identity_source, dict) or any(identity_source.get(k) != identity[k] for k in identity_keys):
         raise ValueError('optimization source, environment or inputs mismatch')
+    if validation_identity is not None:
+        source_head = source_provenance.get('git_head')
+        paths = ('src', 'scripts', 'project', 'rf', 'pyproject.toml', 'uv.lock')
+        if (not isinstance(source_head, str) or re.fullmatch(r'[0-9a-f]{40}', source_head) is None or
+                subprocess.run(['git', 'merge-base', '--is-ancestor', source_head, 'HEAD'], cwd=ROOT,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode or
+                subprocess.run(['git', 'diff', '--quiet', source_head, 'HEAD', '--', *paths], cwd=ROOT).returncode):
+            raise ValueError('optimization and validation source revisions differ')
     record = {'schema': 'post-search-validation-1', 'optimization_record': deepcopy(optimization_record),
               'exchange_record': deepcopy(exchange_record),
-              'source_provenance': deepcopy(source_provenance), 'identity': identity,
+              'source_provenance': deepcopy(source_provenance),
+              'validation_identity': deepcopy(validation_identity), 'identity': identity,
               'definition': asdict(circuit.definition), 'vector': x.tolist(),
               'vector_sha256': vector_fingerprint(x), 'budgets': dict(budgets),
               'separate17': {'state': 'not_run'}, 'dense1001': {'state': 'not_run'},
@@ -211,7 +260,10 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
                               'EXP manifest and storage gates not executed']}
     def persist():
         record['evaluation_cost'] = {k: v.snapshot() for k, v in meters.items()}
-        record_sink(deepcopy(record))
+        try:
+            record_sink(deepcopy(record))
+        except Exception as exc:
+            raise RecordSinkFailure(str(exc)) from exc
     def check_identity():
         if _identity(circuit, x) != identity:
             raise ValueError('identity_changed_during_validation')
@@ -250,6 +302,8 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     except ValidationCounterexample as exc:
         record['component'] = {'state': 'fail', 'reason': str(exc)}
         record['separate17'] = {'state': 'not_run', 'reason': 'component_validation_failed'}
+    except RecordSinkFailure:
+        raise
     except Exception as exc:
         record['separate17'] = {'state': 'failed', 'reason': str(exc), 'exception_type': type(exc).__name__}
     persist()
@@ -262,6 +316,8 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
             check_identity()
         except SampleBudgetExceeded as exc:
             record['dense1001'] = {'state': 'budget_exhausted', 'reason': str(exc)}
+        except RecordSinkFailure:
+            raise
         except Exception as exc:
             record['dense1001'] = {'state': 'failed', 'reason': str(exc), 'exception_type': type(exc).__name__}
     else:
@@ -271,19 +327,31 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
     persist()
     if record['dense1001']['state'] == 'pass' and run_independent:
         partial_samples = []
+        last_attempt = {}
+        def progress(samples, attempt):
+            last_attempt.clear()
+            last_attempt.update(attempt)
+            record['independent84'] = {'state': 'running', 'completed_samples': deepcopy(samples),
+                                       'last_attempt': deepcopy(attempt)}
+            persist()
         try:
             check_identity()
-            record['independent84'] = _independent(circuit, x, meters['independent_forward84'], meters['independent_mna84'], partial_samples)
+            record['independent84'] = _independent(circuit, x, meters['independent_forward84'],
+                meters['independent_mna84'], partial_samples, progress)
             check_identity()
         except SampleBudgetExceeded as exc:
             record['independent84'] = {'state': 'budget_exhausted', 'reason': str(exc),
-                                       'completed_samples': partial_samples}
+                                       'completed_samples': partial_samples, 'last_attempt': deepcopy(last_attempt)}
         except ValidationCounterexample as exc:
             record['independent84'] = {'state': 'fail', 'reason': str(exc),
-                                       'samples_including_failure': partial_samples}
+                                       'samples_including_failure': partial_samples,
+                                       'failure_evidence': exc.evidence, 'last_attempt': deepcopy(last_attempt)}
+        except RecordSinkFailure:
+            raise
         except Exception as exc:
             record['independent84'] = {'state': 'failed', 'reason': str(exc),
-                                       'exception_type': type(exc).__name__, 'completed_samples': partial_samples}
+                                       'exception_type': type(exc).__name__, 'completed_samples': partial_samples,
+                                       'last_attempt': deepcopy(last_attempt)}
     else:
         record['independent84']['reason'] = 'not_selected' if not run_independent else 'dense1001_not_passed'
     persist()

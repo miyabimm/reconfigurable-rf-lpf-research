@@ -82,10 +82,15 @@ search_guard=True)` は、policy必須値に0.005 dBを加えた探索目標をc
 17点→選別された1001点→独立MNAの開発中入口。rawを先にsinkへ渡し、policy・
 トポロジー・vector・出典・帯域・部品・role・SPDを照合する。MNAサイズは
 回路に依存する（4Lでは9×9）。有限格子や独立84点は連続帯域・物理実装の保証ではない。
-**既存EXP保存ゲートやmanifest/indexとの接続は未実装**であり、本番実験に使用しない。
-本入口はC1 staged記録と任意のAFE停止記録を受けて保存するが、全ての中断・
-保存障害・再開経路の統合は未完了。本入口のsinkは保存監査・Git読戻しの
-代わりではない。Issue #267は未完了。
+`experiment_post_search` は、完全checkoutで既存G0/G1と候補checkpointを照合し、
+G1の `post_search_validation` 計画によりguard・選別上限・各費用上限を固定する試作API。
+検証前に選別集合とvector/SHAを凍結し、候補を明示的に一件ずつ実行、独立MNAの
+途中点もrawへ原子的に保存する。中断・保存障害時はmarkerを残し、自動再試行しない。
+候補別overlayと独立したnumerical/independent集約値を既存manifest/index/storageへ
+接続し、既存の明示的finalize・Git byte読戻し・監査を別途必要とする。
+対象は現在の共通実行経路で保存された候補に限り、汎用性・例外経路の独立レビューは未了。
+Issue #267はWIPであり**マージ・本番実験に使用しない**。sinkや一時checkoutのテストは
+実EXPの保存監査や科学的PASSの代わりではない。
 
 ### 周波数交換の固定start対照（schema 3、Issue #263）
 
