@@ -27,7 +27,7 @@ class SampledEpigraph:
     """
 
     def __init__(self, circuit, points_per_interval, *, extra_frequencies=(), search_guard=False,
-                 settings=None, working_stop_db=_DEFAULT_WORKING_STOP):
+                 settings=None, working_stop_db=_DEFAULT_WORKING_STOP, gjm_search_max_pf=None):
         if not isinstance(circuit, NominalCircuit):
             raise TypeError("Expected an approved NominalCircuit")
         self.circuit = circuit
@@ -41,7 +41,8 @@ class SampledEpigraph:
         if type(search_guard) is not bool:
             raise TypeError("search_guard must be bool")
         self.search_guard_db = SEARCH_GUARD_DB if search_guard else 0.0
-        self.box = circuit_box(circuit)
+        self.box = circuit_box(circuit, gjm_search_max_pf=gjm_search_max_pf)
+        self.gjm_search_max_pf = gjm_search_max_pf
         self.mandatory_stop_db = float(
             policy["evaluation"]["full_phase2"]["minimum_h2_h3_db"]
         )

@@ -34,9 +34,20 @@ class VectorBox:
     open_lower: tuple[int, ...]
 
 
-def circuit_box(circuit):
-    """Return policy box for full circuit vector, followed by unbounded t (dB)."""
+def circuit_box(circuit, *, gjm_search_max_pf=None):
+    """Return the policy box, optionally narrowing only the GJM search box."""
     d, s, p = circuit.definition, circuit.schema, circuit.resolved_policy
+    if gjm_search_max_pf is not None:
+        if (isinstance(gjm_search_max_pf, (bool, str, bytes)) or
+                not np.isscalar(gjm_search_max_pf)):
+            raise ValueError("Invalid GJM search maximum")
+        try:
+            gjm_search_max_pf = float(gjm_search_max_pf)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("Invalid GJM search maximum") from exc
+        if (not np.isfinite(gjm_search_max_pf) or gjm_search_max_pf <= 0 or
+                gjm_search_max_pf > p["components"]["GJM01"]["max_pf_per_component"]):
+            raise ValueError("GJM search maximum must be within physical limits")
     bounds, strict = [], []
     def add(lo, hi, *, open_lower=False):
         if open_lower:
@@ -47,7 +58,8 @@ def circuit_box(circuit):
         add(lo, hi, open_lower=(kind == "PCB_L"))
     for kind, edge in zip(d.fixed_c_types, d.capacitor_placement.fixed_edges):
         if kind == "GJM01":
-            add(0, p["components"]["GJM01"]["max_pf_per_component"], open_lower=True)
+            add(0, p["components"]["GJM01"]["max_pf_per_component"]
+                if gjm_search_max_pf is None else gjm_search_max_pf, open_lower=True)
         else:
             spec = (p["trial_pcb_pattern_c_by_connection"][
                 "grounded" if -1 in edge else "non_ground"]
@@ -109,6 +121,12 @@ def make_seed(problem, vector, *, policy_id, policy_fingerprint,
     if vector_fingerprint(x) != input_sha256:
         raise ValueError("Seed vector SHA mismatch")
     original = tuple(map(float, x))
+    if getattr(problem, "gjm_search_max_pf", None) is not None and any(
+            x[i] <= problem.box.bounds[i][0] or x[i] > problem.box.bounds[i][1]
+            for i, kind in enumerate(c.definition.fixed_c_types,
+                                     start=len(c.definition.inductor_types))
+            if kind == "GJM01"):
+        raise ValueError("Seed outside GJM search box; clipping is forbidden")
     x = x.copy()
     changes = []
     rng = np.random.default_rng(seed)

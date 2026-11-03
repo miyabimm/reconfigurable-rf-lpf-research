@@ -97,6 +97,78 @@ class SampledEpigraphTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             SampledEpigraph(c, 2, settings=("B8",), extra_frequencies=((0, 670.5),))
 
+    def test_gjm_search_box_and_diagnostic_stop(self):
+        from test_phase2_problem_seed import make, seed
+        from lpf.phase2_models.evaluation_cost import SampleBudgetCost
+        from lpf.phase2_models.staged_optimization import run_c1_continuation
+        p, physical = make('RF-T008', 4)
+        base = SampledEpigraph(p.circuit, 2)
+        limited = SampledEpigraph(p.circuit, 2, gjm_search_max_pf=10)
+        self.assertEqual(base.box.bounds[4], (0., 100.))
+        self.assertEqual(limited.box.bounds[4], (0., 10.))
+        self.assertEqual(base.box.bounds[:4] + base.box.bounds[5:],
+                         limited.box.bounds[:4] + limited.box.bounds[5:])
+        definition = CircuitDefinition(
+            InductorTree(5, ((0, 1), (1, 3), (1, 4), (1, 2))),
+            ('LQP02HV',) * 4, (0, 1, 3, 2), ((0, 1), (1, 3), (3, 2)),
+            CapacitorPlacement(5, ((0, 1), (4, -1), (1, 2), (3, -1)),
+                               ((0, 3), (1, 2)), ((0, 3), (1, 2))),
+            ('GJM01', 'GJM01', 'GJM01', 'PCB_PATTERN_C'), ('bridge', 'bridge'))
+        three = build_nominal_circuit(load_constraint('RF-T008', allow_trial=True), definition)
+        default_box = SampledEpigraph(three, 2).box
+        narrow_box = SampledEpigraph(three, 2, gjm_search_max_pf=10).box
+        self.assertEqual([i for i, (a, b) in enumerate(zip(default_box.bounds, narrow_box.bounds))
+                          if a != b], [4, 5, 6])
+        self.assertEqual(narrow_box.bounds[4:7], ((0., 10.),) * 3)
+        self.assertEqual(default_box.open_lower, narrow_box.open_lower)
+        for invalid in (0, -1, 101, float('nan'), True, '10'):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                SampledEpigraph(p.circuit, 2, gjm_search_max_pf=invalid)
+        for invalid in (0., 11.):
+            vector = physical.copy()
+            vector[4] = invalid
+            with self.subTest(seed=invalid), self.assertRaises(ValueError):
+                seed(limited, vector)
+        start = seed(base, physical)
+        source = {'kind': 'synthetic', 'git_head': 'a' * 40,
+                  'dirty_patch_sha256': 'b' * 64, 'input_source_sha256': 'c' * 64}
+        seen = []
+        def optimizer(problem, vector, maxiter, target):
+            seen.append(problem.box.bounds[4])
+            return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
+        args = dict(method='D', cost_meter=SampleBudgetCost(100000),
+                    source_provenance=source, optimize_stage=optimizer,
+                    record_sink=lambda snapshot: None, gjm_search_max_pf=10,
+                    stop_after='all_20.0')
+        result = run_c1_continuation(p.circuit, start, **args)
+        self.assertEqual(result['state'], 'diagnostic_end_at_20db')
+        self.assertEqual(result['stages'][-1]['label'], 'all_20.0')
+        self.assertIsNone(result['final_exchange'])
+        self.assertGreater(len(seen), 2)
+        self.assertTrue(all(hi <= 10 for _, hi in seen))
+        def illegal(problem, vector, maxiter, target):
+            vector[4] = 11.
+            return vector, dict(success=True, status=0, message='ok', nit=1, nfev=1)
+        args.update(cost_meter=SampleBudgetCost(100000), optimize_stage=illegal)
+        result = run_c1_continuation(p.circuit, start, **args)
+        self.assertEqual(result['state'], 'failed')
+        call = result['stages'][0]['record']['stage_calls'][0]
+        self.assertEqual(call['output_vector'][4], 11.)
+        self.assertEqual(call['observation']['box']['state'], 'fail')
+        self.assertNotEqual(result['last_valid_vector'][4], 11.)
+        def status4_at_20(problem, vector, maxiter, target):
+            code = 4 if problem.search_stop_db == 20. else 0
+            return vector, dict(success=code == 0, status=code, message='status', nit=1, nfev=1)
+        args.update(cost_meter=SampleBudgetCost(100000), optimize_stage=status4_at_20)
+        result = run_c1_continuation(p.circuit, start, **args)
+        self.assertEqual(result['state'], 'failed')
+        self.assertEqual(result['stages'][-1]['label'], 'all_20.0')
+        self.assertEqual(len(result['stages'][-1]['record']['stage_calls']), 1)
+        self.assertEqual(result['stages'][-1]['record']['stage_calls'][0]['status']['status'], 4)
+        self.assertIsNone(result['final_exchange'])
+        args.update(cost_meter=SampleBudgetCost(0), optimize_stage=optimizer)
+        self.assertEqual(run_c1_continuation(p.circuit, start, **args)['state'], 'budget_exhausted')
+
     def test_working_staged_reseeds_and_fails_closed_on_illegal_output(self):
         from test_phase2_problem_seed import make, seed
         from lpf.phase2_models.evaluation_cost import SampleBudgetCost
