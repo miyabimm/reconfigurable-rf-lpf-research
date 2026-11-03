@@ -81,6 +81,7 @@ nominalをpolicy box中点、Sobolを同じblockの先頭合法点とRF forward�
 内部の `seeds: [0, 23]` の `0` はnominal pilotを識別する**ラベル**であり、Sobol seedではない。
 両startのC1 seedとSobol生成seedは23。計画では初期化費用をnominalに1 forward、Sobolに
 nominalを含む2 forwardsとして各armへ配賦し、共有生成の実消費と配賦合計を区別する。
+共有準備のCPU/wall時間は各armに全額を保守的に配賦し、実消費1回分と別表示する。
 配賦をsample meterへ加算する内部実装はあるが、実行・保存経路全体の検証は未完了。
 
 `project/experiments/issue270.yaml` は未凍結templateで、plan SHAの0は実入力ではない。

@@ -226,6 +226,7 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
                 anchor = CandidateRecord.from_json(json.dumps(result['validation_anchor'])).as_dict()
                 if (continuation.get('method') != loaded['actual'][key]['method'] or
                         result['initialization_allocation'] != loaded['actual'][key]['source_ref']['initialization_cost'] or
+                        result['initialization_allocation_timing'] != loaded['input_source']['executable_plan']['initialization_timing'] or
                         not isinstance(continuation.get('last_valid_vector'), list) or
                         anchor['vector'] != continuation['last_valid_vector'][:-1] or
                         anchor['candidate_id'] != key or
@@ -366,6 +367,8 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
         if continuation_result is not None:
             state['completed'][key]['continuation'] = continuation_result
             state['completed'][key]['initialization_allocation'] = deepcopy(allocation)
+            state['completed'][key]['initialization_allocation_timing'] = deepcopy(
+                loaded['input_source']['executable_plan']['initialization_timing'])
             # Preserve every last legal physical vector, including budget and
             # intermediate nonconvergence, as an unpromoted diagnostic anchor.
             anchor = continuation_result['last_valid_vector'][:-1]
@@ -403,6 +406,7 @@ def _curated_result(result, *, actual_start_id=None, input_source=None):
         curated['search_guard'] = deepcopy(staged['search_guard'])
     if 'continuation' in result:
         curated['initialization_allocation'] = deepcopy(result['initialization_allocation'])
+        curated['initialization_allocation_timing'] = deepcopy(result['initialization_allocation_timing'])
         continuation = deepcopy(result['continuation'])
         # The final exchange is stored once in the adjacent frequency_exchange
         # field. Intermediate full vectors, status and observations remain
@@ -539,17 +543,23 @@ def _package(root, gate, loaded, state, recheck_cost):
     if loaded['config']['schema_version'] == 4:
         allocation_keys = ('RF_forward_calls', 'frequency_samples_requested', 'frequency_samples_completed')
         allocated = {k: sum(r['initialization_allocation'][k] for r in results.values()) for k in allocation_keys}
+        allocated['wall_seconds'] = sum(r['initialization_allocation_timing']['elapsed_wall_s'] for r in results.values())
+        allocated['cpu_seconds'] = sum(r['initialization_allocation_timing']['elapsed_cpu_s'] for r in results.values())
         actual = dict(physical)
+        accounted = dict(physical)
         for key in allocation_keys:
             if key in actual:
                 actual[key] -= allocated[key]
+        for key in ('wall_seconds', 'cpu_seconds'):
+            if key in accounted:
+                accounted[key] += allocated[key]
         summary['costs'] = dict(
-            accounted_search_including_allocated_initialization=physical,
+            accounted_search_including_allocated_initialization=accounted,
             optimization_actual_excluding_initialization=actual,
             allocated_initialization=allocated,
             initialization_actual=loaded['input_source']['executable_plan']['screen_cost'],
             initialization_actual_timing=loaded['input_source']['executable_plan']['initialization_timing'],
-            allocation_semantics='Each arm includes its frozen shared RF initialization allocation; physical initialization is measured once. Shared initialization CPU/wall is reported once, not assigned to individual arms.',
+            allocation_semantics='RF initialization is allocated as frozen per start. The full shared preparation CPU/wall is conservatively charged to each arm; actual shared preparation is measured once. Component-check counts remain separately reported in initialization_actual.',
             recheck=recheck_cost.snapshot())
         summary['limitations'] = LIMITATIONS + [
             'All checkpoints are last legal diagnostic anchors, not Pareto or RF-eligible promotions.']

@@ -981,6 +981,7 @@ class FrozenConfigTests(unittest.TestCase):
                 continuation=dict(mode='opt_in', il_only_bands=['B8', 'B8+B71', 'all'],
                     thresholds_db=[10, 20, 25, 28], final_guard_db=30.005,
                     scan_points=17, max_additions=4, max_rounds=3))
+            config['selection']['top_k_per_method'] = 2
             config['budgets'].update(logical_starts=8, actual_starts=8, stages=296,
                 optimization_samples=12_000_000, screen_forwards=2, screen_samples=112,
                 intermediate_samples=3808, dense_samples=224224)
@@ -993,7 +994,7 @@ class FrozenConfigTests(unittest.TestCase):
                           preparation_source=dict(git_head='a' * 40, experiment_id='EXP-999', program_sha256='b' * 64,
                               definition_source=config['definition_source'], topology_reference=config['topology_reference']))
             source['limits'].update(max_starts=8, max_stages=296, max_stages_per_start=60,
-                max_optimization_samples=12_000_000, max_screen_forwards=2, max_screen_samples=112,
+                top_k_per_method=2, max_optimization_samples=12_000_000, max_screen_forwards=2, max_screen_samples=112,
                 max_intermediate_samples=3808, max_dense_samples=224224)
             from lpf.phase2_models.experiment_config import prepare_continuation_starts
             prepared = prepare_continuation_starts(circuit, config)
@@ -1017,6 +1018,56 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
             self.assertEqual(len(loaded['actual']), 8)
             import lpf.phase2_models.experiment_run as runner
+            from lpf.experiment_manifest import _environment, file_sha256
+            from lpf.constraint_versions import rf_input_file
+            shutil.copytree(ROOT / 'rf', root / 'rf')
+            g1_run = root / 'g1-fixture'
+            g1_run.mkdir()
+            post = dict(schema='post-search-g1-1', selection_rule='all anchors', search_guard=True,
+                        max_selected=8, separate17=3808, dense1001=224224,
+                        independent_forward84=672, independent_mna84=672)
+            manifest = dict(execution={'status': 'planned'}, objective='full_lpf',
+                search_scope=dict(input_source=loaded['input_source'], input_source_sha256=loaded['input_source_sha256'],
+                                  post_search_validation=post),
+                constraints=dict(constraint_id='RF-T008', effective_constraint_sha256=circuit.policy_fingerprint),
+                environment=_environment(), random_seed=23,
+                code=dict(execution_sha='a' * 40, working_tree_dirty=False),
+                bands_sha256=file_sha256(rf_input_file(root, circuit.resolved_policy['bands_file'])))
+            storage = dict(stage='planned', selection=dict(top_k=2, retain=['other'],
+                rule=runner.CONTINUATION_RETENTION_RULE, estimated_curated_bytes=8_000_000))
+            def g1_git(repo, *args):
+                if args[:1] == ('show',):
+                    body = manifest if args[1].endswith('/manifest.json') else storage
+                    return json.dumps(body).encode()
+                return b''
+            def sync_g1():
+                (g1_run / 'manifest.json').write_text(json.dumps(manifest))
+                (g1_run / 'storage_record.json').write_text(json.dumps(storage))
+            sync_g1()
+            from types import SimpleNamespace
+            with patch('scripts.run_phase2_shared._complete_checkout'), \
+                 patch('scripts.run_phase2_shared._fresh_main', return_value='a' * 40), \
+                 patch('scripts.run_phase2_shared.exp_preflight'), \
+                 patch('scripts.experiment_id_registry.is_reserved_on_main', return_value={'owner': 'fixture', 'request_id': 'fixture'}), \
+                 patch('scripts.audit_new_experiment_storage.find_run', return_value=g1_run), \
+                 patch('lpf.phase2_models.experiment_config.continuation_program_sha256', return_value='b' * 64), \
+                 patch.object(runner, '_git', side_effect=g1_git), \
+                 patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(returncode=0)):
+                runner._gate(root, 'EXP-999', loaded, resuming=False)
+                manifest['random_seed'] = 0
+                sync_g1()
+                with self.assertRaisesRegex(ValueError, 'G1 frozen'):
+                    runner._gate(root, 'EXP-999', loaded, resuming=False)
+                manifest['random_seed'] = 23
+                storage['selection']['rule'] = 'not the all-anchor rule'
+                sync_g1()
+                with self.assertRaisesRegex(ValueError, 'all-anchor retention'):
+                    runner._gate(root, 'EXP-999', loaded, resuming=False)
+                storage['selection']['rule'] = runner.CONTINUATION_RETENTION_RULE
+                post['separate17'] = 1
+                sync_g1()
+                with self.assertRaisesRegex(ValueError, 'cover all eight'):
+                    runner._gate(root, 'EXP-999', loaded, resuming=False)
             gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
                         g1_sha256='b' * 64, manifest={}, storage={})
             def optimizer(problem, vector, maxiter, target, *, coordinates):
@@ -1065,6 +1116,12 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(len(storage['checkpoints']), 8)
                 self.assertTrue(all(item['selection_reason'] == 'other' for item in storage['checkpoints']))
                 self.assertTrue(all('continuation' in row for row in summary['actual_results'].values()))
+                costs = summary['costs']
+                self.assertEqual(costs['allocated_initialization']['frequency_samples_requested'], 672)
+                self.assertEqual(costs['initialization_actual']['frequency_samples_requested'], 112)
+                self.assertEqual(costs['optimization_actual_excluding_initialization']['frequency_samples_requested'], 0)
+                self.assertAlmostEqual(costs['allocated_initialization']['cpu_seconds'],
+                    8 * costs['initialization_actual_timing']['elapsed_cpu_s'])
             def exhausted(circuit, seed_record, *, method, cost_meter, source_provenance,
                           optimize_stage, record_sink):
                 trace = dict(method=method, state='budget_exhausted', stages=[], final_stage=None,
