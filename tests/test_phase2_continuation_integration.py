@@ -169,9 +169,15 @@ class ContinuationIntegrationTests(unittest.TestCase):
                             repeated = run_plan(clone, clone_config, ident, 'pilot', optimize_stage=bad_solver)
                             self.assertEqual(repeated, json.loads(json.dumps(pilot_failure)))
                             self.assertEqual(raw.read_bytes(), before)
-                            summary = json.loads((clone / 'experiments/chatgpt_topology_search/runs' / ident /
-                                                  'run_summary.json').read_text())
+                            failure_run = clone / 'experiments/chatgpt_topology_search/runs' / ident
+                            summary = json.loads((failure_run / 'run_summary.json').read_text())
                             self.assertEqual(summary['attempts']['not_started'], 4)
+                            preserved = {p: p.read_bytes() for p in failure_run.rglob('*') if p.is_file()}
+                            with patch.object(CoupledLCEvaluator, 'il', side_effect=AssertionError('remaining must not evaluate RF')):
+                                with self.assertRaisesRegex(ValueError, 'Pilot.*STOP.*budget_exhausted'):
+                                    run_plan(clone, clone_config, ident, 'remaining', optimize_stage=bad_solver)
+                            self.assertEqual(raw.read_bytes(), before)
+                            self.assertEqual(preserved, {p: p.read_bytes() for p in preserved})
                         else:
                             expected = {'exception': RuntimeError, 'timeout': RuntimeError,
                                         'interrupt': KeyboardInterrupt, 'storage': Exception}[failure]

@@ -1076,10 +1076,11 @@ class FrozenConfigTests(unittest.TestCase):
             actual_package = runner._package
             def mock_continuation(circuit, seed_record, *, method, cost_meter,
                                   source_provenance, optimize_stage, record_sink):
-                staged = dict(seed=seed_record, numerical_state='converged', exception=None,
+                numerical = 'not_converged' if method == 'C' else 'converged'
+                staged = dict(seed=seed_record, numerical_state=numerical, exception=None,
                     controller=None, stage_calls=[], source_provenance=dict(state='provided', value=source_provenance),
                     definition_sha256=config['definition_sha256'], policy_fingerprint=circuit.policy_fingerprint)
-                trace = dict(method=method, state='completed', stages=[], final_stage=staged,
+                trace = dict(method=method, state='not_converged' if method == 'C' else 'completed', stages=[], final_stage=staged,
                     final_exchange=None, last_valid_vector=list(seed_record['vector']),
                     evaluation_cost=cost_meter.snapshot(), rf_compliance_certified=False)
                 record_sink(trace)
@@ -1090,10 +1091,12 @@ class FrozenConfigTests(unittest.TestCase):
                  patch.object(runner, 'run_c1_continuation', side_effect=mock_continuation):
                 pilot = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=optimizer)
                 self.assertEqual(len(pilot['completed']), 4)
+                self.assertEqual(pilot['completed']['nominal-C']['staged_record']['numerical_state'], 'not_converged')
                 final = run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=optimizer)
                 self.assertEqual(len(final['completed']), 8)
                 for key, item in final['completed'].items():
-                    self.assertEqual(item['continuation']['state'], 'completed')
+                    self.assertEqual(item['continuation']['state'],
+                                     'not_converged' if loaded['actual'][key]['method'] == 'C' else 'completed')
                     allocation = loaded['actual'][key]['source_ref']['initialization_cost']
                     self.assertGreaterEqual(item['staged_record']['evaluation_cost']['frequency_samples_requested'],
                                             allocation['frequency_samples_requested'])
@@ -1140,6 +1143,25 @@ class FrozenConfigTests(unittest.TestCase):
                     self.assertEqual(item['staged_record']['numerical_state'], 'budget_exhausted')
                     self.assertEqual(item['validation_anchor']['numerical']['state'], 'not_run')
                     self.assertIsNone(item['candidate'])
+                before = raw_limited.read_bytes()
+                with patch.object(runner, 'run_c1_continuation', side_effect=AssertionError('no dispatch')):
+                    with self.assertRaisesRegex(ValueError, 'Pilot.*STOP.*budget_exhausted'):
+                        run_plan(root, path, 'EXP-998', 'remaining', optimize_stage=optimizer)
+                self.assertEqual(raw_limited.read_bytes(), before)
+            def failed(*args, **kwargs):
+                trace = exhausted(*args, **kwargs)
+                trace.update(state='failed', exception=None)
+                return trace
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
+                 patch.object(runner, 'run_c1_continuation', side_effect=failed):
+                raw_failure = root / 'results/EXP-996/run.json'
+                run_plan(root, path, 'EXP-996', 'pilot', optimize_stage=optimizer)
+                before = raw_failure.read_bytes()
+                with patch.object(runner, 'run_c1_continuation', side_effect=AssertionError('no dispatch')):
+                    with self.assertRaisesRegex(ValueError, 'Pilot.*STOP.*failed'):
+                        run_plan(root, path, 'EXP-996', 'remaining', optimize_stage=optimizer)
+                self.assertEqual(raw_failure.read_bytes(), before)
             with patch.object(runner, '_load_g1_plan', return_value=loaded), \
                  patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
                  patch.object(runner, 'run_c1_continuation', side_effect=OSError('lost storage')):

@@ -254,6 +254,12 @@ def _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, lo
     if phase == 'remaining' and (not state['pilot_complete'] or 'pilot' not in state['completed_phases'] or
             not set(phase_ids(loaded, 'pilot')) <= set(state['completed'])):
         raise ValueError('Pilot must be complete and preserved before remaining')
+    if phase == 'remaining' and loaded['config']['schema_version'] == 4:
+        for key in phase_ids(loaded, 'pilot'):
+            result = state['completed'][key]
+            for outcome in (result['staged_record']['numerical_state'], result['continuation']['state']):
+                if outcome in ('budget_exhausted', 'failed'):
+                    raise ValueError(f'Pilot STOP: {key} ended {outcome}; remaining starts not dispatched')
     if phase in state['completed_phases']:
         if not set(ids) <= set(state['completed']):
             raise ValueError('Completed phase missing confirmed results')
