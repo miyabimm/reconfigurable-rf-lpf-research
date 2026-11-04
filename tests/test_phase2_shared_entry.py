@@ -1001,6 +1001,17 @@ class FrozenConfigTests(unittest.TestCase):
                 frozen = json.loads(json.dumps(loaded['input_source']))
                 self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
             self.assertEqual(list(loaded['actual']), ['Control100', 'Limit10'])
+            altered = deepcopy(source)
+            altered['actual_starts'][0]['method'] = 'Limit10'
+            altered_sha = canonical_config_hash(stable_identity(altered))
+            config['plan']['sha256'] = altered_sha
+            path.write_text(yaml.safe_dump(config))
+            plan.write_text(json.dumps(dict(input_source=altered, input_source_sha256=altered_sha)))
+            with self.assertRaisesRegex(ValueError, 'arm identities'):
+                load_plan(root, path)
+            config['plan']['sha256'] = digest
+            path.write_text(yaml.safe_dump(config))
+            plan.write_text(json.dumps(dict(input_source=source, input_source_sha256=digest)))
             from lpf.experiment_manifest import _environment, file_sha256
             from lpf.constraint_versions import rf_input_file
             from types import SimpleNamespace

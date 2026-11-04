@@ -301,7 +301,9 @@ def load_plan(root, config_path, *, frozen_input=None):
     _ids([r['id'] for r in actual])
     _ids([r['id'] for r in logical])
     if diagnostic and ([r['id'] for r in actual] != config['methods'] or
-                       [r['id'] for r in logical] != config['methods']):
+                       [r['id'] for r in logical] != config['methods'] or
+                       any(r['id'] != r['method'] for r in actual) or
+                       any(r['id'] != r['method'] or r['id'] != r['actual_start_id'] for r in logical)):
         raise ValueError('Diagnostic arm identities and order differ from the fixed plan')
     budget = config['budgets']
     if (len(logical) != budget['logical_starts'] or len(actual) != budget['actual_starts'] or
