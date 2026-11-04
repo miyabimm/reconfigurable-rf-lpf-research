@@ -66,32 +66,47 @@ class PhysicalComparison:
         self.cache = cache
         self._last = None
 
-    def evaluate(self, vector, *, for_exploration=False):
+    def validate_vector(self, vector, *, for_exploration=False):
+        """Check a physical vector without RF evaluation or repair.
+
+        Returns the physical array and component report. Callers must separately
+        assess RF performance and must not treat this check as promotion.
+        """
         if for_exploration and self.circuit.policy_id != "RF-T008":
             raise ValueError("Exploration-only evaluation is RF-T008-only")
+        x = np.asarray(vector, float)
+        bounds = self.box.bounds[:-1]
+        if x.shape != (len(bounds),) or not np.all(np.isfinite(x)):
+            self.cost.box_rejections += 1
+            raise ValueError('Expected complete finite physical vector without epigraph')
+        gjm = {len(self.circuit.definition.inductor_types) + i
+               for i, kind in enumerate(self.circuit.definition.fixed_c_types)
+               if kind == "GJM01"} if for_exploration else set()
+        if (any(v < lo or v > hi for v, (lo, hi) in zip(x, bounds)) or
+                any(x[i] <= bounds[i][0]
+                    for i in self.box.open_lower if i not in gjm)):
+            self.cost.box_rejections += 1
+            raise ValueError('Physical vector outside box or at excluded open endpoint')
+        component = self.cost.components(
+            self.circuit, x, allow_absent_gjm=for_exploration)
+        if component['connection_role_evidence_incomplete'] and not for_exploration:
+            self.cost.role_rejections += 1
+            raise ValueError('Declared connection role lacks evidence')
+        return x, component
+
+    def evaluate(self, vector, *, for_exploration=False):
         with self.cost.timed():
-            x = np.asarray(vector, float)
-            bounds = self.box.bounds[:-1]
-            if x.shape != (len(bounds),) or not np.all(np.isfinite(x)):
-                self.cost.box_rejections += 1
-                raise ValueError('Expected complete finite physical vector without epigraph')
-            gjm = {len(self.circuit.definition.inductor_types) + i
-                   for i, kind in enumerate(self.circuit.definition.fixed_c_types)
-                   if kind == "GJM01"} if for_exploration else set()
-            if (any(v < lo or v > hi for v, (lo, hi) in zip(x, bounds)) or
-                    any(x[i] <= bounds[i][0]
-                        for i in self.box.open_lower if i not in gjm)):
-                self.cost.box_rejections += 1
-                raise ValueError('Physical vector outside box or at excluded open endpoint')
+            # Preserve the existing exact-cache behavior: cache hits still check
+            # shape and box, but do not repeat component validation.
+            if self.cache and self._last is not None:
+                x = np.asarray(vector, float)
+                if (x.shape == (len(self.box.bounds) - 1,) and
+                        np.all(np.isfinite(x)) and
+                        (for_exploration, x.tobytes()) == self._last[0]):
+                    self.cost.cache_hits += 1
+                    return self._last[1]
+            x, component = self.validate_vector(vector, for_exploration=for_exploration)
             key = (for_exploration, x.tobytes())
-            if self.cache and self._last is not None and self._last[0] == key:
-                self.cost.cache_hits += 1
-                return self._last[1]
-            component = self.cost.components(
-                self.circuit, x, allow_absent_gjm=for_exploration)
-            if component['connection_role_evidence_incomplete'] and not for_exploration:
-                self.cost.role_rejections += 1
-                raise ValueError('Declared connection role lacks evidence')
             il = self.cost.forward(self.evaluator, x)
             score = sampled_score(il, self.evaluator.role, self.mandatory_stop_db)
             if self.cache:
