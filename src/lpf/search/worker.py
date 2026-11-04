@@ -98,10 +98,23 @@ def execute_job(spec, directory):
             atomic(directory / f'step-{index}.json', raw)
             # Selection forwards count against this step and the shared job/trial.
             if candidates:
-                ranked = select(meter, candidates, config['selection']['points_per_interval'],
-                                step['name'] + ':selection')
+                raw['selection_status'] = 'in_progress'
+                atomic(directory / f'step-{index}.json', raw)
+                def assessed(row):
+                    raw['selection'].append(row)
+                    raw['selection_status'] = 'partial'
+                    atomic(directory / f'step-{index}.json', raw)
+                    atomic(path, result)
+                try:
+                    ranked = select(meter, candidates, config['selection']['points_per_interval'],
+                                    step['name'] + ':selection', on_assessed=assessed)
+                except BaseException:
+                    if not raw['selection']:
+                        raw['selection_status'] = 'failed'
+                    raise
                 raw.update(selection=ranked, selection_status='completed')
                 x = ranked[0]['vector']
+                atomic(directory / f'step-{index}.json', raw)
             else:
                 raw['selection'] = []
                 raise ValueError('No solver candidate; selection not_run')

@@ -43,14 +43,19 @@ RFコアが6設定・28別区間・外部ポート固定S2Pを構成する。cal
 入口前に照合する。nfevをsample費用へ換算しない。stage/jobは同じmeter、trialは
 全job上限を事前に確保し、親台帳で実消費を照合する。
 
-終端476 samplesを常時予約する。明示milestoneを設定した場合は最後の実検査済み点で
-17点anytime scanを行い、その費用も同じ枠に含める。終端は**最後の合法・有限forward観測点**を
+終端476 samplesを常時予約する。step上限は当該stepのsolverと選別のrequested samplesに
+適用し、失敗forwardも課金する。明示milestoneの17点anytime scanはstep上限とは独立し、
+終端と同様にjob/trial上限と全体requested/completedへ課金する。scan前にも終端予約を守る。
+終端は**最後の合法・有限forward観測点**を
 再検査する（solverが未検査で返したxは使わない）。sample予算停止でも予約枠で検査可能。
 失敗/interrupt後には追加forwardを行わない。観測なしならterminalは`not_run`。
 観測に全x/SHA、格子、strict指標、最悪setting/segment/frequencyを含める。
 
 `run.json`、`job.json`、`step-N.json`をtemp→fsync→replaceで保存する。forward前は
 in-flight `unknown`とrequestedを保存し、正常return後のみcompletedへ計上する。
+選別候補は評価完了ごとにvector/SHAとstrict scoreを`step-N.json`へ原子的に保存し、
+全候補の選別完了前は`in_progress`または`partial`（候補なしで失敗なら`failed`）として区別する。
+選別直後のanytime scanが失敗しても、完了済み候補は先に保存される。
 stepの未完了raw、最後の合法観測、例外理由を残し、failed/interrupted/unknownでは後続jobを
 not_startedのまま停止する。sourceはHEAD、dirty patch本体/SHA、未追跡source snapshot、
 各source/lock SHA、Python/依存version/thread環境を記録する。再開/上書きは実装しない。

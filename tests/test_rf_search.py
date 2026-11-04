@@ -22,6 +22,7 @@ from lpf.search.evaluation import Evaluation, BudgetExceeded
 from lpf.search.runner import run
 from lpf.search.worker import JobSpec, execute_job
 from lpf.search.validation import score, select, pending, dense_candidate, independent_sample
+from lpf.optimizers.hybrid import HybridResult, LocalRun
 
 CONFIG = ROOT / 'project/experiments/rf_search_fixture.yaml'
 
@@ -101,6 +102,76 @@ class SearchTests(unittest.TestCase):
             m.forward(self.x, 2, 'fd')
         self.assertEqual(m.requested, 532)
 
+    def test_anytime_charged_to_job_not_step(self):
+        m = self.meter(1200, milestones=[56])
+        m.begin_stage(200)
+        m.forward(self.x, 2, 'solver')
+        m.forward(self.x, 2, 'selection')
+        self.assertEqual((m.requested, m.completed), (588, 588))
+        self.assertEqual(m.snapshot()['stage_requested'], 112)
+        with self.assertRaises(BudgetExceeded):
+            m.forward(self.x, 4, 'selection')
+        m.forward(self.x, 17, 'terminal17', terminal=True)
+        self.assertEqual(m.requested, 1064)
+
+    def test_selection_partial_checkpoints_budget_and_forward_error(self):
+        vectors = [list(self.x) for _ in range(3)]
+        for i, x in enumerate(vectors):
+            x[0] += i * 1e-6
+            validate(self.c, x, self.bounds, self.opened)
+        expected = sorted(vector_sha(x) for x in vectors)[:2]
+        runs = [LocalRun(x, None, x, None, True, 0, '', 0, 0) for x in vectors]
+        out = HybridResult(runs, None, None, 0, 'mock', 23, 1, 2, 1, .1)
+        original_forward = Evaluation.forward
+        for failure in ('budget', 'forward'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as tmp:
+                data = json.loads(self.spec(1).frozen_json)
+                data['plan']['config']['arms'][1]['steps'][0]['max_requested_samples'] = (
+                    168 if failure == 'budget' else 560)
+                spec = replace(self.spec(1), frozen_json=canonical(data), plan_sha256=sha(data['plan']))
+                path = Path(tmp) / 'job'
+                calls = []
+                def forward(meter, vector, points, stage, **kwargs):
+                    if stage.endswith(':selection'):
+                        calls.append(1)
+                        if len(calls) == 3:
+                            saved = json.loads((path / 'step-0.json').read_text())
+                            self.assertEqual(saved['selection_status'], 'partial')
+                            self.assertEqual(sorted(r['vector_sha256'] for r in saved['selection']), expected)
+                            if failure == 'forward':
+                                raise ValueError('mock forward failure')
+                    return original_forward(meter, vector, points, stage, **kwargs)
+                with patch('lpf.search.worker.hybrid_minimize', return_value=out), \
+                     patch.object(Evaluation, 'forward', forward):
+                    result = execute_job(spec, path)
+                self.assertEqual(result['status'], 'budget_exhausted' if failure == 'budget' else 'failed')
+                raw = json.loads((path / 'step-0.json').read_text())
+                self.assertEqual(raw['selection_status'], 'partial')
+                self.assertEqual(sorted(r['vector_sha256'] for r in raw['selection']), expected)
+                for row in raw['selection']:
+                    self.assertEqual(vector_sha(row['vector']), row['vector_sha256'])
+                    self.assertIn('strict_feasible', row['score'])
+
+    def test_selection_checkpoint_before_anytime_budget_stop(self):
+        runs = [LocalRun(self.x, None, self.x, None, True, 0, '', 0, 0)]
+        out = HybridResult(runs, None, None, 0, 'mock', 23, 1, 0, 1, .1)
+        data = json.loads(self.spec(1).frozen_json)
+        data['plan']['config']['arms'][1]['max_requested_samples'] = 616
+        data['plan']['config']['anytime_samples'] = [84]
+        spec = replace(self.spec(1), frozen_json=canonical(data), plan_sha256=sha(data['plan']))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'job'
+            with patch('lpf.search.worker.hybrid_minimize', return_value=out):
+                result = execute_job(spec, path)
+            raw = json.loads((path / 'step-0.json').read_text())
+            self.assertEqual(result['status'], 'budget_exhausted')
+            self.assertEqual(raw['selection_status'], 'partial')
+            self.assertEqual(raw['selection'][0]['vector_sha256'], vector_sha(self.x))
+            self.assertIn('strict_feasible', raw['selection'][0]['score'])
+            self.assertEqual(result['cost']['frequency_samples_requested'], 560)
+            self.assertEqual(result['terminal17']['status'], 'completed')
+            self.assertEqual(result['cost']['anytime17'][0]['status'], 'not_run')
+
     def test_illegal_nonfinite_open_role_and_spd_stop_without_forward(self):
         m = self.meter()
         for x in (self.x + [0.], [float('nan')] * len(self.x), [-1.] * len(self.x)):
@@ -161,7 +232,11 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(select(m, [], 3, 'selection'), [])
         self.assertEqual(dense_candidate(m, None)['status'], 'not_run')
         candidate = select(m, [self.x], 3, 'selection')[0]
-        with patch.object(m, 'forward', return_value=np.where(m.grid(1001).role == 0, .4, 31.)) as f:
+        def dense_forward(vector, points, stage, *, on_completed):
+            il = np.where(m.grid(points).role == 0, .4, 31.)
+            on_completed(il)
+            return il
+        with patch.object(m, 'forward', side_effect=dense_forward) as f:
             result = dense_candidate(m, candidate)
             self.assertEqual(result['status'], 'completed')
             self.assertEqual(f.call_args.args[1], 1001)

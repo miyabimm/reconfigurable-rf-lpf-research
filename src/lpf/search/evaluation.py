@@ -24,7 +24,7 @@ class Evaluation:
         self.reserve = 476
         self.grids, self.ledger, self.scans = {}, [], []
         self.last = None
-        self.stage_start = 0
+        self.stage_requested = 0
         self.stage_max = maximum
         self.milestones = list(milestones)
 
@@ -39,12 +39,14 @@ class Evaluation:
         return self.grids[points]
 
     def begin_stage(self, maximum):
-        self.stage_start, self.stage_max = self.requested, maximum
+        # Solver and selection only; anytime and terminal use the job budget.
+        self.stage_requested, self.stage_max = 0, maximum
 
     def snapshot(self):
         return plain({'frequency_samples_requested': self.requested,
                       'frequency_samples_completed': self.completed,
                       'failed_forwards': self.failures, 'terminal_reserved': self.reserve,
+                      'stage_requested': self.stage_requested, 'stage_max': self.stage_max,
                       'cache': 'none', 'backend': self.backend, 'ledger': self.ledger,
                       'last_legal_observation': self.last, 'anytime17': self.scans,
                       'pending_anytime_samples': self.milestones})
@@ -53,14 +55,14 @@ class Evaluation:
         if self.sink:
             self.sink(self.snapshot())
 
-    def forward(self, vector, points, stage, *, terminal=False, scan=False):
+    def forward(self, vector, points, stage, *, terminal=False, scan=False, on_completed=None):
         x = validate(self.circuit, vector, self.bounds, self.opened)
         n = 28 * points
         if terminal and (points != 17 or self.reserve != 476):
             raise ValueError('Invalid terminal reservation')
         ceiling = self.maximum if terminal else self.maximum - self.reserve
         if (self.requested + n > ceiling or
-                (not scan and not terminal and self.requested - self.stage_start + n > self.stage_max)):
+                (not scan and not terminal and self.stage_requested + n > self.stage_max)):
             raise BudgetExceeded('Next full forward batch exceeds requested-sample budget')
         if terminal:
             self.reserve = 0
@@ -69,6 +71,8 @@ class Evaluation:
                'requested': n, 'completed': 0, 'status': 'unknown',
                'vector_sha256': vector_sha(x)}
         self.requested += n
+        if not scan and not terminal:
+            self.stage_requested += n
         self.ledger.append(row)
         self.checkpoint()  # unknown in-flight cost survives kill
         wall, cpu = time.monotonic(), time.process_time()
@@ -103,6 +107,10 @@ class Evaluation:
         finally:
             row.update(wall_seconds=time.monotonic() - wall, cpu_seconds=time.process_time() - cpu)
             self.checkpoint()
+        # Selection must persist the completed score even if the subsequent
+        # anytime scan fails or exhausts its separate job budget.
+        if on_completed is not None:
+            on_completed(il)
         if not terminal and not scan:
             while self.milestones and self.requested >= self.milestones[0]:
                 milestone = self.milestones.pop(0)

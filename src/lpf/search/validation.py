@@ -21,15 +21,19 @@ def rank_key(s):
             (1, s['max_violation_db'], s['sum_violation_db'], s['worst_il_db']))
 
 
-def select(evaluation, vectors, points, stage):
+def select(evaluation, vectors, points, stage, *, on_assessed=None):
     # Fixed best-1 rule: strict RF feasibility, Vmax, Vsum, F; SHA breaks ties.
     from .storage import vector_sha
     unique = {vector_sha(x): x for x in vectors}
     assessed = []
     for digest, x in sorted(unique.items()):
-        il = evaluation.forward(x, points, stage)
-        s = score(il, evaluation.grid(points).role, evaluation.mandatory)
-        assessed.append({'vector': list(x), 'vector_sha256': digest, 'score': s})
+        def completed(il):
+            s = score(il, evaluation.grid(points).role, evaluation.mandatory)
+            row = {'vector': list(x), 'vector_sha256': digest, 'score': s}
+            assessed.append(row)
+            if on_assessed is not None:
+                on_assessed(row)
+        evaluation.forward(x, points, stage, on_completed=completed)
     return sorted(assessed, key=lambda row: (rank_key(row['score']), row['vector_sha256']))
 
 
