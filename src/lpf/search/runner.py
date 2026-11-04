@@ -38,11 +38,13 @@ def run(plan, output, *, mode='fixture', root=None):
     if mode != 'fixture':
         raise ValueError('not_ready: production requires existing G0/G1 manifest/remote readback and G2-G5 audits')
     from .plan import ROOT
-    root = ROOT if root is None else Path(root)
+    root = (ROOT if root is None else Path(root)).resolve()
     output = Path(output).resolve()
-    # No EXP directories, historical evidence, or overwrites/resume in this MVP.
+    # Ignore checkout ancestors such as ~/src: protect repository inputs, not
+    # unrelated names above the checkout. No EXP/evidence writes or resume.
+    parts = output.relative_to(root).parts if output.is_relative_to(root) else output.parts
     if any(part in ('experiments', 'data', 'rf', 'src', 'project') or part.startswith('EXP-')
-           for part in output.parts):
+           for part in parts):
         raise ValueError('Fixture output cannot target research evidence/source directories')
     output.mkdir(parents=True, exist_ok=False)
     d = plan.data

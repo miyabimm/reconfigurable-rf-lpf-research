@@ -208,6 +208,13 @@ class SearchTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertEqual(json.loads((out / 'run.json').read_text())['status'], 'completed')
 
+    def test_fixture_output_below_checkout_with_src_ancestor(self):
+        # The checkout lives under ~/src on Pi. Only repository-relative
+        # protected paths, not an ancestor directory named src, are forbidden.
+        with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
+            state = run(self.plan, Path(tmp) / 'run')
+            self.assertEqual(state['status'], 'completed')
+
     def test_parent_stop_illegal_start_retains_attempt_and_not_started(self):
         with tempfile.TemporaryDirectory() as tmp:
             with patch('lpf.search.starts.validate', side_effect=ValueError('non-SPD')):
