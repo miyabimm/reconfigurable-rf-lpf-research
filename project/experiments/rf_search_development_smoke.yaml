@@ -1,0 +1,27 @@
+# Issue #304: one fixed development fixture, NOT an EXP or G1.
+schema_version: 1
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition:
+  path: project/experiments/rf_search_development_definition.json
+  source_sha256: bdca51fb29a0f39dbc6ab7708533884beaa42396f2227e70933fcd3e2649ffaf
+  definition_sha256: bef3173906b3674bbe116083782dede8ccdffb56e8fc906c613e2bde451cff2d
+seeds: [23] # label/solver seed; fixed fixture vector, not Sobol
+max_trial_requested_samples: 1036
+anytime_samples: []
+selection: {rule: strict_vmax_vsum_il_sha, top_k: 1, points_per_interval: 3}
+validation: {terminal_points: 17, dense_points: 1001, production: not_ready}
+storage: {policy: phase2-git-only-v1, retain: all_fixture_raw, production: not_ready}
+arms:
+  - name: slsqp
+    max_requested_samples: 1036
+    steps:
+      - name: coarse_slsqp
+        solver: slsqp
+        aggregation: sum
+        points_per_interval: 2
+        max_requested_samples: 560
+        options: {max_iterations: 1, max_evaluations: 4}

@@ -27,7 +27,7 @@ class JobSpec:
 
 
 def execute_job(spec, directory):
-    """Fixture-only public runner. RF wiring is checked via Evaluation, not solvers."""
+    """Execute synthetic fixture or tightly capped development RF; never production."""
     from pathlib import Path
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
@@ -40,9 +40,15 @@ def execute_job(spec, directory):
     wall, cpu = time.monotonic(), time.process_time()
     try:
         d = spec.data
-        if d['backend'] != 'fixture':
+        if d['backend'] not in ('fixture', 'development_rf'):
             raise ValueError('not_ready: production G0/G1 and G2-G5 not connected')
         frozen = d['plan']
+        if d['backend'] == 'development_rf':
+            from .runner import check_development_plan
+            from .starts import DEVELOPMENT_VECTOR
+            check_development_plan(frozen)
+            if d['start']['seed'] != 23 or d['start']['vector'] != list(DEVELOPMENT_VECTOR):
+                raise ValueError('development_rf requires the fixed development vector')
         if sha(frozen) != spec.plan_sha256 or sha(d['source']) != spec.source_sha256:
             raise ValueError('Job provenance SHA mismatch')
         if vector_sha(d['start']['vector']) != d['start']['vector_sha256']:
@@ -55,6 +61,11 @@ def execute_job(spec, directory):
             raise ValueError('Frozen bands/S2P fingerprint mismatch')
         bounds, opened = frozen['box'], frozen['open_lower']
         validate(circuit, d['start']['vector'], bounds, opened)
+        if d['backend'] == 'development_rf':
+            from .starts import physical_box
+            if (canonical([bounds, opened]) != canonical(physical_box(circuit)) or
+                    frozen['working_stop_db'] != circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db']):
+                raise ValueError('development_rf physical box or target mismatch')
 
         def checkpoint(cost):
             result['cost'] = cost
@@ -63,7 +74,8 @@ def execute_job(spec, directory):
                 atomic(directory / f'step-{i}.json', step_raw)
 
         meter = Evaluation(circuit, bounds, opened, arm['max_requested_samples'],
-                           backend='fixture', sink=checkpoint, milestones=config['anytime_samples'])
+                           backend='rf' if d['backend'] == 'development_rf' else 'fixture',
+                           sink=checkpoint, milestones=config['anytime_samples'])
         result['status'] = 'unknown'
         atomic(path, result)
         x = d['start']['vector']

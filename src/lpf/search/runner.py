@@ -9,7 +9,8 @@ import sys
 
 from .controller import actions
 from .problem import build
-from .starts import generate, IllegalStart
+from .starts import (generate, development_start, DEVELOPMENT_DEFINITION_SHA,
+                     IllegalStart)
 from .storage import atomic, canonical, sha
 from .worker import JobSpec, execute_job
 
@@ -34,9 +35,28 @@ def provenance(root):
             'python': sys.version, 'platform': platform.platform()}
 
 
+def check_development_plan(d):
+    """Hard ceiling and fixed input for this non-EXP development smoke only."""
+    config = d['config']
+    arms = config['arms']
+    if (sha(d['definition']) != DEVELOPMENT_DEFINITION_SHA or config['seeds'] != [23] or
+            len(arms) != 1 or len(arms[0]['steps']) != 1 or config['anytime_samples'] or
+            config['max_trial_requested_samples'] > 1600 or
+            arms[0]['max_requested_samples'] > 1600 or
+            arms[0]['steps'][0]['max_requested_samples'] > 1124):
+        raise ValueError('development_rf requires fixed 4L input, one seed/step and <=1600 samples')
+    opts = arms[0]['steps'][0]['options']
+    if (opts['max_evaluations'] > 12 or
+            opts.get('max_iterations', opts.get('maxiter', 0)) > 2 or
+            opts.get('max_restarts', 0) != 0):
+        raise ValueError('development_rf solver ceiling exceeded')
+
+
 def run(plan, output, *, mode='fixture', root=None):
-    if mode != 'fixture':
+    if mode not in ('fixture', 'development_rf'):
         raise ValueError('not_ready: production requires existing G0/G1 manifest/remote readback and G2-G5 audits')
+    if mode == 'development_rf':
+        check_development_plan(plan.data)
     from .plan import ROOT
     root = (ROOT if root is None else Path(root)).resolve()
     output = Path(output).resolve()
@@ -49,7 +69,8 @@ def run(plan, output, *, mode='fixture', root=None):
     output.mkdir(parents=True, exist_ok=False)
     d = plan.data
     source = provenance(root)
-    state = {'kind': 'fixture_only_not_an_EXP', 'plan_sha256': plan.sha256,
+    state = {'kind': ('development_rf_smoke_not_an_EXP' if mode == 'development_rf'
+                      else 'fixture_only_not_an_EXP'), 'plan_sha256': plan.sha256,
              'source': source, 'source_sha256': sha(source), 'plan': d,
              'status': 'unknown', 'starts': {}, 'jobs': [], 'trials': {},
              'gates': d['gates'], 'ranking17': [], 'validation': 'not_run'}
@@ -63,13 +84,14 @@ def run(plan, output, *, mode='fixture', root=None):
         c = build(d['definition'], d['config']['rf'])
         for seed in d['config']['seeds']:
             try:
-                state['starts'][str(seed)] = generate(c, seed, d['box'])
+                state['starts'][str(seed)] = (development_start(c, seed, d['box'], d['open_lower'])
+                    if mode == 'development_rf' else generate(c, seed, d['box']))
             except IllegalStart as exc:
                 state['starts'][str(seed)] = exc.record
                 raise
         atomic(output / 'run.json', state)
         for action, row in zip(schedule, state['jobs']):
-            data = {'plan': d, 'source': source, 'backend': 'fixture',
+            data = {'plan': d, 'source': source, 'backend': mode,
                     'arm_index': action.arm_index, 'start': state['starts'][str(action.seed)]}
             spec = JobSpec(row['job_id'], row['trial_id'], plan.sha256,
                            sha(source), canonical(data))

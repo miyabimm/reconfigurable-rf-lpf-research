@@ -68,6 +68,24 @@ def validate(circuit, vector, bounds, opened):
     return x
 
 
+# Fixed existing development input from tests/test_phase2_problem_seed.py make(T008, 4).
+# Not a candidate, a generated seed, or a production initialization policy.
+DEVELOPMENT_DEFINITION_SHA = 'bef3173906b3674bbe116083782dede8ccdffb56e8fc906c613e2bde451cff2d'
+DEVELOPMENT_VECTOR = (2., 2., 2., 2., 1., .1, .02, -.03, .01, .5, .2) + (0., 3.) * 6
+
+
+def development_start(circuit, seed, bounds, opened):
+    x = list(DEVELOPMENT_VECTOR)
+    record = {'seed': seed, 'method': 'fixed_existing_4L_development_fixture',
+              'source': 'tests/test_phase2_problem_seed.py:make(RF-T008,4)',
+              'vector': x, 'vector_sha256': vector_sha(x)}
+    try:
+        validate(circuit, x, bounds, opened)
+    except ValueError as exc:
+        raise IllegalStart(record, exc) from exc
+    return {**record, 'status': 'legal'}
+
+
 class IllegalStart(ValueError):
     def __init__(self, record, cause):
         self.record = {**record, 'status': 'failed', 'reason': str(cause)}

@@ -324,6 +324,40 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(m.ledger[-1]['status'], 'unknown')
         self.assertIsNone(m.last)
 
+    def test_development_mode_fixed_input_caps_and_invalid_fd_stop(self):
+        plan = load(ROOT / 'project/experiments/rf_search_development_smoke.yaml')
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'dev'
+            def solver(callback, x, bounds, **kwargs):
+                callback(x)
+                bad = list(x)
+                bad[4] = 0.  # open GJM endpoint: never send to RF
+                callback(bad)
+            from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+            def synthetic(e, x):
+                return np.where(e.role == 0, .4, 31.)
+            with patch('lpf.search.worker.slsqp_minimize', side_effect=solver), \
+                 patch.object(CoupledLCEvaluator, 'il', synthetic):
+                state = run(plan, out, mode='development_rf')
+            self.assertEqual(state['kind'], 'development_rf_smoke_not_an_EXP')
+            self.assertEqual(state['status'], 'failed')
+            raw = json.loads((out / 'seed23_slsqp/job.json').read_text())
+            self.assertIn('Illegal physical vector', raw['exit_reason'])
+            self.assertEqual((raw['cost']['frequency_samples_requested'],
+                              raw['cost']['frequency_samples_completed']), (56, 56))
+            self.assertEqual(raw['cost']['backend'], 'rf')
+            self.assertEqual(raw['terminal17']['status'], 'not_run')
+            self.assertIsNotNone(raw['cost']['last_legal_observation'])
+            self.assertTrue(raw['validation']['candidate_promotion_blocked'])
+        from lpf.search.runner import check_development_plan
+        data = plan.data
+        data['config']['arms'][0]['max_requested_samples'] = 1601
+        with self.assertRaisesRegex(ValueError, '1600'):
+            check_development_plan(data)
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, 'fixed 4L'):
+                run(self.plan, Path(tmp) / 'bad', mode='development_rf')
+
     def test_dependency_boundary(self):
         allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf'}
         for path in (ROOT / 'src/lpf/search').glob('*.py'):

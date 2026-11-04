@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only preflight or bounded synthetic fixture run; no EXP execution."""
+"""Read-only preflight, synthetic fixture or bounded development RF; no EXP."""
 import argparse
 from pathlib import Path
 import sys
@@ -13,7 +13,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('preflight', 'run'))
     parser.add_argument('--config', required=True)
-    parser.add_argument('--mode', choices=('fixture', 'production'), default='fixture')
+    parser.add_argument('--mode', choices=('fixture', 'development_rf', 'production'), default='fixture')
     parser.add_argument('--output')
     args = parser.parse_args(argv)
     try:
