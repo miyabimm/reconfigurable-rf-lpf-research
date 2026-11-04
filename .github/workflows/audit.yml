@@ -128,6 +128,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_staged_optimization.py -v
           python -m unittest discover -s tests -p test_phase2_frequency_exchange.py -v
           python -m unittest discover -s tests -p test_phase2_optimizer_comparison.py -v
+          python -m unittest discover -s tests -p test_phase2_rf_pipeline_adapter.py -v
           python -m unittest discover -s tests -p test_hybrid_optimizer.py -v
           python -m unittest discover -s tests -p test_phase2_scipy_de_preview.py -v
           python -m unittest discover -s tests -p test_phase2_generic_starts.py -v

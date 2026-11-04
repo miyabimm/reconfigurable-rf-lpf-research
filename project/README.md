@@ -254,6 +254,12 @@ Stage Bの `candidate_pool='design_prototype'` は純直列L＋port-shunt IC 1�
 mock forwardで検査する小さなadapter。初期化も含むsample予算・中断時メーター/bestを保持し、
 物理不正proposalはRFスコアを作らずfail-closed停止する。本番runner/実RF探索は未提供。
 
+## Issue #284：RF-T008 → Hybrid/SLP 薄型接続（限定検証）
+
+[API・目的/制約・費用・検証の限界](diagnostics/issue284_rf_pipeline_adapter.md)を参照。
+開発fixtureとmock中心の接続であり、実RF最適化・EXP・候補昇格を提供しない。
+独立レビューとmain統合前は#285の比較実行可能性の根拠にしない。
+
 ## Issue #239：optimizer比較契約・RFコスト計測（本番EXPなし）
 
 [診断と未実行比較計画](diagnostics/issue239_optimizer_comparison.md)を参照。
