@@ -522,6 +522,136 @@ def load_plan(root, config_path, *, frozen_input=None):
                 input_source=frozen, input_source_sha256=canonical_config_hash(frozen))
 
 
+def load_comparison_preflight(root, config_path):
+    """Validate a proposed four-arm YAML without evaluating RF or authorizing G1.
+
+    Separate explicit schema: existing schemas 1..5 and run_plan remain untouched.
+    Complete starts are compared with the actual pipeline Sobol generator and
+    strict physical policy; the C1 record is only statically checked here. Its
+    forward-dependent deterministic replay is a later metered operation.
+    """
+    from .rf_pipeline_adapter import RFPipelineAdapter
+    from lpf.optimizers.pipeline import minimize_pipeline
+
+    root = Path(root).resolve()
+    if root != Path(ROOT).resolve():
+        raise ValueError('Comparison preflight requires the executing checkout')
+    path = Path(config_path)
+    path = (root / path).resolve() if not path.is_absolute() else path.resolve()
+    if not path.is_relative_to(root):
+        raise ValueError('Config must be in checkout')
+    config = yaml.load(path.read_text(encoding='utf-8'), Loader=_Loader)
+    _fields(config, 'schema_version kind rf objective definition_sha256 seeds pilot_seeds starts grids weights solver budgets storage source')
+    if (type(config['schema_version']) is not int or config['schema_version'] != 1 or
+            config['kind'] != 'four_arm_comparison_preflight' or
+            config['rf'] != {'id': 'RF-T008', 'allow_trial': True,
+                'effective_sha256': '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4'} or
+            config['objective'] != 'full_lpf' or
+            config['definition_sha256'] != 'bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068' or
+            config['grids'] != {'coarse': 2, 'fine': 3, 'scan': 17} or
+            config['weights'] != {'hybrid': 'equal_1db', 'slp': 'signed_max', 'final': 'strict_policy'} or
+            config['solver'] != {'a_policy': 'slsqp-staged-v2', 'hybrid_maxiter': 240,
+                'hybrid_max_evaluations': 6000, 'hybrid_max_restarts': 0, 'restart_sigma': .1,
+                'slp_max_iterations': 120, 'slp_max_evaluations': 8000,
+                'constraint_tolerance': 1e-7, 'pipeline_max_evaluations': 14000,
+                'max_slp_candidates': 1}):
+        raise ValueError('Unsupported comparison RF, definition, grids or objectives')
+    for key in ('seeds', 'pilot_seeds'):
+        _ids(config[key], integers=True)
+    if not set(config['pilot_seeds']) < set(config['seeds']):
+        raise ValueError('Pilot must be a proper seed subset')
+    budget = config['budgets']
+    _fields(budget, 'samples_per_arm total_samples milestones terminal_reserve')
+    cap = budget['samples_per_arm']
+    if (type(cap) is not int or cap < 476 or type(budget['total_samples']) is not int or
+            budget['total_samples'] != cap * 4 * len(config['seeds']) or
+            type(budget['terminal_reserve']) is not int or budget['terminal_reserve'] != 476 or
+            not isinstance(budget['milestones'], list) or not budget['milestones'] or
+            any(type(v) is not int or not 0 < v <= cap - 476 for v in budget['milestones']) or
+            budget['milestones'] != sorted(set(budget['milestones']))):
+        raise ValueError('Invalid comparison samples, milestones or terminal reservation')
+    storage = config['storage']
+    _fields(storage, 'estimated_curated_bytes rule')
+    if (type(storage['estimated_curated_bytes']) is not int or
+            not 0 < storage['estimated_curated_bytes'] <= 10_000_000 or
+            not isinstance(storage['rule'], str) or not storage['rule'].strip()):
+        raise ValueError('Invalid proposed storage estimate or selection rule')
+    source = config['source']
+    _fields(source, 'git_head uv_lock_sha256 python thread_environment')
+    if (not isinstance(source['git_head'], str) or not re.fullmatch('[0-9a-f]{40}', source['git_head']) or
+            not isinstance(source['uv_lock_sha256'], str) or not re.fullmatch('[0-9a-f]{64}', source['uv_lock_sha256']) or
+            not isinstance(source['python'], str) or not source['python'].strip() or
+            source['thread_environment'] != {k: '1' for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')}):
+        raise ValueError('Invalid proposed source or environment')
+    if file_sha256(root / 'uv.lock') != source['uv_lock_sha256']:
+        raise ValueError('Proposed uv.lock SHA mismatch')
+    import os
+    import sys
+    if (subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip() != source['git_head'] or
+            source['python'] != sys.version or
+            any(os.environ.get(k) != v for k, v in source['thread_environment'].items())):
+        raise ValueError('Proposed source or execution environment mismatch')
+    definition = _read(root / 'project/experiments/issue270-definition.json')
+    if canonical_config_hash(definition) != config['definition_sha256']:
+        raise ValueError('Definition input SHA mismatch')
+    d = dict(definition)
+    d['inductor_tree'] = InductorTree(**d['inductor_tree'])
+    d['capacitor_placement'] = CapacitorPlacement(**d['capacitor_placement'])
+    circuit = build_nominal_circuit(load_constraint('RF-T008', root=root, allow_trial=True), CircuitDefinition(**d))
+    if circuit.policy_fingerprint != config['rf']['effective_sha256'] or definition_fingerprint(circuit.definition) != config['definition_sha256']:
+        raise ValueError('Circuit policy or definition differs')
+    checkpoint = root / 'experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json'
+    manifest = root / 'experiments/chatgpt_topology_search/runs/EXP-062/manifest.json'
+    evidence = {'checkpoint_topology': 'not_checked', 'manifest_sha': 'not_checked',
+                'remote_readback': 'not_checked'}
+    if checkpoint.is_file():
+        _check_continuation_reference(root, {
+            'definition_source': {'path': 'project/experiments/issue270-definition.json',
+                                  'sha256': '07e64095710452a12c1f71f84feaabad35ad4613e6f68646e4a27ce5cb3ccff0'},
+            'topology_reference': {'path': checkpoint.relative_to(root).as_posix(),
+                                   'sha256': '4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b'}}, circuit)
+        evidence['checkpoint_topology'] = 'local_structure_and_sha_match'
+    if manifest.is_file():
+        if file_sha256(manifest) != '9b5301ffc24bd1130fb7263b61626fff902ff378f23e92c180fc3c3876cb3f3a':
+            raise ValueError('EXP-062 source manifest SHA mismatch')
+        evidence['manifest_sha'] = 'local_sha_match'
+    adapter = RFPipelineAdapter(circuit, 2)
+    starts = config['starts']
+    if not isinstance(starts, list) or len(starts) != len(config['seeds']):
+        raise ValueError('Expected one common start for every seed')
+    for start, seed in zip(starts, config['seeds']):
+        _fields(start, 'seed vector vector_sha256 seed_record')
+        if type(start['seed']) is not int or start['seed'] != seed:
+            raise ValueError('Start/seed order mismatch')
+        result = minimize_pipeline(adapter.residuals, adapter.errors, adapter.bounds,
+            seed=seed, sobol_m=0, starts=(), max_evaluations=0,
+            hybrid_max_evaluations=1, hybrid_maxiter=1, hybrid_max_restarts=0,
+            restart_sigma=.1, slp_max_evaluations=2, slp_max_iterations=1,
+            max_slp_candidates=1, constraints=adapter.constraints)
+        vector = np.asarray(start['vector'], dtype=float)
+        if (not np.array_equal(vector, result['starts'][0]['x']) or
+                vector_fingerprint(vector) != start['vector_sha256']):
+            raise ValueError('Start differs from pipeline Sobol vector or SHA')
+        adapter.comparison.validate_vector(vector)
+        record = start['seed_record']
+        _fields(record, 'vector input_vector input_vector_sha256 policy_id policy_fingerprint definition_sha256 seed jitter_fraction changes points_per_interval candidate_promotion_blocked')
+        seeded = np.asarray(record['vector'], dtype=float)
+        if (seeded.shape != (len(vector) + 1,) or not np.all(np.isfinite(seeded)) or
+                not np.array_equal(seeded[:-1], vector) or
+                not np.array_equal(np.asarray(record['input_vector'], dtype=float), vector) or
+                record['input_vector_sha256'] != start['vector_sha256'] or
+                record['policy_id'] != 'RF-T008' or record['policy_fingerprint'] != circuit.policy_fingerprint or
+                record['definition_sha256'] != config['definition_sha256'] or
+                type(record['seed']) is not int or record['seed'] != seed or
+                record['jitter_fraction'] != 0 or record['changes'] not in ([], ()) or
+                record['points_per_interval'] != 2 or record['candidate_promotion_blocked'] is not True):
+            raise ValueError('C1 seed provenance or physical vector mismatch')
+    return {'kind': config['kind'], 'config_sha256': canonical_config_hash(config),
+            'starts': [{'seed': s['seed'], 'vector_sha256': s['vector_sha256']} for s in starts],
+            'source_evidence': evidence, 'c1_forward_replay': 'not_run', 'g0_g1_g2': 'not_run',
+            'production_readiness': 'not_ready'}
+
+
 class ContinuationPreparationError(RuntimeError):
     """Initialization failed; retain actual consumed cost and original reason."""
     def __init__(self, cause, cost, timing):

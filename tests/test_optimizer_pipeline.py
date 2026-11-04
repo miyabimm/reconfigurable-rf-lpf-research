@@ -20,6 +20,23 @@ def run(residuals, errors, bounds, **kwargs):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_optional_evaluation_hook_reports_actual_stage_and_kind(self):
+        events = []
+        options = dict(sobol_m=0, constraints=lambda x: [1.],
+                       hybrid_max_evaluations=1, slp_max_evaluations=2,
+                       max_slp_candidates=1)
+        plain = run(lambda x: [x[0]], lambda x: [x[0]], [(1, 1)], **options)
+        hooked = run(lambda x: [x[0]], lambda x: [x[0]], [(1, 1)],
+                     evaluation_hook=lambda stage, kind: events.append((stage, kind)), **options)
+        self.assertEqual(plain, hooked)
+        for stage, counts in hooked['counts'].items():
+            for kind, count in counts.items():
+                self.assertEqual(events.count((stage, kind)), count)
+        self.assertIn(('selection', 'errors'), events)
+        self.assertIn(('selection', 'constraints'), events)
+        with self.assertRaisesRegex(ValueError, 'evaluation_hook'):
+            run(lambda x: x, lambda x: x, [(0, 1)], evaluation_hook=1)
+
     def test_real_solvers_use_separate_objectives_and_improve(self):
         # Hybrid favors 0.1; signed minimax of x-1 and -x is at 0.5.
         with patch('lpf.optimizers.pipeline.hybrid_minimize', wraps=hybrid_minimize) as h, \

@@ -21,7 +21,8 @@ def minimize_pipeline(residuals, errors, bounds, *, seed, sobol_m, max_evaluatio
                       hybrid_max_evaluations, hybrid_maxiter, hybrid_max_restarts,
                       restart_sigma, slp_max_evaluations, slp_max_iterations,
                       max_slp_candidates, starts=(), constraints=None, weights=None,
-                      duplicate_tolerance=1e-9, constraint_tolerance=1e-7):
+                      duplicate_tolerance=1e-9, constraint_tolerance=1e-7,
+                      evaluation_hook=None):
     """Run a bounded, serial pipeline; both callbacks' meanings belong to caller.
 
     Explicit starts precede the 2**sobol_m Sobol points. Duplicates use Euclidean
@@ -38,7 +39,9 @@ def minimize_pipeline(residuals, errors, bounds, *, seed, sobol_m, max_evaluatio
     The result is a dict containing starts, candidates, stage records, selection,
     best and actual counts by stage/callback. A best point need not be converged.
     Individual solver caps are per start/candidate; the total is shared across all
-    callbacks. A selection interrupted by the budget retains partial records.
+    callbacks. An optional evaluation_hook(stage, kind) runs immediately before
+    each callback; exceptions propagate and it must not evaluate the objective.
+    A selection interrupted by the budget retains partial records.
     """
     box = np.asarray(bounds, dtype=float)
     if box.ndim != 2 or box.shape[1] != 2 or not len(box) or not np.all(np.isfinite(box)):
@@ -60,6 +63,8 @@ def minimize_pipeline(residuals, errors, bounds, *, seed, sobol_m, max_evaluatio
             raise ValueError(f'{name} must be an integer >= {minimum}')
     if not callable(residuals) or not callable(errors) or (constraints is not None and not callable(constraints)):
         raise ValueError('callbacks must be callable')
+    if evaluation_hook is not None and not callable(evaluation_hook):
+        raise ValueError('evaluation_hook must be callable')
     if not np.isfinite(duplicate_tolerance) or duplicate_tolerance < 0:
         raise ValueError('duplicate_tolerance must be finite and nonnegative')
     if not np.isfinite(constraint_tolerance) or constraint_tolerance <= 0:
@@ -78,6 +83,8 @@ def minimize_pipeline(residuals, errors, bounds, *, seed, sobol_m, max_evaluatio
         # Solver caps and the selection guard ensure no call reaches this at cap.
         if total() >= max_evaluations:
             raise RuntimeError('internal budget guard')
+        if evaluation_hook is not None:
+            evaluation_hook(stage, kind)
         counts[stage][kind] += 1
         raw = fun(np.asarray(x).copy())
         if kind == 'residuals':

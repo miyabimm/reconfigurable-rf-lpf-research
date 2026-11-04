@@ -374,6 +374,7 @@ def main(argv=None):
     diag.add_argument('--inductors', required=True, type=int, choices=(3, 4))
     comparison = sub.add_parser('comparison-readiness', help='partial read-only RF-T008 comparison checks; never execute')
     comparison.add_argument('--allow-trial', action='store_true', required=True)
+    comparison.add_argument('--config', help='optional proposed comparison YAML; read-only, not G1')
     pre = sub.add_parser('exp-preflight', help='read-only technical readiness checks; never execute')
     for arg in ('experiment-id', 'owner', 'request-id', 'policy', 'policy-sha256',
                 'source-sha', 'bands-sha256', 'input-sha256'):
@@ -404,6 +405,9 @@ def main(argv=None):
     elif args.mode == 'comparison-readiness':
         from lpf.phase2_models.comparison_readiness import comparison_readiness
         result = comparison_readiness(ROOT, allow_trial=args.allow_trial)
+        if args.config:
+            from lpf.phase2_models.experiment_config import load_comparison_preflight
+            result['proposed_plan'] = load_comparison_preflight(ROOT, args.config)
     elif args.mode == 'exp-preflight':
         result = exp_preflight(ROOT, args.experiment_id, owner=args.owner, request_id=args.request_id,
                                policy_id=args.policy, policy_sha256=args.policy_sha256,

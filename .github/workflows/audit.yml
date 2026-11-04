@@ -131,6 +131,7 @@ jobs:
           python -m unittest discover -s tests -p test_phase2_rf_pipeline_adapter.py -v
           python -m unittest discover -s tests -p test_phase2_comparison_mock_preflight.py -v
           python -m unittest discover -s tests -p test_hybrid_optimizer.py -v
+          python -m unittest discover -s tests -p test_optimizer_pipeline.py -v
           python -m unittest discover -s tests -p test_phase2_scipy_de_preview.py -v
           python -m unittest discover -s tests -p test_phase2_generic_starts.py -v
           python -m unittest discover -s tests -p test_phase2_normalized_epigraph.py -v

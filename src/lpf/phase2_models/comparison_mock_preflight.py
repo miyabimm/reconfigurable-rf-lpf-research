@@ -20,7 +20,7 @@ from .problem_seed import definition_fingerprint, vector_fingerprint
 from .optimizer_comparison import sampled_score
 from .rf_pipeline_adapter import RFPipelineAdapter
 from .sampled_epigraph import SampledEpigraph
-from .staged_optimization import run_c1_staged, _json_value
+from .staged_optimization import run_c1_staged, scipy_slsqp_stage, _json_value
 
 
 _PIPELINE = dict(sobol_m=0, starts=(), max_evaluations=20,
@@ -48,12 +48,15 @@ class _GridBudget(SampleBudgetCost):
         self.grids = {}
         self.stages = {}
         self.stage = 'not_started'
+        self.before_forward = None
         self.on_forward = None
 
     def forward(self, evaluator, vector):
         n = len(evaluator.f)
         if not self.terminal and self.frequency_samples_requested + n > self.max_samples - 476:
             raise SampleBudgetExceeded('Terminal 17-point scan reservation')
+        if self.before_forward is not None:
+            self.before_forward(evaluator, vector)
         before = self.snapshot()
         try:
             result = super().forward(evaluator, vector)
@@ -69,17 +72,22 @@ class _GridBudget(SampleBudgetCost):
         return result
 
 
-def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, milestones=()):
+def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, milestones=(),
+                 scipy_stage=False, mock_stage_override=None):
     """Exercise one existing API with mock RF only, saving an atomic temp record.
 
     This deliberately small-budget probe cannot establish production readiness.
     The last observation is a legal finite forward, not necessarily an optimizer
-    iterate. The C1 optimizer itself is a mock, not SciPy.
+    iterate. The optional real SciPy stage still uses mocked RF only.
     """
     if not isinstance(mock_forward, Mock):
         raise TypeError('mock_forward must be a unittest.mock.Mock')
     if arm not in ('A', 'B', 'C', 'D'):
         raise ValueError('Unknown arm')
+    if type(scipy_stage) is not bool or (scipy_stage and arm != 'A'):
+        raise ValueError('Real SciPy stage is restricted to mock-forward arm A')
+    if mock_stage_override is not None and (arm != 'A' or scipy_stage or not isinstance(mock_stage_override, Mock)):
+        raise ValueError('Stage override must be a mock for arm A only')
     output = Path(output).resolve()
     if not output.is_relative_to(Path(gettempdir()).resolve()) or output.exists():
         raise ValueError('Output must be a new temporary fixture')
@@ -87,10 +95,11 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
             or tuple(sorted(set(milestones))) != milestones):
         raise ValueError('Milestones must be strictly increasing positive integers')
     meter = _GridBudget(max_samples)
-    record = dict(arm=arm, seed=seed, state='not_run', stage='start',
+    record = dict(arm=arm, seed=seed, state='not_run', solver_state='not_run', stage='start',
                   start=None, last_observation=None, result=None, error=None,
                   anytime='mock_four_arm', terminal_reservation='mock_only', scans=[],
-                  terminal_scan='not_run', production_g0_g1_g2='not_run',
+                  terminal_scan='not_run', optimizer='scipy' if scipy_stage else 'mock_or_generic',
+                  production_g0_g1_g2='not_run',
                   dense='not_run', independent_mna='not_run')
     def save():
         record['cost'] = meter.snapshot()
@@ -156,13 +165,20 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
                                             'reason': 'terminal_reservation'})
                 else:
                     scan(milestone)
+        # Validate before entering any RF forward, including SLSQP's finite
+        # differences. The post-forward observer separately rejects nonfinite IL.
+        meter.before_forward = lambda evaluator, vector: coarse.comparison.validate_vector(vector)
         meter.on_forward = observed
-        def observe(adapter, method):
+        def observe(adapter, method, *, pipeline=False):
             def callback(vector):
-                record['stage'] = method
-                meter.stage = method
+                if not pipeline:
+                    record['stage'] = method
+                    meter.stage = method
                 return getattr(adapter, method)(vector)
             return callback
+        def pipeline_stage(stage, kind):
+            meter.stage = 'pipeline_' + stage + '_' + kind
+            record['stage'] = meter.stage
         with patch.object(evaluator_type, 'il', new=fake_il):
             record['stage'] = 'solver'
             if arm == 'A':
@@ -181,13 +197,16 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
                 def stage_sink(snapshot):
                     record['c1_snapshot'] = _json_value(snapshot)
                     if snapshot['stage_calls']:
-                        meter.stage = 'c1_' + snapshot['stage_calls'][-1]['stage']
+                        call = snapshot['stage_calls'][-1]
+                        meter.stage = f"c1_{call['stage']}_attempt_{call['attempt_index']}"
                         record['stage'] = meter.stage
                     save()
                 meter.stage = 'seed_replay'
                 record['stage'] = 'seed_replay'
                 result = run_c1_staged(circuit, seed_record, coarse_points=2, fine_points=3,
-                                       optimize_stage=mock_stage, cost_meter=meter,
+                                       optimize_stage=(scipy_slsqp_stage if scipy_stage else
+                                                       mock_stage_override or mock_stage),
+                                       cost_meter=meter,
                                        require_legal_output=True, record_sink=stage_sink)
             elif arm == 'B':
                 result = asdict(hybrid_minimize(observe(coarse, 'residuals'), x, coarse.bounds,
@@ -198,8 +217,10 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
                     constraints=observe(fine, 'constraints'), aggregation='signed_max',
                     max_iterations=1, max_evaluations=2))
             else:
-                result = minimize_pipeline(observe(coarse, 'residuals'), observe(fine, 'errors'),
-                    coarse.bounds, constraints=observe(fine, 'constraints'), seed=seed, **_PIPELINE)
+                result = minimize_pipeline(observe(coarse, 'residuals', pipeline=True),
+                    observe(fine, 'errors', pipeline=True), coarse.bounds,
+                    constraints=observe(fine, 'constraints', pipeline=True), seed=seed,
+                    evaluation_hook=pipeline_stage, **_PIPELINE)
                 if not np.array_equal(result['starts'][0]['x'], x):
                     raise ValueError('Pipeline Sobol start mismatch')
             # A reports internal callback failures as a returned record. Do not
@@ -210,6 +231,18 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
         record['result'] = _json_value(result)
         # C1 returns failures and budget exhaustion inside its record.
         c1_state = result.get('numerical_state') if arm == 'A' else None
+        if arm == 'A':
+            record['solver_state'] = c1_state
+        elif arm == 'B':
+            record['solver_state'] = ('callback_budget_exhausted' if result['stop_reason'] == 'evaluation_budget_exhausted'
+                                      else 'converged' if result['runs'] and result['runs'][-1]['success']
+                                      else 'not_converged')
+        elif arm == 'C':
+            record['solver_state'] = 'converged' if result['success'] else 'not_converged'
+        else:
+            record['solver_state'] = ('callback_budget_exhausted' if result['stop_reason'] == 'evaluation_budget_exhausted'
+                                      else 'not_run' if result['best'] is None else
+                                      'converged' if result['best']['success'] else 'not_converged')
         if c1_state in ('budget_exhausted', 'failed'):
             record['state'] = c1_state
             record['error'] = result['exception']
@@ -218,6 +251,7 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
             record['state'] = 'returned_unverified'
     except SampleBudgetExceeded as exc:
         record['state'] = 'budget_exhausted'
+        record['solver_state'] = 'budget_exhausted'
         record['error'] = {'type': type(exc).__name__, 'message': str(exc)}
         if record['last_observation'] is not None and record['terminal_scan'] == 'not_run':
             try:
@@ -228,9 +262,11 @@ def run_mock_arm(circuit, arm, seed, *, mock_forward, output, max_samples=2000, 
                     'error': {'type': type(scan_exc).__name__, 'message': str(scan_exc)}})
     except Exception as exc:
         record['state'] = 'failed'
+        record['solver_state'] = 'failed'
         record['error'] = {'type': type(exc).__name__, 'message': str(exc)}
     except BaseException as exc:
         record['state'] = 'interrupted'
+        record['solver_state'] = 'interrupted'
         record['error'] = {'type': type(exc).__name__, 'message': str(exc)}
         raise
     finally:

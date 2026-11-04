@@ -257,8 +257,9 @@ mock forwardで検査する小さなadapter。初期化も含むsample予算・�
 ## Issue #299：4群比較のmock・read-only部分preflight（本番STOP）
 
 `uv run --frozen python scripts/run_phase2_shared.py comparison-readiness --allow-trial` は
-RF-T008と利用可能な入力byteをread-onlyで部分照合する。常に `production_readiness=not_ready`、
-G0/G1/G2は `not_run`。mockのみの4群配線・anytimeと未完了ゲートは
+RF-T008と利用可能な入力byteをread-onlyで部分照合する。任意の `--config <YAML>` は
+比較専用の明示opt-in提案schemaで完全startと予算等を静的照合するが、C1 replayやG1凍結はしない。
+常に `production_readiness=not_ready`、G0/G1/G2は `not_run`。mockのみの4群配線・anytimeと未完了ゲートは
 [診断](diagnostics/issue299_mock_preflight.md)参照。実験実行の入口や許可ではない。
 
 ## Issue #285：SLSQP v2 / Hybrid / SLP 同費用比較（計画のみ）
