@@ -129,6 +129,12 @@ class SampledEpigraphTests(unittest.TestCase):
             vector[4] = invalid
             with self.subTest(seed=invalid), self.assertRaises(ValueError):
                 seed(limited, vector)
+        vector = physical.copy()
+        vector[-1] = 4.
+        with self.assertRaisesRegex(ValueError, 'clipping is forbidden'):
+            seed(limited, vector)
+        with self.assertRaisesRegex(ValueError, 'Jitter'):
+            seed(limited, physical, jitter_fraction=.01)
         start = seed(base, physical)
         source = {'kind': 'synthetic', 'git_head': 'a' * 40,
                   'dirty_patch_sha256': 'b' * 64, 'input_source_sha256': 'c' * 64}
@@ -140,6 +146,9 @@ class SampledEpigraphTests(unittest.TestCase):
                     source_provenance=source, optimize_stage=optimizer,
                     record_sink=lambda snapshot: None, gjm_search_max_pf=10,
                     stop_after='all_20.0')
+        clipped = dict(start, changes=[{'index': 4, 'kind': 'clip'}])
+        with self.assertRaisesRegex(ValueError, 'must not be clipped or jittered'):
+            run_c1_continuation(p.circuit, clipped, **args)
         result = run_c1_continuation(p.circuit, start, **args)
         self.assertEqual(result['state'], 'diagnostic_end_at_20db')
         self.assertEqual(result['stages'][-1]['label'], 'all_20.0')

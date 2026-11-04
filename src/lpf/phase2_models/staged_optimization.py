@@ -479,6 +479,10 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
     v = np.asarray(seed_record['vector'], dtype=float).copy()
     if v.shape != (circuit.schema.vector_length + 1,) or not np.all(np.isfinite(v)):
         raise ValueError('Expected complete initial physical vector and epigraph')
+    if stop_after is not None and (seed_record.get('changes') or
+            seed_record.get('jitter_fraction') != 0 or
+            not np.array_equal(np.asarray(seed_record['input_vector'], dtype=float), v[:-1])):
+        raise ValueError('Diagnostic initial seed must not be clipped or jittered')
     if gjm_search_max_pf is not None and (any(
             (lo is not None and value < lo) or (hi is not None and value > hi)
             for value, (lo, hi) in zip(v, search_box.bounds)) or any(

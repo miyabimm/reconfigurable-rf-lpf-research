@@ -121,12 +121,13 @@ def make_seed(problem, vector, *, policy_id, policy_fingerprint,
     if vector_fingerprint(x) != input_sha256:
         raise ValueError("Seed vector SHA mismatch")
     original = tuple(map(float, x))
-    if getattr(problem, "gjm_search_max_pf", None) is not None and any(
-            x[i] <= problem.box.bounds[i][0] or x[i] > problem.box.bounds[i][1]
-            for i, kind in enumerate(c.definition.fixed_c_types,
-                                     start=len(c.definition.inductor_types))
-            if kind == "GJM01"):
-        raise ValueError("Seed outside GJM search box; clipping is forbidden")
+    if getattr(problem, "gjm_search_max_pf", None) is not None:
+        if jitter_fraction:
+            raise ValueError("Jitter is not supported with a GJM search box")
+        if (any(x[i] < lo or x[i] > hi
+                for i, (lo, hi) in enumerate(problem.box.bounds[:-1])) or
+                any(x[i] <= problem.box.bounds[i][0] for i in problem.box.open_lower)):
+            raise ValueError("Seed outside search box; clipping is forbidden")
     x = x.copy()
     changes = []
     rng = np.random.default_rng(seed)
