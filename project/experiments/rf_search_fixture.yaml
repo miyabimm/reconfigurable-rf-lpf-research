@@ -1,0 +1,60 @@
+# Development fixture ONLY. All forward IL is synthetic; not an EXP/G1 plan.
+schema_version: 1
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition:
+  path: project/experiments/issue270-definition.json
+  source_sha256: 07e64095710452a12c1f71f84feaabad35ad4613e6f68646e4a27ce5cb3ccff0
+  definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+seeds: [23]
+max_trial_requested_samples: 7200
+anytime_samples: []
+selection: {rule: strict_vmax_vsum_il_sha, top_k: 1, points_per_interval: 3}
+validation: {terminal_points: 17, dense_points: 1001, production: not_ready}
+storage: {policy: phase2-git-only-v1, retain: all_fixture_raw, production: not_ready}
+arms:
+  - name: slsqp
+    max_requested_samples: 1800
+    steps:
+      - name: squared_slsqp
+        solver: slsqp
+        aggregation: sum
+        points_per_interval: 3
+        max_requested_samples: 560
+        options: {max_iterations: 1, max_evaluations: 4}
+  - name: hybrid
+    max_requested_samples: 1800
+    steps:
+      - name: squared_hybrid
+        solver: hybrid
+        aggregation: sum
+        points_per_interval: 2
+        max_requested_samples: 560
+        options: {maxiter: 1, max_restarts: 0, max_evaluations: 4, restart_sigma: 0.1}
+  - name: slp
+    max_requested_samples: 1800
+    steps:
+      - name: signed_slp
+        solver: slp
+        aggregation: signed_max
+        points_per_interval: 3
+        max_requested_samples: 560
+        options: {max_iterations: 1, max_evaluations: 4}
+  - name: hybrid_slp
+    max_requested_samples: 1800
+    steps:
+      - name: squared_hybrid
+        solver: hybrid
+        aggregation: sum
+        points_per_interval: 2
+        max_requested_samples: 560
+        options: {maxiter: 1, max_restarts: 0, max_evaluations: 4, restart_sigma: 0.1}
+      - name: signed_slp
+        solver: slp
+        aggregation: signed_max
+        points_per_interval: 3
+        max_requested_samples: 560
+        options: {max_iterations: 1, max_evaluations: 4}
