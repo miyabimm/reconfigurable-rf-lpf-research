@@ -15,6 +15,13 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
 - Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
 
+## 新・逐次search runner（Issue #302、fixture限定）
+
+`scripts/run_rf_search.py` → `lpf.search` は旧実行/探索/保存層に依存しない新経路。
+[CLI・数式・依存境界・未接続の本番ゲート](diagnostics/issue302_sequential_search.md)を参照。
+`preflight`はread-only、`run`はsynthetic fixtureのみ。本番runは`not_ready`で停止する。
+旧CLIとの互換・旧EXP変換は行わない。
+
 ## 共通YAML CLI（コード検証と本番実験は別）
 
 `scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
