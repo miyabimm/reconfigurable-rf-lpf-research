@@ -33,7 +33,7 @@ class _BudgetExhausted(Exception):
     pass
 
 
-def minimize_minimax(
+def _minimize_core(
     errors: Callable,
     x0,
     bounds,
@@ -46,8 +46,10 @@ def minimize_minimax(
     fd_step: float = 1e-6,
     tolerance: float = 1e-7,
     constraint_tolerance: float = 1e-7,
+    aggregation: str = "signed_max",
+    weights=None,
 ) -> MinimaxResult:
-    """Minimize max(errors(x)) with box bounds and optional constraints(x)>=0.
+    """Minimize transformed errors with box bounds and optional constraints(x)>=0.
 
     Step sizes are fractions of each bound width. Finite differences and every
     actual callback invocation, including rejected trials, count toward the
@@ -58,6 +60,16 @@ def minimize_minimax(
     converged. LP failures and exhausted budgets never imply infeasibility or
     optimality. No SLSQP refinement is currently used.
     """
+    if not isinstance(aggregation, str) or aggregation not in ("sum", "max", "signed_max"):
+        raise ValueError("aggregation must be 'sum', 'max', or 'signed_max'")
+    if aggregation == "signed_max" and weights is not None:
+        raise ValueError("weights are not supported for signed_max")
+    if weights is not None:
+        weights = np.asarray(weights, dtype=float)
+        if weights.ndim != 1 or not weights.size or not np.all(np.isfinite(weights)) or np.any(weights < 0):
+            raise ValueError("weights must be a nonempty finite nonnegative vector")
+        weights = weights.copy()
+
     x = np.asarray(x0, dtype=float)
     box = np.asarray(bounds, dtype=float)
     if x.ndim != 1 or not x.size or not np.all(np.isfinite(x)):
@@ -97,6 +109,15 @@ def minimize_minimax(
                 sizes[i] = value.size
             elif sizes[i] != value.size:
                 raise ValueError("callback output shape changed")
+            if i == 0 and aggregation != "signed_max":
+                if weights is not None and weights.size != value.size:
+                    raise ValueError("weights must match residual length")
+                with np.errstate(over="ignore", invalid="ignore"):
+                    value = value * value if weights is None else weights * value * value
+                    if aggregation == "sum":
+                        value = np.array([np.sum(value)])
+                if not np.all(np.isfinite(value)):
+                    raise ValueError("weighted squared objective must be finite")
             values.append(value)
         return values
 
@@ -180,3 +201,22 @@ def minimize_minimax(
     feasible = v <= constraint_tolerance
     return MinimaxResult(x.copy(), float(np.max(e)), v, feasible, converged and feasible,
                          Stage(reason, iterations, calls), Stage("not_run", 0, 0))
+
+
+def minimize_minimax(
+    errors: Callable, x0, bounds, *, max_iterations: int, max_evaluations: int,
+    constraints: Callable | None = None, initial_step: float = 0.25,
+    min_step: float = 1e-8, fd_step: float = 1e-6, tolerance: float = 1e-7,
+    constraint_tolerance: float = 1e-7,
+) -> MinimaxResult:
+    """Minimize the maximum signed error; legacy API, with no automatic weighting.
+
+    Callback calls, including finite differences and rejected trials, share the
+    hard evaluation budget. Success is a local stationarity heuristic subject
+    to HiGHS tolerances, not a global optimality certificate. No SLSQP is run.
+    """
+    return _minimize_core(
+        errors, x0, bounds, max_iterations=max_iterations, max_evaluations=max_evaluations,
+        constraints=constraints, initial_step=initial_step, min_step=min_step,
+        fd_step=fd_step, tolerance=tolerance, constraint_tolerance=constraint_tolerance,
+    )
