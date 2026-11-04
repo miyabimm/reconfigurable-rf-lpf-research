@@ -87,7 +87,8 @@ not_startedのまま停止する。sourceはHEAD、dirty patch本体/SHA、未�
 
 ## ゲートと未実装（本番は常にSTOP）
 
-CLIの`--mode production`もworkerの非fixture backendも`not_ready`で拒否する。
+CLIの`--mode production`と未知backendは`not_ready`で拒否する。
+Issue #304の限定`development_rf`は[別記](issue304_development_rf.md)の固定入力・小上限だけを許可し、本番ではない。
 fixture用保存をmanifest/storage auditのPASSと称さない。将来本番を接続するには、
 既存運用正本・保存ポリシーのまま次を接続する必要がある（別承認規格は作らない）：
 

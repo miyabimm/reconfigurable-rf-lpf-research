@@ -19,7 +19,9 @@ git sparse-checkout set --cone project rf src scripts tests .github
 
 `scripts/run_rf_search.py` → `lpf.search` は旧実行/探索/保存層に依存しない新経路。
 [CLI・数式・依存境界・未接続の本番ゲート](diagnostics/issue302_sequential_search.md)を参照。
-`preflight`はread-only、`run`はsynthetic fixtureのみ。本番runは`not_ready`で停止する。
+`preflight`はread-only、既定`run`はsynthetic fixture。
+明示`development_rf`は[固定4L・小上限の非EXP開発smoke](diagnostics/issue304_development_rf.md)のみ。
+本番runは`not_ready`で停止する。
 旧CLIとの互換・旧EXP変換は行わない。
 
 ## 共通YAML CLI（コード検証と本番実験は別）

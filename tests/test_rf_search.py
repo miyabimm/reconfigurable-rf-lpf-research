@@ -206,8 +206,11 @@ class SearchTests(unittest.TestCase):
         with patch.object(type(e), 'il', return_value=np.full(56, np.nan)):
             with self.assertRaises(ValueError):
                 m.forward(self.x, 2, 'nonfinite')
+        with patch.object(type(e), 'il', return_value=np.zeros(55)):
+            with self.assertRaisesRegex(ValueError, 'sample count'):
+                m.forward(self.x, 2, 'incomplete')
         self.assertIs(m.last, last)
-        self.assertEqual((m.requested, m.completed, m.failures), (224, 56, 3))
+        self.assertEqual((m.requested, m.completed, m.failures), (280, 56, 4))
 
     def test_worker_interrupt_and_budget_partial_records(self):
         for exc, status in ((KeyboardInterrupt(), 'interrupted'),
@@ -357,6 +360,28 @@ class SearchTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(ValueError, 'fixed 4L'):
                 run(self.plan, Path(tmp) / 'bad', mode='development_rf')
+
+    def test_development_solver_budget_is_separate_and_keeps_result(self):
+        from lpf.optimizers.slsqp import SLSQPResult
+        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        plan = load(ROOT / 'project/experiments/rf_search_development_smoke.yaml')
+        def solver(callback, x, bounds, **kwargs):
+            callback(x)
+            return SLSQPResult(np.asarray(x), 'sum', 1., 1., False, False,
+                               'evaluation_budget_exhausted', None, 'limit', 0, 1, 0, 1,
+                               None, None, None)
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=solver), \
+             patch.object(CoupledLCEvaluator, 'il', lambda e, x: np.where(e.role == 0, .4, 31.)):
+            out = Path(tmp) / 'dev'
+            state = run(plan, out, mode='development_rf')
+            raw = json.loads((out / 'seed23_slsqp/job.json').read_text())
+            self.assertEqual(state['jobs'][0]['status'], 'budget_exhausted')
+            self.assertEqual(raw['exit_reason'], 'solver: evaluation_budget_exhausted')
+            self.assertEqual(raw['steps'][0]['status'], 'budget_exhausted')
+            self.assertEqual(raw['steps'][0]['selection_status'], 'not_run')
+            self.assertEqual(raw['terminal17']['status'], 'completed')
+            self.assertEqual(raw['cost']['frequency_samples_requested'], 532)
 
     def test_dependency_boundary(self):
         allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf'}

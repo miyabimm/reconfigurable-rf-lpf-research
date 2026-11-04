@@ -108,6 +108,16 @@ def execute_job(spec, directory):
             raw.update(solver_result=plain(out), status='converged' if success else 'not_converged')
             all_success &= success
             atomic(directory / f'step-{index}.json', raw)
+            if d['backend'] == 'development_rf':
+                # A solver callback cap is distinct from ordinary nonconvergence.
+                # Preserve its complete result, stop the sequence, and retain the
+                # reserved terminal scan at the last observed legal point.
+                reason = getattr(out, 'stop_reason', None)
+                if step['solver'] == 'slp':
+                    reason = out.slp.reason
+                if reason in ('evaluation_budget_exhausted', 'evaluation_limit'):
+                    raw['status'] = 'budget_exhausted'
+                    raise BudgetExceeded(f'solver: {reason}')
             # Selection forwards count against this step and the shared job/trial.
             if candidates:
                 raw['selection_status'] = 'in_progress'
