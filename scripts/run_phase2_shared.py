@@ -255,7 +255,8 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
     from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
     from lpf.phase2_models.experiment_config import (_Loader, _check_continuation_reference,
-        continuation_program_sha256, ContinuationPreparationError, prepare_continuation_starts, stable_identity)
+        continuation_program_sha256, ContinuationPreparationError, prepare_continuation_starts,
+        prepare_diagnostic_starts, stable_identity)
     from lpf.phase2_models.synthetic_runner import _read
     from scripts.experiment_id_registry import is_reserved_on_main
 
@@ -279,7 +280,31 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     if subprocess.check_output(['git', 'show', 'origin/main:' + config_file.relative_to(root).as_posix()], cwd=root) != config_bytes:
         raise ValueError('Preparation config differs from origin/main')
     config = yaml.load(config_bytes, Loader=_Loader)
-    if (not isinstance(config, dict) or config.get('schema_version') != 4 or
+    diagnostic = isinstance(config, dict) and config.get('schema_version') == 5
+    if diagnostic:
+        expected_keys = {'schema_version', 'rf', 'objective', 'definition_sha256', 'plan',
+            'iteration_policy_id', 'grids', 'samples_per_start', 'seeds', 'methods', 'pilot_seeds',
+            'selection', 'budgets', 'continuation', 'definition_source', 'topology_reference', 'nominal_source'}
+        if (set(config) != expected_keys or config['methods'] != ['Control100', 'Limit10'] or
+                config['seeds'] != [23] or config['pilot_seeds'] != [23] or
+                config['samples_per_start'] != 500000 or
+                config['grids'] != {'coarse_points': 2, 'fine_points': 3} or
+                config['iteration_policy_id'] != 'slsqp-staged-v2' or config['objective'] != 'full_lpf' or
+                config['definition_sha256'] != 'bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068' or
+                config['rf'] != {'id': 'RF-T008', 'allow_trial': True,
+                    'effective_sha256': '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4'} or
+                config['continuation'] != {'mode': 'opt_in', 'il_only_bands': ['B8', 'B8+B71', 'all'],
+                    'thresholds_db': [10, 20], 'stop_after': 'all_20.0', 'scan_points': 17,
+                    'gjm_search_max_pf': {'Control100': None, 'Limit10': 10}} or
+                config['selection'] != {'intermediate_points': 17, 'dense_points': 0,
+                    'independent_points': 0, 'top_k_per_method': 1} or
+                config['budgets'] != {'logical_starts': 2, 'actual_starts': 2, 'stages': 80,
+                    'optimization_samples': 1000000, 'screen_forwards': 1, 'screen_samples': 56,
+                    'intermediate_samples': 952, 'dense_samples': 0} or
+                set(config['plan']) != {'path', 'sha256'} or
+                not re.fullmatch('[0-9a-f]{64}', config['plan']['sha256'])):
+            raise ValueError('Invalid diagnostic preparation contract')
+    elif (not isinstance(config, dict) or config.get('schema_version') != 4 or
             config.get('methods') != ['A', 'B', 'C', 'D'] or config.get('seeds') != [0, 23] or
             config.get('pilot_seeds') != [0] or config.get('samples_per_start') != 1_500_000 or
             config.get('grids') != {'coarse_points': 2, 'fine_points': 3} or
@@ -302,7 +327,7 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     if (not output.is_relative_to((root / 'results').resolve()) or output.exists() or
             subprocess.run(['git', 'check-ignore', '-q', '--', str(output.relative_to(root))], cwd=root).returncode):
         raise ValueError('New ignored results path required; never overwrite preparation')
-    for key in ('definition_source', 'topology_reference'):
+    for key in ('definition_source', 'topology_reference') + (('nominal_source',) if diagnostic else ()):
         ref = config[key]
         path = (root / ref['path']).resolve()
         if not path.is_relative_to(root):
@@ -320,7 +345,8 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     atomic_write_json(output, dict(state='running', experiment_id=experiment_id,
                                    git_head=head, program_sha256=program_sha), compact=True)
     try:
-        prepared = prepare_continuation_starts(circuit, config)
+        prepared = (prepare_diagnostic_starts(root, circuit, config) if diagnostic else
+                    prepare_continuation_starts(circuit, config))
     except ContinuationPreparationError as exc:
         atomic_write_json(output, dict(state='failed', experiment_id=experiment_id,
             git_head=head, program_sha256=program_sha,

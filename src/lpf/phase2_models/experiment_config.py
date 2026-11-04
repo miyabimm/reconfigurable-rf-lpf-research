@@ -107,6 +107,38 @@ def _check_continuation_reference(root, config, circuit):
         raise ValueError('Topology reference does not match definition/physical row/slots')
 
 
+def diagnostic_initial_vector(root, ref, circuit):
+    """Read the frozen EXP-116 G1 nominal input, changing only GJM 4:7 to 5 pF."""
+    _fields(ref, 'path sha256')
+    expected_path = 'experiments/chatgpt_topology_search/runs/EXP-116/manifest.json'
+    if (ref != {'path': expected_path,
+                'sha256': '6798a26394a99ee93ea1b7002a06f57e958462ce15900b7b7735de1054a29324'}):
+        raise ValueError('Unexpected EXP-116 input reference')
+    path = (Path(root) / expected_path).resolve()
+    if not path.is_relative_to(Path(root).resolve()) or file_sha256(path) != ref['sha256']:
+        raise ValueError('EXP-116 manifest byte mismatch')
+    manifest = _read(path)
+    scope = manifest['search_scope']
+    source = scope['input_source']
+    if (canonical_config_hash(source) != scope['input_source_sha256'] or
+            source['executable_plan']['definition_sha256'] != definition_fingerprint(circuit.definition) or
+            source['executable_plan']['policy_sha256'] != circuit.policy_fingerprint):
+        raise ValueError('EXP-116 G1 source identity mismatch')
+    rows = [row for row in source['executable_plan']['actual_starts'] if row['id'] == 'nominal-D']
+    if len(rows) != 1:
+        raise ValueError('Missing EXP-116 nominal-D G1 input')
+    seed = rows[0]['seed_record']
+    vector = list(seed['input_vector'])
+    if (len(vector) != 25 or vector[4:7] != [50., 50., 50.] or
+            seed['input_vector_sha256'] != vector_fingerprint(vector) or
+            rows[0]['seed_record_sha256'] != canonical_config_hash(seed) or
+            circuit.definition.fixed_c_types[:3] != ('GJM01', 'GJM01', 'GJM01')):
+        raise ValueError('EXP-116 nominal vector/schema mismatch')
+    vector[4:7] = [5., 5., 5.]
+    circuit.validate_components(vector)
+    return vector
+
+
 def load_plan(root, config_path, *, frozen_input=None):
     """Validate frozen vectors, provenance and mapping without RF forwards.
 
@@ -123,17 +155,35 @@ def load_plan(root, config_path, *, frozen_input=None):
     if not path.is_relative_to(root):
         raise ValueError('Config must be in checkout')
     config = yaml.load(path.read_text(), Loader=_Loader)
-    if not isinstance(config, dict) or type(config.get('schema_version')) is not int or config['schema_version'] not in (1, 2, 3, 4):
+    if not isinstance(config, dict) or type(config.get('schema_version')) is not int or config['schema_version'] not in (1, 2, 3, 4, 5):
         raise ValueError('Unsupported config schema')
     exchange = config['schema_version'] == 3
-    continuation = config['schema_version'] == 4
+    diagnostic = config['schema_version'] == 5
+    continuation = config['schema_version'] in (4, 5)
     _fields(config, 'schema_version rf objective definition_sha256 plan iteration_policy_id grids samples_per_start seeds methods pilot_seeds selection budgets' +
             (' frequency_exchange' if exchange else '') +
-            (' continuation definition_source topology_reference' if continuation else ''))
+            (' continuation definition_source topology_reference' if continuation else '') +
+            (' nominal_source' if diagnostic else ''))
     explicit = config['schema_version'] >= 2
     if config['schema_version'] == 2 and config['methods'] != ['physical', 'normalized']:
         raise ValueError('Explicit coordinate comparison requires physical/normalized arms')
-    if continuation:
+    if diagnostic:
+        _fields(config['continuation'], 'mode il_only_bands thresholds_db stop_after scan_points gjm_search_max_pf')
+        if (config['methods'] != ['Control100', 'Limit10'] or config['seeds'] != [23] or
+                config['pilot_seeds'] != [23] or config['samples_per_start'] != 500_000 or
+                config['rf'] != dict(id='RF-T008',
+                    effective_sha256='7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4',
+                    allow_trial=True) or
+                config['continuation'] != dict(mode='opt_in', il_only_bands=['B8', 'B8+B71', 'all'],
+                    thresholds_db=[10, 20], stop_after='all_20.0', scan_points=17,
+                    gjm_search_max_pf={'Control100': None, 'Limit10': 10}) or
+                config['budgets'] != dict(logical_starts=2, actual_starts=2, stages=80,
+                    optimization_samples=1_000_000, screen_forwards=1, screen_samples=56,
+                    intermediate_samples=952, dense_samples=0) or
+                config['selection'] != dict(intermediate_points=17, dense_points=0,
+                    independent_points=0, top_k_per_method=1)):
+            raise ValueError('Unsupported 20 dB diagnostic comparison contract')
+    if continuation and not diagnostic:
         _fields(config['continuation'], 'mode il_only_bands thresholds_db final_guard_db scan_points max_additions max_rounds')
         if (config['methods'] != ['A', 'B', 'C', 'D'] or config['seeds'] != [0, 23] or
                 config['pilot_seeds'] != [0] or config['samples_per_start'] != 1_500_000 or
@@ -166,16 +216,16 @@ def load_plan(root, config_path, *, frozen_input=None):
     for key in ('seeds', 'pilot_seeds'):
         _ids(config[key], integers=True)
     _ids(config['methods'])
-    if not set(config['pilot_seeds']) < set(config['seeds']):
+    if not diagnostic and not set(config['pilot_seeds']) < set(config['seeds']):
         raise ValueError('Pilot must be a proper seed subset')
-    if {k: config['selection'][k] for k in ('intermediate_points', 'dense_points', 'independent_points')} != dict(
+    if not diagnostic and {k: config['selection'][k] for k in ('intermediate_points', 'dense_points', 'independent_points')} != dict(
             intermediate_points=17, dense_points=1001, independent_points=3):
         raise ValueError('Unsupported validation scope')
     for section in ('budgets', 'selection'):
         for v in config[section].values():
             if type(v) is not int:
                 raise ValueError('Integer budget required')
-            _number(v, positive=True)
+            _number(v, positive=not diagnostic)
     if type(config['samples_per_start']) is not int:
         raise ValueError('Integer sample ceiling required')
     _number(config['samples_per_start'], positive=True)
@@ -232,6 +282,7 @@ def load_plan(root, config_path, *, frozen_input=None):
         raise ValueError('RF or exact definition SHA mismatch')
     if continuation:
         _check_continuation_reference(root, config, circuit)
+    diagnostic_vector = diagnostic_initial_vector(root, config['nominal_source'], circuit) if diagnostic else None
     limits = source['limits']
     expected = dict(max_starts=config['budgets']['logical_starts'], max_stages=config['budgets']['stages'],
         max_samples_per_start=config['samples_per_start'], max_optimization_samples=config['budgets']['optimization_samples'],
@@ -243,15 +294,20 @@ def load_plan(root, config_path, *, frozen_input=None):
     b = STANDARD_SLSQP_BUDGET
     expected.update(coarse_maxiter=b.coarse, fine_maxiter=b.fine,
                     rescue_coarse_maxiter=b.recovery_coarse, rescue_fine_maxiter=b.recovery_fine,
-                    max_stages_per_start=60 if continuation else 12 if exchange else 4)
+                    max_stages_per_start=40 if diagnostic else 60 if continuation else 12 if exchange else 4)
     if limits != expected:
         raise ValueError('Prepared budget differs from config/standard v2')
     actual, logical = source['actual_starts'], source['logical_starts']
     _ids([r['id'] for r in actual])
     _ids([r['id'] for r in logical])
+    if diagnostic and ([r['id'] for r in actual] != config['methods'] or
+                       [r['id'] for r in logical] != config['methods'] or
+                       any(r['id'] != r['method'] for r in actual) or
+                       any(r['id'] != r['method'] or r['id'] != r['actual_start_id'] for r in logical)):
+        raise ValueError('Diagnostic arm identities and order differ from the fixed plan')
     budget = config['budgets']
     if (len(logical) != budget['logical_starts'] or len(actual) != budget['actual_starts'] or
-            len(actual) > len(logical) or budget['stages'] != (296 if continuation else 4 * len(logical) * 2 if exchange else 4 * len(logical)) or
+            len(actual) > len(logical) or budget['stages'] != (80 if diagnostic else 296 if continuation else 4 * len(logical) * 2 if exchange else 4 * len(logical)) or
             budget['optimization_samples'] != len(logical) * config['samples_per_start']):
         raise ValueError('Start/stage/sample count mismatch')
     by_id, shas = {}, set()
@@ -267,7 +323,8 @@ def load_plan(root, config_path, *, frozen_input=None):
             ref = row['source_ref']
             if continuation:
                 _fields(ref, 'kind seed sobol_index vector_sha256 initialization_cost')
-                if (ref['kind'] not in ('nominal', 'sobol') or ref['seed'] != 23 or
+                if ((diagnostic and ref['kind'] != 'nominal') or
+                        ref['kind'] not in ('nominal', 'sobol') or ref['seed'] != 23 or
                         ref['vector_sha256'] != start['vector_sha256'] or
                         (ref['kind'] == 'nominal' and ref['sobol_index'] is not None) or
                         (ref['kind'] == 'sobol' and (type(ref['sobol_index']) is not int or
@@ -346,7 +403,7 @@ def load_plan(root, config_path, *, frozen_input=None):
             raise ValueError('Logical/actual binding mismatch')
         if explicit and (row['method'] != (target['method'] if exchange or continuation else target['coordinates']) or
                          (row['seed'] != (0 if target['source_ref']['kind'] == 'nominal' else 23)
-                          if continuation else row['seed'] != target['seed_record']['seed'])):
+                          if continuation and not diagnostic else row['seed'] != target['seed_record']['seed'])):
             raise ValueError('Logical coordinate/source binding mismatch')
         if row['method'] == 'common':
             common_count += 1
@@ -370,7 +427,9 @@ def load_plan(root, config_path, *, frozen_input=None):
             if (len({canonical_config_hash(r['source_ref']) for r in paired}) != 1 or
                     len({canonical_config_hash(r['seed_record']) for r in paired}) != 1):
                 raise ValueError('Coordinate arms must share exact source and C1 seed')
-    if continuation:
+    if diagnostic and any(r['start']['vector'] != diagnostic_vector for r in actual):
+        raise ValueError('Diagnostic starts differ from EXP-116 nominal input with 5 pF GJM')
+    if continuation and not diagnostic:
         # Reconstruct the first distinct legal point of the existing Sobol
         # block without any RF forward or use of a historical best vector.
         nominal_rows = [r for r in actual if r['source_ref']['kind'] == 'nominal']
@@ -411,9 +470,11 @@ def load_plan(root, config_path, *, frozen_input=None):
             _number(value)
         from .evaluation_cost import EvaluationCost
         expected_cost_fields = set(EvaluationCost().snapshot()) - {'wall_seconds', 'cpu_seconds'}
+        expected_forwards = 1 if diagnostic else 2
         if (not isinstance(cost, dict) or set(cost) != expected_cost_fields or
-                cost['RF_forward_calls'] != 2 or cost['frequency_samples_requested'] != 112 or
-                cost['frequency_samples_completed'] != 112 or cost['forward_failures'] != 0):
+                cost['RF_forward_calls'] != expected_forwards or
+                cost['frequency_samples_requested'] != 56 * expected_forwards or
+                cost['frequency_samples_completed'] != 56 * expected_forwards or cost['forward_failures'] != 0):
             raise ValueError('Incomplete or inconsistent physical initialization cost')
     for v in cost.values():
         _number(v)
@@ -468,6 +529,66 @@ class ContinuationPreparationError(RuntimeError):
         self.cause_type = type(cause).__name__
         self.cost = cost
         self.timing = timing
+
+
+def prepare_diagnostic_starts(root, circuit, config):
+    """One shared 5 pF input and one coarse seed, before G1 and after G0."""
+    import time
+    from .evaluation_cost import EvaluationCost
+    from .sampled_epigraph import SampledEpigraph
+    from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET
+
+    if (config.get('schema_version') != 5 or circuit.policy_id != 'RF-T008' or
+            circuit.policy_fingerprint != config['rf']['effective_sha256'] or
+            definition_fingerprint(circuit.definition) != config['definition_sha256']):
+        raise ValueError('Diagnostic preparation config/circuit mismatch')
+    vector = diagnostic_initial_vector(root, config['nominal_source'], circuit)
+    sha = vector_fingerprint(vector)
+    meter = EvaluationCost()
+    wall, cpu = time.perf_counter(), time.process_time()
+    try:
+        problem = meter.epigraph(SampledEpigraph(circuit, 2, gjm_search_max_pf=10))
+        with meter.timed():
+            seed = problem.seed(vector, policy_id=circuit.policy_id,
+                policy_fingerprint=circuit.policy_fingerprint,
+                definition_sha256=definition_fingerprint(circuit.definition),
+                input_sha256=sha, seed=23, jitter_fraction=0.)
+        cost = meter.snapshot()
+        if (seed['changes'] or cost['RF_forward_calls'] != 1 or
+                cost['frequency_samples_requested'] != 56 or
+                cost['frequency_samples_completed'] != 56 or cost['forward_failures']):
+            raise ValueError('Unexpected diagnostic initialization; stop and inspect')
+    except Exception as exc:
+        timing = dict(elapsed_wall_s=time.perf_counter() - wall, elapsed_cpu_s=time.process_time() - cpu)
+        raise ContinuationPreparationError(exc, meter.snapshot(), timing) from exc
+    timing = dict(elapsed_wall_s=time.perf_counter() - wall, elapsed_cpu_s=time.process_time() - cpu)
+    start = dict(vector=vector, vector_sha256=sha, seed_record=seed,
+        policy_id=circuit.policy_id, policy_sha256=circuit.policy_fingerprint,
+        definition_sha256=definition_fingerprint(circuit.definition),
+        schema_sha256=canonical_config_hash(asdict(circuit.schema)), jitter_fraction=0.)
+    reference = dict(kind='nominal', seed=23, sobol_index=None, vector_sha256=sha,
+        initialization_cost=dict(RF_forward_calls=1, frequency_samples_requested=56,
+                                 frequency_samples_completed=56))
+    actual = [dict(id=method, start=start, method=method, coordinates='physical', source_ref=reference)
+              for method in config['methods']]
+    logical = [dict(id=method, seed=23, method=method, vector_sha256=sha, actual_start_id=method)
+               for method in config['methods']]
+    b, budget = STANDARD_SLSQP_BUDGET, config['budgets']
+    limits = dict(max_starts=budget['logical_starts'], max_stages=budget['stages'],
+        max_samples_per_start=config['samples_per_start'], max_optimization_samples=budget['optimization_samples'],
+        max_screen_forwards=budget['screen_forwards'], max_screen_samples=budget['screen_samples'],
+        max_intermediate_samples=budget['intermediate_samples'], max_dense_samples=budget['dense_samples'],
+        top_k_per_method=config['selection']['top_k_per_method'], **config['grids'],
+        iteration_policy_id=config['iteration_policy_id'], coarse_maxiter=b.coarse, fine_maxiter=b.fine,
+        rescue_coarse_maxiter=b.recovery_coarse, rescue_fine_maxiter=b.recovery_fine,
+        max_stages_per_start=40)
+    source = stable_identity(dict(policy_id=circuit.policy_id, policy_sha256=circuit.policy_fingerprint,
+        objective=config['objective'], definition=asdict(circuit.definition),
+        definition_sha256=config['definition_sha256'], seeds=config['seeds'], pilot_seeds=config['pilot_seeds'],
+        actual_starts=actual, logical_starts=logical, screen_cost=cost,
+        initialization_timing=timing, limits=limits))
+    return dict(input_source=source, input_source_sha256=canonical_config_hash(source),
+                candidate_promotion_blocked=True, rf_compliance_certified=False)
 
 
 def prepare_continuation_starts(circuit, config):

@@ -26,7 +26,7 @@ from lpf.slsqp_budget import (run_termination_aware_slsqp, TERMINATION_AWARE_POL
                               STANDARD_SLSQP_BUDGET)
 from lpf.constraint_versions import rf_input_file
 from ._grid import ROOT
-from .problem_seed import definition_fingerprint, vector_fingerprint, VectorBox
+from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint, VectorBox
 from .sampled_epigraph import SampledEpigraph
 from .evaluation_cost import SampleBudgetExceeded
 
@@ -187,6 +187,14 @@ class _StageAbort(Exception):
     """Stop v2 safely on numerical/callback failure; retain recorded calls."""
 
 
+class DiagnosticIllegalVector(ValueError):
+    """A diagnostic stage returned an illegal physical/search-box vector."""
+
+
+class DiagnosticStatus4(ValueError):
+    """The diagnostic's 20 dB stage returned SLSQP status 4."""
+
+
 def _check_guard_source(source_provenance):
     if not isinstance(source_provenance, dict):
         raise ValueError('Guarded search requires explicit source provenance')
@@ -202,7 +210,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                   optimize_stage=scipy_slsqp_stage, source_provenance=None, record_sink=None,
                   cost_meter=None, extra_frequencies=(), warm_start_vector=None,
                   search_guard=False, working_configuration=None,
-                  require_legal_output=False):
+                  require_legal_output=False, gjm_search_max_pf=None,
+                  stop_on_status4=False):
     """Run one initial vector through existing v2; return a complete record.
 
     The seed is replayed and matched against C1, including its policy, topology,
@@ -229,8 +238,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     """
     if not callable(optimize_stage):
         raise TypeError("optimize_stage must be callable")
-    if type(search_guard) is not bool or type(require_legal_output) is not bool:
-        raise TypeError("search_guard and require_legal_output must be bool")
+    if any(type(value) is not bool for value in (search_guard, require_legal_output, stop_on_status4)):
+        raise TypeError("search_guard, require_legal_output and stop_on_status4 must be bool")
     if source_provenance is not None:
         if not isinstance(source_provenance, dict):
             raise TypeError("source_provenance must be a dict")
@@ -238,7 +247,7 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
     if search_guard:
         _check_guard_source(source_provenance)
     extra_frequencies = tuple(extra_frequencies)
-    seed_problem = SampledEpigraph(circuit, coarse_points)
+    seed_problem = SampledEpigraph(circuit, coarse_points, gjm_search_max_pf=gjm_search_max_pf)
     working = {}
     fixed_indices = ()
     if working_configuration is not None:
@@ -254,10 +263,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                     for i in fixed_indices) or len(set(fixed_indices)) != len(fixed_indices)):
             raise ValueError("Invalid fixed physical indices")
     coarse = (SampledEpigraph(circuit, coarse_points, extra_frequencies=extra_frequencies,
-                              search_guard=search_guard, **working)
+                              search_guard=search_guard, gjm_search_max_pf=gjm_search_max_pf, **working)
               if extra_frequencies or search_guard or working else seed_problem)
     fine = SampledEpigraph(circuit, fine_points, extra_frequencies=extra_frequencies,
-                           search_guard=search_guard, **working)
+                           search_guard=search_guard, gjm_search_max_pf=gjm_search_max_pf, **working)
     if not isinstance(seed_record, dict):
         raise TypeError("Expected C1 seed record")
     replay_problem = cost_meter.epigraph(seed_problem) if cost_meter is not None else seed_problem
@@ -271,6 +280,10 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
             json.dumps(seed_record, sort_keys=True, allow_nan=False)):
         raise ValueError("Seed record does not match C1 deterministic replay")
     initial = np.asarray(replay["vector"], dtype=float)
+    if gjm_search_max_pf is not None and any(
+            (lo is not None and v < lo) or (hi is not None and v > hi)
+            for v, (lo, hi) in zip(initial, coarse.box.bounds)):
+        raise ValueError('Seed outside search box')
     if warm_start_vector is not None:
         initial = np.asarray(warm_start_vector, dtype=float).copy()
         x, _ = coarse._split(initial)
@@ -317,6 +330,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                        "dense_rf": "not_run", "continuous_frequency": "not_run",
                        "physical": "not_run", "owner_approval": "not_run"},
         "candidate_promotion_blocked": True, "rf_compliance_certified": False}
+    if gjm_search_max_pf is not None:
+        record['gjm_search_max_pf'] = float(gjm_search_max_pf)
     if working_configuration is not None:
         record['working_configuration'] = deepcopy(working_configuration)
         record['working_initial_vector'] = initial.tolist()
@@ -388,16 +403,19 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                     stage["observation"] = _observe(cost_meter.epigraph(problem), output)
             else:
                 stage["observation"] = _observe(problem, output)
-            if stage["observation"]["sampled_rf"]["state"] != "observed":
-                raise ValueError("Stage output cannot be evaluated on its finite grid")
-            if working_configuration is not None or require_legal_output:
+            if working_configuration is not None or require_legal_output or gjm_search_max_pf is not None:
                 component = stage["observation"]["component_policy"]
                 detail = component.get("detail", {})
                 if (stage["observation"]["box"]["state"] != "pass" or
                         component["state"] != "pass" or
                         detail.get("component_policy_pass") is False or
                         detail.get("connection_role_evidence_incomplete") is True):
-                    raise ValueError("Working stage returned an illegal physical vector")
+                    error = DiagnosticIllegalVector if stop_on_status4 else ValueError
+                    raise error("Working stage returned an illegal physical vector")
+            if stage["observation"]["sampled_rf"]["state"] != "observed":
+                raise ValueError("Stage output cannot be evaluated on its finite grid")
+            if stop_on_status4 and raw_status['status'] == 4:
+                raise DiagnosticStatus4("Diagnostic stage stopped on SLSQP status 4")
             status = _json_value(raw_status)
             status["converged"] = status["success"]
             status["stage_call_index"] = index
@@ -440,7 +458,8 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
 
 
 def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_provenance,
-                        optimize_stage=scipy_slsqp_stage, record_sink=None):
+                        optimize_stage=scipy_slsqp_stage, record_sink=None,
+                        gjm_search_max_pf=None, stop_after=None):
     """Opt-in A/B/C/D control over existing v2 and final guarded exchange.
 
     This is an in-memory search control, not an experiment/storage runner.
@@ -453,6 +472,11 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
 
     if method not in ('A', 'B', 'C', 'D'):
         raise ValueError('Unknown continuation method')
+    if stop_after not in (None, 'all_20.0') or (stop_after and method not in ('B', 'D')):
+        raise ValueError('Unsupported diagnostic stop')
+    if gjm_search_max_pf is not None and stop_after != 'all_20.0':
+        raise ValueError('GJM search box requires diagnostic stop before final exchange')
+    search_box = circuit_box(circuit, gjm_search_max_pf=gjm_search_max_pf)
     if not isinstance(cost_meter, SampleBudgetCost):
         raise TypeError('A shared sample budget is required')
     if not callable(record_sink):
@@ -464,6 +488,15 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
     v = np.asarray(seed_record['vector'], dtype=float).copy()
     if v.shape != (circuit.schema.vector_length + 1,) or not np.all(np.isfinite(v)):
         raise ValueError('Expected complete initial physical vector and epigraph')
+    if stop_after is not None and (seed_record.get('changes') or
+            seed_record.get('jitter_fraction') != 0 or
+            not np.array_equal(np.asarray(seed_record['input_vector'], dtype=float), v[:-1])):
+        raise ValueError('Diagnostic initial seed must not be clipped or jittered')
+    if gjm_search_max_pf is not None and (any(
+            (lo is not None and value < lo) or (hi is not None and value > hi)
+            for value, (lo, hi) in zip(v, search_box.bounds)) or any(
+                v[i] <= search_box.bounds[i][0] for i in search_box.open_lower)):
+        raise ValueError('Initial vector outside search box')
     initial_component = circuit.validate_components(v[:-1])
     if (initial_component.get('component_policy_pass') is False or
             initial_component.get('connection_role_evidence_incomplete') is True):
@@ -472,6 +505,10 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
               'last_valid_vector': v.tolist(), 'final_exchange': None,
               'first_strict_sampled': None, 'first_strict_17_scan': None,
               'rf_compliance_certified': False, 'final_validation': 'not_run'}
+    if stop_after is not None:
+        result['stop_after'] = stop_after
+    if gjm_search_max_pf is not None:
+        result['gjm_search_max_pf'] = float(gjm_search_max_pf)
 
     class SinkFailure(Exception):
         pass
@@ -528,6 +565,8 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         record = run_c1_staged(circuit, seed_record, coarse_points=2, fine_points=3,
             optimize_stage=optimize_stage, source_provenance=source_provenance,
             cost_meter=cost_meter, record_sink=stage_snapshot, warm_start_vector=v,
+            gjm_search_max_pf=gjm_search_max_pf,
+            stop_on_status4=(stop_after == 'all_20.0' and label == 'all_20.0'),
             working_configuration={'settings': list(settings), 'stop_db': threshold,
                                    'fixed_indices': list(fixed)})
         item['record'] = record
@@ -572,6 +611,10 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
         if method in ('B', 'D'):
             for threshold in (10., 20., 25., 28.):
                 if not stage('all_' + str(threshold), CASES, threshold, ()):
+                    return result
+                if stop_after == 'all_' + str(threshold):
+                    result['state'] = 'diagnostic_end_at_20db'
+                    persist()
                     return result
         # Final exchange starts at the previous physical vector, with a fresh t
         # on the all-setting coarse grid. All costs share the original meter.

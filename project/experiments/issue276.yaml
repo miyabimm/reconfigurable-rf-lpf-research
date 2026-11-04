@@ -1,0 +1,51 @@
+# Template: plan SHA must be frozen after reviewed-main G0 preparation and before G1.
+schema_version: 5
+rf:
+  id: RF-T008
+  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  allow_trial: true
+objective: full_lpf
+definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+definition_source:
+  path: project/experiments/issue270-definition.json
+  sha256: 07e64095710452a12c1f71f84feaabad35ad4613e6f68646e4a27ce5cb3ccff0
+topology_reference:
+  path: experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json
+  sha256: 4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b
+nominal_source:
+  path: experiments/chatgpt_topology_search/runs/EXP-116/manifest.json
+  sha256: 6798a26394a99ee93ea1b7002a06f57e958462ce15900b7b7735de1054a29324
+plan:
+  path: results/issue276/starts.json
+  sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+iteration_policy_id: slsqp-staged-v2
+grids:
+  coarse_points: 2
+  fine_points: 3
+samples_per_start: 500000
+seeds: [23]
+pilot_seeds: [23]
+methods: [Control100, Limit10]
+continuation:
+  mode: opt_in
+  il_only_bands: [B8, B8+B71, all]
+  thresholds_db: [10, 20]
+  stop_after: all_20.0
+  scan_points: 17
+  gjm_search_max_pf:
+    Control100: null
+    Limit10: 10
+selection:
+  intermediate_points: 17
+  dense_points: 0
+  independent_points: 0
+  top_k_per_method: 1
+budgets:
+  logical_starts: 2
+  actual_starts: 2
+  stages: 80
+  optimization_samples: 1000000
+  screen_forwards: 1
+  screen_samples: 56
+  intermediate_samples: 952
+  dense_samples: 0
