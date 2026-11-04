@@ -2,8 +2,10 @@ import sys
 import unittest
 from dataclasses import asdict
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
+from scipy.optimize import OptimizeResult
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.optimizers.hybrid import hybrid_minimize
@@ -15,6 +17,71 @@ class HybridTests(unittest.TestCase):
                        max_evaluations=1000, restart_sigma=0.7)
         options.update(kwargs)
         return hybrid_minimize(residuals, x0, bounds, **options)
+
+    def test_aggregation_values_and_default_compatibility(self):
+        residual = lambda x: [2, -3, 4]
+        for weights, expected_sum, expected_max in (
+                (None, 29, 16), ([1, 1, 1], 29, 16), ([2, 3, 0.5], 43, 27)):
+            for mode, expected in (('sum', expected_sum), ('max', expected_max)):
+                with self.subTest(weights=weights, mode=mode):
+                    result = self.run_hybrid(residual, [0], [(0, 0)],
+                                             weights=weights, aggregation=mode)
+                    self.assertEqual(result.best_fun, expected)
+                    self.assertEqual(result.runs[0].start_fun, expected)
+                    self.assertEqual(result.aggregation, mode)
+        default = self.run_hybrid(residual, [0.2], [(0, 1)], max_restarts=2)
+        explicit = self.run_hybrid(residual, [0.2], [(0, 1)], max_restarts=2,
+                                   aggregation='sum')
+        self.assertEqual(asdict(default), asdict(explicit))
+
+    def test_sum_and_max_have_distinct_best_found(self):
+        residual = lambda x: [x[0], 2 * (x[0] - 1)]
+        summed = self.run_hybrid(residual, [0.1], [(0, 1)], aggregation='sum')
+        maximum = self.run_hybrid(residual, [0.1], [(0, 1)], aggregation='max')
+        self.assertAlmostEqual(summed.best_x[0], 0.8, places=5)
+        self.assertAlmostEqual(summed.best_fun, 0.8, places=7)
+        self.assertAlmostEqual(maximum.best_x[0], 2 / 3, places=5)
+        self.assertAlmostEqual(maximum.best_fun, 4 / 9, places=5)
+        # Convergence is the solver's report, not inferred from the best point.
+        self.assertIsInstance(maximum.runs[0].success, bool)
+        self.assertIsInstance(maximum.runs[0].status, int)
+        self.assertTrue(maximum.runs[0].message)
+
+    def test_max_keeps_solver_failure_even_at_best_point(self):
+        def failed_solver(objective, _x0, **kwargs):
+            x = np.array([2 / 3])
+            value = objective(x)
+            return OptimizeResult(x=x, fun=value, success=False, status=2,
+                                  message='line search failed', nit=1)
+        with patch('lpf.optimizers.hybrid.minimize', side_effect=failed_solver):
+            result = self.run_hybrid(lambda x: [x[0], 2 * (x[0] - 1)],
+                                     [0.1], [(0, 1)], aggregation='max')
+        self.assertAlmostEqual(result.best_x[0], 2 / 3)
+        self.assertFalse(result.runs[0].success)
+        self.assertEqual(result.runs[0].status, 2)
+        self.assertEqual(result.runs[0].message, 'line search failed')
+
+    def test_max_regressions(self):
+        options = dict(aggregation='max')
+        fixed = self.run_hybrid(lambda x: [x[0], x[1]], [0.5, 2],
+                                [(0, 1), (2, 2)], **options)
+        self.assertEqual(fixed.best_x[1], 2)
+        budget = self.run_hybrid(lambda x: [x[0], x[1]], [0.5, 0.5],
+                                 [(0, 1), (0, 1)], max_evaluations=2, **options)
+        self.assertEqual(budget.nfev, 2)
+        self.assertEqual(budget.stop_reason, 'evaluation_budget_exhausted')
+        self.assertFalse(budget.runs[0].success)
+        self.assertIsNone(budget.runs[0].status)
+        invalid = self.run_hybrid(lambda x: [np.nan], [0], [(0, 1)], **options)
+        self.assertEqual(invalid.stop_reason, 'invalid_residual')
+        self.assertIsNone(invalid.best_fun)
+        with self.assertRaises(ValueError):
+            self.run_hybrid(lambda x: [1], [2], [(0, 1)], **options)
+        a = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)],
+                            max_restarts=2, **options)
+        b = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)],
+                            max_restarts=2, **options)
+        self.assertEqual(asdict(a), asdict(b))
 
     def test_weighted_unimodal_and_fixed_coordinates(self):
         seen = []
@@ -104,7 +171,9 @@ class HybridTests(unittest.TestCase):
                    ([0], [(0, 1)], {'max_restarts': -1}),
                    ([0], [(0, 1)], {'max_evaluations': 0}),
                    ([0], [(0, 1)], {'restart_sigma': 0}),
-                   ([0], [(0, 1)], {'weights': [-1]})]
+                   ([0], [(0, 1)], {'weights': [-1]}),
+                   ([0], [(0, 1)], {'aggregation': 'mean'}),
+                   ([0], [(0, 1)], {'aggregation': None})]
         for x0, bounds, options in invalid:
             with self.subTest(x0=x0, bounds=bounds, options=options), self.assertRaises(ValueError):
                 self.run_hybrid(lambda x: [1], x0, bounds, **options)

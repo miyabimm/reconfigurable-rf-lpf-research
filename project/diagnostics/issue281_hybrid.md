@@ -1,6 +1,6 @@
 # Issue #281: bounded Hybrid approximation
 
-`lpf.optimizers.hybrid.hybrid_minimize` is an RF-independent least-squares
+`lpf.optimizers.hybrid.hybrid_minimize` is an RF-independent optimization
 utility, not an EXP runner. It approximates the published concept of ADS Hybrid
 using SciPy L-BFGS-B and random restarts; it does **not** reproduce the
 proprietary implementation or guarantee a global optimum.
@@ -17,7 +17,15 @@ result = hybrid_minimize(
 )
 ```
 
-The objective is `sum(weights * residuals(x)**2)`; omitted weights are 1.
+`aggregation="sum"` (the default) minimizes `sum(weights * residuals(x)**2)`;
+`aggregation="max"` minimizes `max(weights * residuals(x)**2)`. Omitted
+weights are 1; the selected mode is recorded in `result.aggregation`. Max is
+nonsmooth and uses the same L-BFGS-B: nonconvergence or line-search failure is
+not success, even when the best observed point is near the optimum. This
+maximum *squared* error is not the signed-error `max(errors(x))` objective of
+the separate MiniMax solver (Issue #282), nor is it ADS standard Hybrid's
+least-squares objective.
+
 Bounds and initial values must be finite and ordered, with x0 inside the box.
 Each free coordinate is normalized to [0,1]; fixed coordinates are removed
 from the solver and restored before each call. Each restart independently adds

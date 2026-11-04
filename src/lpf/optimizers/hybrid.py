@@ -1,4 +1,4 @@
-"""Bounded least-squares Hybrid approximation, not the proprietary ADS algorithm.
+"""Bounded Hybrid approximation, not the proprietary ADS algorithm.
 
 Only box constraints are supported. Restarts perturb the *last local endpoint*,
 not necessarily the best point, by independent N(0, restart_sigma**2) in
@@ -37,6 +37,7 @@ class HybridResult:
     max_restarts: int
     max_evaluations: int
     restart_sigma: float
+    aggregation: str = 'sum'
 
 
 class _Stop(Exception):
@@ -45,8 +46,12 @@ class _Stop(Exception):
 
 def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                     max_restarts: int, max_evaluations: int, restart_sigma: float,
-                    weights=None) -> HybridResult:
-    """Minimize sum(weights * residuals(x)**2) with bounded L-BFGS-B.
+                    weights=None, aggregation: str = 'sum') -> HybridResult:
+    """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
+
+    The default 'sum' is weighted least squares; 'max' is the maximum weighted
+    squared residual, not the maximum signed error. The 'max' objective is
+    nonsmooth, so L-BFGS-B may fail to converge or stop in its line search.
 
     All budgets are mandatory: maxiter is per local run; max_restarts excludes
     the initial run; max_evaluations is a hard total cap on residual calls,
@@ -60,6 +65,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
     residual length. Out-of-bounds x0 is rejected, never projected.
     All-fixed boxes require one evaluation and no SciPy call or restarts.
     """
+    if not isinstance(aggregation, str) or aggregation not in ('sum', 'max'):
+        raise ValueError("aggregation must be 'sum' or 'max'")
     for name, value, minimum in (('seed', seed, 0), ('maxiter', maxiter, 1),
                                   ('max_restarts', max_restarts, 0),
                                   ('max_evaluations', max_evaluations, 1)):
@@ -129,7 +136,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                 raise _Stop('invalid_residual')
             residual_size = r.size
             with np.errstate(over='ignore', invalid='ignore'):
-                value = float(np.sum((r * r) if weights is None else (weights * r * r)))
+                terms = (r * r) if weights is None else (weights * r * r)
+                value = float(np.sum(terms) if aggregation == 'sum' else np.max(terms))
             if not np.isfinite(value):
                 raise _Stop('invalid_residual')
             if local_nfev == 1:
@@ -175,4 +183,4 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
 
     return HybridResult(runs, None if best_x is None else best_x.tolist(), best_fun,
                         total, reason, seed, maxiter, max_restarts,
-                        max_evaluations, float(restart_sigma))
+                        max_evaluations, float(restart_sigma), aggregation)
