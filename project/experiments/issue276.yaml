@@ -17,7 +17,7 @@ nominal_source:
   sha256: 6798a26394a99ee93ea1b7002a06f57e958462ce15900b7b7735de1054a29324
 plan:
   path: results/issue276/starts.json
-  sha256: '0000000000000000000000000000000000000000000000000000000000000000'
+  sha256: '6dfaa85f97eabc2c93483f75d5a0ecf184574e590d36cc7aee3b640196f94e5a'
 iteration_policy_id: slsqp-staged-v2
 grids:
   coarse_points: 2
