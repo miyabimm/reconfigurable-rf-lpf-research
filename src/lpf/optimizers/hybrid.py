@@ -11,6 +11,8 @@ from typing import Callable
 import numpy as np
 from scipy.optimize import minimize
 
+from ._objectives import aggregate, squared_terms, validate_weights
+
 
 @dataclass
 class LocalRun:
@@ -89,10 +91,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
         raise ValueError('bounds must be ordered with finite widths')
     if np.any(x0 < lo) or np.any(x0 > hi):
         raise ValueError('x0 outside bounds')
-    if weights is not None:
-        weights = np.asarray(weights, dtype=float)
-        if weights.ndim != 1 or not weights.size or not np.all(np.isfinite(weights)) or np.any(weights < 0):
-            raise ValueError('weights must be a nonempty finite nonnegative vector')
+    weights = validate_weights(weights)
 
     free = width > 0
     rng = np.random.default_rng(seed)
@@ -135,9 +134,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                     (weights is not None and weights.size != r.size)):
                 raise _Stop('invalid_residual')
             residual_size = r.size
-            with np.errstate(over='ignore', invalid='ignore'):
-                terms = (r * r) if weights is None else (weights * r * r)
-                value = float(np.sum(terms) if aggregation == 'sum' else np.max(terms))
+            terms = squared_terms(r, weights)
+            value = aggregate(terms, aggregation)
             if not np.isfinite(value):
                 raise _Stop('invalid_residual')
             if local_nfev == 1:

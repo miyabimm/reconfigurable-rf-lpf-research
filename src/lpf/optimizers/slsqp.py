@@ -5,6 +5,8 @@ from typing import Callable
 import numpy as np
 from scipy.optimize import minimize
 
+from ._objectives import aggregate, squared_terms, validate_weights
+
 
 @dataclass(frozen=True)
 class SLSQPResult:
@@ -69,10 +71,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
         width = hi - lo
     if np.any(width < 0) or not np.all(np.isfinite(width)) or np.any(x0 < lo) or np.any(x0 > hi):
         raise ValueError('invalid bounds or x0 outside bounds')
-    if weights is not None:
-        weights = np.asarray(weights, dtype=float)
-        if weights.ndim != 1 or not weights.size or not np.all(np.isfinite(weights)) or np.any(weights < 0):
-            raise ValueError('weights must be a nonempty finite nonnegative vector')
+    weights = validate_weights(weights)
 
     free = width > 0
     counts = [0, 0]
@@ -98,16 +97,14 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
             raise ValueError('weights length must match residuals')
         sizes[kind] = value.size
         if kind == 0:
-            with np.errstate(over='ignore', invalid='ignore'):
-                value = value * value if weights is None else weights * value * value
-            with np.errstate(over='ignore'):
-                invalid_sum = aggregation == 'sum' and not np.isfinite(np.sum(value))
+            value = squared_terms(value, weights)
+            invalid_sum = aggregation == 'sum' and not np.isfinite(aggregate(value, aggregation))
             if not np.all(np.isfinite(value)) or invalid_sum:
                 raise _Stop('invalid_residual')
         return value
 
     def objective_value(terms):
-        return float(np.sum(terms) if aggregation == 'sum' else np.max(terms))
+        return aggregate(terms, aggregation)
 
     def violation(x, g):
         return max(0.0, float(np.max(lo - x)), float(np.max(x - hi)),
