@@ -3,12 +3,17 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+import subprocess
+import sys
 
 import numpy as np
 
 from test_phase2_problem_seed import make
 from lpf.phase2_models.comparison_mock_preflight import run_mock_arm
+from lpf.phase2_models.comparison_readiness import comparison_readiness, _required
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class ComparisonMockPreflightTests(unittest.TestCase):
@@ -25,7 +30,9 @@ class ComparisonMockPreflightTests(unittest.TestCase):
                 self.assertEqual(row['state'], 'returned_unverified', row)
                 self.assertEqual(row['start'], rows[0]['start'])
                 self.assertEqual(row['production_g0_g1_g2'], 'not_run')
-                self.assertEqual(row['anytime'], 'partial_BCD_only')
+                self.assertEqual(row['anytime'], 'mock_four_arm')
+                self.assertIsNotNone(row['last_observation'])
+                self.assertEqual(row['scans'][-1]['milestone'], 'terminal')
                 self.assertEqual(json.loads((Path(directory) / (row['arm'] + '.json')).read_text()), row)
             a = rows[0]
             self.assertEqual(a['result']['seed']['vector'][:-1], a['start']['x'])
@@ -60,6 +67,41 @@ class ComparisonMockPreflightTests(unittest.TestCase):
             self.assertEqual(row['cost']['forward_failures'], 1)
             self.assertIsNone(row['last_observation'])
             self.assertEqual(json.loads((p / 'fail.json').read_text()), row)
+
+    def test_c1_anytime_seed_replay_and_budget_abort(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory)
+            row = run_mock_arm(self.circuit, 'A', 23, mock_forward=self.mock,
+                output=p / 'a.json', max_samples=1400, milestones=(56,))
+            self.assertEqual(row['state'], 'returned_unverified', row)
+            self.assertEqual([s['milestone'] for s in row['scans']], [56, 'terminal'])
+            self.assertEqual(row['scans'][0]['x_sha256'], row['start']['sha256'])
+            self.assertEqual(row['scans'][0]['samples_at_completion'], 532)
+            self.assertEqual(row['last_observation']['sha256'], row['start']['sha256'])
+            self.assertEqual(row['cost_by_stage']['seed']['56']['requested'], 56)
+            self.assertEqual(row['cost_by_stage']['seed_replay']['56']['requested'], 56)
+            stopped = run_mock_arm(self.circuit, 'A', 23, mock_forward=self.mock,
+                output=p / 'stop.json', max_samples=588)
+            self.assertEqual(stopped['state'], 'budget_exhausted', stopped)
+            self.assertEqual(stopped['result']['numerical_state'], 'budget_exhausted')
+            self.assertEqual(stopped['scans'][-1]['milestone'], 'terminal')
+            self.assertEqual(stopped['cost']['frequency_samples_requested'], 588)
+            self.assertEqual(stopped['last_observation']['sha256'], stopped['start']['sha256'])
+            calls = 0
+            def fail_stage(evaluator, vector):
+                nonlocal calls
+                calls += 1
+                if calls == 3:
+                    raise RuntimeError('C1 stage forward failure')
+                return np.where(evaluator.role == 0, .4, 30.)
+            failed = run_mock_arm(self.circuit, 'A', 23, mock_forward=Mock(side_effect=fail_stage),
+                                 output=p / 'stage-failure.json')
+            self.assertEqual(failed['state'], 'failed')
+            self.assertEqual(failed['result']['numerical_state'], 'failed')
+            self.assertEqual(failed['scans'], [])
+            self.assertEqual(failed['cost']['forward_failures'], 1)
+            self.assertEqual(failed['last_observation']['sha256'], failed['start']['sha256'])
+            self.assertEqual(json.loads((p / 'stage-failure.json').read_text()), failed)
 
     def test_milestone_scans_last_observation_and_keeps_terminal_reserve(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -98,6 +140,26 @@ class ComparisonMockPreflightTests(unittest.TestCase):
             self.assertEqual(saved['state'], 'interrupted')
             self.assertEqual(saved['cost']['frequency_samples_requested'], 56)
             self.assertEqual(saved['cost']['frequency_samples_completed'], 0)
+
+    def test_read_only_cli_opt_in_and_incomplete_g1(self):
+        with patch.object(type(self.problem.evaluator), 'il', side_effect=AssertionError('RF forward')):
+            with self.assertRaises(ValueError):
+                comparison_readiness(ROOT, allow_trial=False)
+            report = comparison_readiness(ROOT, allow_trial=True)
+        self.assertEqual(report['production_readiness'], 'not_ready')
+        self.assertEqual(report['g0_g1_g2'], 'not_run')
+        self.assertEqual((report['rf']['settings'], report['rf']['intervals']), (6, 28))
+        self.assertEqual(report['seed_vectors_grid_weights_budget_storage'], 'not_frozen')
+        self.assertIn(report['checkpoint'], ('not_checked', 'local_file_sha_matches_only'))
+        command = [sys.executable, str(ROOT / 'scripts/run_phase2_shared.py'), 'comparison-readiness']
+        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+        output = subprocess.check_output(command + ['--allow-trial'], text=True)
+        self.assertEqual(json.loads(output)['production_readiness'], 'not_ready')
+        with tempfile.TemporaryDirectory() as directory:
+            bad = Path(directory) / 'tampered'
+            bad.write_bytes(b'tampered')
+            with self.assertRaisesRegex(ValueError, 'SHA mismatch'):
+                _required(bad, '0' * 64)
 
     def test_requires_mock_and_new_fixture(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -372,6 +372,8 @@ def main(argv=None):
     diag.add_argument('--mock', action='store_true', required=True)
     diag.add_argument('--policy', required=True, choices=('RF-T005', 'RF-T007', 'RF-T008'))
     diag.add_argument('--inductors', required=True, type=int, choices=(3, 4))
+    comparison = sub.add_parser('comparison-readiness', help='partial read-only RF-T008 comparison checks; never execute')
+    comparison.add_argument('--allow-trial', action='store_true', required=True)
     pre = sub.add_parser('exp-preflight', help='read-only technical readiness checks; never execute')
     for arg in ('experiment-id', 'owner', 'request-id', 'policy', 'policy-sha256',
                 'source-sha', 'bands-sha256', 'input-sha256'):
@@ -399,6 +401,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.mode == 'synthetic':
         result = synthetic(args.policy, args.inductors)
+    elif args.mode == 'comparison-readiness':
+        from lpf.phase2_models.comparison_readiness import comparison_readiness
+        result = comparison_readiness(ROOT, allow_trial=args.allow_trial)
     elif args.mode == 'exp-preflight':
         result = exp_preflight(ROOT, args.experiment_id, owner=args.owner, request_id=args.request_id,
                                policy_id=args.policy, policy_sha256=args.policy_sha256,

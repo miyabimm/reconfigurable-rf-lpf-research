@@ -254,6 +254,13 @@ Stage Bの `candidate_pool='design_prototype'` は純直列L＋port-shunt IC 1�
 mock forwardで検査する小さなadapter。初期化も含むsample予算・中断時メーター/bestを保持し、
 物理不正proposalはRFスコアを作らずfail-closed停止する。本番runner/実RF探索は未提供。
 
+## Issue #299：4群比較のmock・read-only部分preflight（本番STOP）
+
+`uv run --frozen python scripts/run_phase2_shared.py comparison-readiness --allow-trial` は
+RF-T008と利用可能な入力byteをread-onlyで部分照合する。常に `production_readiness=not_ready`、
+G0/G1/G2は `not_run`。mockのみの4群配線・anytimeと未完了ゲートは
+[診断](diagnostics/issue299_mock_preflight.md)参照。実験実行の入口や許可ではない。
+
 ## Issue #285：SLSQP v2 / Hybrid / SLP 同費用比較（計画のみ）
 
 [4群の比較案・sample予算・実行前ブロッカー・G0〜G5](diagnostics/issue285_rf_comparison_plan.md)を参照。
