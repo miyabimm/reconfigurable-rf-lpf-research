@@ -21,6 +21,7 @@
 ## 実施・未実施
 
 - fixture `tests/test_phase2_problem_seed.py::make('RF-T008', 4)`、2点×28区間。実forward配線テストは同一物理xを直接1回・adapter経由1回の計2回（112 requested samples相当）だけで、solverによる実RF探索ではない。solver接続は実generic pipeline＋**mock IL**・固定box・seed 23。mockによる30 dB直下はsolver許容内でもstrict FAIL、30ちょうどは有限格子上PASSだが昇格blocked。部品/box/SPD/role違反、失敗forward、予算停止、例外後meterもテスト。
-- 2点のみの開発fixture動作確認。17点、dense1001点、実候補の独立branch MNA・電力収支・受動性・独立SPDは **not_run**。既存branch MNAユニットテスト等はソフトウェア回帰であり、このfixtureの独立RF検証ではない。
+- 追加mock回帰は、共通meterを使う粗2点Hybrid→精3点の候補選別・SLPを検査。両adapterの周波数・設定・role・区間・固定S2P配列を既存forward evaluatorと照合し、stage別callback数と56/84 samplesの課金を照合する。既知の合法点を固定するためSobolもmockし、IL forwardはmockであり、3点の実RF最適化や候補性能を示さない。
+- 実forwardは2点のみの開発fixture動作確認。17点、dense1001点、実候補の独立branch MNA・電力収支・受動性・独立SPDは **not_run**。既存branch MNAユニットテスト等はソフトウェア回帰であり、このfixtureの独立RF検証ではない。
 - 実RF SciPy最適化・本番探索、新EXP/番号予約、結果や既存checkpoint変更、候補認定・Phase 3は行っていない。Q(f)、SRF、EM、公差、実測、連続周波数、物理実装は未検証。有限格子・solver収束はこれらの保証ではない。
 - #285は独立レビュー・main統合前は本アダプタを比較実行可能と扱わない。RF条件・モデル・SLSQP v2の240/120と回復規則は不変更。

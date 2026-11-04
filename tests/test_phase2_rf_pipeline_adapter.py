@@ -71,6 +71,53 @@ class RFPipelineAdapterTests(unittest.TestCase):
         self.assertEqual(self.a.cost.RF_forward_calls, result['nfev'] + 1)
         self.assertEqual(self.a.cost.frequency_samples_requested, 56 * (result['nfev'] + 1))
 
+    def test_mock_pipeline_coarse_hybrid_fine_selection_and_slp(self):
+        meter = SampleBudgetCost(1000)
+        coarse = RFPipelineAdapter(self.circuit, 2, cost_meter=meter)
+        fine = RFPipelineAdapter(self.circuit, 3, cost_meter=meter)
+        self.assertEqual(coarse.bounds, fine.bounds)
+        for adapter, points in ((coarse, 2), (fine, 3)):
+            evaluator = adapter.evaluator
+            reference = self.circuit.forward_evaluator(points)
+            for field in ('f', 'setting', 'role', 'segment', 'pre', 'post'):
+                np.testing.assert_array_equal(getattr(evaluator, field), getattr(reference, field))
+            self.assertEqual(set(evaluator.setting), set(range(6)))
+            self.assertEqual(set(evaluator.segment), set(range(28)))
+            self.assertTrue(all(sum(evaluator.segment == i) == points for i in range(28)))
+
+        # Retain the physical box. Mock Sobol to repeat the known legal fixture
+        # instead of proposing arbitrary RF points; only the forward IL is mocked.
+        box = np.asarray(coarse.bounds)
+        free = box[:, 1] > box[:, 0]
+        z = (self.x[free] - box[free, 0]) / (box[free, 1] - box[free, 0])
+        calls = []
+        def fake_il(evaluator, x):
+            calls.append(evaluator)
+            return np.where(evaluator.role == 0, .4, 30.)
+        with patch('lpf.optimizers.pipeline.qmc.Sobol') as sobol, \
+             patch.object(type(coarse.evaluator), 'il', autospec=True, side_effect=fake_il):
+            sobol.return_value.random_base2.return_value = z[None, :]
+            result = minimize_pipeline(coarse.residuals, fine.errors, coarse.bounds,
+                constraints=fine.constraints, starts=[self.x], seed=23, sobol_m=0,
+                max_evaluations=20, hybrid_max_evaluations=1,
+                hybrid_maxiter=1, hybrid_max_restarts=0, restart_sigma=.1,
+                slp_max_evaluations=2, slp_max_iterations=1, max_slp_candidates=1)
+        counts = result['counts']
+        self.assertGreater(counts['hybrid']['residuals'], 0)
+        for stage in ('selection', 'slp'):
+            self.assertGreater(counts[stage]['errors'], 0)
+            self.assertGreater(counts[stage]['constraints'], 0)
+        h = sum(counts['hybrid'].values())
+        selection = sum(counts['selection'].values())
+        slp = sum(counts['slp'].values())
+        self.assertEqual(calls, [coarse.evaluator] * h +
+                         [fine.evaluator] * (selection + slp))
+        self.assertEqual(result['nfev'], h + selection + slp)
+        self.assertEqual(meter.RF_forward_calls, result['nfev'])
+        self.assertEqual(meter.frequency_samples_requested, 56*h + 84*selection + 84*slp)
+        self.assertEqual(meter.frequency_samples_completed, meter.frequency_samples_requested)
+        self.assertEqual(result['candidates'][result['selected'][0]]['slp_state'], 'completed')
+
     def test_solver_tolerance_never_becomes_strict_rf_pass(self):
         fixed = [(float(v), float(v)) for v in self.x]
         il = self.mock_il(np.nextafter(30., 0.))
