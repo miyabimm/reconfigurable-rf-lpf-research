@@ -918,6 +918,254 @@ class FrozenConfigTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, 'never overwrite'):
                         prepare_continuation_plan(root, 'project/experiments/issue270.yaml', 'EXP-999')
 
+    def test_diagnostic_preparation_reviewed_main_gate_and_marker(self):
+        import yaml
+        from scripts.run_phase2_shared import prepare_continuation_plan
+        config = yaml.safe_load((ROOT / 'project/experiments/issue276.yaml').read_text())
+        if any(not (ROOT / config[key]['path']).exists()
+               for key in ('definition_source', 'topology_reference', 'nominal_source')):
+            self.skipTest('Complete historical evidence checkout required')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', '-b', 'main', root])
+            subprocess.check_call(['git', 'config', 'user.name', 'Fixture'], cwd=root)
+            subprocess.check_call(['git', 'config', 'user.email', 'fixture@example.invalid'], cwd=root)
+            (root / '.gitignore').write_text('results/\n')
+            names = ['project/experiments/issue276.yaml'] + [config[key]['path']
+                for key in ('definition_source', 'topology_reference', 'nominal_source')]
+            for name in names:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / name, target)
+            (root / 'src').mkdir()
+            (root / 'src/mock.py').write_text('# fixture\n')
+            subprocess.check_call(['git', 'add', '.'], cwd=root)
+            subprocess.check_call(['git', 'commit', '-qm', 'fixture'], cwd=root)
+            head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+            subprocess.check_call(['git', 'update-ref', 'refs/remotes/origin/main', head], cwd=root)
+            fake = dict(input_source=dict(screen_cost={'frequency_samples_requested': 56},
+                initialization_timing=dict(elapsed_wall_s=1., elapsed_cpu_s=1.)))
+            with patch('scripts.run_phase2_shared._complete_checkout'), \
+                 patch('scripts.run_phase2_shared._fresh_main', return_value=head), \
+                 patch('scripts.experiment_id_registry.is_reserved_on_main', return_value={'constraint_id': 'RF-T008'}), \
+                 patch('lpf.phase2_models.experiment_config.prepare_diagnostic_starts', return_value=deepcopy(fake)) as prepare, \
+                 patch.dict(os.environ, {k: '1' for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')}):
+                result = prepare_continuation_plan(root, names[0], 'EXP-999')
+                self.assertEqual(result['execution'], 'not_run')
+                self.assertEqual(prepare.call_count, 1)
+                saved = json.loads((root / config['plan']['path']).read_text())
+                self.assertEqual(saved['input_source']['preparation_source']['git_head'], head)
+                with self.assertRaisesRegex(ValueError, 'never overwrite'):
+                    prepare_continuation_plan(root, names[0], 'EXP-999')
+                self.assertEqual(prepare.call_count, 1)
+
+    def test_20db_diagnostic_plan_and_two_arm_failure_isolation(self):
+        import yaml
+        from lpf.phase2_models.experiment_config import (load_plan, stable_identity,
+            prepare_diagnostic_starts)
+        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        from scripts.prepare_issue250_comparison import comparison_circuit
+        import lpf.phase2_models.experiment_run as runner
+        config = yaml.safe_load((ROOT / 'project/experiments/issue276.yaml').read_text())
+        for key in ('definition_source', 'topology_reference', 'nominal_source'):
+            if not (ROOT / config[key]['path']).exists():
+                self.skipTest('Complete historical evidence checkout required')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.check_call(['git', 'init', '-q', root])
+            (root / '.gitignore').write_text('results/\n')
+            for key in ('definition_source', 'topology_reference', 'nominal_source'):
+                path = Path(config[key]['path'])
+                (root / path).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / path, root / path)
+            circuit = comparison_circuit()
+            def forward(evaluator, vector):
+                return np.ones(len(evaluator.f))
+            with patch.object(CoupledLCEvaluator, 'il', autospec=True, side_effect=forward):
+                prepared = prepare_diagnostic_starts(root, circuit, config)
+            source = prepared['input_source']
+            self.assertEqual(source['actual_starts'][0]['start']['vector'][4:7], [5., 5., 5.])
+            self.assertEqual(source['screen_cost']['frequency_samples_requested'], 56)
+            source['preparation_source'] = dict(git_head='a' * 40, experiment_id='EXP-999',
+                program_sha256='b' * 64, definition_source=config['definition_source'],
+                topology_reference=config['topology_reference'])
+            digest = canonical_config_hash(stable_identity(source))
+            config['plan']['sha256'] = digest
+            plan = root / config['plan']['path']
+            plan.parent.mkdir(parents=True)
+            plan.write_text(json.dumps(dict(input_source=source, input_source_sha256=digest)))
+            path = root / 'config.yaml'
+            path.write_text(yaml.safe_dump(config))
+            with patch.object(CoupledLCEvaluator, 'il', side_effect=AssertionError('load must not forward')):
+                loaded = load_plan(root, path)
+                frozen = json.loads(json.dumps(loaded['input_source']))
+                self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
+            self.assertEqual(list(loaded['actual']), ['Control100', 'Limit10'])
+            from lpf.experiment_manifest import _environment, file_sha256
+            from lpf.constraint_versions import rf_input_file
+            from types import SimpleNamespace
+            shutil.copytree(ROOT / 'rf', root / 'rf')
+            g1 = root / 'g1-fixture'
+            g1.mkdir()
+            manifest = dict(execution={'status': 'planned'}, objective='full_lpf',
+                search_scope=dict(input_source=loaded['input_source'], input_source_sha256=loaded['input_source_sha256'],
+                                  diagnostic_17=deepcopy(runner.DIAGNOSTIC_17_PLAN)),
+                constraints=dict(constraint_id='RF-T008', effective_constraint_sha256=circuit.policy_fingerprint),
+                environment=_environment(), random_seed=23,
+                code=dict(execution_sha='a' * 40, working_tree_dirty=False),
+                bands_sha256=file_sha256(rf_input_file(root, circuit.resolved_policy['bands_file'])))
+            storage = dict(stage='planned', selection=dict(top_k=1, retain=['other'],
+                rule=runner.CONTINUATION_RETENTION_RULE, estimated_curated_bytes=1000000))
+            def git_mock(repo, *args):
+                if args[:1] == ('show',):
+                    return json.dumps(manifest if args[1].endswith('/manifest.json') else storage).encode()
+                return b''
+            def sync_g1():
+                (g1 / 'manifest.json').write_text(json.dumps(manifest))
+                (g1 / 'storage_record.json').write_text(json.dumps(storage))
+            sync_g1()
+            with patch('scripts.run_phase2_shared._complete_checkout'), \
+                 patch('scripts.run_phase2_shared._fresh_main', return_value='a' * 40), \
+                 patch('scripts.run_phase2_shared.exp_preflight'), \
+                 patch('scripts.experiment_id_registry.is_reserved_on_main', return_value={'owner': 'fixture', 'request_id': 'fixture'}), \
+                 patch('scripts.audit_new_experiment_storage.find_run', return_value=g1), \
+                 patch('lpf.phase2_models.experiment_config.continuation_program_sha256', return_value='b' * 64), \
+                 patch.object(runner, '_git', side_effect=git_mock), \
+                 patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(returncode=0)):
+                runner._gate(root, 'EXP-999', loaded, resuming=False)
+                manifest['search_scope']['diagnostic_17']['max_samples_total'] = 951
+                sync_g1()
+                with self.assertRaisesRegex(ValueError, 'bounded 17-point'):
+                    runner._gate(root, 'EXP-999', loaded, resuming=False)
+            calls = []
+            def optimizer(problem, vector, maxiter, target, *, coordinates):
+                self.assertEqual(coordinates, 'physical')
+                calls.append((problem.search_stop_db, problem.box.bounds[4][1]))
+                code = 4 if problem.search_stop_db == 20. and problem.box.bounds[4][1] == 100. else 0
+                return vector, dict(success=code == 0, status=code, message='mock', nit=1, nfev=1)
+            gate = dict(run=root / 'experiments/EXP-999', source_sha='a' * 40,
+                        g1_sha256='b' * 64, manifest={}, storage={})
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_package') as package, \
+                 patch.object(CoupledLCEvaluator, 'il', autospec=True, side_effect=forward):
+                result = runner.run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=optimizer)
+                self.assertEqual(list(result['completed']), ['Control100', 'Limit10'])
+                self.assertEqual(result['completed']['Control100']['continuation']['state'], 'failed')
+                self.assertEqual(result['completed']['Control100']['staged_record']['exception']['type'], 'DiagnosticStatus4')
+                self.assertEqual(result['completed']['Control100']['diagnostic_scan']['state'], 'not_run')
+                self.assertEqual(result['completed']['Limit10']['continuation']['state'], 'diagnostic_end_at_20db')
+                scan = result['completed']['Limit10']['diagnostic_scan']
+                self.assertEqual(scan['evaluation_cost']['frequency_samples_requested'], 476)
+                self.assertEqual(scan['grid']['segment_count'], 28)
+                self.assertGreaterEqual(package.call_count, 2)
+                self.assertFalse(any(limit > 10 for threshold, limit in calls if threshold == 20. and limit != 100.))
+                before = (root / 'results/EXP-999/run.json').read_bytes()
+                runner.run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=optimizer)
+                self.assertEqual((root / 'results/EXP-999/run.json').read_bytes(), before)
+            from lpf.phase2_models.evaluation_cost import EvaluationCost
+            gate['run'].mkdir(parents=True)
+            gate['manifest'] = {'execution': {}}
+            gate['storage'] = {'checkpoints': [], 'validation_overlays': []}
+            with patch('scripts.audit_new_experiment_storage.validate_run'):
+                runner._package(root, gate, loaded, result, EvaluationCost())
+            summary = json.loads((gate['run'] / 'run_summary.json').read_text())
+            self.assertEqual(summary['attempts']['attempted'], 2)
+            self.assertEqual(summary['actual_results']['Limit10']['diagnostic_scan']['state'], 'observed')
+            self.assertEqual(len(summary['gjm_upper_bound_contact']), 2)
+            # Exercise the real storage audit in an isolated complete fixture;
+            # this is not a reservation or experiment in the research checkout.
+            ledger = root / PATH
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            rows = [dict(experiment_id=f'EXP-{n:03}', state='legacy_gap_retired' if n in (18, 19)
+                         else 'legacy_recorded', owner='', request_id='', purpose='', constraint_id='',
+                         reserved_at_utc='', origin='') for n in range(1, 50)]
+            rows, ident, _ = next_reservation(rows, owner='fixture', purpose='mock only',
+                request_id='fixture-diagnostic', constraint_id='RF-T008', reserved_at_utc='2026-11-02T00:00:00Z')
+            ledger.write_text(as_csv(rows))
+            shutil.copyfile(ROOT / 'data/phase2_git_storage_budget.json', root / 'data/phase2_git_storage_budget.json')
+            subprocess.check_call(['git', 'config', 'user.name', 'Fixture'], cwd=root)
+            subprocess.check_call(['git', 'config', 'user.email', 'fixture@example.invalid'], cwd=root)
+            subprocess.check_call(['git', 'add', '.'], cwd=root)
+            subprocess.check_call(['git', 'commit', '-qm', 'fixture source and reservation'], cwd=root)
+            subprocess.check_call(['git', 'update-ref', 'refs/remotes/origin/main', 'HEAD'], cwd=root)
+            scope = dict(input_source=loaded['input_source'], input_source_sha256=loaded['input_source_sha256'],
+                         diagnostic_17=deepcopy(runner.DIAGNOSTIC_17_PLAN))
+            actual_manifest = new_manifest(ident, 'mock diagnostic fixture', scope, objective='full_lpf',
+                                           seed=23, root=root, constraint_id='RF-T008', allow_trial=True)
+            actual_storage = dict(schema_version=1, policy='phase2-git-only-v1', experiment_id=ident,
+                phase='Phase 2', stage='planned', selection=dict(top_k=1, retain=['other'],
+                    rule=runner.CONTINUATION_RETENTION_RULE, estimated_curated_bytes=1000000),
+                summary=None, checkpoints=[], validation_overlays=[], git_readback='not_run',
+                size_exception=None, limitations=[])
+            actual_run = root / 'experiments/chatgpt_topology_search/runs' / ident
+            actual_run.mkdir(parents=True)
+            (actual_run / 'manifest.json').write_text(json.dumps(actual_manifest))
+            (actual_run / 'storage_record.json').write_text(json.dumps(actual_storage))
+            audit_state = deepcopy(result)
+            audit_state['identity']['experiment_id'] = ident
+            runner._package(root, dict(run=actual_run, manifest=actual_manifest, storage=actual_storage),
+                            loaded, audit_state, EvaluationCost())
+            from scripts.audit_new_experiment_storage import validate_run
+            report = validate_run(root, ident, mode='audit')
+            self.assertEqual(report['stage'], 'preservation_incomplete')
+            self.assertEqual(report['checkpoints'], 2)
+            from scripts.run_phase2_one_start import finalize_experiment
+            # The isolated root contains only the EXP-116 manifest used as an
+            # input fixture, not its complete history, so do not claim a global
+            # evidence audit. The single EXP readback/finalize is real.
+            with patch('scripts.run_phase2_one_start.audit_all'):
+                finalized = finalize_experiment(root, ident)
+            self.assertEqual(finalized['stage'], 'complete')
+            self.assertTrue(finalized['committed_readback'])
+            self.assertEqual(json.loads((actual_run / 'storage_record.json').read_text())['git_readback'], 'passed')
+            def illegal_optimizer(problem, vector, maxiter, target, *, coordinates):
+                if problem.search_stop_db == 20. and problem.box.bounds[4][1] == 100.:
+                    vector[4] = 101.
+                return vector, dict(success=True, status=0, message='mock', nit=1, nfev=1)
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
+                 patch.object(CoupledLCEvaluator, 'il', autospec=True, side_effect=forward):
+                illegal = runner.run_plan(root, path, 'EXP-997', 'pilot', optimize_stage=illegal_optimizer)
+                failed = illegal['completed']['Control100']
+                self.assertEqual(failed['staged_record']['exception']['type'], 'DiagnosticIllegalVector')
+                self.assertEqual(failed['continuation']['stages'][-1]['record']['stage_calls'][-1]['output_vector'][4], 101.)
+                self.assertNotEqual(failed['continuation']['last_valid_vector'][4], 101.)
+                self.assertEqual(illegal['completed']['Limit10']['diagnostic_scan']['state'], 'observed')
+            def exhausted(circuit, seed_record, *, method, cost_meter, source_provenance,
+                          optimize_stage, record_sink, **kwargs):
+                trace = dict(method=method, state='budget_exhausted', stages=[], final_exchange=None,
+                    last_valid_vector=list(seed_record['vector']), evaluation_cost=cost_meter.snapshot(),
+                    exception={'type': 'SampleBudgetExceeded', 'message': 'limit'})
+                record_sink(trace)
+                return trace
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), patch.object(runner, '_package'), \
+                 patch.object(runner, 'run_c1_continuation', side_effect=exhausted) as dispatch:
+                with self.assertRaisesRegex(RuntimeError, 'budget_exhausted'):
+                    runner.run_plan(root, path, 'EXP-996', 'pilot', optimize_stage=optimizer)
+                self.assertEqual(dispatch.call_count, 1)
+                with self.assertRaisesRegex(ValueError, 'no retry'):
+                    runner.run_plan(root, path, 'EXP-996', 'pilot', optimize_stage=optimizer)
+            calls.clear()
+            with patch.object(runner, '_load_g1_plan', return_value=loaded), \
+                 patch.object(runner, '_gate', return_value=gate), \
+                 patch.object(runner, '_package', side_effect=OSError('disk full')), \
+                 patch.object(CoupledLCEvaluator, 'il', autospec=True, side_effect=forward):
+                with self.assertRaisesRegex(OSError, 'disk full'):
+                    runner.run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=optimizer)
+                self.assertFalse(any(limit == 10. for _, limit in calls))
+                raw = root / 'results/EXP-998/run.json'
+                failed = json.loads(raw.read_text())['body']
+                self.assertEqual(failed['diagnostic_stop'], 'preservation_failed')
+                self.assertEqual(failed['diagnostic_pending_package'], 'Control100')
+                with self.assertRaisesRegex(ValueError, 'no retry'):
+                    runner.run_plan(root, path, 'EXP-998', 'pilot', optimize_stage=optimizer)
+            config['budgets']['optimization_samples'] += 1
+            path.write_text(yaml.safe_dump(config))
+            with self.assertRaisesRegex(ValueError, 'diagnostic comparison contract'):
+                load_plan(root, path)
+
     def test_continuation_reference_definition_matches_historical_structure_only(self):
         import yaml
         from lpf.phase2_models.experiment_config import _check_continuation_reference

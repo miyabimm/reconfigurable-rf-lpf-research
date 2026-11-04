@@ -187,6 +187,14 @@ class _StageAbort(Exception):
     """Stop v2 safely on numerical/callback failure; retain recorded calls."""
 
 
+class DiagnosticIllegalVector(ValueError):
+    """A diagnostic stage returned an illegal physical/search-box vector."""
+
+
+class DiagnosticStatus4(ValueError):
+    """The diagnostic's 20 dB stage returned SLSQP status 4."""
+
+
 def _check_guard_source(source_provenance):
     if not isinstance(source_provenance, dict):
         raise ValueError('Guarded search requires explicit source provenance')
@@ -395,8 +403,6 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                     stage["observation"] = _observe(cost_meter.epigraph(problem), output)
             else:
                 stage["observation"] = _observe(problem, output)
-            if stage["observation"]["sampled_rf"]["state"] != "observed":
-                raise ValueError("Stage output cannot be evaluated on its finite grid")
             if working_configuration is not None or require_legal_output or gjm_search_max_pf is not None:
                 component = stage["observation"]["component_policy"]
                 detail = component.get("detail", {})
@@ -404,9 +410,12 @@ def run_c1_staged(circuit, seed_record, *, coarse_points, fine_points,
                         component["state"] != "pass" or
                         detail.get("component_policy_pass") is False or
                         detail.get("connection_role_evidence_incomplete") is True):
-                    raise ValueError("Working stage returned an illegal physical vector")
+                    error = DiagnosticIllegalVector if stop_on_status4 else ValueError
+                    raise error("Working stage returned an illegal physical vector")
+            if stage["observation"]["sampled_rf"]["state"] != "observed":
+                raise ValueError("Stage output cannot be evaluated on its finite grid")
             if stop_on_status4 and raw_status['status'] == 4:
-                raise ValueError("Diagnostic stage stopped on SLSQP status 4")
+                raise DiagnosticStatus4("Diagnostic stage stopped on SLSQP status 4")
             status = _json_value(raw_status)
             status["converged"] = status["success"]
             status["stage_call_index"] = index

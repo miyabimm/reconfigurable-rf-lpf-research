@@ -70,6 +70,24 @@ uv run --frozen python scripts/run_phase2_shared.py finalize --experiment-id EXP
   保存する前にfinalizeしない。finalize PASSはGit証拠保全だけであり、科学的検証PASSとは別判定。
   Issue #252のコードCIはIssue #250の本番実行やRF改善の証拠ではない。
 
+### 20 dB診断対照の開発途中 API（Issue #276）
+
+`project/experiments/issue276.yaml` は未凍結templateであり、plan SHAの0は実入力ではない。
+共通CLI schema 5はEXP-116 G1 manifestのnominal-D入力をSHA照合し、固定GJM 3個のみ
+50→5 pFにした共通初期値からcoarse2でtを一度計算し、1 forward/56 samplesを各armに配賦する。
+共有準備のCPU/wallは両armへ全額を保守的に配賦し、物理実消費は別表示する。EXP-062のbest値や
+EXP-116の最終値は初期化に使わない。探索boxはControl100=既定、Limit10=10 pFのみ異なり、
+RF条件や物理上限ではない。D方式の`all_20.0`終了でAFEをdispatchしない。
+
+**コードDraft PRの独立レビュー・main統合・CI前にprepare/runを実行しない。** 完全checkoutと
+main中央予約G0後、`prepare --config project/experiments/issue276.yaml --experiment-id EXP-NNN`
+は同一入力・seedを準備し、その後plan SHAとplanned manifest/storageをmainで凍結する。
+G1の`search_scope.diagnostic_17`は `experiment_run.DIAGNOSTIC_17_PLAN` と完全一致させ、
+通常の最終post-search planとは併用しない。両armはpilotのみ、各最大50万samples、
+合法な20 dB終端のみ別枠476 samplesで17点診断し、dense/MNA/電力・受動性の最終認定は
+`not_run`。失敗原本と最後の合法vectorを区別し、保存／読戻し失敗や不明な中断では全体STOP。
+有限格子の20 dB診断は最終RF適合・物理実現性・大域最適性を意味しない。
+
 ### 段階的探索の開発途中 API（Issue #270）
 
 `run_c1_continuation` は4方式の段階制御と最終guard付き周波数交換の開発途中API。
