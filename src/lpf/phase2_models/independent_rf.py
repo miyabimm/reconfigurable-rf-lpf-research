@@ -67,9 +67,13 @@ def evaluate_independent_sample(circuit, vector, frequency_hz, setting):
     c_loss = .5 * np.sum(abs(bc.T @ voltage)**2 * yc.real)
     available = 1/(8*zs.real)
     gain = float(load_power/available)
-    if not np.isfinite(gain) or gain <= 0:
+    if not np.isfinite(vout) or not np.isfinite(gain) or gain < 0:
         raise ValueError("Invalid transducer gain")
-    return {"gain": gain, "il_db": float(-10*np.log10(gain)),
+    # The linear power diagnostic may underflow, but a nonzero voltage must
+    # not become a false transmission zero in dB. Only vout==0 gives +inf.
+    with np.errstate(divide='ignore'):
+        il_db = -20*np.log10(abs(vout)) - 10*np.log10(4*zs.real*(1/zl).real)
+    return {"gain": gain, "il_db": float(il_db),
             "input_power_w": input_power, "load_power_w": float(load_power),
             "inductor_loss_w": float(l_loss), "capacitor_loss_w": float(c_loss),
             "input_s2p_loss_w": float(pre_loss), "output_s2p_loss_w": float(post_loss),

@@ -1,5 +1,6 @@
 """Bounded deterministic Stage-2 numerics; no EXP or optimizer execution."""
 import copy
+from contextlib import ExitStack
 import csv
 from dataclasses import replace
 from pathlib import Path
@@ -14,7 +15,7 @@ from lpf.phase2_models._grid import validated_band_segments
 from lpf.phase2_models.coupled_lc import CoupledLCTopology
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import power_response, _cascade
-from lpf.rf_core.independent import validate_response
+from lpf.rf_core.independent import validate_response, evaluate_independent_response
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -128,6 +129,44 @@ class RFCoreTests(unittest.TestCase):
             with self.assertRaises(ValueError): power_response(s, 50, 60-40j)
         with self.assertRaises(ValueError): power_response(through, -50, 50)
         with self.assertRaises(ValueError): EvaluationGrid([1e9], [True], [0])
+
+    def test_independent_zero_and_subnormal_power_transmission(self):
+        # Synthetic passive external 2-port fixture, not a new RF policy or
+        # S2P file. Real branch-current MNA still solves the connected LC core.
+        from lpf.port_parasitics import get_two_port_s
+        p, d, _, _, x = make('RF-F003')
+        model = build_rf_model(d, p)
+        g = EvaluationGrid([1e9], [0], [0])
+        for transmission in (0., 1e-200):
+            def external(policy, role, f):
+                if role == 'input_parasitic':
+                    return np.array([[.2, transmission], [transmission, .3]], complex)
+                return get_two_port_s(policy, role, f)
+            with self.subTest(transmission=transmission), ExitStack() as stack:
+                for module in ('lpf.rf_core.model', 'lpf.rf_core.independent',
+                               'lpf.phase2_models.independent_rf'):
+                    stack.enter_context(patch(module+'.get_two_port_s', side_effect=external))
+                response = model.evaluator(g).evaluate(x)
+                for key in ('il_db', 'apl_db'):
+                    value = getattr(response, key)[0]
+                    self.assertTrue(np.isposinf(value) if transmission == 0 else np.isfinite(value))
+                    if transmission != 0:
+                        self.assertGreater(value, 3900.)
+                # Forbid all forward reductions in the independent check.
+                with patch.object(CoupledLCTopology, 'node_admittance', side_effect=AssertionError('forward reused')):
+                    self.assertTrue(validate_response(model, x, response)['independent_mna_checked'])
+                with self.assertRaisesRegex(ValueError, 'mismatch'):
+                    validate_response(model, x, replace(response, il_db=np.array([0.])))
+        # A disconnected OPEN output has undefined available power, not a
+        # legitimate zero available gain. NaN and singular S also remain FAIL.
+        for output in (np.diag([.3, 1.]), np.full((2, 2), np.nan), np.diag([.3, -1.])):
+            def external(policy, role, f):
+                return output if role == 'output_parasitic' else get_two_port_s(policy, role, f)
+            with self.subTest(output=output), ExitStack() as stack:
+                for module in ('lpf.rf_core.independent', 'lpf.phase2_models.independent_rf'):
+                    stack.enter_context(patch(module+'.get_two_port_s', side_effect=external))
+                with self.assertRaises(ValueError):
+                    evaluate_independent_response(model, x, 1e9, 0)
 
     def test_t006_endpoints_no_extrapolation_and_sha_gate(self):
         p, d, _, _, x = make('RF-T006')

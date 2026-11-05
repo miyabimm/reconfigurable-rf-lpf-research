@@ -40,16 +40,24 @@ def evaluate_independent_response(model, x, frequency_hz, setting):
         voltages.append(ext)
         currents.append(current)
     s = np.column_stack(waves)
+    if not np.isfinite(currents[1][1]) or currents[1][1] == 0:
+        raise ValueError('Undefined available output power')
     zout = voltages[1][1]/currents[1][1]
+    if not np.isfinite(zout) or zout.real <= 0:
+        raise ValueError('Undefined available output power')
     voc = voltages[0][1]*(1+zout/z[1])
-    ga = abs(voc)**2*z[0].real/zout.real
+    if not np.isfinite(voc):
+        raise ValueError('Invalid available output voltage')
     audit = evaluate_independent_sample(model, x, frequency_hz, setting)
+    # GA=|Voc|²*Re(Zs)/Re(Zout); use log amplitude before squaring.
+    # Voc==0 is legitimate zero available power, not an undefined match.
     with np.errstate(divide='ignore'):
-        audit.update(s=s, apl_db=float(-10*np.log10(ga)),
+        audit.update(s=s, apl_db=float(-20*np.log10(abs(voc))
+                                      -10*np.log10(z[0].real/zout.real)),
             in_rl_db=float(-20*np.log10(abs(s[0, 0]))),
             out_rl_db=float(-20*np.log10(abs(s[1, 1]))))
     numbers = [audit[k] for k in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')]
-    if not np.all(np.isfinite(s)) or any(np.isnan(numbers)) or not np.isfinite(ga) or ga <= 0:
+    if not np.all(np.isfinite(s)) or any(np.isnan(numbers)):
         raise ValueError('Invalid independent power response')
     if np.linalg.eigvalsh(np.eye(2)-s.conj().T@s)[0] < -1e-10:
         raise ValueError('Non-passive external two-port')
