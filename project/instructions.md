@@ -9,6 +9,7 @@
 複数LTEバンドに対応する受動再構成可能RF-LPFで、低IL・高調波抑圧・小型化・実装性・再現性を追求します。ChatGPT主導の新回路トポロジー考案と、スクリプトによる体系的な有限探索を相互利用します。
 
 - 正式RF制約は`rf/constraints/registry.json`の`active_formal_id`が指す不変JSON。試験条件は明示的opt-inの別IDで、正式版へ自動昇格しません。
+  - **Issue #307 の一回限りの承認済み例外**：#306 v1.0に従いRF-F003/T005〜T008を同じIDでschema 2へ移行し、GJM01下限0.1 pF・PCB_L下限0.01 nHと全値域の閉区間を採用。移行前全JSON/registry/元main SHA/旧effective SHA/親子関係は`rf/constraints/history/pre-issue-307/`、新旧SHA対応は`rf/constraints/history/issue307-migration.json`に保存。F001/F002/T001〜T004は履歴専用。これ以外のRF科学条件変更やtrial自動昇格は承認していません。
 - 周波数区間は`rf/bands.csv`、外部寄生は正式JSONでSHA固定されたS2P。解説は`project/specification.md`であり、数値の独立した正本ではありません。
 - 現況・未解決事項は`project/roadmap.md`とGitHub Issues、実験原本は`experiments/.../EXP-NNN/`、実行と検証の索引はGitHub上の`data/experiment_index.csv`（通常Piでは非取得）。
 - 二段階SLSQPの現行手順は`project/slsqp_iteration_policy.md`、新規実験の選別証拠は`project/experiment_storage_policy.md`。既存の識別子・ファイル名を説明上の簡素化だけで改名しません。

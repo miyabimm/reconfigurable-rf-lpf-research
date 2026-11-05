@@ -34,10 +34,8 @@ class RFT008ICFixedCTests(unittest.TestCase):
         c = p["trial_ic_fixed_c_by_connection"]
         self.assertEqual(c["fixed_c_q"], 60)
         self.assertEqual(c["variable_c_q"], 35)
-        self.assertEqual(c["non_ground"], {"min_pf_per_branch": 0.2,
-                                            "max_pf_per_branch": 3})
-        self.assertEqual(c["grounded"], {"min_pf_per_branch": 0.5,
-                                        "max_pf_per_branch": 3})
+        self.assertEqual(c["non_ground"], {'bounds': {'min': 0.2, 'max': 3, 'unit': 'pF'}})
+        self.assertEqual(c["grounded"], {'bounds': {'min': 0.5, 'max': 3, 'unit': 'pF'}})
         self.assertEqual(c["variable_capacitance_pf_range"], [0, 3])
         self.assertEqual(c["max_composite_branches"], 2)
         self.assertEqual(p["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
@@ -135,10 +133,8 @@ class RFT008ICFixedCTests(unittest.TestCase):
 
     def test_PCB_ground_still_Q60_and_hot_hot_Q40(self):
         spec = self.p["trial_pcb_pattern_c_by_connection"]
-        self.assertEqual(spec["grounded"], {"min_pf_per_component": 0.02,
-                                            "max_pf_per_component": 1, "q": 60})
-        self.assertEqual(spec["non_ground"], {"min_pf_per_component": 0.02,
-                                             "max_pf_per_component": 0.2, "q": 40})
+        self.assertEqual(spec["grounded"], {'bounds': {'min': .02, 'max': 1, 'unit': 'pF'}, 'q': 60})
+        self.assertEqual(spec["non_ground"], {'bounds': {'min': .02, 'max': .2, 'unit': 'pF'}, 'q': 40})
         self.assertEqual(spec["max_count"], 3)
 
 

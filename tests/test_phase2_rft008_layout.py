@@ -33,11 +33,11 @@ class RFT008CapacitorLayoutTests(unittest.TestCase):
     def test_policy_derived_q_bounds_and_separate_dtc_admittance(self):
         layout = self.mixed_layout(variable_edges=((4, -1), (1, 2)))
         spec = RFT008CapacitorLayout.for_policy(
-            self.policy, layout, (0,), gjm_lower_pf=0.02
+            self.policy, layout, (0,), gjm_lower_pf=0.1
         )
         self.assertEqual(spec.q, (80., 60., 40., 40., 35., 35., 60., 60.))
         self.assertEqual(spec.fixed_bounds_pf,
-                         ((0.02, 100.), (0.02, 1.), (0.02, 0.2), (0.02, 0.2)))
+                         ((0.1, 100.), (0.02, 1.), (0.02, 0.2), (0.02, 0.2)))
         self.assertEqual(spec.ic_fixed_bounds_pf, ((0.5, 3.), (0.2, 3.)))
         self.assertEqual(spec.variable_bounds_pf, (0., 3.))
         # One IC fixed C is present even when the variable C is OFF.
@@ -98,11 +98,13 @@ class RFT008CapacitorLayoutTests(unittest.TestCase):
         placement = self.mixed_layout()
         legal = RFT008CapacitorLayout.for_policy(self.policy, placement, (0,))
         study = RFT008CapacitorLayout.for_policy(
-            self.policy, placement, (0,), gjm_lower_pf=0.02
+            self.policy, placement, (0,), gjm_lower_pf=0.2
         )
-        self.assertEqual(legal.fixed_bounds_pf[0], (0.0, 100.0))
-        self.assertEqual(study.fixed_bounds_pf[0], (0.02, 100.0))
-        c = [0.001, 0.4, 0.1, 0.1]
+        self.assertEqual(legal.fixed_bounds_pf[0], (0.1, 100.0))
+        self.assertEqual(study.fixed_bounds_pf[0], (0.2, 100.0))
+        with self.assertRaises(ValueError):
+            RFT008CapacitorLayout.for_policy(self.policy, placement, (0,), gjm_lower_pf=.02)
+        c = [0.1, 0.4, 0.1, 0.1]
         fixed_ic = [0.2, 0.2]
         variable = np.zeros((6, 2))
         self.assertTrue(legal.validate_values(self.policy, c, fixed_ic, variable))

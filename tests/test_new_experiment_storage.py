@@ -71,6 +71,19 @@ class StoragePolicyGateTests(unittest.TestCase):
         dump(self.run / "manifest.json", self.manifest)
         dump(self.run / "storage_record.json", self.record)
 
+    def test_archived_binding_is_opt_in_only_for_read_only_audit(self):
+        self.save()
+        for mode in ('audit', 'preflight', 'finalize'):
+            with self.subTest(mode=mode), patch(SCRIPT + '.validate_manifest') as validate, patch(
+                SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}
+            ), patch(SCRIPT + '.tracked_run_files', return_value=set()):
+                if mode == 'finalize':
+                    with self.assertRaises(ValueError):
+                        validate_run(self.root, 'EXP-050', mode=mode)
+                else:
+                    validate_run(self.root, 'EXP-050', mode=mode)
+                self.assertEqual(validate.call_args.kwargs['allow_archived'], mode == 'audit')
+
     def test_exp_048_049_preserved_no_retroactive_manifest_migration(self):
         # Historical runs have no storage_record; the new CI must ignore them.
         legacy48 = self.run.parent / "EXP-048"

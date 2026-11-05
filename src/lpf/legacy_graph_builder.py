@@ -64,7 +64,7 @@ def _fixed_parts(graph, values, shift=0, resolved_policy=None):
     inductors, capacitors = [], []
     for (a, b, t), value in zip(edges, values):
         v = float(value)
-        if t == 'PCB_L' and v > policy['components']['PCB_L'].get('max_inductance_nh', policy['components']['PCB_L']['max_inductance_nh_approx'])*1e-9+1e-21:
+        if t == 'PCB_L' and v > policy['components']['PCB_L']['bounds']['max']*1e-9+1e-21:
             raise ValueError('PCB-L inductance exceeds policy limit')
         if not np.isfinite(v) or v <= 0:
             raise ValueError("Fixed component value must be finite and positive")

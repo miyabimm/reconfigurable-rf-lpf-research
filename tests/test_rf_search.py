@@ -34,10 +34,10 @@ class SearchTests(unittest.TestCase):
         self.c = build(self.d['definition'], self.d['config']['rf'])
         self.start = generate(self.c, 23)
         self.x = self.start['vector']
-        self.bounds, self.opened = physical_box(self.c)
+        self.bounds = physical_box(self.c)
 
     def meter(self, maximum=2000, **kwargs):
-        return Evaluation(self.c, self.bounds, self.opened, maximum, backend='fixture', **kwargs)
+        return Evaluation(self.c, self.bounds, maximum, backend='fixture', **kwargs)
 
     def spec(self, arm=0):
         source = {'test': 'synthetic'}
@@ -118,7 +118,7 @@ class SearchTests(unittest.TestCase):
         vectors = [list(self.x) for _ in range(3)]
         for i, x in enumerate(vectors):
             x[0] += i * 1e-6
-            validate(self.c, x, self.bounds, self.opened)
+            validate(self.c, x, self.bounds)
         expected = sorted(vector_sha(x) for x in vectors)[:2]
         runs = [LocalRun(x, None, x, None, True, 0, '', 0, 0) for x in vectors]
         out = HybridResult(runs, None, None, 0, 'mock', 23, 1, 2, 1, .1)
@@ -172,21 +172,21 @@ class SearchTests(unittest.TestCase):
             self.assertEqual(result['terminal17']['status'], 'completed')
             self.assertEqual(result['cost']['anytime17'][0]['status'], 'not_run')
 
-    def test_illegal_nonfinite_open_role_and_spd_stop_without_forward(self):
+    def test_illegal_nonfinite_bounds_role_and_spd_stop_without_forward(self):
         m = self.meter()
         for x in (self.x + [0.], [float('nan')] * len(self.x), [-1.] * len(self.x)):
             with self.assertRaises(ValueError):
                 m.forward(x, 2, 'bad')
         x = list(self.x)
-        x[4] = 0.  # GJM open endpoint
+        x[4] = 0.  # Below JSON-owned GJM closed minimum (0.1 pF).
         with self.assertRaises(ValueError):
             m.forward(x, 2, 'open')
         for report in ({'component_policy_pass': False, 'connection_role_evidence_incomplete': False},
                        {'component_policy_pass': True, 'connection_role_evidence_incomplete': True}):
-            with patch.object(type(self.c), 'validate_components', return_value=report):
+            with patch('lpf.search.starts.validate_values', return_value=report):
                 with self.assertRaises(ValueError):
                     m.forward(self.x, 2, 'component_or_role')
-        with patch.object(type(self.c), 'validate_components', side_effect=ValueError('non-SPD')):
+        with patch('lpf.search.starts.validate_values', side_effect=ValueError('non-SPD')):
             with self.assertRaises(ValueError):
                 m.forward(self.x, 2, 'spd')
         self.assertEqual(m.requested, 0)
@@ -325,7 +325,7 @@ class SearchTests(unittest.TestCase):
         self.assertIsNone(m.last)
 
     def test_dependency_boundary(self):
-        allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf'}
+        allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf', 'coupled_lc'}
         for path in (ROOT / 'src/lpf/search').glob('*.py'):
             for node in ast.walk(ast.parse(path.read_text())):
                 if isinstance(node, ast.ImportFrom) and node.module and 'phase2_models' in node.module:
@@ -337,8 +337,8 @@ class SearchTests(unittest.TestCase):
         # Known existing 4L fixture, NOT Sobol search, optimization or 17/1001 RF.
         from test_phase2_problem_seed import make
         p, x = make('RF-T008', 4)
-        bounds, opened = physical_box(p.circuit)
-        m = Evaluation(p.circuit, bounds, opened, 532)
+        bounds = physical_box(p.circuit)
+        m = Evaluation(p.circuit, bounds, 532)
         il = m.forward(x, 2, 'fixture_wiring')
         self.assertEqual(il.shape, (56,))
         self.assertEqual((m.requested, m.completed), (56, 56))

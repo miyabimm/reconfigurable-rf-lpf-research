@@ -37,7 +37,7 @@ class NormalizationTests(unittest.TestCase):
                 self.assertEqual(len(p.evaluator.f), 28 * points)
                 self.assertEqual(p.mandatory_stop_db, 30.)
                 self.assertEqual(p.policy_fingerprint,
-                    '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4')
+                    'e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532')
                 for i in np.flatnonzero(wrapped.fixed):
                     self.assertEqual(z[i], 0.)
                     self.assertEqual(wrapped.box.bounds[i], (0., 0.))
@@ -55,7 +55,7 @@ class NormalizationTests(unittest.TestCase):
                     np.full_like(z, np.inf)):
             with self.assertRaises(ValueError):
                 wrapped.to_physical(bad)
-        for i, value in ((0, -1e-6), (0, 1.000001), (4, 0.)):
+        for i, value in ((0, -1e-6), (0, 1.000001), (4, -1e-6)):
             bad = z.copy()
             bad[i] = value
             with self.assertRaises(ValueError):
@@ -126,7 +126,7 @@ class NormalizationTests(unittest.TestCase):
         def invalid(fun, z, **kwargs):
             self.assertEqual(kwargs['options'], {'maxiter': 240, 'eps': 1e-5})
             self.assertEqual(kwargs['bounds'][-1], (None, None))
-            z[4] = 0.  # open GJM lower bound, no epsilon repair
+            z[4] = -1e-6  # below the closed GJM bound; no repair
             return SimpleNamespace(x=z, **status(0))
         with patch('lpf.phase2_models.staged_optimization.minimize', side_effect=invalid) as solver:
             result = run_c1_staged(p.circuit, initial, coarse_points=1, fine_points=2,
@@ -134,7 +134,7 @@ class NormalizationTests(unittest.TestCase):
                                        finite_difference_eps=1e-5))
         self.assertEqual(solver.call_count, 1)
         self.assertEqual(result['numerical_state'], 'failed')
-        self.assertIn('open lower', result['exception']['message'])
+        self.assertIn('coordinate box', result['exception']['message'])
         for kwargs in ({'coordinates': 'typo'}, {'finite_difference_eps': 0},
                        {'finite_difference_eps': np.nan}):
             with self.assertRaises(ValueError):

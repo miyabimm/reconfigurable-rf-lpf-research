@@ -26,14 +26,19 @@ class CanonicalSourceAliasesTests(unittest.TestCase):
                             if source == "data/design_constraints.json"
                             else "rf/" + source.removeprefix("data/"))
                 self.assertEqual(path.resolve(), (ROOT / expected).resolve())
-                self.assertTrue(path.is_file())
-                # Registry is mutable: its active ID may change with approval.
-                if source != "data/constraints/registry.json":
+                # #307 preserved original RF constraint bytes in history, while
+                # old symlinks remain untouched (retired targets may be absent).
+                constraint = source.startswith('data/constraints/') and source != 'data/constraints/registry.json'
+                archived = (ROOT/'rf/constraints/history/pre-issue-307'/source.removeprefix('data/constraints/'))
+                if not constraint:
+                    self.assertTrue(path.is_file())
+                # Registry is mutable; design_constraints was an old active alias.
+                if source not in ('data/constraints/registry.json', 'data/design_constraints.json'):
                     original_blob = subprocess.check_output(
                         ["git", "rev-parse", f"{BASELINE}:{source}"],
                         cwd=ROOT, text=True).strip()
                     current_blob = subprocess.check_output(
-                        ["git", "hash-object", source],
+                        ['git', 'hash-object', str(archived) if constraint else source],
                         cwd=ROOT, text=True).strip()
                     self.assertEqual(original_blob, current_blob)
 

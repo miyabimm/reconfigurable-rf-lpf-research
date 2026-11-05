@@ -170,7 +170,15 @@ def verify_status():
     for rel in untouched:
         old = subprocess.check_output(["git", "rev-parse", original_sha + ":" + rel],
                                       cwd=ROOT).decode().strip()
-        now = subprocess.check_output(["git", "hash-object", rel],
+        # #307 migrates active snapshots under an approved one-time exception.
+        # W1's original-byte guard follows the preserved archive, never rewrites
+        # or rebinds saved EXP evidence to current RF.
+        preserved = rel
+        if rel.startswith('data/constraints/'):
+            preserved = 'rf/constraints/history/pre-issue-307/' + rel.removeprefix('data/constraints/')
+        elif rel == 'data/design_constraints.json':
+            preserved = 'rf/constraints/history/pre-issue-307/formal/RF-F003.json'
+        now = subprocess.check_output(['git', 'hash-object', preserved],
                                       cwd=ROOT).decode().strip()
         if old != now:
             raise ValueError("W1 modified a protected RF/source original: " + rel)

@@ -14,6 +14,7 @@ import subprocess
 import numpy as np
 
 from lpf.constraint_versions import rf_input_file
+from lpf.search.performance import harmonic_limit_db
 from ._grid import ROOT, validated_band_segments
 from .evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
 from .independent_rf import evaluate_independent_sample
@@ -305,7 +306,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
             raise ValueError('component or connection-role evidence incomplete')
         record['component'] = {'state': 'pass', 'detail': component}
         record['separate17'] = _forward(circuit, x, 17, meters['separate17'],
-            float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db']))
+            float(harmonic_limit_db(circuit.resolved_policy)))
         check_identity()
     except SampleBudgetExceeded as exc:
         record['separate17'] = {'state': 'budget_exhausted', 'reason': str(exc)}
@@ -322,7 +323,7 @@ def validate_post_search(circuit, vector, *, optimization_record, source_provena
         try:
             check_identity()
             record['dense1001'] = _forward(circuit, x, 1001, meters['dense1001'],
-                float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db']))
+                float(harmonic_limit_db(circuit.resolved_policy)))
             check_identity()
         except SampleBudgetExceeded as exc:
             record['dense1001'] = {'state': 'budget_exhausted', 'reason': str(exc)}

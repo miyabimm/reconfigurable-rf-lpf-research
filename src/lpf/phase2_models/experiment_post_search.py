@@ -6,6 +6,7 @@ Historical/finalized evidence is never accepted or modified. The caller must
 use the existing explicit finalize step for Git commit, readback and audit.
 """
 from contextlib import contextmanager
+from lpf.search.performance import harmonic_limit_db
 from copy import deepcopy
 import csv
 import fcntl
@@ -161,7 +162,7 @@ def _check_bindings(bindings, optimization, loaded, plan, source_sha):
             # guarded-search success. Its validation remains a separate record.
             continue
         if staged.get('numerical_state') in ('converged', 'not_converged'):
-            mandatory = float(loaded['circuit'].resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+            mandatory = float(harmonic_limit_db(loaded['circuit'].resolved_policy))
             if staged.get('search_guard') != {'guard_db': SEARCH_GUARD_DB,
                     'mandatory_stop_db': mandatory, 'search_stop_db': mandatory + SEARCH_GUARD_DB}:
                 raise ValueError('Selected optimization lacks frozen search guard')

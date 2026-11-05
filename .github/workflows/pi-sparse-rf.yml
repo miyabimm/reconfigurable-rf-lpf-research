@@ -73,5 +73,8 @@ jobs:
           # The grid test checks all separate intervals and both verified S2Ps.
           PI_SPARSE_RF=1 PYTHONPATH=tests uv run --frozen python -m unittest -v \
             test_constraint_versioning \
+            test_issue307_history \
+            test_issue307_snapshot_equivalence \
+            test_issue307_constraints \
             test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints \
             test_pi_sparse_rf

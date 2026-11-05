@@ -1,0 +1,31 @@
+{
+  "authority": "#307 / #306 v1.0",
+  "schema_version": 2,
+  "scientific_changes": [
+    "GJM01 minimum 0.1 pF",
+    "PCB_L minimum 0.01 nH",
+    "closed interval endpoints"
+  ],
+  "mapping": {
+    "RF-F003": {
+      "old_effective_sha256": "f85710200ccda5b72ab32f943540fbfd7a8abb3137c5f4e6e5ba7a6d7b3da2ba",
+      "new_effective_sha256": "e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86"
+    },
+    "RF-T005": {
+      "old_effective_sha256": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+      "new_effective_sha256": "413c1f2979926dd8bc56fe6730603864f6c582e2a72ec3f7bb0ab1ba81a7becd"
+    },
+    "RF-T006": {
+      "old_effective_sha256": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+      "new_effective_sha256": "1d22e01d6da243bed24970de90a496e8f2d38b11bd5a5fae78e001398f647e1c"
+    },
+    "RF-T007": {
+      "old_effective_sha256": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+      "new_effective_sha256": "5452690de1c8590f1f7c306f76e41692e1885ac190da3cef050f1d926145c944"
+    },
+    "RF-T008": {
+      "old_effective_sha256": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4",
+      "new_effective_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532"
+    }
+  }
+}

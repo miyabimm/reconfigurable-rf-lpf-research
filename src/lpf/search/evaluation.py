@@ -2,6 +2,7 @@
 import time
 import numpy as np
 from .starts import validate
+from .performance import harmonic_limit_db
 from .storage import plain, vector_sha
 from .validation import score
 
@@ -11,15 +12,15 @@ class BudgetExceeded(RuntimeError):
 
 
 class Evaluation:
-    def __init__(self, circuit, bounds, opened, maximum, *, backend='rf', sink=None,
+    def __init__(self, circuit, bounds, maximum, *, backend='rf', sink=None,
                  milestones=()):
         if maximum < 476:
             raise ValueError('Job must reserve terminal 28*17 samples')
         if backend not in ('rf', 'fixture'):
             raise ValueError('Unknown forward backend')
-        self.circuit, self.bounds, self.opened = circuit, bounds, opened
+        self.circuit, self.bounds = circuit, bounds
         self.maximum, self.backend, self.sink = maximum, backend, sink
-        self.mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+        self.mandatory = float(harmonic_limit_db(circuit.resolved_policy))
         self.requested = self.completed = self.failures = 0
         self.reserve = 476
         self.grids, self.ledger, self.scans = {}, [], []
@@ -56,7 +57,7 @@ class Evaluation:
             self.sink(self.snapshot())
 
     def forward(self, vector, points, stage, *, terminal=False, scan=False, on_completed=None):
-        x = validate(self.circuit, vector, self.bounds, self.opened)
+        x = validate(self.circuit, vector, self.bounds)
         n = 28 * points
         if terminal and (points != 17 or self.reserve != 476):
             raise ValueError('Invalid terminal reservation')
@@ -97,7 +98,7 @@ class Evaluation:
             self.last = {'vector': x.tolist(), 'vector_sha256': vector_sha(x),
                          'stage': stage, 'points_per_interval': points, 'score': s,
                          'extrema': extrema,
-                         'physical_checks': 'box/open/components/role/full_L_SPD_passed',
+                         'physical_checks': 'closed_box/components/role/full_L_SPD_passed',
                          'completed_at_requested_samples': self.requested}
         except BaseException as exc:
             self.failures += 1

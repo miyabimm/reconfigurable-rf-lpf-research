@@ -104,8 +104,8 @@ class SampledEpigraphTests(unittest.TestCase):
         p, physical = make('RF-T008', 4)
         base = SampledEpigraph(p.circuit, 2)
         limited = SampledEpigraph(p.circuit, 2, gjm_search_max_pf=10)
-        self.assertEqual(base.box.bounds[4], (0., 100.))
-        self.assertEqual(limited.box.bounds[4], (0., 10.))
+        self.assertEqual(base.box.bounds[4], (.1, 100.))
+        self.assertEqual(limited.box.bounds[4], (.1, 10.))
         self.assertEqual(base.box.bounds[:4] + base.box.bounds[5:],
                          limited.box.bounds[:4] + limited.box.bounds[5:])
         definition = CircuitDefinition(
@@ -119,7 +119,7 @@ class SampledEpigraphTests(unittest.TestCase):
         narrow_box = SampledEpigraph(three, 2, gjm_search_max_pf=10).box
         self.assertEqual([i for i, (a, b) in enumerate(zip(default_box.bounds, narrow_box.bounds))
                           if a != b], [4, 5, 6])
-        self.assertEqual(narrow_box.bounds[4:7], ((0., 10.),) * 3)
+        self.assertEqual(narrow_box.bounds[4:7], ((.1, 10.),) * 3)
         self.assertEqual(default_box.open_lower, narrow_box.open_lower)
         for invalid in (0, -1, 101, float('nan'), True, '10'):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
@@ -326,7 +326,7 @@ class SampledEpigraphTests(unittest.TestCase):
         x = np.array([2., 3., 4., .1, .01, -.02, .01, 7.])
         before = a.residuals(x)
         b.residuals(x)
-        a.circuit.resolved_policy["evaluation"]["full_phase2"]["minimum_h2_h3_db"] = 0
+        a.circuit.resolved_policy['evaluation']['performance']['limits']['defaults'][0]['min_db'] = 0
         np.testing.assert_array_equal(a.residuals(x), before)
         self.assertEqual(a.mandatory_stop_db, 30)
 

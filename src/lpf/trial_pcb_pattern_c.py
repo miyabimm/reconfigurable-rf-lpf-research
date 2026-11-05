@@ -32,7 +32,7 @@ def validate_trial_pcb_pattern_c_branches(policy, branches):
         rule = spec["grounded"] if (a == 0 or b == 0) else spec["non_ground"]
         cap, q = branch.get("capacitance_pf"), branch.get("q")
         if (type(cap) not in (int, float) or not math.isfinite(cap)
-                or not rule["min_pf_per_component"] <= cap <= rule["max_pf_per_component"]):
+                or not rule["bounds"]["min"] <= cap <= rule["bounds"]["max"]):
             raise ValueError("PCB C capacitance violates connection-dependent range")
         if type(q) not in (int, float) or not math.isfinite(q) or q != rule["q"]:
             raise ValueError("PCB C Q violates connection-dependent rule")

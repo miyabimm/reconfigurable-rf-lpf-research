@@ -63,8 +63,7 @@ def validate_coupling_matrix(types,values,coupling,chip_order=None,
            if t in ('LQP01','LQP02','LQP02HV','LQP02HQ','LQW04')]
     pcbs=[i for i,t in enumerate(types) if t=='PCB_L']
     if len(pcbs)>policy['components']['PCB_L']['max_count_principle']:raise ValueError('PCB count exceeds three')
-    pcb_max=policy['components']['PCB_L'].get('max_inductance_nh',
-                                             policy['components']['PCB_L']['max_inductance_nh_approx'])
+    pcb_max=policy['components']['PCB_L']['bounds']['max']
     if any(L[i] > pcb_max*1e-9+1e-21 for i in pcbs):
         raise ValueError('PCB inductance limit exceeded')
     order=chips if chip_order is None else list(chip_order)

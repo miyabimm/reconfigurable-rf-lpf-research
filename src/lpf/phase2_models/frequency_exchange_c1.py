@@ -8,6 +8,7 @@ import numpy as np
 from .frequency_exchange import run_frequency_exchange
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage, _check_guard_source
 from .sampled_epigraph import SEARCH_GUARD_DB
+from lpf.search.performance import harmonic_limit_db
 
 
 def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
@@ -20,7 +21,7 @@ def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,
         raise TypeError('search_guard must be bool')
     if search_guard:
         _check_guard_source(source_provenance)
-    mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+    mandatory = float(harmonic_limit_db(circuit.resolved_policy))
     evaluator = circuit.forward_evaluator(scan_points)
     segments = []
     for segment in sorted(set(evaluator.segment.tolist())):

@@ -212,7 +212,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
             and record.get("experiment_id") == experiment_id
             and record.get("phase") == "Phase 2", "storage record identity/policy mismatch")
     require(manifest.get("experiment_id") == experiment_id, "manifest identity mismatch")
-    validate_manifest(manifest, root=root)
+    # Only read-only evidence audit may bind original archived RF identities.
+    # Execution preflight and finalization must validate against current RF.
+    validate_manifest(manifest, root=root, allow_archived=mode == 'audit')
     row = reservation_on_main(root, experiment_id, main_ref=main_ref,
                               starting=mode == "preflight")
     require(manifest["constraints"]["constraint_id"] == row["constraint_id"],

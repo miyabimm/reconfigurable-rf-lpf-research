@@ -12,10 +12,19 @@ REGISTRY = ROOT / "rf/constraints/registry.json"
 
 def _read(path):
     payload = json.loads(Path(path).read_text(encoding="utf-8"),
-                         parse_constant=_invalid_constant)
+                         parse_constant=_invalid_constant, object_pairs_hook=_unique_object)
     if not isinstance(payload, dict):
         raise ValueError(f"Constraint JSON must be an object: {path}")
     return payload
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'Duplicate constraint JSON key: {key}')
+        result[key] = value
+    return result
 
 
 def _invalid_constant(value):
@@ -54,6 +63,51 @@ def rf_input_file(root, logical_path):
     return physical
 
 
+def _validate_current_schema(policy):
+    from .search.component_constraints import interval
+    from .search.performance import validate_performance
+    if policy.get('schema_version') != 2:
+        raise ValueError('Only current RF schema 2 is supported')
+    if set(policy['evaluation']) != {'il_db', 'performance',
+            'full_results_not_yet_revalidated_under_new_policy', 'external_fixed_parasitics_included'}:
+        raise ValueError('Unknown/legacy evaluation fields')
+    allowed = {'policy_version', 'canonical_docs', 'applicability',
+        'historical_results_require_revalidation', 'source_ohms', 'load_ohms',
+        'bands_file', 'passband_policy', 'chip_area_unit', 'area_formula',
+        'area_budget', 'components', 'coupling_limits', 'evaluation', 'phase3',
+        'overrides_require_owner_approval', 'policy_revision', 'chip_inductor_placement',
+        'latest_owner_approved_extension_date', 'policy_version_semantics',
+        'inductor_series_optimization_policy', 'active_constraint_id',
+        'active_constraint_status', 'cost_performance_policy',
+        'external_port_parasitics', 'schema_version'}
+    if set(policy) != allowed:
+        raise ValueError('Unknown/incomplete current RF schema fields')
+    c = policy['components']
+    if (set(c) != {'LQP02', 'LQP01', 'LQW04', 'GJM01', 'IC_VARIABLE_C', 'PCB_L', 'PCB_PATTERN_C'}
+            or set(c['LQP02']['series']) != {'LQP02HV', 'LQP02HQ'}):
+        raise ValueError('Unknown component/series model')
+    for spec in c['LQP02']['series'].values():
+        if interval(spec, 'nH')[0] <= 0:
+            raise ValueError('Inductor lower bound must be positive')
+    for name, unit in [('PCB_L', 'nH'), ('GJM01', 'pF'),
+                       ('PCB_PATTERN_C', 'pF'), ('IC_VARIABLE_C', 'pF')]:
+        lo, _ = interval(c[name], unit)
+        if lo < 0 or (unit == 'nH' and lo == 0):
+            raise ValueError('Invalid physical component lower bound')
+    k = policy['coupling_limits']
+    sources = {'chip_neighbor': 'chip_chip_strong_adjacent_abs_k_max',
+               'chip_nonstrong_sensitivity': 'chip_chip_nonstrong_abs_k_max',
+               'pcb_pcb': 'pcb_pcb_abs_k_max_default', 'chip_pcb': 'chip_pcb_abs_k_max'}
+    if set(k['bounds']) != set(sources) | {'chip_nonstrong_nominal'}:
+        raise ValueError('Unknown coupling bounds')
+    for name, field in sources.items():
+        if interval({'bounds': k['bounds'][name]}, '1') != (-k[field], k[field]):
+            raise ValueError('Coupling bounds disagree with independent validator')
+    if interval({'bounds': k['bounds']['chip_nonstrong_nominal']}, '1') != (0., 0.):
+        raise ValueError('Nominal nonstrong coupling must be zero')
+    validate_performance(policy)
+
+
 def validate_registry(*, root=ROOT):
     """Check registered identities/approvals; never register or promote a version."""
     root = Path(root)
@@ -72,7 +126,10 @@ def validate_registry(*, root=ROOT):
             if entry.get("file") not in allowed:
                 raise ValueError(f"Constraint path/identity mismatch: {cid}")
             payload = _read(rf_input_file(root, entry["file"]))
+            if payload.get("schema_version") != 2:
+                raise ValueError("Only current constraint schema 2 is supported")
             if kind == "formal":
+                _validate_current_schema(payload)
                 if entry.get("state") != "approved":
                     raise ValueError(f"Formal version not approved: {cid}")
                 if (payload.get("active_constraint_id") != cid or
@@ -85,6 +142,16 @@ def validate_registry(*, root=ROOT):
                     raise ValueError(f"Invalid trial approval state: {cid}")
                 if payload.get("constraint_id") != cid or payload.get("status") != "trial":
                     raise ValueError("Trial snapshot identity mismatch")
+                allowed_trial = {'schema_version', 'constraint_id', 'status',
+                    'base_constraint_id', 'study_authorized', 'overrides',
+                    'study_variable_c_layout', 'study_shunt_dtc_parasitic',
+                    'study_pcb_pattern_c_by_connection', 'study_ic_fixed_c_by_connection',
+                    'description', 'approved_at', 'approved_scope', 'validation_notes',
+                    'revision', 'revised_at', 'previous_version', 'previous_revision_2'}
+                # Unknown physical/evaluation models must not be silently ignored.
+                # Effective model metadata is fingerprinted below.
+                if set(payload) - allowed_trial:
+                    raise ValueError('Unknown/legacy trial fields')
                 base = payload.get("base_constraint_id")
                 if base not in registry["formal"] or entry.get("base_constraint_id") != base:
                     raise ValueError("Trial must pin the same registered formal base in file and registry")
@@ -97,9 +164,7 @@ def validate_registry(*, root=ROOT):
                     raise ValueError("Trial may not override constraint identity, legacy policy or phase")
                 base_payload = _read(rf_input_file(root, registry["formal"][base]["file"]))
                 resolved = _merge(base_payload, overrides)
-                if "study_additional_stopband" in payload:
-                    _validate_trial_additional_stopband(
-                        payload["study_additional_stopband"], base_payload)
+                _validate_current_schema(resolved)
                 if "study_shunt_dtc_parasitic" in payload:
                     _validate_trial_shunt_dtc_parasitic(
                         payload["study_shunt_dtc_parasitic"], resolved)
@@ -140,6 +205,16 @@ def validate_registry(*, root=ROOT):
                            ("non_ground_bridge" in spec["positions_allowed_by_default"])
                         or spec["series_requires_separate_approval"] is not True):
                         raise ValueError(f"Trial layout and allowed positions disagree: {cid}")
+                resolved['active_constraint_id'] = cid
+                resolved['active_constraint_status'] = 'trial'
+                resolved['trial_base_constraint_id'] = base
+                resolved['trial_variable_c_layout'] = copy.deepcopy(layout)
+                for model in ('shunt_dtc_parasitic', 'pcb_pattern_c_by_connection',
+                              'ic_fixed_c_by_connection'):
+                    if 'study_' + model in payload:
+                        resolved['trial_' + model] = copy.deepcopy(payload['study_' + model])
+                if entry.get('effective_constraint_sha256') != constraint_fingerprint(resolved):
+                    raise ValueError(f'Trial resolved fingerprint mismatch: {cid}')
     if registry.get("active_formal_id") not in registry["formal"]:
         raise ValueError("Active constraint must be a registered approved formal version")
     return registry
@@ -201,8 +276,7 @@ def _validate_trial_shunt_dtc_parasitic(spec, resolved):
     var = resolved["components"]["IC_VARIABLE_C"]
     if (var["max_branches_principle"] != 3 or var["q"] != 35
             or spec["variable_capacitance_pf_range"] != [
-                var["min_total_variable_pf_per_branch"],
-                var["max_total_variable_pf_per_branch"]]):
+                var["bounds"]["min"], var["bounds"]["max"]]):
         raise ValueError("Trial must retain RF-T005 variable C limits")
     expected = {
         "applies_to": "each_shunt_to_ground_IC_VARIABLE_C_branch",
@@ -230,9 +304,7 @@ def _validate_trial_pcb_pattern_c_by_connection(spec, resolved):
     if not isinstance(spec, dict) or set(spec) != keys:
         raise ValueError("Invalid location-specific PCB-C trial schema")
     formal = resolved["components"]["PCB_PATTERN_C"]
-    reference = {"min_pf_per_component": formal["min_pf_per_component"],
-                 "max_pf_per_component": formal["max_pf_per_component"],
-                 "q": formal["q"]}
+    reference = {"bounds": formal["bounds"], "q": formal["q"]}
     if (type(spec["ground_node"]) is not int or spec["ground_node"] != 0
             or type(spec["max_count"]) is not int
             or spec["max_count"] != formal["max_count"]
@@ -241,16 +313,14 @@ def _validate_trial_pcb_pattern_c_by_connection(spec, resolved):
             or spec["setting_invariant"] is not True
             or spec["nominal_only"] is not True):
         raise ValueError("Invalid PCB-C ground convention or trial accounting")
-    expected_ground = {"min_pf_per_component": formal["min_pf_per_component"],
-                       "max_pf_per_component": 1.0, "q": 60}
+    expected_ground = {"bounds": {"min": formal["bounds"]["min"],
+                                  "max": 1.0, "unit": "pF"}, "q": 60}
     if spec["non_ground"] != reference or spec["grounded"] != expected_ground:
         raise ValueError("PCB-C trial must change only grounded fixed PCB-C")
     for rule in (spec["grounded"], spec["non_ground"]):
         if (not isinstance(rule, dict)
-                or any(type(rule[k]) not in (int, float) or not math.isfinite(rule[k])
-                       for k in ("min_pf_per_component", "max_pf_per_component", "q"))
-                or rule["min_pf_per_component"] <= 0
-                or rule["min_pf_per_component"] > rule["max_pf_per_component"]
+                or set(rule) != {"bounds", "q"}
+                or type(rule["q"]) not in (int, float) or not math.isfinite(rule["q"])
                 or rule["q"] <= 0):
             raise ValueError("Invalid grounded/non-grounded PCB-C numerical limits")
 
@@ -279,8 +349,7 @@ def _validate_trial_ic_fixed_c_by_connection(spec, resolved):
             or type(spec["variable_c_q"]) not in (int, float)
             or spec["variable_c_q"] != var["q"] or var["q"] != 35
             or spec["variable_capacitance_pf_range"] != [
-                var["min_total_variable_pf_per_branch"],
-                var["max_total_variable_pf_per_branch"]]
+                var["bounds"]["min"], var["bounds"]["max"]]
             or spec["max_composite_branches"] != var["max_branches_principle"]
             or spec["max_composite_branches"] != 2
             or spec["fixed_c_stays_at_variable_C_zero"] is not True
@@ -300,11 +369,8 @@ def _validate_trial_ic_fixed_c_by_connection(spec, resolved):
     for position, lo in (("grounded", 0.5), ("non_ground", 0.2)):
         rule = spec[position]
         if (not isinstance(rule, dict)
-                or set(rule) != {"min_pf_per_branch", "max_pf_per_branch"}
-                or any(type(rule[k]) not in (int, float) or not math.isfinite(rule[k])
-                       for k in ("min_pf_per_branch", "max_pf_per_branch"))
-                or rule["min_pf_per_branch"] != lo
-                or rule["max_pf_per_branch"] != 3):
+                or set(rule) != {"bounds"}
+                or rule["bounds"] != {"min": lo, "max": 3, "unit": "pF"}):
             raise ValueError("IC fixed C capacity limits differ from approved ranges")
     # Fixed IC capacitors are NOT counted as PCB_PATTERN_C.
     if pcb["max_count"] != 3:
@@ -374,8 +440,6 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     result["active_constraint_status"] = "trial"
     result["trial_base_constraint_id"] = base_id
     result["trial_variable_c_layout"] = copy.deepcopy(trial["study_variable_c_layout"])
-    if "study_additional_stopband" in trial:
-        result["trial_additional_stopband"] = copy.deepcopy(trial["study_additional_stopband"])
     if "study_shunt_dtc_parasitic" in trial:
         result["trial_shunt_dtc_parasitic"] = copy.deepcopy(trial["study_shunt_dtc_parasitic"])
     if "study_pcb_pattern_c_by_connection" in trial:
@@ -384,6 +448,8 @@ def load_constraint(constraint_id=None, *, root=ROOT, allow_trial=False):
     if "study_ic_fixed_c_by_connection" in trial:
         result["trial_ic_fixed_c_by_connection"] = copy.deepcopy(
             trial["study_ic_fixed_c_by_connection"])
+    if entry.get("effective_constraint_sha256") != constraint_fingerprint(result):
+        raise ValueError("Trial resolved fingerprint mismatch")
     return result
 
 

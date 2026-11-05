@@ -8,6 +8,7 @@ import yaml
 from lpf.constraint_versions import rf_input_file
 from .problem import build, nominal_area
 from .starts import physical_box
+from .performance import harmonic_limit_db
 from .storage import canonical, sha
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -141,11 +142,11 @@ def load(path, root=ROOT):
         raise ValueError('Anytime milestones invade terminal reservation')
     p = c.resolved_policy
     inputs = fingerprints(c, root)
-    bounds, opened = physical_box(c)
+    bounds = physical_box(c)
     frozen = {'config': d, 'definition': asdict(c.definition), 'rf_inputs': inputs,
               'nominal_area': nominal_area(c),
-              'box': bounds, 'open_lower': opened,
-              'working_stop_db': p['evaluation']['full_phase2']['minimum_h2_h3_db'],
+              'box': bounds,
+              'working_stop_db': harmonic_limit_db(p),
               'mathematics': {'scale_db': 1., 'weights': 'all_one',
                               'residuals': '[IL_pass, max(0,target-IL_stop)]',
                               'errors': 'IL_pass', 'constraints': 'IL_stop-target >= 0'},

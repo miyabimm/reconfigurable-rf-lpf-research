@@ -254,7 +254,9 @@ class CandidateRecordTests(unittest.TestCase):
         from lpf.phase2_models.api import build_nominal_circuit
         c = build_nominal_circuit(p.circuit.resolved_policy, d)
         r = record_candidate("series", c, x)
-        self.assertIn("declared_role_not_proven_by_l_tree", pareto_report([r])["candidates"][0]["reasons"])
+        # Shared Stage-1 values now reject an unproven role at the component gate.
+        self.assertEqual(r.as_dict()['component']['state'], 'fail')
+        self.assertIn('component_not_verified', pareto_report([r])['candidates'][0]['reasons'])
 
     def test_json_incomplete_six_settings_nonfinite_and_claims_rejected(self):
         p, x = make("RF-T008", 4)

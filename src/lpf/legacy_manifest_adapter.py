@@ -11,7 +11,8 @@ import json
 import re
 from pathlib import Path
 
-from .constraint_versions import constraint_fingerprint, load_constraint, ROOT
+from .constraint_versions import constraint_fingerprint, ROOT
+from .constraint_history import archived_formal_evidence
 
 OVERLAY = "data/validation/exp047_legacy_manifest_adapter_20261017.json"
 ORIGINAL = "experiments/chatgpt_topology_search/runs/EXP-047/manifest.json"
@@ -77,8 +78,10 @@ def legacy_exp047_index_view(root=ROOT):
     } or any(x is not None for x in unknown.values()):
         raise ValueError("Original unknown provenance must remain explicitly unknown")
 
-    resolved = load_constraint("RF-F003", root=root, allow_trial=False)
-    digest = constraint_fingerprint(resolved)
+    digest = m.get('active_formal_constraint_sha256')
+    resolved = archived_formal_evidence('RF-F003', digest, root=root)
+    if constraint_fingerprint(resolved) != digest:
+        raise ValueError('EXP-047 historical RF snapshot fingerprint mismatch')
     if (resolved["active_constraint_status"] != "formal" or
             m.get("active_formal_constraint_sha256") != digest or
             m.get("bands_sha256") != hashlib.sha256(

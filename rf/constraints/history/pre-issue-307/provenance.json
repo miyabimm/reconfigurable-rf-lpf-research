@@ -1,0 +1,41 @@
+{
+  "source_main_commit": "e1a1c883d449a9378eb9bf2e20c01d5e972afadd",
+  "description": "Original bytes and resolved fingerprints before issue 307; these are historical, not active inputs.",
+  "resolved_effective_sha256": {
+    "RF-F001": "df6b4cbd347aac06538527cd68963b785207582152e17117a683c10058af0c54",
+    "RF-F002": "f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2",
+    "RF-F003": "f85710200ccda5b72ab32f943540fbfd7a8abb3137c5f4e6e5ba7a6d7b3da2ba",
+    "RF-T001": "7a37702e978dfd7ddb717c0497d72196dd6c6b17eb21e93a3ef14776e497821f",
+    "RF-T002": "9b4459144717613d693aa5068e4e948daab91f335ee11e5453b067b21591532b",
+    "RF-T003": "e0c45f7094ced1ed2ccb91cae474c7c3c1a6af73a495a2a9cf8f512ccb45ab08",
+    "RF-T004": "c66302a281a1fdb88da355fc44dac1ef3b1c4e18e8ff297db9e842b219b5b0c4",
+    "RF-T005": "59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c",
+    "RF-T006": "54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137",
+    "RF-T007": "c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430",
+    "RF-T008": "7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4"
+  },
+  "trial_base_ids": {
+    "RF-T001": "RF-F001",
+    "RF-T002": "RF-F001",
+    "RF-T003": "RF-F001",
+    "RF-T004": "RF-F002",
+    "RF-T005": "RF-F003",
+    "RF-T006": "RF-F003",
+    "RF-T007": "RF-F003",
+    "RF-T008": "RF-F003"
+  },
+  "snapshot_file_sha256": {
+    "formal/RF-F001.json": "1392a6818c5cfbfcf22827f70a91c0e8f434487f8bc466c40a6ecdda6b090e2d",
+    "formal/RF-F002.json": "6b32500e6070f69e29d213ea08acb4beed4fd57524adb086489ff7048b769b6b",
+    "formal/RF-F003.json": "3ce92cda8ad20eeefe9058404ed9f4295ca7d4653393bb3117e617ceed3217ae",
+    "registry.json": "a91cd1a5f4ab90b36fce5da66de7395a04e7cf1a7f9fb99a0a877aac55e6381a",
+    "trial/RF-T001.json": "bb1266074fcbd9b68fabbc2971088e43e845382ae46c29ba4049e3713f31f386",
+    "trial/RF-T002.json": "872b91ec43ccd8a1540cc74c80e2c696d0db58c301531b7f93a3cec9e399168c",
+    "trial/RF-T003.json": "fa7afbb81d4f4e5ab95f7dcf806400828735f1a4769ad8886d02d14923fd531b",
+    "trial/RF-T004.json": "049353d5d3a5af598adf84c1a9a01c8ee5e4beb59a279eedb72f912b2f2d570b",
+    "trial/RF-T005.json": "3d7fc4410090b318c90be1767fadf9a5629040761013a2cb9216b7db57fb18f4",
+    "trial/RF-T006.json": "cc25c287579337ebf2624b635b2427e20b2321902bf432597ca826b33870a9fe",
+    "trial/RF-T007.json": "ac7393f24511f0ae3e5320827c4be51c669a97ec9855bae8a0889bda51404e67",
+    "trial/RF-T008.json": "c0b28bbcd91e306ba96b9d81eef7ff90601e50d13edd4d0e72064bd771cfaa46"
+  }
+}

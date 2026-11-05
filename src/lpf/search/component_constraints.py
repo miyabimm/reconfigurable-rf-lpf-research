@@ -1,0 +1,92 @@
+"""JSON-owned closed physical bounds and complete six-setting validation.
+
+Units follow ParameterVectorSchema: nH, pF, dimensionless signed k. A box
+endpoint is not a guarantee of joint SPD or legal connectivity. No repair.
+"""
+import numpy as np
+
+
+def interval(spec, unit):
+    b = spec.get('bounds')
+    if (not isinstance(b, dict) or set(b) != {'min', 'max', 'unit'} or b['unit'] != unit
+            or any(type(b[k]) not in (int, float) or not np.isfinite(b[k]) for k in ('min', 'max'))
+            or b['min'] > b['max']):
+        raise ValueError('Missing/invalid closed bounds or unit')
+    return float(b['min']), float(b['max'])
+
+
+def physical_bounds(definition, schema, policy):
+    """Return exactly one closed interval per complete vector coordinate."""
+    d, s, p = definition, schema, policy
+    from lpf.phase2_models.nominal_inductors import nominal_inductor_series
+    bounds = [nominal_inductor_series(p, kind)[1:] for kind in d.inductor_types]
+    for kind, edge in zip(d.fixed_c_types, d.capacitor_placement.fixed_edges):
+        if kind not in ('GJM01', 'PCB_PATTERN_C'):
+            raise ValueError('Unsupported fixed capacitor type')
+        spec = p['components'][kind]
+        if kind == 'PCB_PATTERN_C' and 'trial_pcb_pattern_c_by_connection' in p:
+            spec = p['trial_pcb_pattern_c_by_connection']['grounded' if -1 in edge else 'non_ground']
+        bounds.append(interval(spec, 'pF'))
+    adjacent = {frozenset(pair) for pair in zip(d.physical_order, d.physical_order[1:])}
+    for a, b in d.coupling_pairs:
+        if (type(a) is not int or type(b) is not int or a == b or
+                min(a, b) < 0 or max(a, b) >= len(d.inductor_types)):
+            raise ValueError('Invalid coupling slot')
+        ta, tb = d.inductor_types[a], d.inductor_types[b]
+        key = ('pcb_pcb' if ta == tb == 'PCB_L' else 'chip_pcb' if 'PCB_L' in (ta, tb)
+               else 'chip_neighbor' if frozenset((a, b)) in adjacent else 'chip_nonstrong_nominal')
+        bounds.append(interval({'bounds': p['coupling_limits']['bounds'][key]}, '1'))
+    for edge in d.capacitor_placement.ic_fixed_edges:
+        spec = p.get('trial_ic_fixed_c_by_connection')
+        if spec is None:
+            raise ValueError('IC fixed C requires explicit physical model')
+        bounds.append(interval(spec['grounded' if -1 in edge else 'non_ground'], 'pF'))
+    bounds.extend([interval(p['components']['IC_VARIABLE_C'], 'pF')] * (6 * s.n_variable))
+    dims = (len(d.inductor_types), len(d.fixed_c_types), len(d.coupling_pairs),
+            len(d.capacitor_placement.ic_fixed_edges), len(d.capacitor_placement.variable_edges))
+    if dims != (s.n_inductors, s.n_fixed, s.n_coupling, s.n_ic_fixed, s.n_variable) or len(bounds) != s.vector_length:
+        raise ValueError('Definition/schema/physical bounds disagree')
+    return tuple(bounds)
+
+
+def validate_values(definition, schema, x, policy):
+    """Check complete values, structural/Q/layout model, all-L SPD; not RF PASS."""
+    from lpf.phase2_models.api import build_nominal_circuit
+    from lpf.phase2_models.coupled_lc import CircuitValues
+    from lpf.phase2_models.nominal_inductors import check_nominal_inductors
+    if not isinstance(x, CircuitValues) and np.asarray(x).dtype.kind not in 'fiu':
+        raise ValueError('Expected numeric component values, not boolean/string coercion')
+    values = x if isinstance(x, CircuitValues) else schema.decode(x)
+    vector = schema.encode(values)  # fixed/IC/constant invariance and six settings
+    box = np.asarray(physical_bounds(definition, schema, policy))
+    if not np.all(np.isfinite(vector)) or np.any(vector < box[:, 0]) or np.any(vector > box[:, 1]):
+        raise ValueError('Component value outside closed physical bounds')
+    # Reuse reviewed builders for counts, Q, ports, layout, parasitic constants,
+    # one-to-one IC fixed branches and explicit trial authorization. No forward.
+    circuit = build_nominal_circuit(policy, definition)
+    if circuit.schema != schema:
+        raise ValueError('Schema does not match physical model (including constants)')
+    roles = circuit.connection_role_audit()
+    if not roles['all_declared_roles_supported_by_l_tree']:
+        raise ValueError('Connection role not proven by L tree')
+    coupling = check_nominal_inductors(policy, circuit.topology, values,
+                                     definition.inductor_types, definition.physical_order)
+    return {'component_policy_pass': True, 'constraint_id': policy['active_constraint_id'],
+            'constraint_fingerprint': circuit.policy_fingerprint,
+            'checked_settings': 6, 'installed_variable_c_branches': schema.n_variable,
+            'installed_shunt_parasites': len(schema.constant_caps_pf),
+            'min_L_eigenvalue_H': coupling['min_inductance_eigenvalue'],
+            'connection_role_audit': roles, 'connection_role_evidence_incomplete': False,
+            'candidate_promotion_blocked': True,
+            'promotion_blockers': ('independent_mna_not_checked', 'dense_rf_not_checked'),
+            'rf_performance_checked': False, 'independent_mna_checked': False,
+            'physical_q_srf_em_checked': False}
+
+
+def validate_search_box(bounds, physical):
+    box, hard = np.asarray(bounds, float), np.asarray(physical, float)
+    if (box.shape != hard.shape or not np.all(np.isfinite(box)) or
+            np.any(box[:, 0] < hard[:, 0]) or np.any(box[:, 1] > hard[:, 1]) or
+            np.any(box[:, 0] > box[:, 1])):
+        raise ValueError('Search box must be a closed physical sub-box')
+    return box

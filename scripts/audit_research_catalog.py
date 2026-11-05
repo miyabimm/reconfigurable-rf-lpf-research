@@ -11,6 +11,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from src.lpf.constraint_history import archived_binding
+
 INDEX = "data/research_candidate_register.csv"
 THRESHOLD_TOLERANCE_DB = 1e-5
 METRIC_MATCH_TOLERANCE_DB = 1e-6
@@ -115,6 +118,7 @@ def audit_catalog(root=ROOT):
             if candidate_id in ids:
                 raise ValueError("Duplicate catalog identity")
             ids.add(candidate_id)
+            archived = None
             policy_class = row["constraint_class"]
             policy_id = row["constraint_id"]
             objective = row["objective"]
@@ -147,9 +151,13 @@ def audit_catalog(root=ROOT):
                         objective != exp["objective"] or
                         row["effective_constraint_sha256"] != exp["effective_constraint_sha256"]):
                     raise ValueError("Experiment index/constraint mismatch")
-                valid = registry["formal"] if policy_class == "formal" else registry["trial"]
-                if policy_id not in valid:
-                    raise ValueError("Unregistered RF constraint ID")
+                archived = archived_binding(policy_id, row['effective_constraint_sha256'], root=root)
+                valid = registry[policy_class]
+                if archived is not None:
+                    if archived['class'] != policy_class:
+                        raise ValueError('Historical RF classification mismatch')
+                elif (policy_id not in valid or valid[policy_id].get('effective_constraint_sha256') != row['effective_constraint_sha256']):
+                    raise ValueError('Unregistered RF constraint ID/SHA')
             else:
                 raise ValueError("Unknown policy class")
             expected_group = ("legacy_2026_10_10_full_lpf_35_historical"
@@ -175,7 +183,7 @@ def audit_catalog(root=ROOT):
             source_hash = checkpoint.get("effective_constraint_sha256", checkpoint.get("constraint_sha256"))
             if source_hash and policy_class != "historical" and source_hash != row["effective_constraint_sha256"]:
                 raise ValueError("Checkpoint resolved-policy SHA differs from catalog")
-            if policy_class == "formal" and registry["formal"][policy_id]["state"] != "approved":
+            if policy_class == 'formal' and archived is None and registry['formal'][policy_id]['state'] != 'approved':
                 raise ValueError("Formal candidate references an unapproved snapshot")
             # Approved earlier formal snapshots remain valid historical evidence;
             # changing active_formal_id must not relabel their original metrics.

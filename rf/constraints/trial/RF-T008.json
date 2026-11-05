@@ -15,14 +15,20 @@
   "study_pcb_pattern_c_by_connection": {
     "ground_node": 0,
     "grounded": {
-      "min_pf_per_component": 0.02,
-      "max_pf_per_component": 1,
-      "q": 60
+      "q": 60,
+      "bounds": {
+        "min": 0.02,
+        "max": 1,
+        "unit": "pF"
+      }
     },
     "non_ground": {
-      "min_pf_per_component": 0.02,
-      "max_pf_per_component": 0.2,
-      "q": 40
+      "q": 40,
+      "bounds": {
+        "min": 0.02,
+        "max": 0.2,
+        "unit": "pF"
+      }
     },
     "max_count": 3,
     "q_model": "omega_C_over_1_over_Q_minus_j",
@@ -41,12 +47,18 @@
   "study_ic_fixed_c_by_connection": {
     "ground_node": 0,
     "grounded": {
-      "min_pf_per_branch": 0.5,
-      "max_pf_per_branch": 3
+      "bounds": {
+        "min": 0.5,
+        "max": 3,
+        "unit": "pF"
+      }
     },
     "non_ground": {
-      "min_pf_per_branch": 0.2,
-      "max_pf_per_branch": 3
+      "bounds": {
+        "min": 0.2,
+        "max": 3,
+        "unit": "pF"
+      }
     },
     "fixed_c_q": 60,
     "variable_c_q": 35,
@@ -70,5 +82,6 @@
     "main_merge_commit": "2a6374cd6bc871873eac5cfa43eed4a8a0c68719",
     "prior_trial_file_blob_sha": "1ac8360967d3f481ca2b9271d41f8784054899d1",
     "meaning": "Prior RF-T008 v2 used maximum three composite IC DTC branches; retained in Git history without retrospective change."
-  }
+  },
+  "schema_version": 2
 }

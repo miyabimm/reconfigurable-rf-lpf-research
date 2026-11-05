@@ -5,9 +5,8 @@ approved resolved RF trial. Trial-specific C behavior stays behind the
 builder. Numerical forward IL, component-policy checks, and independent
 MNA validation are distinct operations.
 
-Supported here: RF-T005 / RF-T007 / RF-T008 v3.
-RF-F003 and RF-T006 are intentionally rejected until their own policy
-adapters are reviewed; never silently reinterpret them as another trial.
+Supported: RF-F003 and explicit RF-T005/T006/T007/T008 v3 trials.
+T006 retains its additional performance requirement, not a different forward.
 """
 from dataclasses import dataclass
 from copy import deepcopy
@@ -107,38 +106,11 @@ class NominalCircuit:
         ).as_dict()
 
     def validate_components(self, vector, *, allow_absent_gjm=False):
-        """Strict final check by default; optional RF-T008 numeric exploration."""
+        """Shared closed physical check; never authorize RF promotion."""
+        from lpf.search.component_constraints import validate_values
         if allow_absent_gjm:
-            if self.policy_id != "RF-T008":
-                raise ValueError("Absent GJM exploration is RF-T008-only")
-            result = dict(self._adapter.validate_candidate(
-                vector, allow_absent_gjm=True))
-        else:
-            result = dict(self._adapter.validate_candidate(vector))
-        roles = self.connection_role_audit()
-        result["connection_role_audit"] = roles
-        result["connection_role_evidence_incomplete"] = not roles[
-            "all_declared_roles_supported_by_l_tree"
-        ]
-        blockers = ["independent_mna_not_checked", "dense_rf_not_checked"]
-        if allow_absent_gjm:
-            values = self.schema.decode(vector)
-            fixed = values.capacitors_pf_by_setting[0][:self.schema.n_fixed]
-            absent = tuple(i for i, (kind, value) in enumerate(
-                zip(self.definition.fixed_c_types, fixed))
-                if kind == "GJM01" and value == 0.)
-            result["exploration_absent_gjm_indices"] = absent
-            if absent:
-                result["component_policy_pass"] = False
-                blockers.append("absent_gjm_requires_topology_redefinition")
-        if result["connection_role_evidence_incomplete"]:
-            blockers.append("declared_role_not_proven_by_l_tree")
-        result["promotion_blockers"] = tuple(blockers)
-        # A Stage-1 component check MUST NEVER authorize final candidate
-        # promotion: the Stage-2 independent MNA and dense RF gate have
-        # not run even when all electrical C roles are checked.
-        result["candidate_promotion_blocked"] = True
-        return result
+            raise ValueError('Absent GJM requires an explicit topology change, not a bounds exception')
+        return validate_values(self.definition, self.schema, vector, self.resolved_policy)
 
     def evaluate_sampled(self, vector, *, points_per_interval=3):
         """Evaluate sampled forward IL after policy checking; NOT RF PASS."""
@@ -185,7 +157,7 @@ def build_nominal_circuit(policy, definition):
         "fixed_c_types": definition.fixed_c_types,
         "variable_roles": definition.variable_roles,
     }
-    if constraint_id in ("RF-T005", "RF-T007"):
+    if constraint_id in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007'):
         backend = PolicyBoundRFT005T007Circuit.from_policy(policy, **common)
     elif constraint_id == "RF-T008":
         backend = PolicyBoundRFT008Circuit.from_policy(policy, **common)

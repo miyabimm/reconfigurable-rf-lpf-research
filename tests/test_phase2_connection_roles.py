@@ -73,32 +73,24 @@ class ConnectionRoleAuditTests(unittest.TestCase):
             policy, self.definition(("shunt_to_ground", "series", "bridge"))
         )
         valid = approved_bridge.validate_components(saved)
-        unresolved = series_unproved.validate_components(saved)
-        self.assertTrue(valid["component_policy_pass"])
-        self.assertTrue(unresolved["component_policy_pass"])
+        with self.assertRaisesRegex(ValueError, 'role not proven'):
+            series_unproved.validate_components(saved)
+        self.assertTrue(valid['component_policy_pass'])
         self.assertTrue(valid["connection_role_audit"]["all_declared_roles_supported_by_l_tree"])
         self.assertFalse(valid["connection_role_evidence_incomplete"])
         self.assertTrue(valid["candidate_promotion_blocked"])
         self.assertEqual(valid["promotion_blockers"],
                          ("independent_mna_not_checked", "dense_rf_not_checked"))
-        self.assertFalse(unresolved["connection_role_audit"]["all_declared_roles_supported_by_l_tree"])
-        self.assertEqual(unresolved["connection_role_audit"][
-            "unsupported_role_indices"], (1,))
-        self.assertTrue(unresolved["candidate_promotion_blocked"])
-        self.assertTrue(unresolved["connection_role_evidence_incomplete"])
-        self.assertIn("declared_role_not_proven_by_l_tree",
-                      unresolved["promotion_blockers"])
+        unresolved = series_unproved.connection_role_audit()
+        self.assertFalse(unresolved['all_declared_roles_supported_by_l_tree'])
+        self.assertEqual(unresolved['unsupported_role_indices'], (1,))
         np.testing.assert_allclose(
             approved_bridge.forward_evaluator(3).il(saved),
             series_unproved.forward_evaluator(3).il(saved),
             rtol=0, atol=1e-12
         )
-        report = series_unproved.evaluate_sampled(
-            saved, points_per_interval=3
-        )
-        self.assertTrue(report["candidate_promotion_blocked"])
-        self.assertFalse(report["rf_compliance_certified"])
-        self.assertFalse(report["independent_mna_checked"])
+        with self.assertRaisesRegex(ValueError, 'role not proven'):
+            series_unproved.evaluate_sampled(saved, points_per_interval=3)
 
     def test_grounded_role_mismatch_and_missing_role_fail(self):
         for roles in (

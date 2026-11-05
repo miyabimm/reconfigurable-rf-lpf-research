@@ -1,6 +1,6 @@
 # 設計仕様 / Specification — RF-F003（2026-10-16正式承認）
 
-現行正式正本は [RF-F003](../rf/constraints/formal/RF-F003.json)、[台帳](../rf/constraints/registry.json) の active_formal_id が指すものとする。`data/design_constraints.json`は旧APIのためのRF-F003固定互換参照（正本ではない）。現行正式版は常に台帳のactive IDで決定する。旧 [RF-F001](../rf/constraints/formal/RF-F001.json)・[RF-F002](../rf/constraints/formal/RF-F002.json) は変更不可の履歴として保持。
+現行正式正本は [RF-F003](../rf/constraints/formal/RF-F003.json)、[台帳](../rf/constraints/registry.json) の active_formal_id が指すものとする。`data/design_constraints.json`は旧APIのためのRF-F003固定互換参照（正本ではない）。現行正式版は常に台帳のactive IDで決定する。旧 [RF-F001](../rf/constraints/history/pre-issue-307/formal/RF-F001.json)・[RF-F002](../rf/constraints/history/pre-issue-307/formal/RF-F002.json) は変更不可の履歴として保持。
 
 ## RF評価・性能目標
 
@@ -14,13 +14,13 @@
 | LQP02HQ | 20 | 0.2–56nH、必要時のみ | 1 |
 | LQP01 | 15 | 未確定 | 2/3 |
 | LQW04 | **33** | 未確定 | 3 |
-| PCB-L | 12 | **各2nH以下（上限）、原則3本以内** | 0 |
+| PCB-L | 12 | **各0.01–2nH（閉区間）、原則3本以内** | 0 |
 
 チップLは一列配置、強結合は物理的に隣接するチップL同士のみ**|k|≤0.10**。非強結合ペアは公称k=0、感度解析時のみ**|k|≤0.03**。PCB-L同士**|k|≤0.10**、chip-LとPCB-Lは**k=0**。符号は物理配置・電流基準と整合し、全L行列正定値を必須とする。
 
 ## コンデンサ
 
-GJM01固定C：Q80、各100pF以下、面積2/3。PCBパターン固定C：Q40、各0.02–0.2pF、最大3、チップ面積0。IC可変C：**正式最大2独立枝、各0–3pF、Q35、配置自由（対GND・非GNDブリッジ・主信号経路直列を含む）**。固定L/C・結合・トポロジーは全6設定で共通、設定別に可変C値だけを変更する。0pFの直列枝は開放として取り扱い、連結性を確認する。
+GJM01固定C：Q80、各0.1–100pF（閉区間）、面積2/3。PCBパターン固定C：Q40、各0.02–0.2pF、最大3、チップ面積0。IC可変C：**正式最大2独立枝、各0–3pF、Q35、配置自由（対GND・非GNDブリッジ・主信号経路直列を含む）**。固定L/C・結合・トポロジーは全6設定で共通、設定別に可変C値だけを変更する。0pFの直列枝は開放として取り扱い、連結性を確認する。
 
 ## 外部ポートの固定寄生モデル（RF-F003）
 
@@ -30,6 +30,6 @@ GJM01固定C：Q80、各100pF以下、面積2/3。PCBパターン固定C：Q40�
 
 ## 別登録の試験条件と研究ゲート
 
-[RF-T005](../rf/constraints/trial/RF-T005.json) はRF-F003基準の明示opt-in試験条件で最大3独立可変C、各0–3pF・Q35・接続自由。RF-F003との差分は枝数上限のみ。旧[RF-T004](../rf/constraints/trial/RF-T004.json) はRF-F002基準の旧比較条件で、可変Cのみ**最大3独立枝**へ緩和する旧版。試験版利用には明示opt-in、実効条件ハッシュの保存を要する。RF-T001/T002/T003は旧RF-F001ベースのまま変更しない。従来のLPF-007/008等はRF-F002に適合した成果とは扱わない。
+[RF-T005](../rf/constraints/trial/RF-T005.json) はRF-F003基準の明示opt-in試験条件で最大3独立可変C、各0–3pF・Q35・接続自由。RF-F003との差分は枝数上限のみ。旧[RF-T004](../rf/constraints/history/pre-issue-307/trial/RF-T004.json) はRF-F002基準の旧比較条件で、可変Cのみ**最大3独立枝**へ緩和する旧版。試験版利用には明示opt-in、実効条件ハッシュの保存を要する。RF-T001/T002/T003は旧RF-F001ベースの元バイト列を履歴に保存する。RF-F001/F002およびRF-T001〜T004は履歴監査専用であり、明示opt-inでも新規実行には利用できない。従来のLPF-007/008等はRF-F002に適合した成果とは扱わない。
 
 Q値は一定Q仮定であり、実SRF・Q(f)・寄生・同時結合・量産性は未検証。旧版の結果は当時の制約と検証条件で区別する。

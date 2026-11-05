@@ -24,7 +24,7 @@ def make(policy_id, n=3):
                            var if policy_id == "RF-T008" else ()),
         ("GJM01", "PCB_PATTERN_C"), ("shunt_to_ground", "bridge"))
     c = build_nominal_circuit(load_constraint(policy_id, allow_trial=True), definition)
-    vector = np.array([2.]*n + [1., .1] + [.02, -.03] + ([.01] if n == 4 else [])
+    vector = np.array([2.]*n + [1., .1] + [.02, 0. if n == 3 else -.03] + ([.01] if n == 4 else [])
                       + ([.5, .2] if policy_id == "RF-T008" else [])
                       + [0., 3.]*6)
     return SampledEpigraph(c, 1), vector
@@ -46,7 +46,7 @@ class ProblemSeedTests(unittest.TestCase):
                     p, x = make(trial, n)
                     self.assertEqual(len(p.box.bounds), len(x)+1)
                     self.assertEqual(p.box.bounds[-1], (None, None))
-                    self.assertEqual(p.box.open_lower, (n,))
+                    self.assertEqual(p.box.open_lower, ())
                     self.assertEqual(p.box.bounds[n+1], (.02, 1. if trial == "RF-T008" else .2))
                     if n == 3:
                         self.assertEqual(p.box.bounds[n+3], (-0., 0.))
@@ -63,14 +63,14 @@ class ProblemSeedTests(unittest.TestCase):
                     self.assertGreaterEqual(min(p.residuals(r["vector"])[p.evaluator.role == 0]), -1e-12)
                     self.assertTrue(r["candidate_promotion_blocked"])
 
-    def test_clip_jitter_and_identity(self):
-        p, x = make("RF-T008", 4)
-        x[6] = -.2  # signed adjacent k clipped, never silently changed
-        x[-1] = 4.  # Cv clipped at maximum
+    def test_reject_outside_box_jitter_and_identity(self):
+        p, x = make('RF-T008', 4)
+        for index, value in ((6, -.2), (-1, 4.)):
+            bad = x.copy(); bad[index] = value
+            with self.assertRaisesRegex(ValueError, 'clipping is forbidden'):
+                seed(p, bad)
         r = seed(p, x)
-        self.assertEqual([z["index"] for z in r["changes"]], [6, len(x)-1])
-        self.assertEqual(r["vector"][6], -.1)
-        self.assertEqual(r["vector"][-2], 3.)
+        self.assertEqual(r['changes'], ())
         a = seed(p, x, jitter_fraction=.001)
         self.assertEqual(a, seed(p, x, jitter_fraction=.001))
         self.assertNotEqual(a, seed(p, x, jitter_fraction=.001, seed=24))
@@ -91,20 +91,22 @@ class ProblemSeedTests(unittest.TestCase):
         nominal.resolved_policy["nested"]["value"] = 2
         self.assertEqual(nominal.resolved_policy["nested"]["value"], 1)
 
-    def test_mixed_inductor_coupling_and_open_pcb_bound(self):
+    def test_mixed_inductor_coupling_and_closed_pcb_bound(self):
         d = CircuitDefinition(InductorTree(4, ((0, 1), (1, 2), (1, 3))),
             ("LQP02HV", "PCB_L", "PCB_L"), (0,), ((0, 1), (1, 2)),
             CapacitorPlacement(4, ((1, -1),), (), ()), ("PCB_PATTERN_C",), ())
         p = SampledEpigraph(build_nominal_circuit(load_constraint("RF-T005", allow_trial=True), d), 1)
-        self.assertEqual(p.box.bounds[:3], ((.4, 27.), (0., 2.), (0., 2.)))
-        self.assertEqual(p.box.open_lower, (1, 2))
+        self.assertEqual(p.box.bounds[:3], ((.4, 27.), (.01, 2.), (.01, 2.)))
+        self.assertEqual(p.box.open_lower, ())
         self.assertEqual(p.box.bounds[4:6], ((0., 0.), (-.1, .1)))
-        x = np.array([2., 1., 1., .1, .5, -.05])
+        x = np.array([2., 1., 1., .1, 0., -.05])
         r = seed(p, x)
         self.assertEqual(r["input_vector"], tuple(x))
         self.assertEqual(r["vector"][4], 0.)
+        x[1] = .01
+        self.assertTrue(p.circuit.validate_components(x)['component_policy_pass'])
         x[1] = 0.
-        with self.assertRaisesRegex(ValueError, "open lower"):
+        with self.assertRaisesRegex(ValueError, 'clipping is forbidden'):
             seed(p, x)
 
     def test_multistart_determinism_legality_and_fail_closed(self):
@@ -137,7 +139,7 @@ class ProblemSeedTests(unittest.TestCase):
             self.assertEqual(unique_topologies([p.circuit, p.circuit]), [p.circuit])
             bad = x.copy()
             bad[n] = 0.
-            with self.assertRaisesRegex(ValueError, 'open lower'):
+            with self.assertRaisesRegex(ValueError, 'Box violation'):
                 generate_starts(p, bad, seed=23)
             bad = x.copy()
             bad[-1] = 4.
@@ -309,15 +311,15 @@ class ProblemSeedTests(unittest.TestCase):
         self.assertTrue(all(v == 'not_run' for v in result['validation'].values()))
         np.testing.assert_array_equal(x, before)
 
-    def test_open_lower_and_invalid_policy(self):
-        p, x = make("RF-T005", 4)
+    def test_closed_lower_and_explicit_policy(self):
+        p, x = make('RF-T005', 4)
         x[4] = 0
-        with self.assertRaisesRegex(ValueError, "open lower"):
+        with self.assertRaisesRegex(ValueError, 'clipping is forbidden'):
             seed(p, x)
         definition = p.circuit.definition
-        for identifier in ("RF-F003", "RF-T006"):
-            with self.assertRaises(ValueError):
-                build_nominal_circuit(load_constraint(identifier, allow_trial=True), definition)
+        for identifier in ('RF-F003', 'RF-T006'):
+            circuit = build_nominal_circuit(load_constraint(identifier, allow_trial=True), definition)
+            self.assertEqual(circuit.policy_id, identifier)
         altered = replace(definition, physical_order=(1, 0, 3, 2))
         other = SampledEpigraph(build_nominal_circuit(
             load_constraint("RF-T005", allow_trial=True), altered), 1)
@@ -365,8 +367,8 @@ class RFStartSelectionTests(unittest.TestCase):
             self.assertEqual(ids[0], ids[1])
         self.assertEqual([s['vector_sha256'] for s in legacy['starts']], [
             'b6a098b045772b02fee8ed619e5324481ed72cbcf3008cc522783df5009ba591',
-            '2ada66b1b4fd8e42050cdd738f92dd60c795682ee3a4a484293be121a0a74268',
-            '5ee144fcc21a1b4b3f16f87655201208648e8519d37f6fd4925934afe15c47a8'])
+            'ae535ea3b9b6c9f9986a726f7186bbd4548789d24fd5a35cabd058d9223b5dc9',
+            '545b09f059e8d8223055ef065ca521d1a63aafb05c452a54189da92504ec9d83'])
         self.assertEqual(a['starts'], b['starts'])
         ra = a['selection_report']
         self.assertEqual(len(ra['candidates']), 17)
@@ -458,18 +460,10 @@ class RFStartSelectionTests(unittest.TestCase):
         with self.assertRaises(StartSelectionError) as cm:
             self.generate()
         self.assertEqual(cm.exception.report['cost']['RF_forward_calls'], 0)
-        actual = self.generate(for_exploration=True)
-        self.assertEqual(actual['starts'][0]['vector'][3], 0.)
-        self.assertTrue(actual['candidate_promotion_blocked'])
-        with self.assertRaises(ValueError):
-            self.p.circuit.validate_components(actual['starts'][0]['vector'])
-        self.assertEqual(actual['selection_report']['cost']['RF_forward_calls'], 17)
-        for s in actual['starts']:
-            score = s['score']
-            il = self.p.evaluator.il(s['vector'])
-            self.assertEqual(score['worst_il_db'], max(il[self.p.evaluator.role == 0]))
-            self.assertEqual(score['min_h2_db'], min(il[self.p.evaluator.role == 1]))
-            self.assertEqual(score['min_h3_db'], min(il[self.p.evaluator.role == 2]))
+        # #307 has no absent-GJM bounds exception, even for exploration.
+        with self.assertRaises(StartSelectionError) as cm:
+            self.generate(for_exploration=True)
+        self.assertEqual(cm.exception.report['cost']['RF_forward_calls'], 0)
         self.x[3] = 1.
         definition = replace(self.p.circuit.definition,
                              variable_roles=('shunt_to_ground', 'series'))
@@ -477,10 +471,8 @@ class RFStartSelectionTests(unittest.TestCase):
             self.p.circuit.resolved_policy, definition), 2)
         with self.assertRaisesRegex(StartSelectionError, 'role not proven'):
             self.generate()
-        exploratory = self.generate(for_exploration=True)
-        self.assertTrue(exploratory['candidate_promotion_blocked'])
-        self.assertTrue(self.p.circuit.validate_components(exploratory['starts'][0]['vector'])[
-            'connection_role_evidence_incomplete'])
+        with self.assertRaises(StartSelectionError):
+            self.generate(for_exploration=True)
 
 
 if __name__ == "__main__":

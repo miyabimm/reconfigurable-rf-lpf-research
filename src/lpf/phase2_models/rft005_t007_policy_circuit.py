@@ -58,10 +58,8 @@ class PolicyBoundRFT005T007Circuit:
                     physical_order, coupling_pairs, capacitor_placement,
                     fixed_c_types, variable_roles):
         if (not isinstance(policy, dict) or
-                policy.get("active_constraint_id") not in ("RF-T005", "RF-T007")
-                or policy.get("active_constraint_status") != "trial"
-                or policy.get("trial_base_constraint_id") != "RF-F003"):
-            raise ValueError("Resolved RF-T005 or RF-T007 trial required")
+                policy.get('active_constraint_id') not in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007')):
+            raise ValueError('Resolved base RF-F003 physical model required')
         name = policy["active_constraint_id"]
         approved = load_constraint(name, allow_trial=True)
         if constraint_fingerprint(policy) != constraint_fingerprint(approved):
@@ -69,7 +67,8 @@ class PolicyBoundRFT005T007Circuit:
         is_t007 = name == "RF-T007"
         if (is_t007 != ("trial_shunt_dtc_parasitic" in policy) or
                 "trial_ic_fixed_c_by_connection" in policy or
-                policy["trial_variable_c_layout"].get("branch_count") != 3):
+                (name != 'RF-F003' and policy['trial_variable_c_layout'].get('branch_count') !=
+                 policy['components']['IC_VARIABLE_C']['max_branches_principle'])):
             raise ValueError("Incorrect RF-T005/T007 variable-C/parasitic trial")
         if not isinstance(inductor_tree, InductorTree):
             raise TypeError("inductor_tree must be InductorTree")
@@ -139,16 +138,16 @@ class PolicyBoundRFT005T007Circuit:
         gjms = policy["components"]["GJM01"]
         for kind, cap in zip(self.fixed_c_types, cf):
             if kind == "PCB_PATTERN_C":
-                if not pcbs["min_pf_per_component"] <= cap <= pcbs["max_pf_per_component"]:
+                if not pcbs['bounds']['min'] <= cap <= pcbs['bounds']['max']:
                     raise ValueError("PCB fixed C outside approved range")
             elif kind == "GJM01":
-                if not 0 < cap <= gjms["max_pf_per_component"]:
+                if not gjms['bounds']['min'] <= cap <= gjms['bounds']['max']:
                     raise ValueError("GJM fixed C must be positive and <= approved max")
             else:
                 raise ValueError("Unsupported fixed-C type")
         nv = self.schema.n_variable
-        low = policy["components"]["IC_VARIABLE_C"]["min_total_variable_pf_per_branch"]
-        high = policy["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"]
+        low = policy['components']['IC_VARIABLE_C']['bounds']['min']
+        high = policy['components']['IC_VARIABLE_C']['bounds']['max']
         for row in values.capacitors_pf_by_setting:
             if any(not low <= v <= high for v in
                    row[self.schema.n_fixed:self.schema.n_fixed + nv]):

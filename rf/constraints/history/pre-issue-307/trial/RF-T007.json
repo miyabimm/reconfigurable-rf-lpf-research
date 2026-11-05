@@ -1,0 +1,38 @@
+{
+  "constraint_id": "RF-T007",
+  "status": "trial",
+  "base_constraint_id": "RF-F003",
+  "study_authorized": true,
+  "approved_scope": "Phase 2 study only; RF-F003 and RF-T005 remain unchanged; Phase 3 remains paused.",
+  "description": "RF-T005-equivalent up to 3 independent variable C branches plus per-shunt-DTC fixed 0.5pF/Q40 ground parasitic. Non-ground (bridge/series) DTC has no such parasitic.",
+  "study_variable_c_layout": {
+    "branch_count": 3,
+    "count_policy": "up_to",
+    "connection_policy": "any_allowed"
+  },
+  "overrides": {
+    "components": {
+      "IC_VARIABLE_C": {
+        "max_branches_principle": 3
+      }
+    }
+  },
+  "study_shunt_dtc_parasitic": {
+    "applies_to": "each_shunt_to_ground_IC_VARIABLE_C_branch",
+    "fixed_capacitance_pf": 0.5,
+    "q": 40,
+    "q_model": "omega_C_over_1_over_Q_minus_j",
+    "variable_capacitance_pf_range": [
+      0,
+      3
+    ],
+    "present_at_variable_C_zero": true,
+    "not_applicable_to_non_ground_variable_C": true,
+    "frequency_invariant": true,
+    "setting_invariant": true,
+    "pcb_pattern_C_count_increment": 0,
+    "additional_chip_area_units": 0,
+    "tolerance_status": "nominal_only_not_evaluated"
+  },
+  "validation_notes": "For each ground-shunt variable C branch, add a DISTINCT fixed C=0.5pF/Q40 in parallel between the identical node and GND, even at variable C=0. Each DTC variable component remains 0..3pF/Q35; aggregate shunt capacitance is 0.5..3.5pF (A), not capped at 3pF. Apply once per installed ground-shunt DTC; none on non-ground bridge/series DTC. No separate PCB_PATTERN_C budget consumption (its 0.02..0.2pF and maximum count 3 are unchanged), and no added chip area cost. Treat fixed 0.5pF and Q40 as constant over frequencies/settings in nominal Phase 2. Model two lossy admittances separately, Y=omega*Cvar/(1/35-j)+omega*(0.5pF)/(1/40-j). Node labels for EXP-042: Cv0 node4-GND, Cv1 node5-GND, Cv2 node2-node3 no parasitic. No new 3-6GHz RF-T006 extra stopband. Requires allow_trial=True and explicit parasitic branch stamping in each numerical circuit evaluator; metadata alone does not modify existing EXP-042 numerical scripts. Existing candidate IL/H2/H3 are not revalidated for RF-T007."
+}

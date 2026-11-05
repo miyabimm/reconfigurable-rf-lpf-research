@@ -12,6 +12,7 @@ import numpy as np
 
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.constraint_versions import rf_input_file
+from lpf.search.performance import harmonic_limit_db
 from ._grid import ROOT, validated_band_segments
 from .limited_candidate_evidence import _identity
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
@@ -173,7 +174,7 @@ def verify_candidate_evidence(circuit, binding, report):
                 not 0 <= completed <= requested <= budget):
             raise ValueError('Candidate validation cost mismatch')
     segments, band_rows = _segments(circuit)
-    mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+    mandatory = float(harmonic_limit_db(circuit.resolved_policy))
     component = report.get('component', {})
     if component.get('state') in ('pass', 'fail'):
         box = circuit_box(circuit)

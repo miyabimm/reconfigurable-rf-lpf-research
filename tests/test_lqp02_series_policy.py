@@ -13,8 +13,8 @@ class Lqp02SeriesPolicyTest(unittest.TestCase):
         self.assertEqual(p["preferred_series"], "LQP02HV")
         self.assertEqual(p["series"]["LQP02HV"]["q"], 25)
         self.assertEqual(p["series"]["LQP02HQ"]["q"], 20)
-        self.assertEqual(p["series"]["LQP02HV"]["max_inductance_nH"], 27)
-        self.assertEqual(p["series"]["LQP02HQ"]["max_inductance_nH"], 56)
+        self.assertEqual(p['series']['LQP02HV']['bounds']['max'], 27)
+        self.assertEqual(p['series']['LQP02HQ']['bounds']['max'], 56)
         self.assertEqual(p["series"]["LQP02HV"]["area_units"], 1)
         self.assertEqual(p["series"]["LQP02HQ"]["area_units"], 1)
 

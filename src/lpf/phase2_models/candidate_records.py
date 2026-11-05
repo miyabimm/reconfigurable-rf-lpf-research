@@ -14,6 +14,7 @@ import math
 import numpy as np
 
 from lpf.constraint_versions import load_constraint
+from lpf.search.performance import harmonic_limit_db, limit_db
 from .api import CircuitDefinition, build_nominal_circuit
 from .candidate_audit import audit_candidate
 from .circuit_layout import CapacitorPlacement, InductorTree
@@ -130,7 +131,7 @@ def _numerical(circuit, vector, staged, seed, cost_meter=None):
     guard = staged.get('search_guard')
     if guard is not None:
         from .sampled_epigraph import SEARCH_GUARD_DB
-        mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+        mandatory = float(harmonic_limit_db(circuit.resolved_policy))
         if guard != {'guard_db': SEARCH_GUARD_DB, 'mandatory_stop_db': mandatory,
                      'search_stop_db': mandatory + SEARCH_GUARD_DB}:
             raise ValueError('C2 search guard mismatch')
@@ -159,7 +160,11 @@ def _context(circuit):
     p = circuit.resolved_policy
     return {"objective": "full_lpf_worst_six_setting_UL_DL_external_port_IL",
             "reference_planes": "external_input_to_external_output",
-            "thresholds": p["evaluation"]["full_phase2"], "finite_grid_only": True}
+            "thresholds": {
+                'minimum_h2_h3_db': harmonic_limit_db(p),
+                'nominal_h2_h3_target_db': harmonic_limit_db(p, 'nominal'),
+                'nominal_max_il_db': limit_db(p, 'il_db', 'nominal')},
+            "finite_grid_only": True}
 
 
 @dataclass(frozen=True)

@@ -30,7 +30,7 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertEqual(constraint_fingerprint(formal),
                          registry["formal"]["RF-F003"]["effective_constraint_sha256"])
         self.assertEqual(formal["components"]["IC_VARIABLE_C"]["max_branches_principle"], 2)
-        self.assertEqual(formal["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"], 3)
+        self.assertEqual(formal['components']['IC_VARIABLE_C']['bounds']['max'], 3)
         self.assertEqual(formal["components"]["IC_VARIABLE_C"]["q"], 35)
         self.assertEqual(formal["coupling_limits"]["chip_chip_strong_adjacent_abs_k_max"], 0.1)
         self.assertEqual(formal["coupling_limits"]["pcb_pcb_abs_k_max_default"], 0.1)
@@ -68,7 +68,7 @@ class RFF003T005Tests(unittest.TestCase):
         self.assertTrue(check_counts(n_var=2, resolved_policy=trial))
         self.assertFalse(check_counts(n_var=3, resolved_policy=trial))
         self.assertFalse(check_counts(n_var=3, resolved_policy=formal))
-        extra = trial["trial_additional_stopband"]
+        extra = trial['evaluation']['performance']['additional_stopbands'][0]
         self.assertEqual((extra["low_hz"], extra["high_hz"], extra["sample_step_hz"]),
                          (3_000_000_000, 6_000_000_000, 1_000_000))
         self.assertEqual(extra["min_attenuation_db"], 20)
@@ -77,11 +77,12 @@ class RFF003T005Tests(unittest.TestCase):
         resolved_without_metadata = json.loads(json.dumps(trial))
         for key in ("active_constraint_id", "active_constraint_status",
                     "trial_base_constraint_id", "trial_variable_c_layout",
-                    "trial_additional_stopband"):
+                    ):
             resolved_without_metadata.pop(key)
         original_without_identity = json.loads(json.dumps(formal))
         for key in ("active_constraint_id", "active_constraint_status"):
             original_without_identity.pop(key)
+        resolved_without_metadata['evaluation']['performance']['additional_stopbands'] = []
         self.assertEqual(resolved_without_metadata, original_without_identity)
         self.assertNotEqual(constraint_fingerprint(trial), constraint_fingerprint(formal))
         self.assertNotIn("trial_additional_stopband", load_constraint("RF-T005", allow_trial=True))
@@ -124,7 +125,9 @@ class RFF003T005Tests(unittest.TestCase):
             evaluate_trial_additional_stopband(load_constraint("RF-F003"), lambda c, f: eye)
 
     def test_legacy_RF_F002_stays_frozen(self):
-        previous = load_constraint("RF-F002")
+        with self.assertRaises(ValueError):
+            load_constraint('RF-F002')
+        previous = json.loads((ROOT/'rf/constraints/history/pre-issue-307/formal/RF-F002.json').read_text())
         self.assertEqual(previous["components"]["IC_VARIABLE_C"]["q"],50)
         self.assertEqual(previous["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"],1.5)
         self.assertEqual(previous["coupling_limits"]["pcb_pcb_abs_k_max_default"],0.15)
