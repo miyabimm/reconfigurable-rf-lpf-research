@@ -25,9 +25,9 @@ class RFt007Tests(unittest.TestCase):
         self.assertEqual(self.policy["trial_base_constraint_id"], "RF-F003")
         self.assertEqual(self.policy["components"]["IC_VARIABLE_C"]["max_branches_principle"], 3)
         self.assertEqual(self.policy["components"]["IC_VARIABLE_C"]["q"], 35)
-        self.assertEqual(self.policy["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"], 3)
+        self.assertEqual(self.policy['components']['IC_VARIABLE_C']['bounds']['max'], 3)
         self.assertEqual(self.policy["components"]["PCB_PATTERN_C"]["max_count"], 3)
-        self.assertEqual(self.policy["components"]["PCB_PATTERN_C"]["max_pf_per_component"], 0.2)
+        self.assertEqual(self.policy['components']['PCB_PATTERN_C']['bounds']['max'], 0.2)
         self.assertEqual(self.policy["trial_shunt_dtc_parasitic"]["fixed_capacitance_pf"], 0.5)
         self.assertEqual(self.policy["trial_shunt_dtc_parasitic"]["q"], 40)
 

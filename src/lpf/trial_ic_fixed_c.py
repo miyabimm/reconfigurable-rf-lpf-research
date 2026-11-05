@@ -43,7 +43,7 @@ def ic_fixed_c_branches(policy, variable_branches, fixed_values_pf):
         rule = (spec["grounded"] if 0 in (branch["a"], branch["b"])
                 else spec["non_ground"])
         if (type(cap) not in (int, float) or not math.isfinite(cap)
-                or not rule["min_pf_per_branch"] <= cap <= rule["max_pf_per_branch"]):
+                or not rule["bounds"]["min"] <= cap <= rule["bounds"]["max"]):
             raise ValueError("IC fixed C outside approved connection-specific range")
         out.append({"variable_branch_index": idx,
                     "a": branch["a"], "b": branch["b"],

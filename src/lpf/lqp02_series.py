@@ -36,22 +36,22 @@ def select_series(inductance_nh: float, *, series: str | None = None,
     series_data = p["series"]
     if series is None:
         hv = series_data["LQP02HV"]
-        series = ("LQP02HV" if hv["min_inductance_nH"] <= value
-                  <= hv["max_inductance_nH"] else "LQP02HQ")
+        series = ("LQP02HV" if hv['bounds']['min'] <= value
+                  <= hv['bounds']['max'] else "LQP02HQ")
     if series not in series_data:
         raise ValueError(f"Unknown LQP02 series {series!r}")
     spec = series_data[series]
     # SI-H to nH conversion can move exact endpoints by a few ULPs
     # (e.g. 56e-9*1e9 > 56). Tolerate only roundoff, not a real overrun.
-    lo = spec["min_inductance_nH"]
-    hi = spec["max_inductance_nH"]
+    lo = spec['bounds']['min']
+    hi = spec['bounds']['max']
     within = (lo <= value <= hi or
               math.isclose(value, lo, rel_tol=1e-13, abs_tol=1e-13) or
               math.isclose(value, hi, rel_tol=1e-13, abs_tol=1e-13))
     if not within:
         raise ValueError(f"{series} cannot use {value} nH; "
-                         f"range {spec['min_inductance_nH']}.."
-                         f"{spec['max_inductance_nH']} nH")
+                         f"range {spec['bounds']['min']}.."
+                         f"{spec['bounds']['max']} nH")
     return {
         "series": series,
         "L_nH": value,

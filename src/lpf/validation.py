@@ -58,8 +58,7 @@ def validate_inductor_coupling(types,values,coupling,physical_order=None,*,
     pcbs=[i for i,t in enumerate(types) if t=="PCB_L"]
     if len(pcbs)>policy["components"]["PCB_L"]["max_count_principle"]:
         raise ValueError("PCB count exceeds three")
-    pcb_max=policy["components"]["PCB_L"].get("max_inductance_nh",
-                                            policy["components"]["PCB_L"]["max_inductance_nh_approx"])
+    pcb_max=policy['components']['PCB_L']['bounds']['max']
     if any(l[i]>pcb_max*1e-9+1e-21 for i in pcbs):
         raise ValueError("PCB inductance limit exceeded")
     order=chips if physical_order is None else list(physical_order)

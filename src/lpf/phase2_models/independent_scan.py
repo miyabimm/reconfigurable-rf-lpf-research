@@ -7,6 +7,7 @@ from scipy.optimize import minimize_scalar
 
 from ._grid import ROOT, validated_band_segments
 from lpf.constraint_versions import rf_input_file
+from lpf.search.performance import harmonic_limit_db, limit_db
 from .independent_rf import evaluate_independent_sample
 
 
@@ -29,7 +30,10 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
     with rf_input_file(ROOT, circuit._adapter.policy["bands_file"]).open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     segments = validated_band_segments(rows)
-    full = circuit._adapter.policy["evaluation"]["full_phase2"]
+    policy = circuit._adapter.policy
+    mandatory = harmonic_limit_db(policy)
+    nominal = harmonic_limit_db(policy, 'nominal')
+    il_goal = limit_db(policy, 'il_db', 'nominal')
     component = circuit.validate_components(vector)
     results = []
     for index, (canonical, role, low, high) in enumerate(segments):
@@ -72,8 +76,8 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
                             "canonical_setting": canonical, "low_hz": low*1e6, "high_hz": high*1e6,
                             "grid_worst": grid, "refined_worst": refined,
                             "additional_evaluations": extra,
-                            "mandatory_stop_pass": observed >= full["minimum_h2_h3_db"] if role else None,
-                            "nominal_goal_pass": observed >= full["nominal_h2_h3_target_db"] if role else observed <= full["nominal_max_il_db"]})
+                            "mandatory_stop_pass": observed >= mandatory if role else None,
+                            "nominal_goal_pass": observed >= nominal if role else observed <= il_goal})
     # Ties retain CSV segment order, then ascending setting; grid ties retain
     # ascending frequency. Cross summaries never stand in for canonical ones.
     def worst(regions, key, maximize):
@@ -91,17 +95,15 @@ def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canon
         return {"value_db": value, "threshold_db": threshold,
                 "status": "sampled_numeric_observation" if meets else "failed"}
     thresholds = {
-        region: observation(observed[region]['il_db'], full['nominal_max_il_db'],
-                            observed[region]['il_db'] <= full['nominal_max_il_db'])
+        region: observation(observed[region]['il_db'], il_goal,
+                            observed[region]['il_db'] <= il_goal)
         for region in ('UL', 'DL')
     }
     for region in ('H2', 'H3'):
         value = observed[region]['il_db']
         thresholds[region] = {
-            'mandatory': observation(value, full['minimum_h2_h3_db'],
-                                     value >= full['minimum_h2_h3_db']),
-            'nominal': observation(value, full['nominal_h2_h3_target_db'],
-                                   value >= full['nominal_h2_h3_target_db']),
+            'mandatory': observation(value, mandatory, value >= mandatory),
+            'nominal': observation(value, nominal, value >= nominal),
         }
     return {"constraint_id": circuit.policy_id, "constraint_fingerprint": circuit.policy_fingerprint,
             "coverage": coverage, "summary": summary,

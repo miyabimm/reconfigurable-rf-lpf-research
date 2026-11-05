@@ -7,6 +7,7 @@ policy. Numerical convergence, sampled RF observations, component checks and
 candidate promotion are explicitly separate.
 """
 from contextlib import nullcontext
+from lpf.search.performance import harmonic_limit_db
 from functools import partial
 from copy import deepcopy
 from dataclasses import asdict
@@ -544,7 +545,7 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
             result['last_valid_vector'] = deepcopy(call['output_vector'])
             settings = (snapshot.get('working_configuration') or {}).get('settings')
             rf = observation['sampled_rf']
-            mandatory = float(circuit.resolved_policy['evaluation']['full_phase2']['minimum_h2_h3_db'])
+            mandatory = float(harmonic_limit_db(circuit.resolved_policy))
             if (result['first_strict_sampled'] is None and
                     (settings is None or set(settings) == set(CASES)) and
                     rf['min_h2_db'] >= mandatory and rf['min_h3_db'] >= mandatory):

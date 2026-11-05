@@ -118,13 +118,11 @@ class TopologyEnumerationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "approved registry"):
             enumerate_topologies(altered, space())
 
-    def test_series_role_remains_unproven_but_not_a_policy_failure(self):
+    def test_unproven_series_role_fails_closed_before_retention(self):
         s = space(variable_layouts=(( ((0, 2), "series"), ),))
         result = enumerate_topologies(policy(), s)
-        row = result["candidates"][0]
-        self.assertEqual(result["counts"]["rejected"], 0)
-        self.assertFalse(row["connection_role_audit"]["all_declared_roles_supported_by_l_tree"])
-        self.assertIn("declared_role_not_proven_by_l_tree", row["component_check"]["promotion_blockers"])
+        self.assertEqual(result['candidates'], ())
+        self.assertEqual(result['counts']['rejected'], 1)
         self.assertTrue(result["candidate_promotion_blocked"])
         self.assertEqual(result["independent_mna"], "not_run")
         self.assertEqual(result["rf_evaluation"], "not_run")
@@ -146,7 +144,7 @@ class TopologyEnumerationTests(unittest.TestCase):
         self.assertEqual(counts["visited"], counts["raw_space"])
         self.assertEqual(counts["unvisited"], 0)
         self.assertGreater(counts["duplicates"], 0)
-        self.assertEqual(counts["rejected"], 3*1*2*4*2)
+        self.assertEqual(counts['rejected'], 3*1*2*4*2 + 3*2*1*4*2)  # malformed fixed + unproven series
         self.assertEqual(counts["retained"], counts["visited"]-counts["duplicates"]-counts["rejected"])
         self.assertFalse(a["truncated"])
         bounded = enumerate_topologies(policy(), replace(s, max_candidates=7))
@@ -210,10 +208,10 @@ class TopologyEnumerationTests(unittest.TestCase):
                 variable_layouts=capacitor_choices(4, kind="variable", max_branches=1, limit=17),
                 coupling_slot_counts=(0,), max_candidates=1000)
             report = enumerate_topologies(p, s)
-            self.assertEqual(report["counts"]["retained"], 2*2*3*17)
-            self.assertEqual(report["counts"]["rejected"], 0)
-            self.assertEqual({role for r in report["candidates"] for role in r["definition"].variable_roles},
-                             {"shunt_to_ground", "bridge", "series"})
+            self.assertEqual(report['counts']['retained'], 2*2*3*11)
+            self.assertEqual(report['counts']['rejected'], 2*2*3*6)  # series requires separate proof
+            self.assertEqual({role for r in report['candidates'] for role in r['definition'].variable_roles},
+                             {'shunt_to_ground', 'bridge'})
             hq = next(r for r in report["candidates"] if "LQP02HQ" in r["definition"].inductor_types)
             hv = next(r for r in report["candidates"] if "LQP02HV" in r["definition"].inductor_types)
             self.assertEqual(build_nominal_circuit(p, hq["definition"]).topology.inductor_q, (20.,)*3)

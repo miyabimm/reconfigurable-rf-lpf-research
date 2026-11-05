@@ -15,14 +15,14 @@ def nominal_inductor_series(policy, name):
 
     Missing inductor range data is NOT a license to assume a bound.
     """
+    from lpf.search.component_constraints import interval
     components = policy["components"]
     if name in ("LQP02HV", "LQP02HQ"):
         spec = components["LQP02"]["series"][name]
-        return (float(spec["q"]), float(spec["min_inductance_nH"]),
-                float(spec["max_inductance_nH"]))
+        return (float(spec["q"]), *interval(spec, 'nH'))
     if name == "PCB_L":
         spec = components["PCB_L"]
-        return float(spec["q"]), 0.0, float(spec["max_inductance_nh"])
+        return (float(spec["q"]), *interval(spec, 'nH'))
     raise ValueError("No fully specified nominal inductor range for " + str(name))
 
 
@@ -46,9 +46,7 @@ def check_nominal_inductors(policy, topology, values, inductor_types, physical_o
         raise ValueError("L vector length mismatch")
     for kind, q, value in zip(types, topology.inductor_q, values.inductances_nh):
         approved_q, minimum, maximum = nominal_inductor_series(policy, kind)
-        # Chip L minima are inclusive; PCB_L requires strictly positive L.
-        in_range = (minimum < value <= maximum if kind == "PCB_L"
-                    else minimum <= value <= maximum)
+        in_range = minimum <= value <= maximum
         if q != approved_q or not in_range:
             raise ValueError("L series Q or inductance outside resolved policy")
     return validate_inductor_coupling(

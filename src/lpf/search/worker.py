@@ -53,8 +53,8 @@ def execute_job(spec, directory):
         from .plan import fingerprints
         if fingerprints(circuit) != frozen['rf_inputs']:
             raise ValueError('Frozen bands/S2P fingerprint mismatch')
-        bounds, opened = frozen['box'], frozen['open_lower']
-        validate(circuit, d['start']['vector'], bounds, opened)
+        bounds = frozen['box']
+        validate(circuit, d['start']['vector'], bounds)
 
         def checkpoint(cost):
             result['cost'] = cost
@@ -62,7 +62,7 @@ def execute_job(spec, directory):
             for i, step_raw in enumerate(result['steps']):
                 atomic(directory / f'step-{i}.json', step_raw)
 
-        meter = Evaluation(circuit, bounds, opened, arm['max_requested_samples'],
+        meter = Evaluation(circuit, bounds, arm['max_requested_samples'],
                            backend='fixture', sink=checkpoint, milestones=config['anytime_samples'])
         result['status'] = 'unknown'
         atomic(path, result)

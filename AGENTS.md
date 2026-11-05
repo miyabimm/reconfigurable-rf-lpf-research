@@ -7,7 +7,7 @@ Research a passive reconfigurable RF low-pass filter for six LTE settings, balan
 Read only the **documents relevant to the task**, using the latest available `main` version for material scientific or development decisions:
 
 - **Operating authority and approvals:** [`project/instructions.md`](project/instructions.md).
-- **Formal RF numbers:** the immutable JSON selected by `active_formal_id` in [`rf/constraints/registry.json`](rf/constraints/registry.json); trial constraints require explicit opt-in. **Bands:** [`rf/bands.csv`](rf/bands.csv). **Fixed S2P:** files and hashes specified by the active constraint.
+- **Formal RF numbers:** the immutable JSON selected by `active_formal_id` in [`rf/constraints/registry.json`](rf/constraints/registry.json); trial constraints require explicit opt-in. The owner-approved one-time same-ID migration exception for Issue #307 is recorded in `project/instructions.md`; original JSON/registry/SHAs remain in `rf/constraints/history/`. **Bands:** [`rf/bands.csv`](rf/bands.csv). **Fixed S2P:** files and hashes specified by the active constraint.
 - **Scientific interpretation:** [`project/specification.md`](project/specification.md) (not a separate numeric authority). **Current work and gates:** [`project/roadmap.md`](project/roadmap.md), Issues, and PRs.
 - **Experiment evidence:** [`data/experiment_index.csv`](data/experiment_index.csv) and `experiments/.../EXP-NNN/`. **For new EXP:** [`project/experiment_storage_policy.md`](project/experiment_storage_policy.md). **For staged SLSQP:** [`project/slsqp_iteration_policy.md`](project/slsqp_iteration_policy.md).
 

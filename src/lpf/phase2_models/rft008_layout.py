@@ -81,9 +81,9 @@ class RFT008CapacitorLayout:
             raise ValueError("RF-T008 v3 permits at most two composite IC-C branches")
         fixed_bounds = tuple(
             (float((spec["grounded"] if -1 in edge else spec["non_ground"])[
-                "min_pf_per_branch"]),
+                "bounds"]["min"]),
              float((spec["grounded"] if -1 in edge else spec["non_ground"])[
-                "max_pf_per_branch"]))
+                "bounds"]["max"]))
             for edge in variable_edges
         )
         # Existing IC policy API additionally validates the one-to-one count
@@ -99,25 +99,25 @@ class RFT008CapacitorLayout:
         pcb_spec = policy["trial_pcb_pattern_c_by_connection"]
         gjm_spec = policy["components"]["GJM01"]
         if gjm_lower_pf is not None and (
-                not np.isfinite(gjm_lower_pf) or gjm_lower_pf <= 0 or
-                gjm_lower_pf > gjm_spec["max_pf_per_component"]):
+                not np.isfinite(gjm_lower_pf) or gjm_lower_pf < gjm_spec['bounds']['min'] or
+                gjm_lower_pf > gjm_spec['bounds']['max']):
             raise ValueError("Invalid explicit GJM study lower bound")
         fixed_q, fixed_ranges, pcb_dicts = [], [], []
         for index, edge in enumerate(placement.fixed_edges):
             if index in positions:
                 fixed_q.append(float(gjm_spec["q"]))
-                fixed_ranges.append((0. if gjm_lower_pf is None
+                fixed_ranges.append((float(gjm_spec['bounds']['min']) if gjm_lower_pf is None
                                      else float(gjm_lower_pf),
-                                     float(gjm_spec["max_pf_per_component"])))
+                                     float(gjm_spec['bounds']['max'])))
             else:
                 rule = (pcb_spec["grounded"] if -1 in edge
                         else pcb_spec["non_ground"])
                 fixed_q.append(float(rule["q"]))
-                fixed_ranges.append((float(rule["min_pf_per_component"]),
-                                     float(rule["max_pf_per_component"])))
+                fixed_ranges.append((float(rule['bounds']['min']),
+                                     float(rule['bounds']['max'])))
                 pcb_dicts.append({
                     **policy_edges((edge,))[0],
-                    "capacitance_pf": float(rule["min_pf_per_component"]),
+                    "capacitance_pf": float(rule['bounds']['min']),
                     "q": float(rule["q"]),
                 })
         validate_trial_pcb_pattern_c_branches(policy, pcb_dicts)

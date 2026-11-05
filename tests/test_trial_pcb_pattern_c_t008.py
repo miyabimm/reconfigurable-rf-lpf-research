@@ -39,11 +39,11 @@ class RFT008Tests(unittest.TestCase):
         self.assertEqual(self.trial["trial_variable_c_layout"]["branch_count"], 2)
         self.assertEqual(self.t007["components"]["IC_VARIABLE_C"]["max_branches_principle"], 3)
         self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["q"], 35)
-        self.assertEqual(self.trial["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"], 3)
+        self.assertEqual(self.trial['components']['IC_VARIABLE_C']['bounds']['max'], 3)
         # The formal default stays 0.2pF/Q40. The trial exception is per-connection.
-        self.assertEqual(self.trial["components"]["PCB_PATTERN_C"]["max_pf_per_component"], 0.2)
+        self.assertEqual(self.trial['components']['PCB_PATTERN_C']['bounds']['max'], 0.2)
         self.assertEqual(self.trial["components"]["PCB_PATTERN_C"]["q"], 40)
-        self.assertEqual(self.formal["components"]["PCB_PATTERN_C"]["max_pf_per_component"], 0.2)
+        self.assertEqual(self.formal['components']['PCB_PATTERN_C']['bounds']['max'], 0.2)
         self.assertEqual(self.trial["external_port_parasitics"], self.formal["external_port_parasitics"])
         self.assertNotIn("trial_pcb_pattern_c_by_connection", self.t007)
         self.assertNotEqual(constraint_fingerprint(self.trial),

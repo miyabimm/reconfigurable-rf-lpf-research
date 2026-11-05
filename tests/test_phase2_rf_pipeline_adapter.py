@@ -177,12 +177,15 @@ class RFPipelineAdapterTests(unittest.TestCase):
         meter = SampleBudgetCost(56)
         a = RFPipelineAdapter(self.circuit, 2, cost_meter=meter, for_exploration=True)
         x = self.x.copy(); x[4] = 0.
+        with self.assertRaises(ValueError):
+            a.assess(x)  # #307: absence cannot bypass the physical bounds.
+        self.assertEqual(meter.frequency_samples_requested, 0)
+        a = RFPipelineAdapter(self.circuit, 2, cost_meter=meter)
         with patch.object(type(a.evaluator), 'il', return_value=self.mock_il(30.)):
-            verdict = a.assess(x)
-            self.assertFalse(verdict['strict_finite_grid_feasible'])
+            verdict = a.assess(self.x)
             self.assertTrue(verdict['candidate_promotion_blocked'])
             with self.assertRaises(SampleBudgetExceeded):
-                a.errors(x)
+                a.errors(self.x)
         self.assertEqual(meter.frequency_samples_requested, 56)
         p, _ = make('RF-T005', 4)
         with self.assertRaises(ValueError):

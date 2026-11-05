@@ -80,9 +80,9 @@ def validate_six_settings(settings, variable_cap_indices, *, resolved_policy=Non
                 if ((c.a, c.b, c.q) != (original.a, original.b, original.q)
                     or not np.isfinite(c.value)
                     or c.q != spec["q"]
-                    or not (spec["min_total_variable_pf_per_branch"] * 1e-12
+                    or not (spec['bounds']['min'] * 1e-12
                             <= c.value <=
-                            spec["max_total_variable_pf_per_branch"] * 1e-12)):
+                            spec['bounds']['max'] * 1e-12)):
                     raise ValueError("Variable C connection, Q or capacitance range invalid")
             elif c != original:
                 raise ValueError("Fixed C changed")

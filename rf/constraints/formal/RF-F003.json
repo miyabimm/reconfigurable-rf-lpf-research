@@ -33,19 +33,25 @@
       "series": {
         "LQP02HV": {
           "q": 25,
-          "min_inductance_nH": 0.4,
-          "max_inductance_nH": 27,
           "area_units": 1,
           "priority": "preferred",
-          "q_is_design_assumption": true
+          "q_is_design_assumption": true,
+          "bounds": {
+            "min": 0.4,
+            "max": 27,
+            "unit": "nH"
+          }
         },
         "LQP02HQ": {
           "q": 20,
-          "min_inductance_nH": 0.2,
-          "max_inductance_nH": 56,
           "area_units": 1,
           "priority": "fallback_only_as_justified",
-          "q_is_design_assumption": true
+          "q_is_design_assumption": true,
+          "bounds": {
+            "min": 0.2,
+            "max": 56,
+            "unit": "nH"
+          }
         }
       },
       "preferred_series": "LQP02HV",
@@ -66,19 +72,20 @@
       "q": 15,
       "area_units_fraction": "2/3",
       "common_across_settings": true,
-      "inductance_range_confirmed": false
+      "inductance_range_confirmed": false,
+      "search_supported": false
     },
     "LQW04": {
       "category": "chip_inductor",
       "q": 33,
       "area_units": 3,
       "common_across_settings": true,
-      "q_is_assumption": true
+      "q_is_assumption": true,
+      "search_supported": false
     },
     "GJM01": {
       "category": "fixed_chip_capacitor",
       "q": 80,
-      "max_pf_per_component": 100,
       "area_units_fraction": "2/3",
       "common_across_settings": true,
       "allowed_positions": [
@@ -87,15 +94,18 @@
         "bridge"
       ],
       "q_is_assumption": true,
-      "area_cost_distinct_from_PCB_PATTERN_C": true
+      "area_cost_distinct_from_PCB_PATTERN_C": true,
+      "bounds": {
+        "min": 0.1,
+        "max": 100,
+        "unit": "pF"
+      }
     },
     "IC_VARIABLE_C": {
       "category": "IC_switched_capacitor_abstract_continuous",
       "q": 35,
       "area_units": 0,
       "max_branches_principle": 2,
-      "max_total_variable_pf_per_branch": 3,
-      "min_total_variable_pf_per_branch": 0,
       "positions_allowed_by_default": [
         "shunt_to_ground",
         "non_ground_bridge",
@@ -105,24 +115,30 @@
       "parallel_with_fixed_GJM01_allowed": true,
       "setting_dependent": true,
       "physical_switch_design_phase3_paused": true,
-      "q_is_assumption": true
+      "q_is_assumption": true,
+      "bounds": {
+        "min": 0,
+        "max": 3,
+        "unit": "pF"
+      }
     },
     "PCB_L": {
       "category": "embedded_inductor",
       "q": 12,
       "area_units": 0,
       "max_count_principle": 3,
-      "max_inductance_nh_approx": 2,
       "common_across_settings": true,
       "pcb_footprint_unmodeled": true,
-      "max_inductance_nh": 2
+      "bounds": {
+        "min": 0.01,
+        "max": 2,
+        "unit": "nH"
+      }
     },
     "PCB_PATTERN_C": {
       "category": "fixed_pcb_pattern_capacitor",
       "q": 40,
       "q_is_assumption": true,
-      "min_pf_per_component": 0.02,
-      "max_pf_per_component": 0.2,
       "max_count": 3,
       "area_units": 0,
       "common_across_settings": true,
@@ -134,7 +150,12 @@
       "footprint_and_routing_area_unmodeled": true,
       "parasitic_and_EM_validation_required": true,
       "physical_implementation_notes": "Chip area cost is zero, not actual PCB area; 0.02 to 0.2 pF has not been verified by EM or manufacturing tolerance.",
-      "upper_limit_status": "owner_approved_2026-10-11"
+      "upper_limit_status": "owner_approved_2026-10-11",
+      "bounds": {
+        "min": 0.02,
+        "max": 0.2,
+        "unit": "pF"
+      }
     }
   },
   "coupling_limits": {
@@ -152,21 +173,107 @@
     "chip_chip_nonstrong_abs_k_max": 0.03,
     "chip_chip_nonstrong_nominal_k": 0,
     "chip_chip_strong_allowed_only_for_physical_neighbors": true,
-    "chip_chip_allow_2d_layout": false
+    "chip_chip_allow_2d_layout": false,
+    "bounds": {
+      "chip_neighbor": {
+        "min": -0.1,
+        "max": 0.1,
+        "unit": "1"
+      },
+      "chip_nonstrong_sensitivity": {
+        "min": -0.03,
+        "max": 0.03,
+        "unit": "1"
+      },
+      "chip_nonstrong_nominal": {
+        "min": 0,
+        "max": 0,
+        "unit": "1"
+      },
+      "pcb_pcb": {
+        "min": -0.1,
+        "max": 0.1,
+        "unit": "1"
+      },
+      "chip_pcb": {
+        "min": 0,
+        "max": 0,
+        "unit": "1"
+      }
+    }
   },
   "evaluation": {
     "il_db": "-10*log10(Pload/Pavs)",
-    "matching_only_phase2": {
-      "h2_h3_constraints": false,
-      "minimize": "worst_case_IL_over_six_settings_and_all_UL_DL_ranges"
-    },
-    "full_phase2": {
-      "minimum_h2_h3_db": 30,
-      "nominal_h2_h3_target_db": 35,
-      "nominal_max_il_db": 0.3
-    },
     "full_results_not_yet_revalidated_under_new_policy": true,
-    "external_fixed_parasitics_included": true
+    "external_fixed_parasitics_included": true,
+    "performance": {
+      "objective": {
+        "metric": "il_db",
+        "selector": {
+          "type": "pass"
+        },
+        "aggregation": "worst",
+        "direction": "minimize"
+      },
+      "modes": {
+        "full_lpf": {
+          "excluded_regions": []
+        },
+        "matching_only": {
+          "excluded_regions": [
+            "H2",
+            "H3"
+          ]
+        }
+      },
+      "limits": {
+        "defaults": [
+          {
+            "metric": "attenuation_db",
+            "selector": {
+              "region": "H2"
+            },
+            "min_db": 30,
+            "level": "mandatory"
+          },
+          {
+            "metric": "attenuation_db",
+            "selector": {
+              "region": "H3"
+            },
+            "min_db": 30,
+            "level": "mandatory"
+          },
+          {
+            "metric": "attenuation_db",
+            "selector": {
+              "region": "H2"
+            },
+            "min_db": 35,
+            "level": "nominal"
+          },
+          {
+            "metric": "attenuation_db",
+            "selector": {
+              "region": "H3"
+            },
+            "min_db": 35,
+            "level": "nominal"
+          },
+          {
+            "metric": "il_db",
+            "selector": {
+              "type": "pass"
+            },
+            "max_db": 0.3,
+            "level": "nominal"
+          }
+        ],
+        "overrides": []
+      },
+      "margins": [],
+      "additional_stopbands": []
+    }
   },
   "phase3": "paused_until_explicit_owner_approval",
   "overrides_require_owner_approval": [
@@ -303,5 +410,6 @@
     "optimized_lpf_chip_area_excludes_fixed_parasitic_area": true,
     "provenance": "Ideal lumped RLC model extracted from handwritten circuit images, not VNA/EM measurement; input circuit C1/C2 and reference plane require physical confirmation.",
     "known_source_components": "Circuit1 input R1=9.8963ohm C1=0.7057pF; series R2=2.2367ohm L=0.9443nH; output C2=0.4237pF R3=5601.2ohm. Circuit2 shunt R1=8.00411kohm C1=0.601157pF series C2=0.334903pF+R2=24.891529kohm; series R3=1.57537ohm."
-  }
+  },
+  "schema_version": 2
 }

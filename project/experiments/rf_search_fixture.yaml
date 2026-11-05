@@ -2,7 +2,7 @@
 schema_version: 1
 rf:
   id: RF-T008
-  effective_sha256: 7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4
+  effective_sha256: e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532
   allow_trial: true
 objective: full_lpf
 definition:

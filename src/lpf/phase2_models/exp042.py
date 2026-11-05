@@ -117,7 +117,7 @@ def policy_and_seed():
     assert reg["trial"]["RF-T005"]["base_constraint_id"]=="RF-F003"
     p=json.loads((ROOT/"rf/constraints/formal/RF-F003.json").read_text())
     assert p["components"]["IC_VARIABLE_C"]["q"]==35
-    assert p["components"]["IC_VARIABLE_C"]["max_total_variable_pf_per_branch"]==3
+    assert p['components']['IC_VARIABLE_C']['bounds']['max']==3
     assert p["coupling_limits"]["chip_chip_strong_adjacent_abs_k_max"]==.1
     assert p["external_port_parasitics"]["status"]=="mandatory_fixed_precomputed_touchstone_S2P"
     doc=json.loads((HERE/"preliminary_js_5pt.json").read_text())

@@ -90,15 +90,15 @@ class GenericStartsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Zero value'):
             multiplier_interval([0.], [(0., 3.)], [True])
         p, x = self.fixture()
-        # GJM zero is not deleted: allowed ONLY by the existing exploration gate.
+        # #307: GJM zero needs topology redefinition, never an exploration bypass.
         x[3] = 0.
         with patch.object(type(p.evaluator), 'il', mock_il):
             with self.assertRaises(StartSelectionError) as cm:
                 self.generate(p, x)
             self.assertEqual(cm.exception.report['cost']['RF_forward_calls'], 0)
-            a = self.generate(p, x, for_exploration=True)
-        self.assertTrue(a['candidate_promotion_blocked'])
-        self.assertEqual(a['starts'][0]['vector'][3], 0.)
+            with self.assertRaises(StartSelectionError):
+                self.generate(p, x, for_exploration=True)
+        x[3] = 1.
         # No epsilon: a multiplier sampled at an open zero boundary is rejected.
         bounds = list(p.box.bounds)
         bounds[0] = (0., bounds[0][1])

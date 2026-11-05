@@ -60,37 +60,11 @@ class VersionedConstraintsTests(unittest.TestCase):
     def test_authorized_trial_is_explicit_and_resolved_from_fixed_formal(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            directory = root / "rf/constraints/formal"
-            directory.mkdir(parents=True)
-            (directory / "RF-F001.json").write_text(
-                (ROOT / "rf/constraints/formal/RF-F001.json").read_text())
-            trial_dir = root / "rf/constraints/trial"
-            trial_dir.mkdir(parents=True)
-            trial = {
-                "constraint_id": "RF-T001", "status": "trial",
-                "base_constraint_id": "RF-F001", "study_authorized": True,
-                "study_variable_c_layout": {"branch_count": 3,
-                                            "shunt_to_ground": 3,
-                                            "non_ground_bridge": 0},
-                "overrides": {"components": {
-                    "IC_VARIABLE_C": {"max_branches_principle": 3}}}
-            }
-            (trial_dir / "RF-T001.json").write_text(json.dumps(trial))
-            registry = {
-                "schema_version": 1, "active_formal_id": "RF-F001",
-                "formal": {"RF-F001": {
-                    "file": "data/constraints/formal/RF-F001.json", "state": "approved",
-                    "effective_constraint_sha256": constraint_fingerprint(load_constraint("RF-F001"))}},
-                "trial": {"RF-T001": {
-                    "file": "data/constraints/trial/RF-T001.json",
-                    "state": "study_authorized", "base_constraint_id": "RF-F001"}}
-            }
-            (root / "rf/constraints/registry.json").write_text(
-                json.dumps(registry))
+            shutil.copytree(ROOT / 'rf/constraints', root / 'rf/constraints')
             with self.assertRaises(ValueError):
-                load_constraint("RF-T001", root=root)
+                load_constraint('RF-T005', root=root)
             formal = load_constraint(root=root)
-            resolved = load_constraint("RF-T001", root=root, allow_trial=True)
+            resolved = load_constraint('RF-T005', root=root, allow_trial=True)
             self.assertEqual(formal["components"]["IC_VARIABLE_C"]
                              ["max_branches_principle"], 2)
             self.assertEqual(resolved["components"]["IC_VARIABLE_C"]
@@ -124,8 +98,11 @@ class VersionedConstraintsTests(unittest.TestCase):
     def test_trials_are_not_automatically_adopted(self):
         with self.assertRaises(ValueError):
             load_constraint("RF-T001")
-        self.assertEqual(load_constraint("RF-T001", allow_trial=True)["active_constraint_status"], "trial")
-        self.assertEqual(load_constraint("RF-T002", allow_trial=True)["active_constraint_status"], "trial")
+        self.assertEqual(load_constraint('RF-T005', allow_trial=True)['active_constraint_status'], 'trial')
+        self.assertEqual(load_constraint('RF-T008', allow_trial=True)['active_constraint_status'], 'trial')
+        # Retired IDs are archive-only, not an implicit old-schema parser.
+        with self.assertRaises(ValueError):
+            load_constraint('RF-T001', allow_trial=True)
         with self.assertRaises(ValueError):
             load_constraint("RF-F000")
         self.assertEqual(load_constraint()["active_constraint_id"],

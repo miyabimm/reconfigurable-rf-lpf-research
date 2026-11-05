@@ -17,5 +17,6 @@
       }
     }
   },
-  "validation_notes": "Only maximum branch count 2->3 is overridden. All other RF-F003 fields including S2P/50-ohm normalization, source/load, 3pF and Q35, coupling and pass/stopbands are inherited unchanged. Explicit allow_trial=True opt-in; max three independent branches, not exactly three. C=0 series state is open. Do not activate as formal without separate owner approval."
+  "validation_notes": "Only maximum branch count 2->3 is overridden. All other RF-F003 fields including S2P/50-ohm normalization, source/load, 3pF and Q35, coupling and pass/stopbands are inherited unchanged. Explicit allow_trial=True opt-in; max three independent branches, not exactly three. C=0 series state is open. Do not activate as formal without separate owner approval.",
+  "schema_version": 2
 }

@@ -42,8 +42,8 @@ def validate_pcb_pattern_caps(values_pf, q_values=None):
     if len(values)>spec['max_count']:
         raise ValueError('PCB pattern C count exceeds maximum')
     if any(not isinstance(c,(float,int)) or not math.isfinite(c)
-           or c<spec['min_pf_per_component']
-           or c>spec['max_pf_per_component'] for c in values):
+           or c<spec['bounds']['min']
+           or c>spec['bounds']['max'] for c in values):
         raise ValueError('PCB pattern C outside approved range or invalid')
     if q_values is not None:
         qs=tuple(q_values)

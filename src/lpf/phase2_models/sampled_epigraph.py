@@ -11,6 +11,7 @@ import numpy as np
 from .api import NominalCircuit, build_nominal_circuit
 from .problem_seed import circuit_box, make_seed
 from ._grid import CASES
+from lpf.search.performance import harmonic_limit_db
 
 
 # Numerical search margin only; never an RF acceptance tolerance.
@@ -44,7 +45,7 @@ class SampledEpigraph:
         self.box = circuit_box(circuit, gjm_search_max_pf=gjm_search_max_pf)
         self.gjm_search_max_pf = gjm_search_max_pf
         self.mandatory_stop_db = float(
-            policy["evaluation"]["full_phase2"]["minimum_h2_h3_db"]
+            harmonic_limit_db(policy)
         )
         if not np.isfinite(self.mandatory_stop_db):
             raise ValueError("Invalid mandatory stopband limit")

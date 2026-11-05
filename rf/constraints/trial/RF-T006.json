@@ -10,24 +10,32 @@
     "count_policy": "up_to",
     "connection_policy": "any_allowed"
   },
-  "overrides": {},
-  "study_additional_stopband": {
-    "low_hz": 3000000000,
-    "high_hz": 6000000000,
-    "sample_step_hz": 1000000,
-    "include_endpoints": true,
-    "min_attenuation_db": 20,
-    "settings": [
-      "B71",
-      "B12",
-      "B28",
-      "B13+B14",
-      "B26",
-      "B8"
-    ],
-    "metric": "-10log10(Pload/Pavs)",
-    "reference_planes": "external_input_to_external_output",
-    "applicable_objective": "full_lpf"
+  "overrides": {
+    "evaluation": {
+      "performance": {
+        "additional_stopbands": [
+          {
+            "low_hz": 3000000000,
+            "high_hz": 6000000000,
+            "sample_step_hz": 1000000,
+            "include_endpoints": true,
+            "min_attenuation_db": 20,
+            "settings": [
+              "B71",
+              "B12",
+              "B28",
+              "B13+B14",
+              "B26",
+              "B8"
+            ],
+            "metric": "-10log10(Pload/Pavs)",
+            "reference_planes": "external_input_to_external_output",
+            "applicable_objective": "full_lpf"
+          }
+        ]
+      }
+    }
   },
-  "validation_notes": "No other RF-F003 override: two independent 0..3pF Q35 Cv branches, fixed input/output S2P, 50ohm source, 60-j40ohm load, 30dB mandatory H2/H3 on data/bands.csv and 35dB nominal target are inherited. New 3..6GHz attenuation requirement is checked at all 3001 points per setting on the frozen 1MHz S2P grid (including 3 and 6 GHz); finite-grid compliance does not establish continuous-frequency or physical robustness. Never mix with RF-T005 3-Cv trial. Requires allow_trial=True."
+  "validation_notes": "No other RF-F003 override: two independent 0..3pF Q35 Cv branches, fixed input/output S2P, 50ohm source, 60-j40ohm load, 30dB mandatory H2/H3 on data/bands.csv and 35dB nominal target are inherited. New 3..6GHz attenuation requirement is checked at all 3001 points per setting on the frozen 1MHz S2P grid (including 3 and 6 GHz); finite-grid compliance does not establish continuous-frequency or physical robustness. Never mix with RF-T005 3-Cv trial. Requires allow_trial=True.",
+  "schema_version": 2
 }

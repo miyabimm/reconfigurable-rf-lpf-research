@@ -8,6 +8,7 @@ EM, continuous-frequency extremum, or independent MNA is performed here.
 import math
 
 from .port_parasitics import external_transducer_gain
+from .search.performance import additional_stopband as required_stopband, harmonic_limit_db, limit_db
 
 
 def evaluate_trial_additional_stopband(policy, make_lpf_abcd):
@@ -16,7 +17,7 @@ def evaluate_trial_additional_stopband(policy, make_lpf_abcd):
     The caller must *not* pass a whole-system ABCD matrix: the two immutable
     parasitic S2Ps are cascaded inside external_transducer_gain.
     """
-    spec = policy.get("trial_additional_stopband")
+    spec = required_stopband(policy)
     if (policy.get("active_constraint_status") != "trial"
             or not isinstance(spec, dict)
             or spec.get("applicable_objective") != "full_lpf"):
@@ -67,9 +68,10 @@ def summarize_full_lpf_trial_feasibility(policy, *, worst_il_db, min_h2_db,
     for val in (worst_il_db, min_h2_db, min_h3_db):
         if type(val) not in (int, float) or not math.isfinite(val):
             raise ValueError("Full-LPF metrics must be finite")
-    full = policy["evaluation"]["full_phase2"]
-    inherited_ok = min_h2_db >= full["minimum_h2_h3_db"] and min_h3_db >= full["minimum_h2_h3_db"]
-    extra_spec = policy.get("trial_additional_stopband")
+    mandatory = harmonic_limit_db(policy)
+    nominal = harmonic_limit_db(policy, 'nominal')
+    inherited_ok = min_h2_db >= mandatory and min_h3_db >= mandatory
+    extra_spec = required_stopband(policy)
     if extra_spec is not None:
         if (not isinstance(additional_stopband, dict)
                 or additional_stopband.get("constraint_id") != policy["active_constraint_id"]
@@ -120,9 +122,8 @@ def summarize_full_lpf_trial_feasibility(policy, *, worst_il_db, min_h2_db,
         "h2_h3_mandatory_pass": inherited_ok,
         "additional_stopband_mandatory_pass": wideband_ok,
         "mandatory_finite_grid_pass": inherited_ok and wideband_ok is not False,
-        "nominal_il_goal_pass": worst_il_db <= full["nominal_max_il_db"],
+        "nominal_il_goal_pass": worst_il_db <= limit_db(policy, 'il_db', 'nominal'),
         "nominal_h2_h3_goal_pass": (
-            min_h2_db >= full["nominal_h2_h3_target_db"]
-            and min_h3_db >= full["nominal_h2_h3_target_db"]),
+            min_h2_db >= nominal and min_h3_db >= nominal),
         "continuous_band_proven": False,
     }
