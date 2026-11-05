@@ -88,7 +88,7 @@ def new_manifest(experiment_id, purpose, search_scope, *, objective, seed,
     return manifest
 
 
-def validate_manifest(manifest, *, root=ROOT, verify_evidence=True):
+def validate_manifest(manifest, *, root=ROOT, verify_evidence=True, allow_archived=False):
     """Validate provenance and resolve versioned policies again to detect drift."""
     if not isinstance(manifest, dict):
         raise ValueError("Manifest must be an object")
@@ -121,7 +121,18 @@ def validate_manifest(manifest, *, root=ROOT, verify_evidence=True):
     elif c["class"] in {"formal", "trial"}:
         if not isinstance(c["constraint_id"], str) or manifest["objective"] in {"mixed", "unknown"}:
             raise ValueError("Versioned runs require a constraint ID and separate evaluation objective")
-        resolved = load_constraint(c["constraint_id"], root=root, allow_trial=c["class"] == "trial")
+        from .constraint_history import archived_binding
+        binding = (archived_binding(c['constraint_id'], c['effective_constraint_sha256'], root=root)
+                   if allow_archived else None)
+        if binding is not None:
+            if (binding != {'class': c['class'], 'base_constraint_id': c['base_constraint_id']}
+                    or not isinstance(c['effective_constraints'], dict)
+                    or constraint_fingerprint(c['effective_constraints']) != c['effective_constraint_sha256']):
+                raise ValueError('Historical manifest RF evidence binding mismatch')
+            # Already-saved resolved evidence, not old-schema execution/parsing.
+            resolved = c['effective_constraints']
+        else:
+            resolved = load_constraint(c['constraint_id'], root=root, allow_trial=c['class'] == 'trial')
         if (resolved["active_constraint_status"] != c["class"] or
                 resolved.get("trial_base_constraint_id") != c["base_constraint_id"] or
                 c["effective_constraints"] != resolved or
@@ -171,7 +182,12 @@ def validate_manifest(manifest, *, root=ROOT, verify_evidence=True):
     for item in manifest["evidence"]:
         if not isinstance(item, dict) or set(item) != {"path", "sha256"} or not _sha(item["sha256"]):
             raise ValueError("Invalid evidence record")
-        path = repository_file(root, item["path"])
+        path = repository_file(root, item['path'])
+        if allow_archived:
+            from .constraint_history import archived_evidence_file
+            archived = archived_evidence_file(item['path'], item['sha256'], root=root)
+            if archived is not None:
+                path = archived
         if item["path"] in seen:
             raise ValueError("Duplicate evidence path")
         seen.add(item["path"])
@@ -225,7 +241,7 @@ def audit_provenance(*, root=ROOT):
                 from .legacy_manifest_adapter import legacy_exp047_index_view
                 m = legacy_exp047_index_view(root=root)
             else:
-                m = validate_manifest(raw_manifest, root=root)
+                m = validate_manifest(raw_manifest, root=root, allow_archived=True)
             if m["experiment_id"] != directory.name:
                 raise ValueError("Manifest/directory identity mismatch")
             manifests.append((path.relative_to(root).as_posix(), m))
@@ -253,9 +269,14 @@ def audit_provenance(*, root=ROOT):
                     if source and source not in registry.get("historical", {}):
                         raise ValueError(f"Unknown historical registry reference: {cid}")
                 elif kind in {"formal", "trial"}:
-                    policy = load_constraint(policy_id, root=root, allow_trial=kind == "trial")
-                    if (not policy_id or policy["active_constraint_status"] != kind or
-                            digest != constraint_fingerprint(policy) or row["spec_id"] != policy_id):
+                    from .constraint_history import archived_binding
+                    binding = archived_binding(policy_id, digest, root=root)
+                    if binding is None:
+                        policy = load_constraint(policy_id, root=root, allow_trial=kind == 'trial')
+                        valid = policy['active_constraint_status'] == kind and digest == constraint_fingerprint(policy)
+                    else:
+                        valid = binding['class'] == kind
+                    if not policy_id or not valid or row['spec_id'] != policy_id:
                         raise ValueError(f"Candidate constraint fingerprint/identity mismatch: {cid}")
                     if not ref:
                         raise ValueError(f"Versioned candidate requires experiment manifest: {cid}")

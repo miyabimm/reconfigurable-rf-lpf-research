@@ -14,7 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from src.lpf.experiment_manifest import audit_provenance
+from src.lpf.experiment_manifest import audit_provenance, validate_manifest
+from src.lpf.constraint_history import archived_formal_evidence
 from src.lpf.constraint_versions import load_constraint, validate_registry, rf_input_file
 CASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")
 REQUIRED_BASELINES = {"LPF-007", "LPF-008"}
@@ -115,16 +116,25 @@ def audit(detail=False):
             if not math.isfinite(area) or area < 0:
                 issues.append(f"Candidate area cap exceeded: {name}")
             variable_caps = item["topology"]["variable_caps"]
-            bound_policy = (load_constraint("RF-F001") if row.get("constraint_class") == "historical"
-                            else load_constraint(row["constraint_id"],
-                                                 allow_trial=row.get("constraint_class") == "trial"))
-            cpolicy = bound_policy["components"]["IC_VARIABLE_C"]
+            if row.get('constraint_class') == 'historical':
+                bound_policy = archived_formal_evidence('RF-F001', None, root=ROOT)
+            else:
+                saved = json.loads((ROOT/row['manifest']).read_text())
+                validate_manifest(saved, root=ROOT, allow_archived=True)
+                bound_policy = saved['constraints']['effective_constraints']
+                if saved['constraints']['effective_constraint_sha256'] != row['effective_constraint_sha256']:
+                    raise ValueError('Candidate historical evidence binding mismatch')
+            cpolicy = bound_policy['components']['IC_VARIABLE_C']
+            if bound_policy.get('schema_version') == 2:
+                low, high = cpolicy['bounds']['min'], cpolicy['bounds']['max']
+            else:
+                # Inspect original saved evidence, never execute an old RF model.
+                low, high = cpolicy['min_total_variable_pf_per_branch'], cpolicy['max_total_variable_pf_per_branch']
             if len(variable_caps) > cpolicy["max_branches_principle"]:
                 issues.append(f"Candidate variable C count exceeded: {name}")
             for cap in variable_caps:
                 if (cap["b"] != 0 or cap["Q"] != cpolicy["q"] or
-                    cap["min_pF"] < cpolicy["min_total_variable_pf_per_branch"] or
-                    cap["max_pF"] > cpolicy["max_total_variable_pf_per_branch"]):
+                    cap['min_pF'] < low or cap['max_pF'] > high):
                     issues.append(f"Candidate variable C policy mismatch: {name}")
             settings = item["ic_variable_C_pf_by_setting"]
             if set(settings) != set(CASES):
@@ -132,8 +142,7 @@ def audit(detail=False):
             for case, cc in settings.items():
                 if len(cc) != len(variable_caps) or any(
                     not math.isfinite(float(v)) or
-                    float(v) < cpolicy["min_total_variable_pf_per_branch"] or
-                    float(v) > cpolicy["max_total_variable_pf_per_branch"] for v in cc
+                    float(v) < low or float(v) > high for v in cc
                 ):
                     issues.append(f"Candidate variable C values invalid: {name}/{case}")
             if row["evidence"] != "candidates/" + name + ".json":

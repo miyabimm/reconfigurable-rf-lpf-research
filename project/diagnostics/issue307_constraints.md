@@ -122,7 +122,23 @@ plan SHA: `0f8ea261835139154cf145c93ef3c9d362599d18ae402f65471b56b0b8380fbd`。
   未立証seriesを部品PASSとして残す期待は共通gateでの拒否へ変更し、独立MNA/RF/受動性検査は削除していない。
 - 旧SHAを固定していた現役fixtureと決定的Sobol期待値は新bounds/新policy SHAへ更新。
   過去EXPのvector/manifest/順位/検証statusは更新しない。
-- 全リポジトリdiscover、完全な研究証拠監査、全CI、旧ID/旧API/全歴史solverの回帰は**未実施**。
+- 全リポジトリdiscover、完全な研究証拠監査、全CI、旧ID/旧API/全歴史solverの回帰は**未完了**。
   歴史用scripts/testsの現役loaderによる旧ID再実行は互換保証しない。
 - 実回路dense認定、新RFコアのS/APL/RL、EM、SRF、Q(f)、ばらつき・測定は未実施。
 - Draft PRを維持し、全DoD・全回帰PASSやマージ承認とは扱わない。ChatGPT独立レビューとCI確認が必要。
+
+## CIで判明した履歴監査の修正
+
+初回push後のCIはsparse RFがPASS、通常smokeが`test_exp047_legacy_manifest_adapter`でFAIL。
+旧EXPのID/旧SHAを現役loaderで照合していたためであり、過去manifestを現役SHAへ書き換えていない。
+
+- `constraint_history.py`は**read-only証拠照合専用**。archive原byte SHA、旧実効SHA、formal/trial/親子を検査する。
+  旧trialのoverride解決・旧schema変換・新実行へのpolicy供給は行わない。
+- `audit_provenance`だけが`validate_manifest(..., allow_archived=True)`を明示して、保存済み完全effective JSONのSHAを履歴表へ照合する。
+  既定validation、`new_manifest`、`write_manifest`と現役loaderは旧版を新実行として受理しない。
+- 過去manifest内の`data/constraints/...`証拠SHAはarchive原byteで検査し、旧symlink/現役移行JSONへの誤照合を止める。
+- EXP-047のindex-only viewと`audit_results`の保存候補照合も履歴証拠を参照。元manifest/vector/indexを変更しない。
+- `test_exp047_legacy_manifest_adapter test_experiment_provenance test_audit`: **21件PASS**（2.739秒）。
+  新旧SHA分離、旧版の新実行拒否、archive改竄拒否、現役approval/identity/非有限値検査も含む。
+
+全CIの最終状態はPR上の最新HEADのchecksを参照し、PASSと推測しない。
