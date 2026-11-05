@@ -77,5 +77,6 @@ jobs:
             test_issue307_snapshot_equivalence \
             test_issue307_constraints \
             test_issue309_rf_core \
+            test_issue311_performance \
             test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints \
             test_pi_sparse_rf
