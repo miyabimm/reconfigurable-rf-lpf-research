@@ -38,9 +38,8 @@ class RFT008CapacitorLayout:
     Parameter-vector order is [fixed PCB/GJM, fixed IC, six-setting variable IC].
     The caller keeps the L/k fields and their parameter positions.
 
-    The historical GJM optimization lower bound (0.02 pF) may be
-    explicitly supplied as a study bound; by default it is NOT applied
-    to the formal component-policy validator.
+    An explicit study lower bound must narrow the JSON-owned closed interval;
+    historical open/0.02 pF GJM floors are not current physical limits.
     """
 
     placement: CapacitorPlacement
@@ -143,8 +142,7 @@ class RFT008CapacitorLayout:
                 not np.all(np.isfinite(v))):
             raise ValueError("Invalid fixed/IC/setting C vector shape or values")
         for index, (value, (lo, hi)) in enumerate(zip(f, self.fixed_bounds_pf)):
-            if not lo <= value <= hi or (
-                    index in self.gjm_positions and value <= 0 and not allow_absent_gjm):
+            if not lo <= value <= hi:
                 raise ValueError("Fixed C value outside layout bounds")
         variable = policy_edges(self.placement.variable_edges,
                                 roles=self.variable_roles)
