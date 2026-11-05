@@ -91,7 +91,7 @@ OPENBLAS_NUM_THREADS=1 PYTHONPATH=tests uv run --frozen python -m unittest test_
 
 新規6テスト内で次を実行：
 
-- 5条件×canonical全28区間×2端点（280 sample）：shape/dtype、格子identity、既存ABCD IL parity、独立MNA全指標。
+- 5条件×canonical全28区間×2端点（280 sample）：shape/dtype、格子identity、既存ABCD IL parity、独立MNA全指標。6設定のCvは異なる値、chip/PCBの結合には非ゼロの正負kを使用。
 - T008全6設定×28個別区間×2端点（336 sample）：cross-settingの独立MNA監査。
 - T006全6設定×3/6 GHz両端（12 sample）：S2P利用と独立MNA、6 GHz超外挿拒否。
 - 解析through/抵抗、GT≠GA、複素参照共役/受動性/電力、厳密零点とunderflow回避、特異性、S2P改竄、非SPD、不一致・非受動、未知/旧policy、series role拒否。
@@ -100,6 +100,13 @@ OPENBLAS_NUM_THREADS=1 PYTHONPATH=tests uv run --frozen python -m unittest test_
 通常smokeは`.github/workflows/audit.yml`の通常実行run steps（手動integrationを除く）、
 sparseは`.github/workflows/pi-sparse-rf.yml`のRFテストで再現。
 新テストを両CIへ登録。新EXP・本番探索・dense/連続帯域保証は実行しない。
+
+実行結果：通常smokeの全通常run stepが成功（60 unittest呼出し、合計429 tests中428成功・1 skip）。
+既存のopt-in `test_phase2_real_scipy_smoke.RealScipySmoke.test_one_existing_legal_start`は既定どおり未実施。
+read-only保存監査も成功。手動integrationは未実施。
+別のdetached worktreeで実際にcone sparse checkoutを構築し、docs/data/experimentsの不存在を確認して
+sparse CIの全テストを実行、21 tests成功。追加した設定差・符号付き結合テストも再実行して成功。
+検証はローカル実行であり、GitHub CIとChatGPT独立レビューは別途PR上で確認する。
 
 ## 対象effective SHA（変更なし）
 

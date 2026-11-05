@@ -32,6 +32,8 @@ class RFCoreTests(unittest.TestCase):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             with self.subTest(cid=cid):
                 p, d, legacy, _, x = make(cid)
+                x[10], x[13] = .03, -.04  # nonzero signed chip/PCB mutuals
+                x[-6*legacy.schema.n_variable:] = np.linspace(.2, 2.8, 6*legacy.schema.n_variable)
                 model = build_rf_model(d, p)
                 g = grid(p)
                 evaluator = model.evaluator(g)
@@ -69,6 +71,8 @@ class RFCoreTests(unittest.TestCase):
 
     def test_all_six_settings_on_each_separate_interval(self):
         p, d, _, _, x = make('RF-T008')
+        x[-12:] = np.linspace(.2, 2.8, 12)  # distinct values for all six rows
+        x[10], x[13] = .03, -.04
         model = build_rf_model(d, p)
         canonical = grid(p)
         g = EvaluationGrid(np.tile(canonical.frequency_hz, 6),
