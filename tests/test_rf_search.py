@@ -325,7 +325,9 @@ class SearchTests(unittest.TestCase):
         self.assertIsNone(m.last)
 
     def test_dependency_boundary(self):
-        allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf', 'coupled_lc'}
+        # Stage 3 reuses only _grid's canonical band-row validator/setting order;
+        # no legacy evaluator or optimizer is used by the new performance path.
+        allowed = {'api', 'circuit_layout', 'nominal_inductors', 'independent_rf', 'coupled_lc', '_grid'}
         for path in (ROOT / 'src/lpf/search').glob('*.py'):
             for node in ast.walk(ast.parse(path.read_text())):
                 if isinstance(node, ast.ImportFrom) and node.module and 'phase2_models' in node.module:
