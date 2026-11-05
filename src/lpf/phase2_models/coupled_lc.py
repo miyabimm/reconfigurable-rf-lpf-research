@@ -257,6 +257,25 @@ class CoupledLCTopology:
             )
         return Y
 
+    def port_admittance(self, values, omega_rad_s, setting_indices):
+        """Shared forward Schur reduction; never used by independent MNA."""
+        Y = self.node_admittance(values, omega_rad_s, setting_indices)
+        ports = (self.inductor_tree.source_node, self.inductor_tree.load_node)
+        middle = tuple(i for i in range(self.inductor_tree.node_count) if i not in ports)
+        R = Y[:, ports, :][:, :, ports]
+        if middle:
+            U = Y[:, ports, :][:, :, middle]
+            V = Y[:, middle, :][:, :, ports]
+            E = Y[:, middle, :][:, :, middle]
+            try:
+                R = R - U @ np.linalg.solve(E, V)
+            except np.linalg.LinAlgError as exc:
+                raise CircuitNumericalError('schur_solve_failed', 'Internal-node Schur solve failed') from exc
+        if not np.all(np.isfinite(R)):
+            raise CircuitNumericalError('schur_nonfinite', 'Non-finite port admittance',
+                sample_index=int(np.flatnonzero(~np.all(np.isfinite(R), axis=(1, 2)))[0]))
+        return R
+
 
 def _fixed_port_impedance(policy, key):
     """Load exact source/load values from the resolved RF policy, never guess."""
@@ -301,32 +320,7 @@ class CoupledLCEvaluator(SampledExternalEvaluator):
             values = vector
         else:
             values = self.schema.decode(vector)
-        Y = self.topology.node_admittance(values, self.omega, self.setting)
-        ports = (self.topology.inductor_tree.source_node,
-                 self.topology.inductor_tree.load_node)
-        middle = tuple(i for i in range(self.topology.inductor_tree.node_count)
-                       if i not in ports)
-        if not middle:
-            R = Y[:, ports, :][:, :, ports]
-        else:
-            P = Y[:, ports, :][:, :, ports]
-            U = Y[:, ports, :][:, :, middle]
-            V = Y[:, middle, :][:, :, ports]
-            E = Y[:, middle, :][:, :, middle]
-            try:
-                R = P - U @ np.linalg.solve(E, V)
-            except np.linalg.LinAlgError as exc:
-                raise CircuitNumericalError(
-                    "schur_solve_failed",
-                    "Internal-node Schur solve singular or ill-conditioned"
-                ) from exc
-        if not np.all(np.isfinite(R)):
-            raise CircuitNumericalError(
-                "schur_nonfinite", "Non-finite reduced two-port admittance",
-                sample_index=int(np.flatnonzero(
-                    ~np.all(np.isfinite(R), axis=(1, 2))
-                )[0])
-            )
+        R = self.topology.port_admittance(values, self.omega, self.setting)
         a, b, c, d = R[:, 0, 0], R[:, 0, 1], R[:, 1, 0], R[:, 1, 1]
         bad_transfer = np.flatnonzero(np.abs(c) < 1e-21)
         if bad_transfer.size:
