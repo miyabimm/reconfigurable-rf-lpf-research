@@ -134,7 +134,7 @@ plan SHA: `0f8ea261835139154cf145c93ef3c9d362599d18ae402f65471b56b0b8380fbd`。
 
 - `constraint_history.py`は**read-only証拠照合専用**。archive原byte SHA、旧実効SHA、formal/trial/親子を検査する。
   旧trialのoverride解決・旧schema変換・新実行へのpolicy供給は行わない。
-- `audit_provenance`だけが`validate_manifest(..., allow_archived=True)`を明示して、保存済み完全effective JSONのSHAを履歴表へ照合する。
+- 履歴provenanceのread-only監査が`validate_manifest(..., allow_archived=True)`を明示して、保存済み完全effective JSONのSHAを履歴表へ照合する。
   既定validation、`new_manifest`、`write_manifest`と現役loaderは旧版を新実行として受理しない。
 - 過去manifest内の`data/constraints/...`証拠SHAはarchive原byteで検査し、旧symlink/現役移行JSONへの誤照合を止める。
 - EXP-047のindex-only viewと`audit_results`の保存候補照合も履歴証拠を参照。元manifest/vector/indexを変更しない。
@@ -142,3 +142,26 @@ plan SHA: `0f8ea261835139154cf145c93ef3c9d362599d18ae402f65471b56b0b8380fbd`。
   新旧SHA分離、旧版の新実行拒否、archive改竄拒否、現役approval/identity/非有限値検査も含む。
 
 全CIの最終状態はPR上の最新HEADのchecksを参照し、PASSと推測しない。
+
+## Push復旧と通常smoke後続ステップの確認
+
+- 未pushだった`e74023fc28c6fcf07c18edcb8edaf41d74acf978`を再確認し、通常pushで公開HEADとの一致を確認した。
+  force push・履歴改変・ルール迂回なし。mainは再fetch後も`e1a1c883d449a9378eb9bf2e20c01d5e972afadd`。
+- 同HEADのsparse CI (`42061978798`)はPASS、通常smoke (`42061978893`)はDE previewの旧期待値でFAIL。
+- DE previewに残っていたT008 explorationのGJMゼロ許可を除去し、通常の共通bounds/部品gateに統一。
+  決定的populationのhash期待値だけを更新し、ゼロGJM・未立証seriesはRF forward前に拒否するテストへ変更した。
+- 通常smokeの後続もローカルで実行し、退役IDを使う旧テストは原JSONの履歴照合／新実行拒否と、
+  現役F003/T005/T007による同等の接続・bounds・隣接結合・独立MNA検査へ分離した。
+  現役の「最大3枝／接続自由」と旧trialの「正確に3枝／固定内訳」を混同しない。
+- catalogの保存済みID/SHA照合とstorageの`mode='audit'`だけが明示的な履歴監査経路を使う。
+  storage preflight/finalizeは現役validationのまま。auditだけのopt-inを回帰テストで固定した。
+  新規manifest・現役loaderで旧ID/旧SHAを許可する変更はない。
+- W1/旧aliasの原byte保護テストは、移行済みRFについてarchive原JSONとGitの固定baseline blobを比較する。
+  過去EXPやaliasを書き換えず、仕様文書の退役IDリンクだけをarchiveへ修正した。
+- `.github/workflows/audit.yml`の**通常smoke全ステップのrunコマンド**をローカルで順に実行しPASS
+  （手動integrationステップは未実行）。前半〜runner safetyは`/tmp/307-local-smoke2.log`、
+  文書リンク修正後の文書検査〜最後のshared primitivesは`/tmp/307-local-smoke-tail.log`。
+  storage read-only auditもPASS。`git diff --check` PASS。
+- `data/`・`experiments/`のmanifest/index/vector/checkpoint変更なし。新EXP、本番探索、RF条件の追加変更なし。
+  上記ローカル結果は公開CIの代用ではない。追加修正push後の通常smoke/sparse CIをPRで確認し、
+  Draft維持のままChatGPT独立レビューへ提出する。全repository discover、手動integration、完全履歴監査は未実施。

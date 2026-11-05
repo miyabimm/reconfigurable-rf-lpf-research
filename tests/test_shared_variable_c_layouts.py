@@ -35,8 +35,8 @@ class SharedVariableCLayoutTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             shared_inductor_types("unknown")
 
-    def test_f001_legacy_trial_shapes_and_deterministic_cap(self):
-        for id in ("RF-F001", "RF-T001", "RF-T002"):
+    def test_current_formal_trial_shapes_and_deterministic_cap(self):
+        for id in ('RF-F003', 'RF-T005', 'RF-T007'):
             with self.subTest(id=id):
                 policy = load_constraint(id, allow_trial=id.startswith("RF-T"))
                 all_rows = shared_layouts(self.graph, policy)

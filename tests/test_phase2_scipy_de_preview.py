@@ -47,11 +47,11 @@ class DEPreviewTests(unittest.TestCase):
         meter = EvaluationCost()
         expanded = self.generate(meter)
         self.assertEqual(legacy['starts'], expanded['starts'][:3])
-        # Captured from main da24d404, not regenerated as the expectation.
+        # Deterministic starts under #307 closed bounds, not historical replay.
         self.assertEqual([s['vector_sha256'] for s in legacy['starts']], [
             'b6a098b045772b02fee8ed619e5324481ed72cbcf3008cc522783df5009ba591',
-            '2ada66b1b4fd8e42050cdd738f92dd60c795682ee3a4a484293be121a0a74268',
-            '5ee144fcc21a1b4b3f16f87655201208648e8519d37f6fd4925934afe15c47a8'])
+            'ae535ea3b9b6c9f9986a726f7186bbd4548789d24fd5a35cabd058d9223b5dc9',
+            '545b09f059e8d8223055ef065ca521d1a63aafb05c452a54189da92504ec9d83'])
         self.assertEqual(expanded, self.generate())
         self.assertEqual(meter.RF_forward_calls, 6)
         self.assertEqual(meter.frequency_samples_requested, 336)
@@ -66,7 +66,7 @@ class DEPreviewTests(unittest.TestCase):
 
     def test_open_bound_spd_and_insufficient_population_fail_closed(self):
         self.x[3] = 0.
-        with self.assertRaisesRegex(ValueError, 'open lower'):
+        with self.assertRaisesRegex(ValueError, 'Box violation'):
             self.generate()
         self.x[3] = 1.
         with patch.object(type(self.p.circuit), 'validate_components', side_effect=ValueError(
@@ -158,14 +158,12 @@ class DEPreviewTests(unittest.TestCase):
         self.assertEqual(r['termination'], 'wall_limit')
         self.assertIsNotNone(r['best_observed'])
         self.assertEqual(r['evaluation_cost']['wall_seconds'], 100.)  # not double-timed
-        # Role evidence is not a numeric exploration rejection.
+        # Unproven roles must stop before a forward, even in this preview.
         with patch.object(type(self.p.circuit), 'validate_components',
                           return_value={'connection_role_evidence_incomplete': True}):
-            r = self.run_preview(initialize=lambda m: self.generate(
-                m, for_exploration=True))
-        self.assertEqual(r['termination'], 'solver_returned')
-        self.assertEqual(r['evaluation_cost']['role_rejections'], 0)
-        self.assertGreater(r['evaluation_cost']['RF_forward_calls'], 0)
+            r = self.run_preview(initialize=lambda m: self.generate(m))
+        self.assertEqual(r['termination'], 'physical_rejected')
+        self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 0)
 
     def test_other_trials_keep_strict_de_preview(self):
         for policy in ('RF-T005', 'RF-T007'):
@@ -188,36 +186,26 @@ class DEPreviewTests(unittest.TestCase):
         circuit = build_nominal_circuit(
             self.p.circuit.resolved_policy, definition)
         comparison = PhysicalComparison(circuit, 2, cache=True)
-        comparison.evaluate(self.x, for_exploration=True)
-        with self.assertRaisesRegex(ValueError, 'lacks evidence'):
-            comparison.evaluate(self.x)
+        for exploration in (True, False, True):
+            with self.assertRaises(ValueError):
+                comparison.evaluate(self.x, for_exploration=exploration)
         self.assertEqual(comparison.cost.cache_hits, 0)
-        comparison.evaluate(self.x, for_exploration=True)
-        self.assertEqual(comparison.cost.cache_hits, 1)
+        self.assertEqual(comparison.cost.RF_forward_calls, 0)
 
-    def test_zero_gjm_is_only_legal_for_exploration(self):
-        self.x[3] = 0.  # fixed GJM01: zero admittance, absent at final layout
-        with self.assertRaises(ValueError):
-            self.p.circuit.validate_components(self.x)
-        with self.assertRaisesRegex(ValueError, 'open lower'):
-            self.generate()
-        preview = self.p.circuit.validate_components(
-            self.x, allow_absent_gjm=True)
-        self.assertEqual(preview['exploration_absent_gjm_indices'], (0,))
-        self.assertFalse(preview['component_policy_pass'])
-        self.assertIn('absent_gjm_requires_topology_redefinition',
-                      preview['promotion_blockers'])
+    def test_zero_gjm_cannot_bypass_closed_bounds_for_exploration(self):
+        self.x[3] = 0.
         comp = PhysicalComparison(self.p.circuit, 2)
-        with self.assertRaises(ValueError):
-            comp.evaluate(self.x)
-        score = comp.evaluate(self.x, for_exploration=True)
-        self.assertTrue(score.strict_feasible)
-        starts = self.generate(for_exploration=True)
-        self.assertEqual(starts['starts'][0]['vector'][3], 0.)
-        r = self.run_preview(initialize=lambda m: self.generate(
-            m, for_exploration=True))
-        self.assertEqual(r['termination'], 'solver_returned')
-        self.assertIsNotNone(r['best_observed'])
+        for exploration in (False, True):
+            with self.assertRaises(ValueError):
+                self.p.circuit.validate_components(self.x, allow_absent_gjm=exploration)
+            with self.assertRaises(ValueError):
+                comp.evaluate(self.x, for_exploration=exploration)
+            with self.assertRaises(ValueError):
+                self.generate(for_exploration=exploration)
+        self.assertEqual(comp.cost.RF_forward_calls, 0)
+        r = self.run_preview(initialize=lambda m: self.generate(m, for_exploration=True))
+        self.assertEqual(r['termination'], 'failed')
+        self.assertIsNone(r['best_observed'])
 
     def test_unproven_series_role_is_not_a_numeric_exploration_error(self):
         definition = replace(self.p.circuit.definition,
@@ -225,24 +213,17 @@ class DEPreviewTests(unittest.TestCase):
         circuit = build_nominal_circuit(
             self.p.circuit.resolved_policy, definition)
         problem = SampledEpigraph(circuit, 2)
-        self.assertTrue(circuit.validate_components(self.x)[
-            'connection_role_evidence_incomplete'])
         with self.assertRaisesRegex(ValueError, 'role not proven'):
-            generate_starts(problem, self.x, seed=23, count=6)
-        starts = generate_starts(problem, self.x, seed=23, count=6,
-                                 for_exploration=True)
-        self.assertEqual(len(starts['starts']), 6)
-        strict = PhysicalComparison(circuit, 2)
-        with self.assertRaises(ValueError):
-            strict.evaluate(self.x)
-        exploratory = PhysicalComparison(circuit, 2)
-        score = exploratory.evaluate(self.x, for_exploration=True)
-        self.assertTrue(score.strict_feasible)
-        report = circuit.validate_components(self.x)
-        self.assertIn('declared_role_not_proven_by_l_tree',
-                      report['promotion_blockers'])
+            circuit.validate_components(self.x)
+        for exploration in (False, True):
+            with self.assertRaises(ValueError):
+                generate_starts(problem, self.x, seed=23, count=6, for_exploration=exploration)
+            comparison = PhysicalComparison(circuit, 2)
+            with self.assertRaises(ValueError):
+                comparison.evaluate(self.x, for_exploration=exploration)
+            self.assertEqual(comparison.cost.RF_forward_calls, 0)
 
-    def test_de_proposal_at_zero_gjm_is_not_rejected(self):
+    def test_de_proposal_below_gjm_minimum_is_rejected(self):
         from types import SimpleNamespace
 
         def gjm_favors_zero(evaluator, x):
@@ -251,21 +232,18 @@ class DEPreviewTests(unittest.TestCase):
         def solver(objective, bounds, **kw):
             zero = kw['init'][0].copy()
             zero[3] = 0.
-            self.assertEqual(kw['constraints'][0].fun(zero).shape, (2,))
-            self.assertEqual(objective(zero), 0.)
-            return SimpleNamespace(success=True, message='mock solver',
-                                   nit=1, nfev=1)
+            kw['constraints'][0].fun(zero)
+            self.fail('Below-minimum GJM must stop before RF scoring')
 
         with patch.object(type(self.p.evaluator), 'il', gjm_favors_zero), \
              patch('lpf.phase2_models.scipy_de_preview.differential_evolution',
                    solver):
             r = self.run_preview()
-        self.assertEqual(r['termination'], 'solver_returned')
-        self.assertEqual(r['evaluation_cost']['box_rejections'], 0)
-        self.assertEqual(r['evaluation_cost']['component_rejections'], 0)
-        self.assertEqual(r['best_observed']['vector'][3], 0.)
-        self.assertEqual(r['best_observed']['exploration_absent_gjm_indices'], [0])
-        self.assertTrue(r['best_observed']['requires_topology_redefinition'])
+        self.assertEqual(r['termination'], 'physical_rejected')
+        self.assertEqual(r['evaluation_cost']['box_rejections'], 1)
+        self.assertEqual(r['evaluation_cost']['RF_forward_calls'], 6)
+        self.assertGreaterEqual(r['best_observed']['vector'][3], .1)
+        self.assertFalse(r['best_observed']['requires_topology_redefinition'])
         self.assertTrue(r['best_observed']['candidate_promotion_blocked'])
 
     def test_past_rejection_does_not_mask_unrelated_solver_exception(self):

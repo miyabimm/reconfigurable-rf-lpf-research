@@ -19,8 +19,8 @@ from search_space import enumerate_variable_c_layouts
 from coupling_layout import (admissible_matrix,adjacent_patterns,
                              validate_coupling_matrix)
 from functools import partial
-# CouplingPhysicalAdjacencyTests replay the archived RF-F001 model.
-historical=load_constraint('RF-F001')
+# Numerical/physical checks use current RF only, not retired execution IDs.
+historical=load_constraint('RF-F003')
 admissible_matrix=partial(admissible_matrix,resolved_policy=historical)
 adjacent_patterns=partial(adjacent_patterns,resolved_policy=historical)
 validate_coupling_matrix=partial(validate_coupling_matrix,resolved_policy=historical)
@@ -48,10 +48,16 @@ class ExplicitSeriesSearchTests(unittest.TestCase):
 
     def test_series_bounds_and_three_variable_dimensions(self):
         graph=(4,((1,3,'LQP02HV'),(3,2,'LQP02HQ')))
-        np.testing.assert_allclose(bounds_for(graph,variable_count=3,
-                                                      resolved_policy=load_constraint('RF-F001')),
-                                   [(0.4,27),(0.2,56)]+[(0,4)]*18)
-        policy=load_constraint('RF-T001',allow_trial=True)
+        from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
+        from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+        from lpf.search.component_constraints import physical_bounds
+        policy=load_constraint('RF-T005',allow_trial=True)
+        definition = CircuitDefinition(InductorTree(3, ((0,1),(1,2))),
+            ('LQP02HV','LQP02HQ'), (0,1), (),
+            CapacitorPlacement(3, (), ((0,-1),(1,-1),(2,-1))), (), ('shunt_to_ground',)*3)
+        circuit = build_nominal_circuit(policy, definition)
+        np.testing.assert_allclose(physical_bounds(definition, circuit.schema, policy),
+                                   [(0.4,27),(0.2,56)]+[(0,3)]*18)
         layout={'edges':((3,0),(1,0),(2,0)),
                 'roles':(None,None,None)}
         x=np.array([2.0,27.0]+[0.5]*18)
@@ -70,41 +76,44 @@ class PolicyLayoutEnumerationTests(unittest.TestCase):
         self.graph=(5,((1,3,'LQP02HV'),(3,2,'LQP02HQ'),
                        (3,4,'LQP02HV')))
 
-    def test_formal_two_shunts_include_internal_nodes_only(self):
-        policy=load_constraint('RF-F001')
+    def test_formal_layouts_include_internal_nodes_and_closed_count_limit(self):
+        policy=load_constraint('RF-F003')
         layouts=enumerate_variable_c_layouts(self.graph,policy)
         self.assertTrue(layouts)
-        self.assertTrue(all(len(row['edges'])==2 for row in layouts))
-        self.assertTrue(all(all(b==0 for _,b in row['edges']) for row in layouts))
+        self.assertTrue(all(1 <= len(row['edges']) <= 2 for row in layouts))
+        self.assertTrue(any(all(b==0 for _,b in row['edges']) for row in layouts))
         self.assertTrue(any((3,0) in row['edges'] or (4,0) in row['edges']
                             for row in layouts))
         capped=enumerate_variable_c_layouts(self.graph,policy,max_layouts=3)
         indices=[round(i*(len(layouts)-1)/2) for i in range(3)]
         self.assertEqual(capped,[layouts[index] for index in indices])
         self.assertEqual(count_variable_layouts(
-            self.graph,'RF-F001',max_layouts=2),2)
+            self.graph,'RF-F003',max_layouts=2),2)
 
-    def test_trial_t001_and_t002_layout_shapes_and_bridge_bypass(self):
-        t1=load_constraint('RF-T001',allow_trial=True)
-        t2=load_constraint('RF-T002',allow_trial=True)
+    def test_current_three_branch_trials_layout_shapes_and_bridge_bypass(self):
+        t1=load_constraint('RF-T005',allow_trial=True)
+        t2=load_constraint('RF-T007',allow_trial=True)
         layouts1=enumerate_variable_c_layouts(self.graph,t1)
         layouts2=enumerate_variable_c_layouts(self.graph,t2)
         self.assertTrue(layouts1)
         self.assertTrue(layouts2)
-        self.assertTrue(all(len(x['edges'])==3 and x['roles']==(None,None,None)
-                            for x in layouts1))
-        self.assertTrue(all(sum(role=='bridge' for role in x['roles'])==1
+        self.assertTrue(all(1 <= len(x['edges']) <= 3 for x in layouts1))
+        self.assertTrue(any(sum(role=='bridge' for role in x['roles'])==1
                             and sum(0 in edge for edge in x['edges'])==2
                             for x in layouts2))
         self.assertTrue(any(any(a>=3 or b>=3 for a,b in x['edges'][:2])
                             for x in layouts2))
 
     def test_bridge_cannot_be_the_only_fixed_signal_path(self):
-        policy=load_constraint('RF-T002',allow_trial=True)
+        policy=load_constraint('RF-T005',allow_trial=True)
         broken=(5,((1,3,'LQP02HV'),(3,4,'LQP02HQ'),(4,0,'GJM01')))
         # This graph itself lacks a fixed input-to-output connection and cannot
         # provide a bridge layout that bypasses a series-only variable C.
-        self.assertEqual(enumerate_variable_c_layouts(broken,policy),[])
+        layouts = enumerate_variable_c_layouts(broken,policy)
+        # Current trials also enumerate series/shunt proposals, but must not
+        # label a new signal-path closure as an already-fixed-path bridge.
+        self.assertTrue(layouts)
+        self.assertTrue(all('bridge' not in row['roles'] for row in layouts))
 
 
 class CouplingPhysicalAdjacencyTests(unittest.TestCase):
@@ -117,20 +126,20 @@ class CouplingPhysicalAdjacencyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'physical neighbors'):
             validate_coupling_matrix(types,[2e-9]*3,k)
         good=admissible_matrix(types,[2e-9]*3,
-                               chip_edges={frozenset((0,1)):.25})
-        self.assertAlmostEqual(good[0,1],.25)
-        self.assertTrue(any(pattern.get(frozenset((0,1)))==.4
+                               chip_edges={frozenset((0,1)):.1})
+        self.assertAlmostEqual(good[0,1],.1)
+        self.assertTrue(any(pattern.get(frozenset((0,1)))==.1
                             for pattern in adjacent_patterns(types)))
 
 
     def test_nominal_nonstrong_zero_and_explicit_sensitivity_only(self):
-        limits=load_constraint('RF-F001')['coupling_limits']
+        limits=load_constraint('RF-F003')['coupling_limits']
         self.assertEqual(limits['chip_chip_nonstrong_nominal_k'],0)
-        self.assertEqual(limits['chip_chip_nonstrong_abs_k_max'],.1)
+        self.assertEqual(limits['chip_chip_nonstrong_abs_k_max'],.03)
         types=['LQP02HV','LQP02HQ','LQP02HV']
         values=[1e-9,2e-9,3e-9]
         self.assertTrue(validate_coupling_matrix(types,values,np.eye(3)))
-        for value in (.05,-.05,.1,-.1):
+        for value in (.01,-.01,.03,-.03):
             with self.subTest(k=value):
                 matrix=np.eye(3)
                 matrix[0,2]=matrix[2,0]=value
@@ -138,10 +147,10 @@ class CouplingPhysicalAdjacencyTests(unittest.TestCase):
                     validate_coupling_matrix(types,values,matrix)
                 self.assertTrue(validate_coupling_matrix(
                     types,values,matrix,nominal=False))
-        k=np.eye(3);k[0,2]=k[2,0]=.10001
+        k=np.eye(3);k[0,2]=k[2,0]=.03001
         with self.assertRaisesRegex(ValueError,'physical neighbors'):
             validate_coupling_matrix(types,values,k,nominal=False)
-        k=np.eye(3);k[0,1]=k[1,0]=.4
+        k=np.eye(3);k[0,1]=k[1,0]=.1
         self.assertTrue(validate_coupling_matrix(types,values,k))
         with self.assertRaisesRegex(ValueError,'nominal must'):
             validate_coupling_matrix(types,values,k,nominal='false')
@@ -154,7 +163,7 @@ class SearchIndependentValidationTests(unittest.TestCase):
                   (3,4,'LQP02HV'),(3,5,'GJM01')))
         layout={'edges':((4,0),(5,0),(1,3)),
                 'roles':(None,None,'bridge')}
-        policy=load_constraint('RF-T002',allow_trial=True)
+        policy=load_constraint('RF-T005',allow_trial=True)
         x=np.asarray([1.8,35.0,2.2,.7]+[.5]*18)
         result=validate_search_result(
             graph,x,np.eye(3),load_bands(),3,variable_layout=layout,
@@ -168,7 +177,7 @@ class SearchIndependentValidationTests(unittest.TestCase):
     def test_optimizer_validation_compares_instantiated_edges_to_graph_source(self):
         graph=(4,((1,3,'LQP02HV'),(3,2,'LQP02HQ')))
         layout={'edges':((3,0),(1,0)), 'roles':(None,None)}
-        policy=load_constraint('RF-F001')
+        policy=load_constraint('RF-F003')
         original=build_grounded_settings
 
         def wrong_connections(*args,**kwargs):

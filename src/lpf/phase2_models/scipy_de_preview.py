@@ -82,7 +82,6 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
     comparison.cost = meter
     best, last, generated, solver_state = None, None, None, None
     requests = 0
-    explore_t008 = comparison.circuit.policy_id == 'RF-T008'
     reason, error = 'not_started', None
     wall, cpu = time.perf_counter(), time.process_time()
 
@@ -124,7 +123,7 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
             return last[1]
         before_box = meter.box_rejections
         try:
-            score = comparison.evaluate(x, for_exploration=explore_t008)
+            score = comparison.evaluate(x)
         except ValueError as exc:
             if meter.box_rejections > before_box:
                 raise _PhysicalRejected(str(exc)) from exc
@@ -160,16 +159,13 @@ def run_de_preview(comparison, *, initialize, seed, maxiter,
         if len(set(hashes)) != len(hashes) or hashes != [s['vector_sha256'] for s in starts]:
             raise ValueError('Population duplicate or SHA mismatch')
         # SciPy clips explicit init to its closed box. Reject BEFORE it can do so.
-        gjm = {len(circuit.definition.inductor_types) + i
-               for i, kind in enumerate(circuit.definition.fixed_c_types)
-               if kind == 'GJM01'} if explore_t008 else set()
         for x in population:
             if (any(not lo <= v <= hi for v, (lo, hi) in zip(x, bounds)) or
                     any(x[i] <= bounds[i][0]
-                        for i in comparison.box.open_lower if i not in gjm)):
+                        for i in comparison.box.open_lower)):
                 meter.box_rejections += 1
                 raise _PhysicalRejected('Population outside physical box/open endpoint')
-            meter.components(comparison.circuit, x, allow_absent_gjm=explore_t008)
+            meter.components(comparison.circuit, x)
         result = differential_evolution(
             meter.callback(objective), bounds,
             constraints=(NonlinearConstraint(meter.callback(residual, constraint=True), 0., np.inf),),
