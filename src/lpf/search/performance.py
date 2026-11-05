@@ -112,6 +112,7 @@ class Requirements:
     intervals: tuple[Interval, ...]
     limits: tuple[Requirement, ...]
     objective_segments: tuple[int, ...]
+    s2p_span_hz: tuple[float, float]
     fingerprint: str
 
 
@@ -258,10 +259,84 @@ def compile_requirements(policy, bands, mode='full_lpf'):
     if not objective or any(not any(r.interval == i for r in limits) for i in active):
         raise ValueError('Every active interval needs a requirement')
     content = dict(policy_id=policy['active_constraint_id'], policy_fingerprint=constraint_fingerprint(policy),
-                   mode=mode, intervals=tuple(active), limits=tuple(limits), objective_segments=objective)
+                   mode=mode, intervals=tuple(active), limits=tuple(limits), objective_segments=objective,
+                   s2p_span_hz=(span['f_start_hz'], span['f_stop_hz']))
     fingerprint = _digest({k: [asdict(v) for v in value] if k in ('intervals', 'limits') else value
                            for k, value in content.items()})
     return Requirements(**content, fingerprint=fingerprint)
+
+
+# A static allocation safety limit, not a scientific density or budget default.
+MAX_GRID_SAMPLES = 1_000_000
+
+
+def build_evaluation_grid(requirements, points_per_interval):
+    """Freeze interval-major, ascending inclusive samples, without RF forwards.
+
+    The complete Requirements fingerprint is checked before allocation. Overlap
+    between distinct intervals is intentional and never deduplicated. Fixed-step
+    additional intervals keep their JSON density regardless of ordinary points.
+    """
+    from ..rf_core.model import EvaluationGrid
+    from ..phase2_models._grid import CASES
+    req = requirements
+    if not isinstance(req, Requirements):
+        raise ValueError('Compiled Requirements required')
+    content = asdict(req)
+    fingerprint = content.pop('fingerprint')
+    if _digest(content) != fingerprint:
+        raise ValueError('Requirements fingerprint mismatch')
+    if type(points_per_interval) is not int or not 2 <= points_per_interval <= MAX_GRID_SAMPLES:
+        raise ValueError('points_per_interval must be an integer >=2 within allocation limit')
+    if req.mode not in ('full_lpf', 'matching_only'):
+        raise ValueError('Unknown evaluation mode')
+    ordinary = [i for i in req.intervals if i.csv_line is not None]
+    expected = {(case, region, note) for case in CASES
+                for region in (('UL', 'DL', 'H2', 'H3') if req.mode == 'full_lpf' else ('UL', 'DL'))
+                for note in (case.split('+') if '+' in case else ('',))}
+    keys = [(i.case, i.region, i.note) for i in ordinary]
+    if len(keys) != len(expected) or set(keys) != expected:
+        raise ValueError('Missing/duplicate ordinary interval')
+    identities, slots, counts = set(), set(), []
+    lo, hi = req.s2p_span_hz
+    if not (math.isfinite(lo) and math.isfinite(hi) and 0 <= lo < hi):
+        raise ValueError('Invalid S2P span')
+    for i in req.intervals:
+        slot = (i.segment, i.setting)
+        if (i.identity in identities or slot in slots or type(i.segment) is not int or
+                i.segment < 0 or type(i.setting) is not int or not 0 <= i.setting < 6 or
+                i.case != CASES[i.setting] or not math.isfinite(i.low_hz) or
+                not math.isfinite(i.high_hz) or not 0 < i.low_hz < i.high_hz or
+                i.low_hz < lo or i.high_hz > hi):
+            raise ValueError('Invalid/duplicate interval or S2P extrapolation')
+        identities.add(i.identity)
+        slots.add(slot)
+        if i.csv_line is not None:
+            if (i.segment != i.csv_line-2 or not 0 <= i.segment < 28 or i.step_hz is not None or
+                    i.type != ('pass' if i.region in ('UL', 'DL') else 'stop')):
+                raise ValueError('Invalid ordinary interval identity')
+            count = points_per_interval
+        else:
+            if (req.mode != 'full_lpf' or i.region != 'additional' or i.segment < 28 or
+                    type(i.step_hz) is not int or i.step_hz <= 0):
+                raise ValueError('Invalid additional interval step')
+            steps = (i.high_hz-i.low_hz)/i.step_hz
+            if not math.isfinite(steps) or not steps.is_integer():
+                raise ValueError('Additional endpoints must align with step')
+            count = int(steps)+1
+        counts.append(count)
+    if sum(counts) > MAX_GRID_SAMPLES:
+        raise ValueError('Grid exceeds static allocation limit')
+    frequency, setting, segment = [], [], []
+    for i, count in zip(req.intervals, counts):
+        f = (np.linspace(i.low_hz, i.high_hz, count) if i.step_hz is None else
+             i.low_hz + np.arange(count)*i.step_hz)
+        if f[-1] != i.high_hz or np.any(np.diff(f) <= 0):
+            raise ValueError('Unrepresentable inclusive grid')
+        frequency.extend(f)
+        setting.extend([i.setting]*count)
+        segment.extend([i.segment]*count)
+    return EvaluationGrid(frequency, setting, segment)
 
 
 def evaluate_requirements(response, requirements, *, requested_grid):

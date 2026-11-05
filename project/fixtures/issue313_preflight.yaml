@@ -1,0 +1,29 @@
+# Static software fixture only. No EXP or RF-forward approval.
+schema_version: 2
+rf: {constraint_id: RF-F003, allow_trial: false}
+objective: full_lpf
+definition: null
+seeds: [23]
+max_trial_requested_samples: 2000
+selection:
+  rule: mandatory_vmax_vsum_il_sha
+  top_k: 1
+  max_candidates: 2
+  points_per_interval: 3
+validation:
+  terminal_points: 4
+  dense_points: 7
+  max_candidates: 2
+  max_requested_samples: 392
+anytime_samples: [200, 400]
+anytime_points_per_interval: 3
+arms:
+  - name: demo
+    max_requested_samples: 1500
+    steps:
+      - name: coarse
+        solver: slsqp
+        aggregation: max
+        points_per_interval: 2
+        max_requested_samples: 1000
+        options: {max_iterations: 3, max_evaluations: 10}
