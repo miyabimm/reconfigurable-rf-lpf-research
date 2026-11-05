@@ -28,8 +28,9 @@ def solve_branch_mna(circuit, values, frequency_hz, setting, *,
     admittances must be passive and referenced to ground. Component-policy
     validation is deliberately separate; this solver is not a promotion gate.
     """
-    if not isinstance(circuit, NominalCircuit):
-        raise TypeError("Expected NominalCircuit")
+    from lpf.rf_core.model import RFModel
+    if not isinstance(circuit, (NominalCircuit, RFModel)):
+        raise TypeError("Expected NominalCircuit or fixed RFModel")
     if not isinstance(values, CircuitValues):
         values = circuit.decode(values)
     circuit.encode(values)  # validates dimensions and invariant fixed C

@@ -25,7 +25,7 @@ def evaluate_independent_sample(circuit, vector, frequency_hz, setting):
     A 1 V peak Thevenin source is assumed. The source resistor loss is
     excluded from input power; external network losses are reported separately.
     """
-    policy = circuit._adapter.policy
+    policy = circuit.resolved_policy
     zs = _fixed_port_impedance(policy, "source_ohms")
     zl = _fixed_port_impedance(policy, "load_ohms")
     f = float(frequency_hz)
