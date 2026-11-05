@@ -1,8 +1,11 @@
 # Issue #307 — Stage 1 RF制約移行・閉区間の共通化
 
-対象Issue: https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/307  
-Draft PR: https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/308  
-作業開始時に確認したmain: `e1a1c883d449a9378eb9bf2e20c01d5e972afadd`  
+対象Issue: https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/307
+
+Draft PR: https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/308
+
+作業開始時に確認したmain: `e1a1c883d449a9378eb9bf2e20c01d5e972afadd`
+
 実装commit: `0687814`、冗長なGJM限定判定の除去: `80599be8f126ae78a11e3aed76d614b9686186fe`。
 最終handoff HEADはPR本文に記録する。
 
