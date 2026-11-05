@@ -10,8 +10,7 @@ import hashlib
 import json
 from pathlib import Path
 import numpy as np
-from lpf.constraint_versions import constraint_fingerprint
-from lpf.rf_core.model import EvaluationGrid, RFResponse
+from ..constraint_versions import constraint_fingerprint
 
 
 def validate_performance(policy):
@@ -122,6 +121,7 @@ def _digest(value):
 
 
 def grid_fingerprint(grid):
+    from ..rf_core.model import EvaluationGrid
     if not isinstance(grid, EvaluationGrid):
         raise ValueError('Expected frozen EvaluationGrid')
     return _digest([grid.frequency_hz.tolist(), grid.setting.tolist(), grid.segment.tolist()])
@@ -272,6 +272,7 @@ def evaluate_requirements(response, requirements, *, requested_grid):
     No interpolation, endpoint substitution, tolerance, or RF forwards occur.
     Errors STOP with ValueError, never a finite mandatory-FAIL score.
     """
+    from ..rf_core.model import RFResponse
     r, req = response, requirements
     if not isinstance(r, RFResponse) or not isinstance(req, Requirements):
         raise ValueError('Expected RFResponse and compiled Requirements')

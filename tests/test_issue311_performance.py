@@ -3,6 +3,8 @@ import copy
 from dataclasses import replace
 from pathlib import Path
 import unittest
+import subprocess
+import sys
 import numpy as np
 
 from test_issue307_constraints import make
@@ -78,6 +80,17 @@ class PerformanceTests(unittest.TestCase):
         h2 = [r for r in req.limits if r.interval.region == 'H2' and r.interval.case == 'B13+B14' and r.level == 'mandatory']
         self.assertEqual([(r.interval.note, r.threshold_db) for r in h2], [('B13', 31.), ('B14', 30.)])
         self.assertTrue(assess(synthetic(req), req)['strict_feasible'])
+
+    def test_existing_scalar_import_does_not_require_src_on_sys_path(self):
+        # Smoke's existing src.lpf consumers must not import the lpf-only RF
+        # core just by importing scalar helpers. Fresh interpreter avoids the
+        # test process's sys.path edits and cached lpf modules.
+        code = (f'import sys; sys.path.insert(0, {str(BANDS.parents[1])!r}); '
+                'from src.lpf.search.performance import harmonic_limit_db; '
+                'from src.lpf.constraint_versions import load_constraint; '
+                'assert harmonic_limit_db(load_constraint("RF-F003")) == 30')
+        result = subprocess.run([sys.executable, '-I', '-c', code], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_each_metric_bound_and_infinite_reflection(self):
         p = copy.deepcopy(self.p)

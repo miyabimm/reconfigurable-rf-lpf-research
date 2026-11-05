@@ -55,6 +55,9 @@ PI_SPARSE_RF=1 PYTHONPATH=tests uv run --frozen python -m unittest -v \
 初回ローカル確認では既存docs/data/experimentsディレクトリがあるためsparse境界検査が失敗。
 また既存dependency allowlistがband validator再利用を拒否したため、`_grid` を明示追加した。
 歴史ディレクトリの削除/改変による回避はしない。
+初回通常CIでは既存の `src.lpf` scalar importに対し、新しいトップレベルの
+`lpf` importが干渉して停止。RFコア型importを新API内へ遅延し、scalar側は相対importに
+修正。隔離subprocessでリポジトリrootだけをsys.pathに追加する回帰テストを追加した。
 
 RF ID/effective SHAは `rf/constraints/registry.json` の現役値を維持。
 F003: `e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86`。
