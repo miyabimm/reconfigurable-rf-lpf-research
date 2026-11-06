@@ -74,5 +74,3 @@ def harmonic_limit_db(policy, level='mandatory'):
 def additional_stopband(policy):
     extra = validate_performance(policy)['additional_stopbands']
     return extra[0] if extra else None
-
-

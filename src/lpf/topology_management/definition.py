@@ -37,5 +37,3 @@ class CircuitDefinition:
             object.__setattr__(self, key, tuple(getattr(self, key)))
         object.__setattr__(self, "coupling_pairs",
                            tuple(tuple(pair) for pair in self.coupling_pairs))
-
-
