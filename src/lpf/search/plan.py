@@ -50,6 +50,16 @@ class Plan:
     def data(self):
         return json.loads(self.frozen_json)
 
+    def requested_grid(self, name):
+        """Reconstruct a Stage-4A request independently of any RF response."""
+        from ..rf_core.model import EvaluationGrid
+        from .performance import grid_fingerprint
+        record = self.data['grids'][name]
+        grid = EvaluationGrid(record['frequency_hz'], record['setting'], record['segment'])
+        if grid_fingerprint(grid) != record['sha256']:
+            raise ValueError('Frozen grid SHA mismatch')
+        return grid
+
 
 def load(path, root=ROOT):
     root = Path(root).resolve()
@@ -151,6 +161,19 @@ def load(path, root=ROOT):
                               'residuals': '[IL_pass, max(0,target-IL_stop)]',
                               'errors': 'IL_pass', 'constraints': 'IL_stop-target >= 0'},
               'gates': {'G0_G1': 'not_ready', 'G2_G5': 'not_ready'}}
+    return Plan(canonical(frozen), sha(frozen))
+
+
+def load_preflight(path, root=ROOT):
+    """Stage-4A static YAML API, deliberately not connected to fixture run/load.
+
+    See project/diagnostics/issue313_preflight.md for the single new schema.
+    No circuit construction, solver execution, EXP storage or gate approval.
+    """
+    from .preflight import freeze
+    with Path(path).open() as stream:
+        config = yaml.load(stream, Loader=Loader)
+    frozen = freeze(config, Path(root).resolve())
     return Plan(canonical(frozen), sha(frozen))
 
 
