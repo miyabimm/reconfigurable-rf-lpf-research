@@ -148,10 +148,7 @@ class FixedStageEvaluation:
             row.update(vector_sha256=vector_sha(x), physical_checks=physical)
             n = len(self.grid.frequency_hz)
             row['phase'] = 'budget'
-            check_next_batch(n, step_remaining=self.stage_cap-self.requested,
-                job_remaining=self.job['max_requested_samples']-self.requested,
-                trial_remaining=self.data['costs']['max_trial_requested_samples']-self.requested,
-                job_reserved=self.reserved, trial_reserved=self.reserved+self.other_jobs)
+            self._check_budget(n)
             row['phase'] = 'evaluator_setup'
             evaluator = self.model.evaluator(self.grid)
         except BaseException as exc:
@@ -193,6 +190,12 @@ class FixedStageEvaluation:
                     assessment=assessment, plan_sha256=self.plan.sha256,
                     grid_sha256=grid_fingerprint(self.grid), batch_index=len(self.rows)-1)
 
+    def _check_budget(self, n):
+        check_next_batch(n, step_remaining=self.stage_cap-self.requested,
+            job_remaining=self.job['max_requested_samples']-self.requested,
+            trial_remaining=self.data['costs']['max_trial_requested_samples']-self.requested,
+            job_reserved=self.reserved, trial_reserved=self.reserved+self.other_jobs)
+
     def spot_check(self, batch_index, sample_indices, *, atol=1e-9):
         """Independent MNA/passivity/power at named completed samples only.
 
@@ -232,11 +235,14 @@ class FixedStageEvaluation:
                 self._checkpoint()
             audit.update(status='pass', passivity='pass_at_samples', power_balance='pass_at_samples')
         except BaseException as exc:
-            self.status, self.reason = 'failed', f'{type(exc).__name__}: {exc}'
-            audit.update(status='failed', reason=self.reason)
+            if self.status != 'storage_failed':
+                self.status = 'interrupted' if isinstance(exc, KeyboardInterrupt) else 'failed'
+                self.reason = f'{type(exc).__name__}: {exc}'
+                audit.update(status=self.status, reason=self.reason)
             raise
         finally:
-            self._checkpoint()
+            if self.status != 'storage_failed':
+                self._checkpoint()
         return audit
 
 

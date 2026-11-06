@@ -62,11 +62,18 @@ class Problem:
         return self.evaluation.forward(x, self.points, self.stage)
 
     def residuals(self, x):
+        if self.points is None:
+            objective = self.objective(x)
+            if not np.isfinite(objective) or objective < 0:
+                raise ValueError('Squared-residual solver requires finite nonnegative worst IL; no floor')
+            return np.array([np.sqrt(objective)])
         il = self.il(x)
         role = self.evaluation.grid(self.points).role
         return np.r_[il[role == 0], np.maximum(0., self.target - il[role != 0])]
 
     def errors(self, x):
+        if self.points is None:
+            return np.array([self.objective(x)])
         il = self.il(x)
         return il[self.evaluation.grid(self.points).role == 0]
 

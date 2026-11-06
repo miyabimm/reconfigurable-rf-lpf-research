@@ -23,6 +23,14 @@ git sparse-checkout set --cone project rf src scripts tests .github
 `preflight`はread-only、`run`はsynthetic fixtureのみ。本番runは`not_ready`で停止する。
 旧CLIとの互換・旧EXP変換は行わない。
 
+### Stage 4C-1 開発用固定steps Worker（Issue #317）
+
+schema 2の `load_preflight()` → `freeze_development_job()` →
+`execute_development_job()` は単一Job・system tmp raw限定の開発API。
+共有sample予約、全step後の共通selection、YAML指定terminal/anytime、任意sampleの
+独立検査を接続する。本番CLI/親台帳/G0–G5/再開は未接続で、denseは`not_run`。
+[API・費用・限定検証](diagnostics/issue317_fixed_worker.md)を参照。
+
 ## 共通YAML CLI（コード検証と本番実験は別）
 
 `scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
