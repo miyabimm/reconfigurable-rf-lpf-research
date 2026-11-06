@@ -68,6 +68,9 @@ def rank_candidates(candidates):
         except ValueError as exc:
             excluded.append({**row, 'status': 'invalid', 'reason': str(exc)})
             continue
+        if (row.get('vector_sha256', digest) != digest or
+                row.get('grid_sha256', assessment['grid_fingerprint']) != assessment['grid_fingerprint']):
+            raise ValueError('Candidate vector/grid identity mismatch')
         a = assessment
         if a['strict_feasible']:
             key = (0, a['worst_il_db'], digest)
