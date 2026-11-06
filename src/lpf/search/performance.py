@@ -15,7 +15,7 @@ from ..constraint_versions import constraint_fingerprint
 
 # Compatibility names for pure declaration checks/lookups. Requirement
 # compilation, grids and interval scoring remain owned by this module.
-from lpf.policy_schema import (
+from ..policy_schema import (
     validate_performance, limit_db, harmonic_limit_db, additional_stopband,
 )
 
