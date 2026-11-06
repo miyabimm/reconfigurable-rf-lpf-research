@@ -79,9 +79,9 @@ class FixedStageEvaluation:
         if sha(freeze(d['config'], self.root)) != self.plan.sha256:
             raise ValueError('Plan/current RF inputs, requirements or grid mismatch')
         ref = d['config']['definition']
-        if ref is None:
-            raise ValueError('Null definition is preflight-only')
-        if sha(asdict(self.definition)) != ref['definition_sha256']:
+        from .preflight import definition_sha
+        expected_definition_sha = definition_sha(ref)
+        if sha(asdict(self.definition)) != expected_definition_sha:
             raise ValueError('CircuitDefinition/Plan mismatch')
         approved = load_constraint(d['config']['rf']['constraint_id'], root=self.root,
                                    allow_trial=d['config']['rf']['allow_trial'])
@@ -95,7 +95,7 @@ class FixedStageEvaluation:
             if sha(asdict(self.requirements)) != sha(d['requirements']):
                 raise ValueError('Runtime requirements/Plan mismatch')
             if (self.model.policy_fingerprint != constraint_fingerprint(approved) or
-                    sha(asdict(self.model.definition)) != ref['definition_sha256']):
+                    sha(asdict(self.model.definition)) != expected_definition_sha):
                 raise ValueError('Runtime model/Plan mismatch')
         self.data = d
 

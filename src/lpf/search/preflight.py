@@ -9,6 +9,13 @@ from .performance import compile_requirements, build_evaluation_grid, grid_finge
 from .storage import sha
 
 
+def definition_sha(ref):
+    """Source reference or the same CircuitDefinition data frozen per Job."""
+    if ref is None:
+        raise ValueError('Null definition is preflight-only')
+    return sha(ref) if 'inductor_tree' in ref else ref['definition_sha256']
+
+
 def nonnegative(value):
     if type(value) is not int or value < 0:
         raise ValueError('Nonnegative integer required')
@@ -53,7 +60,38 @@ def _solver(step):
 
 def freeze(d, root):
     from .plan import fields, positive
-    fields(d, 'schema_version rf objective definition seeds arms max_trial_requested_samples selection validation anytime_samples anytime_points_per_interval')
+    base_fields = 'schema_version rf objective definition seeds arms max_trial_requested_samples selection validation anytime_samples anytime_points_per_interval'
+    fields(d, base_fields + (' campaign' if isinstance(d, dict) and 'campaign' in d else ''))
+    if 'campaign' in d:
+        envelope = d['campaign']
+        fields(envelope, 'max_topologies max_rf_samples structure independent')
+        positive(envelope['max_topologies']); positive(envelope['max_rf_samples'])
+        structure = envelope['structure']
+        fields(structure, 'max_nodes max_fixed_capacitors max_variable_capacitors inductor_types fixed_c_types variable_roles allow_coupling allow_ic_fixed')
+        positive(structure['max_nodes'])
+        nonnegative(structure['max_fixed_capacitors'])
+        nonnegative(structure['max_variable_capacitors'])
+        for key in ('inductor_types', 'fixed_c_types', 'variable_roles'):
+            if (not isinstance(structure[key], list) or not structure[key] or
+                    any(type(v) is not str for v in structure[key]) or
+                    len(set(structure[key])) != len(structure[key])):
+                raise ValueError('Explicit unique allowed structural types/roles required')
+        if any(type(structure[k]) is not bool for k in ('allow_coupling', 'allow_ic_fixed')):
+            raise ValueError('Explicit structural capability booleans required')
+        independent = envelope['independent']
+        fields(independent, 'stage max_candidates sample_indices')
+        if independent['stage'] not in ('not_run', 'terminal'):
+            raise ValueError('Only bounded terminal independent spots supported')
+        nonnegative(independent['max_candidates'])
+        indices = independent['sample_indices']
+        if (not isinstance(indices, list) or any(type(i) is not int or i < 0 for i in indices) or
+                len(set(indices)) != len(indices)):
+            raise ValueError('Unique independent sample indices required')
+        if independent['stage'] == 'not_run':
+            if independent['max_candidates'] or indices:
+                raise ValueError('not_run independent validation cannot request samples')
+        elif not independent['max_candidates'] or not indices:
+            raise ValueError('Bounded independent candidate/sample request required')
     if type(d['schema_version']) is not int or d['schema_version'] != 2:
         raise ValueError('Stage-4A requires schema_version 2')
     fields(d['rf'], 'constraint_id allow_trial')
@@ -70,7 +108,12 @@ def freeze(d, root):
     positive(d['max_trial_requested_samples'])
     # References are source evidence only, not topology/physical/G1 approval.
     ref = d['definition']
-    if ref is not None:
+    if ref is not None and not isinstance(ref, dict):
+        raise ValueError('Definition must be a reference, CircuitDefinition data, or null')
+    if ref is not None and 'inductor_tree' in ref:
+        from .proposals import definition_from_data
+        definition_from_data(ref)
+    elif ref is not None:
         fields(ref, 'path source_sha256 definition_sha256')
         source = (root / ref['path']).resolve()
         if not source.is_relative_to(root):
@@ -117,6 +160,11 @@ def freeze(d, root):
     positive(validation['max_requested_samples'])
     terminal_one = grid('terminal', validation['terminal_points'])
     dense_one = grid('dense', validation['dense_points'])
+    if 'campaign' in d:
+        independent = d['campaign']['independent']
+        if (any(i >= terminal_one for i in independent['sample_indices']) or
+                independent['max_candidates'] > selection['top_k']):
+            raise ValueError('Independent candidate/sample request exceeds terminal selection')
     dense_upper = validation['max_candidates']*dense_one
     if dense_upper > validation['max_requested_samples']:
         raise ValueError('Dense validation cap cannot reserve its candidate upper bound')
