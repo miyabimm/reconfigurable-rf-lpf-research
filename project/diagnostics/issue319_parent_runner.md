@@ -48,6 +48,11 @@ Worker返却snapshotをそのまま結果として採用せず、実rawファイ
 既存 `storage.atomic` のbyte encodingとsnapshotの一致を確認し、さらにJobSpec束縛、
 RF/Plan/definition/全grid SHA、batch allocation/grid、各batchのrequested/completed、
 job total、残余・予約、独立spot費用を検査する。
+completed batchでは応答の全6項目（S実部/虚部は`[N,2,2]`、IL/APL/InRL/OutRLは`[N]`）と
+`assessment.status='evaluated'` を必須にする。assessmentのpolicy ID/effective fingerprint、
+mode、requirements fingerprint、grid fingerprintを凍結Planとbatchの格子SHAに照合する。
+証拠の欠落・サイズ不整合・条件不一致は、Worker返却値とraw bytesが一致していても取込を拒否し、
+unknown/cap保持・後続STOPとする。RF数値の再計算や独立全点再検算は行わない。
 
 - `raw_byte_sha256`: **実ファイルのbytes**のSHA。
 - `raw_content_sha256`: 読戻したJSONのcanonical content SHA（改行を含まない）。
@@ -69,7 +74,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   PYTHONPATH=tests uv run --frozen python -m unittest -v test_issue319_parent_runner
 ```
 
-9テスト。実RFは `test_real_f003_two_arms_tiny_fixture_and_readback` の1 seed×2 armsのみ。
+10テスト。実RFは `test_real_f003_two_arms_tiny_fixture_and_readback` の1 seed×2 armsのみ。
 既存fixture solverは同じ合法xを返し、各Jobは全6設定・28個別区間を評価する。
 
 | 各Jobの内訳 | points/interval | primary requested/completed |
@@ -105,6 +110,9 @@ denseは `not_run`。
 
 その他はWorker mockによる正常／未収束／予算停止／異常・unknown・例外・中断・
 raw欠落/改変/数値不整合・親保存障害・親取込直前停止の検証。
+正常系mockはshapeと凍結identityを満たすsynthetic response/assessmentを持つが、RF計算の証拠ではない。
+completed batchの証拠欠落／各応答の欠落・長さ・S shape不整合／assessment status・全identity不一致を
+21 subcaseで注入し、snapshotとraw bytesの双方が整合していても拒否することを検査する。
 別seed=別Trialの独立費用集計、全額予約→確定後のみ解放、後続全停止を検査する。
 通常smokeとsparse CIに同じテストを追加した。
 RF-F003 effective SHAは `e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86`。

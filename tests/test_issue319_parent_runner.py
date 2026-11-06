@@ -38,6 +38,15 @@ class ParentRunnerTests(unittest.TestCase):
         stage = arm + '/' + plan['config']['arms'][0]['steps'][0]['name']
         n = plan['grids'][stage]['requested_samples_per_forward']
         job = plan['costs']['jobs'][arm]
+        # Synthetic shape/identity evidence only, not an RF simulation/result.
+        response = {key: [0.] * n for key in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')}
+        response.update({key: [[[0., 0.], [0., 0.]] for _ in range(n)]
+                         for key in ('s_real', 's_imag')})
+        assessment = dict(status='evaluated', policy_id=plan['config']['rf']['constraint_id'],
+            policy_fingerprint=plan['requirements']['policy_fingerprint'], mode=plan['config']['objective'],
+            requirements_fingerprint=plan['requirements']['fingerprint'],
+            grid_fingerprint=plan['grids'][stage]['sha256'], strict_feasible=False,
+            worst_il_db=0., max_violation_db=1., sum_violation_db=1.)
         result = dict(kind='stage4c1_development_only', spec=plain(spec),
             plan_sha256=spec.plan_sha256, policy_id=plan['config']['rf']['constraint_id'],
             policy_fingerprint=plan['requirements']['policy_fingerprint'],
@@ -52,7 +61,8 @@ class ParentRunnerTests(unittest.TestCase):
             anytime=[], dense=dict(status='not_run'),
             batches=[dict(stage=stage, allocation=stage, grid_sha256=plan['grids'][stage]['sha256'],
                 requested=n, completed=n, status='completed', vector=d['start']['vector'],
-                vector_sha256=d['start']['vector_sha256'], independent=dict(status='not_run'))])
+                vector_sha256=d['start']['vector_sha256'], independent=dict(status='not_run'),
+                response=response, assessment=assessment)])
         atomic(path, result)
         return result
 
@@ -194,6 +204,37 @@ class ParentRunnerTests(unittest.TestCase):
             with patch.object(runner, 'execute_development_job', side_effect=worker):
                 state = runner.run_development(*args, solver_kind='fixture')
             self.assertEqual(state['status'], 'unknown')
+
+    def test_completed_batch_requires_response_and_bound_assessment(self):
+        cases = [('missing_response', lambda b: b.pop('response')),
+                 ('missing_assessment', lambda b: b.pop('assessment'))]
+        for key in ('s_real', 's_imag', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
+            cases.append((f'missing_{key}', lambda b, key=key: b['response'].pop(key)))
+            cases.append((f'short_{key}', lambda b, key=key: b['response'][key].pop()))
+        # Correct outer sample count is insufficient for a malformed complex S.
+        cases.append(('bad_s_shape', lambda b: b['response'].update(s_real=[0.] * b['requested'])))
+        for key in ('status', 'policy_id', 'policy_fingerprint', 'mode',
+                    'requirements_fingerprint', 'grid_fingerprint'):
+            cases.append((f'wrong_{key}', lambda b, key=key: b['assessment'].update({key: 'wrong'})))
+        for name, mutate in cases:
+            with self.subTest(case=name):
+                args = self.setup_parent()
+                def worker(spec, path, **kw):
+                    result = self.mock_result(spec, path, **kw)
+                    mutate(result['batches'][0])
+                    atomic(path, result)
+                    # Both raw bytes and returned snapshot carry the same defect.
+                    self.assertEqual(json.loads(path.read_text()), result)
+                    return result
+                with patch.object(runner, 'execute_development_job', side_effect=worker) as call:
+                    state = runner.run_development(*args, solver_kind='fixture')
+                self.assertEqual(call.call_count, 1)
+                self.assertEqual(state['status'], 'unknown')
+                row = state['jobs'][0]
+                self.assertEqual((row['status'], row['requested'], row['reserved'], row['released']),
+                                 ('unknown', 0, row['cap'], 0))
+                self.assertEqual(state['jobs'][1]['status'], 'not_started')
+                self.assertEqual(json.loads((args[-1]/'run.json').read_text()), state)
 
     def test_budget_is_accepted_but_not_rf_success(self):
         args = self.setup_parent()

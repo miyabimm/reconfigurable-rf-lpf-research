@@ -116,6 +116,7 @@ def _development_readback(path, returned, spec):
     This is accidental-corruption detection, not authentication of a Worker.
     """
     import json
+    import numpy as np
     from .preflight import nonnegative
     raw = Path(path).read_bytes()
     if raw != (canonical(returned) + '\n').encode():
@@ -171,6 +172,19 @@ def _development_readback(path, returned, spec):
         if batch['status'] == 'completed':
             if not r or c != r or vector_sha(batch['vector']) != batch['vector_sha256']:
                 raise ValueError('Completed batch/vector mismatch')
+            response = batch['response']
+            for key in ('s_real', 's_imag', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
+                shape = (n, 2, 2) if key in ('s_real', 's_imag') else (n,)
+                if np.asarray(response[key]).shape != shape:
+                    raise ValueError(f'Completed batch response shape mismatch: {key}')
+            assessment = batch['assessment']
+            identity = dict(status='evaluated', policy_id=expected['policy_id'],
+                policy_fingerprint=expected['policy_fingerprint'], mode=plan['config']['objective'],
+                requirements_fingerprint=expected['requirements_fingerprint'],
+                grid_fingerprint=batch['grid_sha256'])
+            for key, value in identity.items():
+                if assessment[key] != value:
+                    raise ValueError(f'Completed batch assessment mismatch: {key}')
         elif batch['status'] != 'rejected' or r or c:
             uncertain = True
         total_requested += r; total_completed += c
