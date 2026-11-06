@@ -7,7 +7,7 @@ policy. Numerical convergence, sampled RF observations, component checks and
 candidate promotion are explicitly separate.
 """
 from contextlib import nullcontext
-from lpf.search.performance import harmonic_limit_db
+from lpf.policy_schema import harmonic_limit_db
 from functools import partial
 from copy import deepcopy
 from dataclasses import asdict

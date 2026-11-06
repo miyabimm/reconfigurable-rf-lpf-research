@@ -72,7 +72,7 @@ def evaluate_independent_response(model, x, frequency_hz, setting):
 
 def validate_response(model, x, response, *, atol=1e-9):
     """Recompute every requested sample. Raises on mismatch; no RF thresholds."""
-    from lpf.phase2_models.role_audit import audit_variable_connection_roles
+    from lpf.topology_management import audit_variable_connection_roles
     if not np.isfinite(atol) or atol <= 0:
         raise ValueError('Expected finite positive audit tolerance')
     count = len(response.grid.frequency_hz)

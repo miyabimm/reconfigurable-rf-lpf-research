@@ -109,7 +109,8 @@ jobs:
       - name: Verify current RF model and search contracts
         run: |
           set -euo pipefail
-          python -m compileall -q src/lpf/phase2_models src/lpf/rf_core
+          python -m compileall -q src/lpf/topology_management src/lpf/phase2_models src/lpf/rf_core
+          python -m unittest discover -s tests -p test_issue323_dependencies.py -v
           python -m unittest discover -s tests -p test_issue309_rf_core.py -v
           python -m unittest discover -s tests -p test_issue311_performance.py -v
           python -m unittest discover -s tests -p test_issue313_preflight.py -v

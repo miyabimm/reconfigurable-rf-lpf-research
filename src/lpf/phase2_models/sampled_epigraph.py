@@ -11,7 +11,7 @@ import numpy as np
 from .api import NominalCircuit, build_nominal_circuit
 from .problem_seed import circuit_box, make_seed
 from ._grid import CASES
-from lpf.search.performance import harmonic_limit_db
+from lpf.policy_schema import harmonic_limit_db
 
 
 # Numerical search margin only; never an RF acceptance tolerance.

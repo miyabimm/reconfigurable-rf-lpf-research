@@ -15,7 +15,7 @@ def nominal_inductor_series(policy, name):
 
     Missing inductor range data is NOT a license to assume a bound.
     """
-    from lpf.search.component_constraints import interval
+    from lpf.policy_schema import interval
     components = policy["components"]
     if name in ("LQP02HV", "LQP02HQ"):
         spec = components["LQP02"]["series"][name]

@@ -6,13 +6,7 @@ endpoint is not a guarantee of joint SPD or legal connectivity. No repair.
 import numpy as np
 
 
-def interval(spec, unit):
-    b = spec.get('bounds')
-    if (not isinstance(b, dict) or set(b) != {'min', 'max', 'unit'} or b['unit'] != unit
-            or any(type(b[k]) not in (int, float) or not np.isfinite(b[k]) for k in ('min', 'max'))
-            or b['min'] > b['max']):
-        raise ValueError('Missing/invalid closed bounds or unit')
-    return float(b['min']), float(b['max'])
+from lpf.policy_schema import interval
 
 
 def physical_bounds(definition, schema, policy):
@@ -51,7 +45,8 @@ def physical_bounds(definition, schema, policy):
 
 def validate_values(definition, schema, x, policy):
     """Check complete values, structural/Q/layout model, all-L SPD; not RF PASS."""
-    from lpf.phase2_models.api import build_nominal_circuit
+    from lpf.rf_core import build_rf_model
+    from lpf.topology_management import audit_variable_connection_roles
     from lpf.phase2_models.coupled_lc import CircuitValues
     from lpf.phase2_models.nominal_inductors import check_nominal_inductors
     if not isinstance(x, CircuitValues) and np.asarray(x).dtype.kind not in 'fiu':
@@ -61,12 +56,14 @@ def validate_values(definition, schema, x, policy):
     box = np.asarray(physical_bounds(definition, schema, policy))
     if not np.all(np.isfinite(vector)) or np.any(vector < box[:, 0]) or np.any(vector > box[:, 1]):
         raise ValueError('Component value outside closed physical bounds')
-    # Reuse reviewed builders for counts, Q, ports, layout, parasitic constants,
-    # one-to-one IC fixed branches and explicit trial authorization. No forward.
-    circuit = build_nominal_circuit(policy, definition)
+    # Frozen common model owns counts/Q/layout/constants and policy approval.
+    # Construction only: no evaluator or RF forward is invoked.
+    circuit = build_rf_model(definition, policy)
     if circuit.schema != schema:
         raise ValueError('Schema does not match physical model (including constants)')
-    roles = circuit.connection_role_audit()
+    roles = audit_variable_connection_roles(
+        definition.inductor_tree, definition.capacitor_placement.variable_edges,
+        definition.variable_roles).as_dict()
     if not roles['all_declared_roles_supported_by_l_tree']:
         raise ValueError('Connection role not proven by L tree')
     coupling = check_nominal_inductors(policy, circuit.topology, values,

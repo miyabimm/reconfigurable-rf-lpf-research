@@ -57,7 +57,26 @@ class DevelopmentCLITests(unittest.TestCase):
 
     def test_actual_cli_two_steps_solver_rf_and_summary(self):
         args, argv = self.prepare()
-        completed = subprocess.run([sys.executable, str(ROOT/'scripts/run_rf_search.py'), *argv],
+        # The real schema2 CLI must run without importing retired facades,
+        # including imports hidden in a function or an import-time dependency.
+        guarded_cli = '''
+import importlib.abc, runpy, sys
+class NoLegacy(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname in {
+            'lpf.phase2_models.api', 'lpf.phase2_models.problem_seed',
+            'lpf.phase2_models.circuit_layout', 'lpf.phase2_models.role_audit',
+            'lpf.phase2_models.rft005_t007_policy_circuit',
+            'lpf.phase2_models.rft008_policy_circuit',
+            'lpf.search._legacy_schema1',
+        }:
+            raise ImportError('schema2 imported legacy: ' + fullname)
+sys.meta_path.insert(0, NoLegacy())
+sys.argv = sys.argv[1:]
+runpy.run_path(sys.argv[0], run_name='__main__')
+'''
+        completed = subprocess.run([sys.executable, '-c', guarded_cli,
+                                    str(ROOT/'scripts/run_rf_search.py'), *argv],
                                    capture_output=True, text=True, timeout=60)
         self.assertEqual(completed.returncode, 4, completed.stderr)
         summary = json.loads(completed.stdout)
