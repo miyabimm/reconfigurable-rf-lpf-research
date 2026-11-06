@@ -13,7 +13,8 @@ from .storage import atomic, canonical, plain, sha, vector_sha
 from .validation import select, pending
 
 
-def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=None, spot_checks=None):
+def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=None, spot_checks=None,
+                           campaign_context=None):
     """Freeze one schema-2 development Job; this is NOT a G1 JobSpec."""
     from dataclasses import asdict
     from pathlib import Path
@@ -27,7 +28,8 @@ def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=
     if sha(data) != plan.sha256 or sha(freeze(data['config'], root)) != plan.sha256:
         raise ValueError('Plan/source/RF/grid SHA mismatch')
     config = data['config']
-    if config['definition'] is None or sha(asdict(definition)) != config['definition']['definition_sha256']:
+    from .preflight import definition_sha
+    if sha(asdict(definition)) != definition_sha(config['definition']):
         raise ValueError('Development Job requires a frozen complete definition')
     if type(seed) is not int or seed not in config['seeds']:
         raise ValueError('Seed not frozen in Plan')
@@ -52,8 +54,22 @@ def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=
         arm=arm, seed=seed, start=dict(vector=plain(vector), vector_sha256=vector_sha(vector)),
         source=source, spot_checks=spot_checks, bounds=physical_bounds(definition, model.schema, policy),
         solver_options=[_development_options(s) for s in chosen['steps']])
-    return JobSpec(f'development-{arm}-{seed}', 'development_only', plan.sha256,
-                   sha(source), canonical(frozen))
+    job_id = f'development-{arm}-{seed}'
+    if campaign_context is not None:
+        import re
+        from .plan import fields
+        fields(campaign_context, 'job_id parent_job_id plan_sha256 proposal_sha256 based_on_state_sha256')
+        if (not isinstance(campaign_context['job_id'], str) or
+                not re.fullmatch(r'job-[0-9]{6,}', campaign_context['job_id']) or
+                (campaign_context['parent_job_id'] is not None and
+                 (not isinstance(campaign_context['parent_job_id'], str) or
+                  not re.fullmatch(r'job-[0-9]{6,}', campaign_context['parent_job_id']))) or
+                any(type(campaign_context[k]) is not str or not re.fullmatch('[0-9a-f]{64}', campaign_context[k])
+                    for k in ('plan_sha256', 'proposal_sha256', 'based_on_state_sha256'))):
+            raise ValueError('Invalid frozen Campaign Job provenance')
+        frozen['campaign_context'] = campaign_context
+        job_id = 'development-' + campaign_context['job_id']
+    return JobSpec(job_id, 'development_only', plan.sha256, sha(source), canonical(frozen))
 
 
 def _development_options(step):
@@ -96,7 +112,8 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     policy = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
     # Rebuild the minimal frozen record, not only its self-declared hashes.
     expected = freeze_development_job(plan, definition, policy, d['arm'], d['seed'], d['start']['vector'],
-                                      root=root, spot_checks=d['spot_checks'])
+                                      root=root, spot_checks=d['spot_checks'],
+                                      campaign_context=d.get('campaign_context'))
     if expected != spec:
         raise ValueError('Development Job/input/source/options SHA mismatch')
     meter = FixedJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
