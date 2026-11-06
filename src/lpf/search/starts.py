@@ -24,6 +24,26 @@ def validate(circuit, vector, bounds):
     return x
 
 
+def load_explicit(path):
+    """Read seed→{vector, vector_sha256}; never generate or repair a start."""
+    import json
+    from pathlib import Path
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate explicit-start JSON key')
+            result[key] = value
+        return result
+
+    data = json.loads(Path(path).read_text(), object_pairs_hook=unique)
+    if (not isinstance(data, dict) or not data or
+            any(not k.isascii() or not k.isdecimal() or str(int(k)) != k for k in data)):
+        raise ValueError('Explicit starts require canonical nonnegative integer seed keys')
+    return {int(k): v for k, v in data.items()}
+
+
 class IllegalStart(ValueError):
     def __init__(self, record, cause):
         self.record = {**record, 'status': 'failed', 'reason': str(cause)}
