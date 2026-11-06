@@ -81,5 +81,6 @@ jobs:
             test_issue313_preflight \
             test_issue315_fixed_stage \
             test_issue317_fixed_worker \
+            test_issue319_parent_runner \
             test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints \
             test_pi_sparse_rf

@@ -31,6 +31,16 @@ schema 2の `load_preflight()` → `freeze_development_job()` →
 独立検査を接続する。本番CLI/親台帳/G0–G5/再開は未接続で、denseは`not_run`。
 [API・費用・限定検証](diagnostics/issue317_fixed_worker.md)を参照。
 
+### Stage 4C-2 開発用逐次親Runner（Issue #319）
+
+`runner.run_development()` はschema 2の全seed×armを投入前に凍結・Trialごとに予約し、
+既存Workerを固定順で実行するsystem tmp専用API。
+各seedの合法な完全x/SHAは呼出側が明示指定する。
+親はrawをファイルから読戻し照合し、確定Jobの未要求枠のみ解放する。
+不明・中断・改変・保存障害では予約を保持し後続全Jobを停止する。
+本番CLI/G0–G5、並列Scheduler、retry/resumeは未接続。
+[API・台帳・限定検証](diagnostics/issue319_parent_runner.md)を参照。
+
 ## 共通YAML CLI（コード検証と本番実験は別）
 
 `scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
