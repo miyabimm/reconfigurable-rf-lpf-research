@@ -233,6 +233,81 @@ class CampaignTests(unittest.TestCase):
                     self.submit(plan, output, self.proposal(d, snapshot, 'next'))
                 forward.assert_not_called()
 
+    def test_rejected_proposal_bytes_rechecked_before_next_job(self):
+        for rejection in ('stale', 'malformed'):
+            for fault in ('modified', 'missing', 'path'):
+                with self.subTest(rejection=rejection, fault=fault):
+                    plan, d, output, snapshot = self.setup_campaign()
+                    with patch.object(campaign.runner, 'execute_development_job',
+                                      side_effect=parent_tests.ParentRunnerTests.mock_result):
+                        snapshot = self.submit(plan, output, self.proposal(d, snapshot))
+                    rejected = self.proposal(d, snapshot, 'rejected')
+                    rejected['based_on_state_sha256'] = '0'*64
+                    snapshot = self.submit(plan, output, rejected,
+                        text='reason: [' if rejection == 'malformed' else None)
+                    state = self.state(output)
+                    event = state['events'][-1]
+                    self.assertEqual(event['status'], 'rejected')
+                    self.assertTrue(event['rejection_reason'])
+                    path = output/event['input_path']
+                    if fault == 'modified': path.write_bytes(path.read_bytes()+b'\n')
+                    if fault == 'missing': path.unlink()
+                    if fault == 'path':
+                        other = output/'proposal-999999.yaml'
+                        other.write_bytes(path.read_bytes())
+                        event['input_path'] = other.name
+                        atomic(output/'campaign.json', state)
+                    before = (output/'campaign.json').read_bytes()
+                    with patch.object(campaign.runner, 'execute_development_job') as worker, \
+                         patch.object(RFEvaluator, 'evaluate') as forward:
+                        with self.assertRaises((ValueError, FileNotFoundError)):
+                            self.submit(plan, output, self.proposal(d, snapshot, 'next'))
+                        worker.assert_not_called()
+                        forward.assert_not_called()
+                    self.assertEqual((output/'campaign.json').read_bytes(), before)
+
+    def test_proposal_id_ledger_rechecked_before_next_job(self):
+        plan, d, output, snapshot = self.setup_campaign()
+        with patch.object(campaign.runner, 'execute_development_job',
+                          side_effect=parent_tests.ParentRunnerTests.mock_result):
+            snapshot = self.submit(plan, output, self.proposal(d, snapshot))
+        rejected = self.proposal(d, snapshot, 'rejected')
+        rejected['based_on_state_sha256'] = '0'*64
+        snapshot = self.submit(plan, output, rejected)
+        state = self.state(output)
+        self.assertEqual(state['proposal_ids'], ['p1', 'rejected'])
+        for ids in (['p1'], ['p1', 'rejected', 'extra'], ['rejected', 'p1'], ['p1', 'rejected', 'p1']):
+            with self.subTest(ids=ids):
+                state['proposal_ids'] = ids
+                atomic(output/'campaign.json', state)
+                with patch.object(campaign.runner, 'execute_development_job') as worker, \
+                     patch.object(RFEvaluator, 'evaluate') as forward:
+                    with self.assertRaisesRegex(ValueError, 'proposal.*ID'):
+                        self.submit(plan, output, self.proposal(d, snapshot, 'next'))
+                    worker.assert_not_called()
+                    forward.assert_not_called()
+
+    def test_rejections_keep_first_seen_ids_and_allow_valid_next_submission(self):
+        plan, d, output, snapshot = self.setup_campaign()
+        with patch.object(campaign.runner, 'execute_development_job',
+                          side_effect=parent_tests.ParentRunnerTests.mock_result) as worker:
+            snapshot = self.submit(plan, output, self.proposal(d, snapshot))
+            snapshot = self.submit(plan, output, self.proposal(d, snapshot))  # duplicate p1
+            snapshot = self.submit(plan, output, {}, text='reason: [')  # no interpretable ID
+            rejected = self.proposal(d, snapshot, 'stale')
+            rejected['based_on_state_sha256'] = '0'*64
+            snapshot = self.submit(plan, output, rejected)
+            state = self.state(output)
+            self.assertEqual(state['proposal_ids'], ['p1', 'stale'])
+            rejected_events = [e for e in state['events'] if e['status'] == 'rejected']
+            self.assertEqual(len(rejected_events), 3)
+            self.assertTrue(all(e['rejection_reason'] for e in rejected_events))
+            self.assertNotIn('proposal_id', rejected_events[1])
+            snapshot = self.submit(plan, output, self.proposal(d, snapshot, 'next'))
+            self.assertEqual(worker.call_count, 2)
+        self.assertEqual(snapshot['snapshot']['status'], 'ready')
+        self.assertEqual(self.state(output)['proposal_ids'], ['p1', 'stale', 'next'])
+
     def test_parent_save_failure_preserves_unknown_and_never_retries(self):
         for fail_at in ('reservation', 'import'):
             plan, d, output, snapshot = self.setup_campaign()

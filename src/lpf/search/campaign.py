@@ -91,6 +91,21 @@ def _check_ready_state(state, plan, output, root):
     from .worker import JobSpec
     if state['kind'] != 'campaign_development_only_not_an_EXP' or state['gates'] != plan.data['gates']:
         raise ValueError('Campaign kind/gate identity mismatch')
+    proposal_ids = []
+    for index, event in enumerate(state['events']):
+        if 'input_path' not in event:
+            continue
+        if event['input_path'] != f'proposal-{index:06d}.yaml':
+            raise ValueError('Campaign proposal event/path mismatch')
+        original = (output/event['input_path']).read_bytes()
+        if hashlib.sha256(original).hexdigest() != event['input_sha256']:
+            raise ValueError('Campaign proposal input byte SHA mismatch')
+        # Only successfully normalized proposals have an ID. Duplicate-ID
+        # rejections retain that ID in events but never register it twice.
+        if 'proposal_id' in event and event['proposal_id'] not in proposal_ids:
+            proposal_ids.append(event['proposal_id'])
+    if proposal_ids != state['proposal_ids']:
+        raise ValueError('Campaign proposal ID ledger mismatch')
     topology_shas = []
     accepted = {e['job_id']: e for e in state['events'] if e['status'] == 'accepted'}
     if len(accepted) != len(state['jobs']):
