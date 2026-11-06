@@ -79,8 +79,8 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     from .validation import rank_candidates
     from ._job_evaluation import FixedJobEvaluation
     from lpf.constraint_versions import load_constraint
-    from lpf.phase2_models.api import CircuitDefinition
-    from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+    from lpf.topology_management import CircuitDefinition
+    from lpf.topology_management import InductorTree, CapacitorPlacement
     root = Path(root or ROOT).resolve()
     d = spec.data
     if d.get('kind') != 'development_only' or spec.trial_id != 'development_only':

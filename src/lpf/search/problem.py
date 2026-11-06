@@ -1,8 +1,8 @@
 """RF core construction and explicit numerical callbacks (physical x only)."""
 import numpy as np
 from lpf.constraint_versions import load_constraint
-from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+from lpf.phase2_models.api import build_nominal_circuit  # schema1 fixture compatibility only
+from lpf.topology_management import CircuitDefinition, InductorTree, CapacitorPlacement
 
 def build(definition, rf):
     if (not isinstance(rf, dict) or type(rf.get('allow_trial')) is not bool or
