@@ -356,3 +356,95 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
         if not imported['safe_to_release']:
             break
     return state
+
+
+def finalize_development(state, output):
+    """Read the final parent AND Worker files again; summarize without forwards.
+
+    No save retry, budget release, candidate reranking or scientific gate approval.
+    The original parent/raw files remain authoritative, including unknown markers.
+    """
+    import copy
+    import json
+    import tempfile
+    from .plan import ROOT
+    output = Path(output).resolve()
+    if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
+            output.is_relative_to(ROOT.resolve())):
+        raise ValueError('Development summary must be system temp outside repository')
+    parent = (output / 'run.json').read_bytes()
+    if parent != (canonical(state) + '\n').encode():
+        raise ValueError('Final parent/raw byte mismatch')
+    durable = json.loads(parent)
+    if sha(durable['plan']) != durable['plan_sha256']:
+        raise ValueError('Final parent Plan SHA mismatch')
+    if durable['gates'] != {'G0_G1': 'not_ready', 'G2_G5': 'not_ready'}:
+        raise ValueError('Development gates must remain not_ready')
+    totals = copy.deepcopy(durable)
+    _development_totals(totals)
+    if totals != durable:
+        raise ValueError('Final parent totals mismatch')
+    jobs = []
+    for row in durable['jobs']:
+        spec = JobSpec(**row['spec'])
+        if (sha(spec) != row['spec_sha256'] or spec.plan_sha256 != durable['plan_sha256'] or
+                spec.data['plan'] != durable['plan'] or
+                spec.source_sha256 != durable['source_sha256']):
+            raise ValueError('Final parent JobSpec/Plan/source mismatch')
+        summary = {k: row[k] for k in ('job_id', 'trial_id', 'status', 'cap', 'requested',
+            'completed', 'reserved', 'released', 'independent_requested', 'independent_completed')}
+        summary['start_vector_sha256'] = spec.data['start']['vector_sha256']
+        if 'raw_byte_sha256' in row:
+            path = output / row['raw_path']
+            result = json.loads(path.read_bytes())
+            imported = _development_readback(path, result, spec)
+            if any(row[k] != value for k, value in imported.items()):
+                raise ValueError('Final Worker/parent evidence mismatch')
+            summary.update({k: row[k] for k in ('raw_path', 'raw_byte_sha256',
+                'raw_content_sha256', 'worker_status', 'exit_reason', 'solver_nfev')})
+            summary['solver_steps'] = [dict(name=s['name'], status=s['status'],
+                stop_reason=s.get('solver_result', {}).get('stop_reason',
+                    s.get('solver_result', {}).get('reason'))) for s in result['steps']]
+            summary['selection'] = dict(status=result['selection']['status'],
+                ranked_vector_sha256=[r['vector_sha256'] for r in result['selection']['ranked']])
+            summary.update(terminal=result['terminal'], anytime=result['anytime'])
+            summary['independent_spots'] = [b['independent'] for b in result['batches']]
+            summary['finite_grid'] = [dict(stage=b['stage'], grid_sha256=b['grid_sha256'],
+                vector_sha256=b['vector_sha256'], strict_feasible=b['assessment']['strict_feasible'],
+                nominal_pass=all(r['passed'] for r in b['assessment']['rows']
+                                 if r['requirement']['level'] == 'nominal'),
+                worst_il_db=b['assessment']['worst_il_db'],
+                max_violation_db=b['assessment']['max_violation_db'],
+                sum_violation_db=b['assessment']['sum_violation_db'])
+                for b in result['batches'] if b['status'] == 'completed']
+        elif row['status'] == 'completed':
+            raise ValueError('Completed Job missing raw evidence')
+        jobs.append(summary)
+    complete = durable['status'] == 'completed' and all(j['status'] == 'completed' for j in jobs)
+    converged = complete and all(j.get('worker_status') == 'converged' for j in jobs)
+    code = 0 if converged else 4 if complete else 2
+    reason = ('development_flow_completed' if converged else
+              'reconciled_budget_or_solver_not_converged' if complete else 'unknown_or_invalid_STOP')
+    plan = durable['plan']
+    summary = dict(kind='development_only_not_an_EXP', exit_code=code, exit_reason=reason,
+        development_flow='completed' if complete else 'stopped',
+        solver_converged=converged, rf_compliance_certified=False,
+        gates=durable['gates'], dense='not_run', full_band_independent_mna='not_run',
+        preservation_audit='not_run', continuous_frequency='not_verified',
+        physical_feasibility='not_verified', parent_exit_reason=durable.get('exit_reason'),
+        parent_raw_byte_sha256=hashlib.sha256(parent).hexdigest(),
+        plan_sha256=durable['plan_sha256'], source_sha256=durable['source_sha256'],
+        rf=plan['config']['rf'], effective_constraint_sha256=plan['requirements']['policy_fingerprint'],
+        rf_inputs=plan['rf_inputs'], objective=plan['config']['objective'],
+        interval_count=len(plan['requirements']['intervals']),
+        setting_count=len(set(plan['grids']['terminal']['setting'])),
+        grids={k: {f: v[f] for f in ('sha256', 'points_per_interval', 'requested_samples_per_forward')}
+               for k, v in plan['grids'].items()},
+        campaign=durable['campaign'], trials=durable['trials'], jobs=jobs)
+    target = output / 'summary.json'
+    if target.exists():
+        raise ValueError('Existing summary: no automatic retry')
+    atomic(target, summary)
+    if target.read_bytes() != (canonical(summary) + '\n').encode():
+        raise ValueError('Summary readback mismatch')
+    return summary

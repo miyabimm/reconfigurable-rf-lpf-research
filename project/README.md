@@ -41,6 +41,18 @@ schema 2の `load_preflight()` → `freeze_development_job()` →
 本番CLI/G0–G5、並列Scheduler、retry/resumeは未接続。
 [API・台帳・限定検証](diagnostics/issue319_parent_runner.md)を参照。
 
+### Stage 4C-3A 開発用最小E2E CLI（Issue #321）
+
+`run_rf_search.py develop --config <schema2.yaml> --starts <starts.json>
+--output <未存在のcheckout外system tmpディレクトリ>` が既存の逐次親Runnerを呼び、
+親・Job rawの最終実ファイル読戻し後に `summary.json` を原子的に保存する。
+任意の `--spot-checks '{"terminal":[0]}'` は格子内sample indexを明示する。
+`--starts` はseed文字列→完全vector/SHAのJSONで、生成・clip・補充はしない。
+終了コード0=開発完走＋solver収束、4=照合済み予算切れ／solver未収束、
+2=unknown/入力不正/保存障害STOP、3=production未認可。
+いずれも正式RF認定ではなく、G0–G5未承認・dense/全帯域独立MNA/保存監査は未実施。
+[契約・再現コマンド・限定証拠](diagnostics/issue321_development_cli.md)を参照。
+
 ## 共通YAML CLI（コード検証と本番実験は別）
 
 `scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
