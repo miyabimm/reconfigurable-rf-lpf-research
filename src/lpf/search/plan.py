@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 
 from lpf.constraint_versions import rf_input_file
-from .problem import build, nominal_area
+from .problem import nominal_area
 from .starts import physical_box
 from .performance import harmonic_limit_db
 from .storage import canonical, sha
@@ -62,6 +62,8 @@ class Plan:
 
 
 def load(path, root=ROOT):
+    """Retired schema1 fixture loader, isolated from load_preflight/schema2."""
+    from ._legacy_schema1 import build
     root = Path(root).resolve()
     with Path(path).open() as stream:
         d = yaml.load(stream, Loader=Loader)

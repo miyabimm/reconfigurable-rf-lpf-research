@@ -7,7 +7,7 @@ import numpy as np
 
 from lpf.port_parasitics import get_two_port_s
 from .branch_mna import solve_branch_mna
-from .circuit_layout import incidence_matrix
+from lpf.topology_management.circuit_layout import incidence_matrix
 from .coupled_lc import _fixed_port_impedance
 
 

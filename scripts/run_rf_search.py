@@ -32,8 +32,7 @@ def main(argv=None):
             if config['definition'] is None:
                 raise ValueError('develop requires an explicit complete definition')
             from lpf.constraint_versions import load_constraint
-            from lpf.phase2_models.api import CircuitDefinition
-            from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+            from lpf.topology_management import CircuitDefinition, InductorTree, CapacitorPlacement
             definition = json.loads((ROOT / config['definition']['path']).read_bytes())
             definition['inductor_tree'] = InductorTree(**definition['inductor_tree'])
             definition['capacitor_placement'] = CapacitorPlacement(**definition['capacitor_placement'])

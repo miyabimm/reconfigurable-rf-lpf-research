@@ -17,7 +17,7 @@ from lpf.trial_ic_fixed_c import (
 )
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from ._grid import CASES
-from .circuit_layout import CapacitorPlacement
+from lpf.topology_management import CapacitorPlacement
 
 
 def policy_edges(edges, *, roles=None):
@@ -62,7 +62,7 @@ class RFT008CapacitorLayout:
         variable_edges = placement.variable_edges
         if placement.ic_fixed_edges != variable_edges:
             # A reversed branch is a valid physical parallel attachment:
-            from .circuit_layout import normalized_capacitor_edge
+            from lpf.topology_management.circuit_layout import normalized_capacitor_edge
             if (len(placement.ic_fixed_edges) != len(variable_edges) or
                     any(normalized_capacitor_edge(f, placement.node_count)
                         != normalized_capacitor_edge(v, placement.node_count)

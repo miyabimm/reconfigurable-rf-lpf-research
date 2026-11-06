@@ -7,7 +7,7 @@ from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.optimizers.slp import slp_minimize
 from .evaluation import Evaluation, BudgetExceeded
-from .problem import Problem, build
+from .problem import Problem
 from .starts import validate
 from .storage import atomic, canonical, plain, sha, vector_sha
 from .validation import select, pending
@@ -238,7 +238,8 @@ class JobSpec:
 
 
 def execute_job(spec, directory):
-    """Fixture-only public runner. RF wiring is checked via Evaluation, not solvers."""
+    """Retired schema1 fixture runner; not used by schema2 development."""
+    from ._legacy_schema1 import build
     from pathlib import Path
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)

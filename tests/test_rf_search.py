@@ -15,7 +15,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.search.plan import load
-from lpf.search.problem import build, Problem
+from lpf.search._legacy_schema1 import build
+from lpf.search.problem import Problem
 from lpf.search.starts import generate, physical_box, validate
 from lpf.search.storage import canonical, sha, vector_sha
 from lpf.search.evaluation import Evaluation, BudgetExceeded

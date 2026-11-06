@@ -14,7 +14,7 @@ terminations and current injections are explicit and do not attest policy.
 """
 import numpy as np
 
-from .circuit_layout import incidence_matrix
+from lpf.topology_management.circuit_layout import incidence_matrix
 from .coupled_lc import CircuitValues, CoupledLCTopology, ParameterVectorSchema
 from .numerical_diagnostics import CircuitNumericalError
 

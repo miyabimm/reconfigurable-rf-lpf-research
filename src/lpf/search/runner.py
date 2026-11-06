@@ -8,7 +8,6 @@ import subprocess
 import sys
 
 from .controller import actions
-from .problem import build
 from .starts import generate, IllegalStart
 from .storage import atomic, canonical, sha, plain, vector_sha
 from .worker import (JobSpec, execute_job, freeze_development_job,
@@ -36,6 +35,8 @@ def provenance(root):
 
 
 def run(plan, output, *, mode='fixture', root=None):
+    # Retired schema1 fixture only; schema2 uses run_development.
+    from ._legacy_schema1 import build
     if mode != 'fixture':
         raise ValueError('not_ready: production requires existing G0/G1 manifest/remote readback and G2-G5 audits')
     from .plan import ROOT

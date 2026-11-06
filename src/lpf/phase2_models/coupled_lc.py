@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ._grid import CASES, SampledExternalEvaluator
-from .circuit_layout import InductorTree, incidence_matrix
+from lpf.topology_management.circuit_layout import InductorTree, incidence_matrix
 from .numerical_diagnostics import CircuitNumericalError
 
 
