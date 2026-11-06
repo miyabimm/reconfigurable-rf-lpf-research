@@ -114,9 +114,13 @@ class CampaignGateTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Full checkout'):
                 self.prepare()
             missing.write_bytes(raw)
-            # Move the real bare remote ahead without updating origin/main.
+            # Force a stale tracking ref explicitly: Git versions differ in
+            # whether pushing to the origin's path also updates origin/main.
+            old_main = self.git('rev-parse', 'origin/main').decode().strip()
             self.git('commit', '--allow-empty', '-qm', 'remote advance')
-            self.git('push', '-q', str(self.repo.parent/'origin.git'), 'HEAD:refs/heads/main')
+            self.publish()
+            self.git('update-ref', 'refs/remotes/origin/main', old_main)
+            self.assertNotEqual(self.git('rev-parse', 'origin/main'), self.git('rev-parse', 'HEAD'))
             with self.assertRaisesRegex(ValueError, 'stale'):
                 self.prepare()
             forward.assert_not_called()
