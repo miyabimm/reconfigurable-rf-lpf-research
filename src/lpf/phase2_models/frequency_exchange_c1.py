@@ -8,7 +8,7 @@ import numpy as np
 from .frequency_exchange import run_frequency_exchange
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage, _check_guard_source
 from .sampled_epigraph import SEARCH_GUARD_DB
-from lpf.search.performance import harmonic_limit_db
+from lpf.policy_schema import harmonic_limit_db
 
 
 def run_c1_frequency_exchange(circuit, seed_record, *, cost_meter,

@@ -64,8 +64,7 @@ def rf_input_file(root, logical_path):
 
 
 def _validate_current_schema(policy):
-    from .search.component_constraints import interval
-    from .search.performance import validate_performance
+    from .policy_schema import interval, validate_performance
     if policy.get('schema_version') != 2:
         raise ValueError('Only current RF schema 2 is supported')
     if set(policy['evaluation']) != {'il_db', 'performance',

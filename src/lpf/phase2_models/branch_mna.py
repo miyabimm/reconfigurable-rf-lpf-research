@@ -14,9 +14,8 @@ terminations and current injections are explicit and do not attest policy.
 """
 import numpy as np
 
-from .api import NominalCircuit
 from .circuit_layout import incidence_matrix
-from .coupled_lc import CircuitValues
+from .coupled_lc import CircuitValues, CoupledLCTopology, ParameterVectorSchema
 from .numerical_diagnostics import CircuitNumericalError
 
 
@@ -28,13 +27,15 @@ def solve_branch_mna(circuit, values, frequency_hz, setting, *,
     admittances must be passive and referenced to ground. Component-policy
     validation is deliberately separate; this solver is not a promotion gate.
     """
-    from lpf.rf_core.model import RFModel
-    if not isinstance(circuit, (NominalCircuit, RFModel)):
-        raise TypeError("Expected NominalCircuit or fixed RFModel")
+    # Minimal kernel input: a numerical topology and its vector schema.
+    # Do not depend on either of the higher-level model/legacy wrapper types.
+    topology = getattr(circuit, 'topology', None)
+    schema = getattr(circuit, 'schema', None)
+    if not isinstance(topology, CoupledLCTopology) or not isinstance(schema, ParameterVectorSchema):
+        raise TypeError('Expected coupled-LC topology and parameter schema')
     if not isinstance(values, CircuitValues):
-        values = circuit.decode(values)
-    circuit.encode(values)  # validates dimensions and invariant fixed C
-    topology = circuit.topology
+        values = schema.decode(values)
+    schema.encode(values)  # validates dimensions and invariant fixed C
     tree = topology.inductor_tree
     n, m = tree.node_count, len(tree.edges)
     if type(setting) is not int or not 0 <= setting < 6:

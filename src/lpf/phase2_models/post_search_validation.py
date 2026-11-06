@@ -14,7 +14,7 @@ import subprocess
 import numpy as np
 
 from lpf.constraint_versions import rf_input_file
-from lpf.search.performance import harmonic_limit_db
+from lpf.policy_schema import harmonic_limit_db
 from ._grid import ROOT, validated_band_segments
 from .evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
 from .independent_rf import evaluate_independent_sample

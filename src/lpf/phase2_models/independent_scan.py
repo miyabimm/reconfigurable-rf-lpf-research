@@ -7,7 +7,7 @@ from scipy.optimize import minimize_scalar
 
 from ._grid import ROOT, validated_band_segments
 from lpf.constraint_versions import rf_input_file
-from lpf.search.performance import harmonic_limit_db, limit_db
+from lpf.policy_schema import harmonic_limit_db, limit_db
 from .independent_rf import evaluate_independent_sample
 
 

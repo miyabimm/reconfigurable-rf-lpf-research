@@ -6,7 +6,7 @@ Historical/finalized evidence is never accepted or modified. The caller must
 use the existing explicit finalize step for Git commit, readback and audit.
 """
 from contextlib import contextmanager
-from lpf.search.performance import harmonic_limit_db
+from lpf.policy_schema import harmonic_limit_db
 from copy import deepcopy
 import csv
 import fcntl

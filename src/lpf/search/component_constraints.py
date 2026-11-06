@@ -6,13 +6,7 @@ endpoint is not a guarantee of joint SPD or legal connectivity. No repair.
 import numpy as np
 
 
-def interval(spec, unit):
-    b = spec.get('bounds')
-    if (not isinstance(b, dict) or set(b) != {'min', 'max', 'unit'} or b['unit'] != unit
-            or any(type(b[k]) not in (int, float) or not np.isfinite(b[k]) for k in ('min', 'max'))
-            or b['min'] > b['max']):
-        raise ValueError('Missing/invalid closed bounds or unit')
-    return float(b['min']), float(b['max'])
+from lpf.policy_schema import interval
 
 
 def physical_bounds(definition, schema, policy):

@@ -71,6 +71,9 @@ class NominalCircuit:
 
     def validate_components(self, vector, *, allow_absent_gjm=False):
         """Shared closed physical check; never authorize RF promotion."""
+        # Compatibility-only reverse dependency retained: the legacy adapter's
+        # coupling tolerance is not the exact closed-box acceptance contract.
+        # Do not weaken endpoint rejection just to remove this import (#323).
         from lpf.search.component_constraints import validate_values
         if allow_absent_gjm:
             raise ValueError('Absent GJM requires an explicit topology change, not a bounds exception')

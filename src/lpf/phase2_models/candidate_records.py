@@ -14,7 +14,7 @@ import math
 import numpy as np
 
 from lpf.constraint_versions import load_constraint
-from lpf.search.performance import harmonic_limit_db, limit_db
+from lpf.policy_schema import harmonic_limit_db, limit_db
 from .api import CircuitDefinition, build_nominal_circuit
 from .candidate_audit import audit_candidate
 from .circuit_layout import CapacitorPlacement, InductorTree
