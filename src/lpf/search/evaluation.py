@@ -108,6 +108,11 @@ class FixedStageEvaluation:
             grid_sha256=grid_fingerprint(self.grid), grid=self.grid,
             requested=self.requested, completed=self.completed,
             reservations=dict(other_steps_selection_terminal_anytime=self.reserved,
+                other_steps={name: stage['upper_reservation']
+                             for name, stage in self.job['stages'].items() if name != self.step},
+                selection=self.job['selection_upper_reservation'],
+                terminal=self.job['terminal_fixed_reservation'],
+                anytime=self.job['anytime_fixed_reservation'],
                 other_jobs=self.other_jobs, dense=self.data['costs']['dense']),
             remaining=dict(step=self.stage_cap-self.requested,
                 job=self.job['max_requested_samples']-self.requested,

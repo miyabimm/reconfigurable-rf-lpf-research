@@ -78,6 +78,11 @@ class FixedStageTests(unittest.TestCase):
                 self.assertEqual(saved['batches'][0]['assessment']['grid_fingerprint'], saved['grid_sha256'])
                 self.assertEqual(len(saved['batches'][0]['response']['s_real']), n)
                 self.assertEqual(saved['dense'], 'not_run')
+                per_point = 14 if mode == 'matching_only' else 28
+                self.assertEqual(saved['reservations']['selection'], 6*per_point)
+                self.assertEqual(saved['reservations']['terminal'], 4*per_point)
+                self.assertEqual(saved['reservations']['anytime'], 6*per_point)
+                self.assertEqual(saved['batches'][0]['reservations'], saved['reservations'])
                 self.assertFalse(saved['rf_compliance_certified'])
 
     def test_contract_mismatches_before_forward(self):
