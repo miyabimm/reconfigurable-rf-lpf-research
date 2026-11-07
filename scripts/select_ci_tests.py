@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Conservative, Git-based CI selection. FULL is an execution mode, not a class.
 
-The two workflows use the same plan; sparse runs only tests that can run without
+Sparse mode uses the same plan but runs only tests that can run without
 historical evidence. Unregistered paths and uncertain comparisons select FULL.
 """
 import json

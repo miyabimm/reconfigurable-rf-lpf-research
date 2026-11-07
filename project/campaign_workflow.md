@@ -103,7 +103,7 @@ unknown・中断・source/Plan/raw不一致・保存/読戻し障害では**予�
 
 ## 5. 最小検証と報告
 
-文書入口/リンク回帰は完全checkoutで以下を実行する。Campaign回帰は通常/sparse CI共通の既存モジュール。
+文書入口/リンク回帰は完全checkoutで以下を実行する。Campaign回帰は通常CIの既存モジュール。
 本書の例を新EXPとして実行するコマンドではない。
 
 ```bash
@@ -116,7 +116,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=tests \
 uv run --frozen python scripts/audit_new_experiment_storage.py audit
 ```
 
-現行CIは[通常smoke](../.github/workflows/audit.yml)と[Pi sparse](../.github/workflows/pi-sparse-rf.yml)。
+現行CIは[通常smoke](../.github/workflows/audit.yml)。
 保存専用CIの軽量化は[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334)でmainへ統合済み。保存専用と確実に分類できる場合のみ一般回帰を省き、全新規EXP保存監査と予約・provenance検証は常時実行する。不明・混在・対象外ファイルは通常回帰へ戻す。
 
 報告はIssue/範囲、branch/HEAD/dirty差分、PR、RF ID/effective SHA・bands/S2P、Plan/提案/start、

@@ -225,22 +225,19 @@ class SelectionTests(unittest.TestCase):
 
 class WorkflowTests(unittest.TestCase):
     def test_triggers_and_shared_selector(self):
-        for filename, job in (('audit.yml', 'smoke'), ('pi-sparse-rf.yml', 'sparse-rf')):
-            wf = yaml.safe_load((ROOT / '.github/workflows' / filename).read_text())
-            # PyYAML 1.1 interprets `on` as True.
-            triggers = wf.get('on', wf.get(True))
-            self.assertIn('pull_request', triggers)
-            self.assertFalse(triggers['pull_request'])
-            self.assertIn('workflow_dispatch', triggers)
-            steps = wf['jobs'][job]['steps']
-            checkout = next(x for x in steps if x.get('uses', '').startswith('actions/checkout@'))
-            self.assertEqual(checkout['with']['fetch-depth'], 0)
-            if job == 'sparse-rf':
-                self.assertIn('sparse-checkout', checkout['with'])
-                self.assertNotIn('filter', checkout['with'])
-            step = next(x for x in steps if x.get('name', '').startswith('Classify complete'))
-            self.assertIn('scripts/select_ci_tests.py', step['run'])
-            self.assertNotIn('if', step)
+        wf = yaml.safe_load((ROOT / '.github/workflows/audit.yml').read_text())
+        # PyYAML 1.1 interprets `on` as True.
+        triggers = wf.get('on', wf.get(True))
+        self.assertIn('pull_request', triggers)
+        self.assertFalse(triggers['pull_request'])
+        self.assertIn('workflow_dispatch', triggers)
+        steps = wf['jobs']['smoke']['steps']
+        checkout = next(x for x in steps if x.get('uses', '').startswith('actions/checkout@'))
+        self.assertEqual(checkout['with']['fetch-depth'], 0)
+        self.assertNotIn('sparse-checkout', checkout['with'])
+        step = next(x for x in steps if x.get('name', '').startswith('Classify complete'))
+        self.assertIn('scripts/select_ci_tests.py', step['run'])
+        self.assertNotIn('if', step)
 
 
 if __name__ == '__main__':
