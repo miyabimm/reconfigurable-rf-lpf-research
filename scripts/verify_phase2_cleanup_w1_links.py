@@ -21,17 +21,15 @@ REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(\S+)")
 HTML_REF = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""")
 ACTIVE_ENTRYPOINTS = (
     "README.md",
-    "docs/README.md",
-    "docs/chatgpt_project_instructions.md",
     "project/README.md",
+    "project/campaign_workflow.md",
+    "project/diagnostics/README.md",
     "project/instructions.md",
     "project/roadmap.md",
     "project/results.md",
     "project/specification.md",
     "project/experiment_storage_policy.md",
     "project/legacy_git_replay.md",
-    "data/README.md",
-    "experiments/README.md",
 )
 
 def tracked():
@@ -106,13 +104,8 @@ def verify_status():
     required = {
         "README.md": ["RF-F003", "project/roadmap.md", "project/results.md"],
         "project/instructions.md": ["rf/constraints/registry.json", "承認"],
-        "project/roadmap.md": ["Stage 1", "Stage 2", "#163", "IL≤0.30dB"],
+        "project/roadmap.md": ["campaign_workflow.md", "diagnostics/README.md", "instructions.md", "../rf/constraints/registry.json", "../rf/bands.csv"],
         "project/results.md": ["RF-T005", "RF-F003", "experiment_index.csv"],
-        "docs/chatgpt_project_instructions.md": ["project/instructions.md", "唯一の正本"],
-        "data/README.md": ["rf/constraints/registry.json", "experiment_index.csv"],
-        "docs/README.md": ["project/", "issues/170"],
-        "experiments/README.md": ["experiment_index.csv", "EXP-NNN"],
-        "scripts/README.md": ["--catalog", "build_phase2_candidate_catalog.py", "39028160775"],
     }
     for file, tokens in required.items():
         txt = (ROOT / file).read_text(encoding="utf-8")
@@ -120,6 +113,36 @@ def verify_status():
         for token in tokens:
             if token not in current:
                 raise ValueError("W1 current-status reference missing: " + file + ":" + token)
+
+    # The registry changes when Phase 2 trial policies are approved;
+    # unlike the snapshots below, its bytes are not immutable.
+    registry = json.loads((ROOT / "rf/constraints/registry.json").read_text(encoding="utf-8"))
+    active = registry["active_formal_id"]
+    if (active not in registry["formal"]
+            or registry["formal"][active]["state"] != "approved"):
+        raise ValueError("Missing approved active formal registry entry")
+    if registry["trial"]["RF-T008"]["state"] != "study_authorized":
+        raise ValueError("Expected authorized historical RF-T008 trial")
+    return len(required)
+
+
+def verify_history():
+    commit = "055b222c79c73c7fbeacb19383f21c1da0625195"
+    if subprocess.run(["git", "cat-file", "-e", commit + "^{commit}"], cwd=ROOT,
+                      stderr=subprocess.DEVNULL).returncode:
+        raise SystemExit("履歴監査の取得条件未成立: missing Git commit " + commit)
+    historical_pages = {
+        "docs/chatgpt_project_instructions.md": ["project/instructions.md", "唯一の正本"],
+        "data/README.md": ["rf/constraints/registry.json", "experiment_index.csv"],
+        "docs/README.md": ["project/", "issues/170"],
+        "experiments/README.md": ["experiment_index.csv", "EXP-NNN"],
+        "scripts/README.md": ["--catalog", "build_phase2_candidate_catalog.py", "39028160775"],
+    }
+    for file, tokens in historical_pages.items():
+        text = (ROOT / file).read_text(encoding="utf-8")
+        for token in tokens:
+            if token not in text:
+                raise ValueError("W1 historical reference missing: " + file + ":" + token)
 
     legacy = (ROOT / "experiments/chatgpt_topology_search/runs/EXP-004/README.md").read_text()
     # EXP-004's README is part of manifest-hash-pinned *original evidence*.
@@ -153,15 +176,6 @@ def verify_status():
         raise ValueError("EXP-004 legacy note must point to pinned historical source")
 
     original_sha = "055b222c79c73c7fbeacb19383f21c1da0625195"
-    # The registry changes when Phase 2 trial policies are approved;
-    # unlike the snapshots below, its bytes are not immutable.
-    registry = json.loads((ROOT / "rf/constraints/registry.json").read_text(encoding="utf-8"))
-    active = registry["active_formal_id"]
-    if (active not in registry["formal"]
-            or registry["formal"][active]["state"] != "approved"):
-        raise ValueError("Missing approved active formal registry entry")
-    if registry["trial"]["RF-T008"]["state"] != "study_authorized":
-        raise ValueError("Expected authorized historical RF-T008 trial")
     untouched = ["data/bands.csv",
                  "data/constraints/formal/RF-F003.json",
                  "data/constraints/trial/RF-T005.json",
@@ -182,7 +196,7 @@ def verify_status():
                                       cwd=ROOT).decode().strip()
         if old != now:
             raise ValueError("W1 modified a protected RF/source original: " + rel)
-    return len(required), len(untouched)
+    return len(untouched)
 
 
 def main():
@@ -197,7 +211,8 @@ def main():
             raise SystemExit("Missing active documentation: " + ", ".join(missing))
         md = list(ACTIVE_ENTRYPOINTS)
     issues, stats = all_links(md, known)
-    verified_pages, source_files = verify_status()
+    verified_pages = verify_status()
+    source_files = 0 if args else verify_history()
     result = {
         "phase": "Phase 2", "scope": ("active entrypoints" if args else "W1 current checked-out tracked files"),
         "tracked_files": len(known), "markdown_files": len(md),
@@ -207,6 +222,7 @@ def main():
         "anchor_unchecked": stats["anchor_unchecked"],
         "missing_or_invalid_local_links": len(issues),
         "current_status_pages_checked": verified_pages,
+        "historical_checks": "not run (--active-only)" if args else "run",
         "protected_source_blob_checks": source_files,
         "source_files_deleted_or_moved_by_test": 0,
         "limitations": ["No external web link reachability test",
