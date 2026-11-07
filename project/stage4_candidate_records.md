@@ -148,5 +148,5 @@ EXP実行、manifest作成、Git保存、本物のGit HEAD readback／storage監
 比較用の人工summaryは順位計算の単体テストのみで、RF性能の観測結果ではない。
 `test_phase2_candidate_records_frozen.py`はSHA固定fixtureをread-onlyで利用し、
 `LPF_EVIDENCE_ROOT`を明示した完全checkoutで実行する（sparseでは2件skip）。
-通常CIは完全checkoutのrootを明示して凍結回帰を実施し、Pi sparse CIはsynthetic回帰を実施する。
+当時の通常CIは完全checkoutのrootを明示して凍結回帰を実施し、Pi sparse CIはsynthetic回帰を実施した。Pi sparse CIは後に廃止されており、現行CIは[通常smoke](../.github/workflows/audit.yml)を参照する。
 旧inventory 45/66 FAIL（#170）は未解消。コード回帰／storage監査PASSで免責しない。

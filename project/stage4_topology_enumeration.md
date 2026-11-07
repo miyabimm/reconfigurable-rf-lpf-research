@@ -101,11 +101,11 @@ schema、stampされるQ／定数寄生、policy ID＋実効SHAを含む。
 3L/4L×3 trial、HV/HQ/PCB-L、全6設定、正負k、L方向・端子・物理順・k軸・C順序を
 誤統合しない反例、T007寄生／T008 IC固定C、policy改変、不合法枝・枝数・Q/k、
 series未証明、入力順不変、件数・上限・fingerprintを確認する。
-通常smokeとPi sparse CIの両方にこのテストを追加する。
+当時は通常smokeとPi sparse CIの両方にこのテストを追加する計画だった。Pi sparse CIは後に廃止されており、現行CIは[通常smoke](../.github/workflows/audit.yml)を参照する。
 
 S4AはRF evaluator・独立MNAを新規候補に実行せず、それぞれ`not_run`を返す。
 既存Stage 1〜3の限定RF／MNA／電力・凍結vector回帰はソフトウェアの退行確認であり、
 新規EXPや科学的認定ではない。dense／連続帯域／Q(f)／SRF／EM／公差／測定・owner承認は
 未実施。`candidate_promotion_blocked=true`を維持する。
-完全checkoutを要する既存回帰とPi sparseの実行範囲はPRで別記する。
+当時の完全checkoutを要する既存回帰とPi sparseの実行範囲はPRで別記する。
 旧inventory 45/66 FAIL（#170）は未解消であり、このPRで監査PASS扱いにしない。
