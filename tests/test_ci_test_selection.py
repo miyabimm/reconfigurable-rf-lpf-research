@@ -25,6 +25,10 @@ class SelectionTests(unittest.TestCase):
         for path in ('README.md', 'rf/bands.csv', 'src/lpf/search/starts.py',
                      'src/lpf/search/worker.py', 'src/lpf/search/gates.py',
                      'project/experiment_storage_policy.md', '.github/workflows/audit.yml',
+                     'src/lpf/search/proposals.py',
+                     *(f'src/lpf/phase2_models/{name}.py' for name in (
+                         'post_search_validation', 'post_search_journal', 'post_search_evidence',
+                         'experiment_post_search', 'limited_candidate_evidence')),
                      'tests/test_issue309_rf_core.py', 'unknown.txt'):
             self.write(path, 'baseline\n')
         self.commit()
@@ -149,6 +153,33 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(selector.path_classes('src/lpf/phase2_models/branch_mna.py'), {'RF'})
         self.assertEqual(selector.path_classes('rf/unknown.txt'), {'FULL'})
         self.assertEqual(selector.path_classes('src/lpf/rf_core/new.py'), {'FULL'})
+
+    def test_reviewed_source_changes_select_direct_regressions(self):
+        examples = [
+            *((f'src/lpf/phase2_models/{name}.py', {'RF', 'STORE'},
+               'test_phase2_post_search_validation.py', None) for name in (
+                   'post_search_validation', 'post_search_journal', 'post_search_evidence',
+                   'experiment_post_search', 'limited_candidate_evidence')),
+            ('src/lpf/search/proposals.py', {'RUN', 'GATE'},
+             'test_issue325_campaign.py', 'test_issue325_campaign'),
+            ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py', 'test_issue313_preflight'),
+        ]
+        for path, expected, normal_test, sparse_test in examples:
+            with self.subTest(path=path):
+                self.git('reset', '--hard', self.base)
+                self.write(path, 'changed\n')
+                self.commit()
+                result = self.plan()
+                self.assertFalse(result['full'], result)
+                self.assertEqual(set(result['classes']), expected)
+                for sparse, test in ((False, normal_test), (True, sparse_test)):
+                    if test is None:
+                        continue
+                    with self.subTest(sparse=sparse), patch.object(Path, 'is_file', return_value=True), \
+                         patch('builtins.print'), patch.object(selector.subprocess, 'run') as run:
+                        selector.execute(result, sparse)
+                    commands = [call.args[0] for call in run.call_args_list]
+                    self.assertTrue(any(test in command for command in commands), commands)
 
     def test_strict_storage_fast_path_does_not_run_campaign(self):
         selected = dict(classes=['STORE'], full=False, reasons=[], changed_tests=[], storage_only=True)

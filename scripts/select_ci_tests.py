@@ -18,7 +18,7 @@ CLASSES = ('DOC', 'RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # in more than one group; the runner deduplicates them.
 SUITES = {
     'DOC': '''test_phase2_current_status_review.py''',
-    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_rft008_policy_circuit.py test_phase2_rft005_t007_policy_circuit.py test_phase2_public_circuit_api.py test_phase2_branch_mna.py test_phase2_independent_rf.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_phase2_zero_branch_projection.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
+    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_post_search_validation.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_rft008_policy_circuit.py test_phase2_rft005_t007_policy_circuit.py test_phase2_public_circuit_api.py test_phase2_branch_mna.py test_phase2_independent_rf.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_phase2_zero_branch_projection.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_phase2_candidate_records.py test_phase2_problem_seed.py test_phase2_sampled_epigraph.py test_phase2_staged_optimization.py test_phase2_frequency_exchange.py test_phase2_optimizer_comparison.py test_phase2_rf_pipeline_adapter.py test_rf_search.py test_hybrid_optimizer.py test_phase2_scipy_de_preview.py test_phase2_generic_starts.py test_phase2_normalized_epigraph.py test_phase2_post_search_validation.py test_phase2_real_scipy_smoke.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py test_phase2_rf_pipeline_adapter.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
@@ -28,7 +28,7 @@ SUITES = {
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
 EXTRA_FULL = '''test_shared_graph_core.py test_graph_instantiation.py test_shared_graph_builder.py test_phase2_candidate_records_frozen.py'''.split()
 SPARSE = {
-    'RF': '''test_constraint_versioning test_issue307_history test_issue307_snapshot_equivalence test_issue307_constraints test_issue309_rf_core test_issue311_performance test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints test_pi_sparse_rf''',
+    'RF': '''test_constraint_versioning test_issue307_history test_issue307_snapshot_equivalence test_issue307_constraints test_issue309_rf_core test_issue311_performance test_issue313_preflight test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints test_pi_sparse_rf''',
     'OPT': 'test_issue315_fixed_stage',
     'RUN': 'test_issue315_fixed_stage test_issue317_fixed_worker test_issue319_parent_runner test_issue321_development_cli test_issue325_campaign test_issue325_campaign_gates test_issue323_dependencies',
     'GATE': 'test_issue313_preflight test_issue325_campaign_gates test_issue323_dependencies',
@@ -62,7 +62,7 @@ PATHS = {
     'src/lpf/search/_job_evaluation.py': 'RUN RF', 'src/lpf/search/evaluation.py': 'RUN RF',
     'src/lpf/search/campaign.py': 'RUN GATE STORE', 'src/lpf/search/controller.py': 'RUN GATE',
     'src/lpf/search/storage.py': 'STORE RUN', 'src/lpf/search/preservation.py': 'STORE RUN',
-    'src/lpf/search/starts.py': 'OPT', 'src/lpf/search/proposals.py': 'OPT',
+    'src/lpf/search/starts.py': 'OPT', 'src/lpf/search/proposals.py': 'RUN GATE',
     'src/lpf/search/performance.py': 'RF RUN', 'src/lpf/search/problem.py': 'OPT RF',
     'src/lpf/search/component_constraints.py': 'RF OPT', 'src/lpf/search/validation.py': 'RF RUN',
     'src/lpf/search/plan.py': 'GATE RUN', 'src/lpf/search/_legacy_schema1.py': 'RUN GATE',
