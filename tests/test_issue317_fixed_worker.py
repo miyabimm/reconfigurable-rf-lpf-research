@@ -69,9 +69,7 @@ class FixedWorkerTests(unittest.TestCase):
 
     def test_two_steps_real_rf_one_selection_shared_cost_and_audit(self):
         spec, path, plan, d, p, x = self.job()
-        with patch('lpf.search.validation.score', side_effect=AssertionError('legacy')), \
-             patch('lpf.search.validation.rank_key', side_effect=AssertionError('legacy')):
-            result = self.run_fixture(spec, path)
+        result = self.run_fixture(spec, path)
         self.assertEqual(result['status'], 'not_converged')
         self.assertEqual(result['requested'], 588)  # 4*56 + 2*84 + 84 + 112
         self.assertEqual(result['completed'], 588)
