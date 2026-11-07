@@ -79,6 +79,19 @@ jobs:
         run: |
           git rev-parse HEAD
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Classify complete event diff (fail closed)
+        id: changes
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CI_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CI_BASE_REF: ${{ github.event.pull_request.base.ref || github.ref_name }}
+        run: |
+          # An unexpected classifier crash must also select the full suite.
+          result=$(python3 scripts/classify_storage_ci.py) || result=storage_only=false
+          if [ "$result" != "storage_only=true" ]; then result=storage_only=false; fi
+          echo "$result" >> "$GITHUB_OUTPUT"
+          echo "CI classification: $result"
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -90,6 +103,7 @@ jobs:
       - run: uv sync --frozen
       - run: echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Check current RF constraints, RF model, six settings and candidate sources
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           set -euo pipefail
           for test_file in \
@@ -107,6 +121,7 @@ jobs:
           done
 
       - name: Verify current RF model and search contracts
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           set -euo pipefail
           python -m compileall -q src/lpf/topology_management src/lpf/phase2_models src/lpf/rf_core
@@ -151,6 +166,7 @@ jobs:
       # integration suites via workflow_dispatch (integration=true) for changes
       # to the shared runner, checkpoint, topology or experiment storage paths.
       - name: Check runner and topology safety boundaries
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           set -euo pipefail
           PYTHONPATH=tests python -m unittest -v \
@@ -177,12 +193,15 @@ jobs:
           done
 
       - name: Guard unique RF and project sources with read-only legacy aliases
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
       - name: Check documentation entrypoints and preserved evidence links
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
           python scripts/verify_phase2_cleanup_w1_links.py --active-only
       - name: Verify active RF registry and historical candidate audits
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           set -euo pipefail
           python -m unittest discover -s tests -p test_audit.py -v
@@ -193,18 +212,24 @@ jobs:
       # These deterministic tests are cheap and their dependencies include policy,
       # ledger and evidence files. Run unconditionally rather than risk missing a
       # dependency or an earlier commit in a multi-commit push.
-      - name: Check optimization status, experiment reservation and provenance
+      - name: Check classifier fail-closed behavior
+        run: python -m unittest discover -s tests -p test_storage_ci_classification.py -v
+      - name: Check experiment reservation and provenance
         run: |
           set -euo pipefail
           for test_file in \
-            test_slsqp_budget.py \
             test_experiment_number_reservation.py \
             test_experiment_provenance.py \
             test_new_experiment_storage.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done
 
+      - name: Check optimization status
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
+        run: python -m unittest discover -s tests -p test_slsqp_budget.py -v
+
       - name: Check shared search primitives
+        if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
           set -euo pipefail
           for test_file in \
