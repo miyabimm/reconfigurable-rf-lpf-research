@@ -16,32 +16,15 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
 - Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
 
-## 新・逐次search runner（Issue #302、fixture限定）
+## 現行フローと資料の入口
 
-`scripts/run_rf_search.py` → `lpf.search` は旧実行/探索/保存層に依存しない新経路。
-[CLI・数式・依存境界・未接続の本番ゲート](diagnostics/issue302_sequential_search.md)を参照。
-`preflight`はread-only、`run`はsynthetic fixtureのみ。本番runは`not_ready`で停止する。
-旧CLIとの互換・旧EXP変換は行わない。
+- **[Campaign操作ガイド](campaign_workflow.md)**：研究側PlanとAIのdata-only構造提案、明示Controller→JobSpec→Worker、開発/正式EXP、G0〜G5の順序を一か所で確認する。
+- [ロードマップ](roadmap.md)：mainの実装実績と未検証ゲート。
+- [診断・歴史資料索引](diagnostics/README.md)：旧Stageごとの説明、限定実証・レビュー証拠、整理候補。古い「未接続」「レビュー待ち」は当時の範囲であり現況の正本ではない。
+- 固定step Worker／逐次親Runnerの詳細は [#317](diagnostics/issue317_fixed_worker.md)／[#319](diagnostics/issue319_parent_runner.md)。
+- schema1の `preflight` はread-only、`run` はsynthetic fixture限定。本番runは `not_ready`。旧EXP変換・互換保証は提供しない（[#302](diagnostics/issue302_sequential_search.md)）。
 
-### Stage 4C-1 開発用固定steps Worker（Issue #317）
-
-schema 2の `load_preflight()` → `freeze_development_job()` →
-`execute_development_job()` は単一Job・system tmp raw限定の開発API。
-共有sample予約、全step後の共通selection、YAML指定terminal/anytime、任意sampleの
-独立検査を接続する。本番CLI/親台帳/G0–G5/再開は未接続で、denseは`not_run`。
-[API・費用・限定検証](diagnostics/issue317_fixed_worker.md)を参照。
-
-### Stage 4C-2 開発用逐次親Runner（Issue #319）
-
-`runner.run_development()` はschema 2の全seed×armを投入前に凍結・Trialごとに予約し、
-既存Workerを固定順で実行するsystem tmp専用API。
-各seedの合法な完全x/SHAは呼出側が明示指定する。
-親はrawをファイルから読戻し照合し、確定Jobの未要求枠のみ解放する。
-不明・中断・改変・保存障害では予約を保持し後続全Jobを停止する。
-本番CLI/G0–G5、並列Scheduler、retry/resumeは未接続。
-[API・台帳・限定検証](diagnostics/issue319_parent_runner.md)を参照。
-
-### Stage 4C-3A 開発用最小E2E CLI（Issue #321）
+### 開発用固定definition CLI
 
 `run_rf_search.py develop --config <schema2.yaml> --starts <starts.json>
 --output <未存在のcheckout外system tmpディレクトリ>` が既存の逐次親Runnerを呼び、
@@ -53,21 +36,13 @@ schema 2の `load_preflight()` → `freeze_development_job()` →
 いずれも正式RF認定ではなく、G0–G5未承認・dense/全帯域独立MNA/保存監査は未実施。
 [契約・再現コマンド・限定証拠](diagnostics/issue321_development_cli.md)を参照。
 
-### Issue #325 Campaign逐次提案境界（段階分割Draft・開発API）
+## 旧経路のCLI・設定契約（必要時のみ参照）
 
-`search.campaign` はschema2 Campaign envelopeと2予算を凍結し、別ファイルの構造提案YAMLを
-1件ずつController→既存開発Workerへ渡すsystem tmp専用の親API。
-状態SHA/構造SHA、採否イベント、Jobごとのcap予約・raw照合・余剰返還、unknown時の全体STOPを扱う。
-`search.gates.prepare_campaign()` / `campaign_preflight()` は既存中央予約・manifest/storage監査を
-Campaign単位で接続し、planned main bytesと承認code bytes/実行時HEADを分離照合する（RF実行なし）。
-第3増分の `begin_campaign()` / `submit_campaign_proposal()` は正式G2用の明示APIで、
-main-backed G0/G1を各投入・各forward直前にも再照合し、別kindの正式JobSpecで既存科学Workerを使う。
-実運用には別の実験Issue・ユーザー起動と完全checkoutのG0/G1が必要。本実装では隔離偽Git fixtureのみ検証。
-`search.preservation` の明示APIはG3成果変換、既存G3/G4 Git保存・実バイト監査、
-remote main保全確認後のG5 cleanup可否判定（削除なし）を提供する。
-自動ライフサイクルの `run_campaign()` は引き続き `not_ready`。実EXPの運用・科学合格を意味しない。[入力/API/段階境界](diagnostics/issue325_campaign.md)を参照。
+以下は既存callerの注意書きを保持したもの。現行schema2 Campaignの操作手順ではなく、
+Issue限定の未凍結template・予算案は実行指示ではない。旧Stageの経過は[索引](diagnostics/README.md)とIssue/PR/Git履歴へ。
+旧nominal adapterの対象制限と現行 `rf_core` の対応条件を混同しない。
 
-## 共通YAML CLI（コード検証と本番実験は別）
+### 共通YAML CLI（コード検証と本番実験は別）
 
 `scripts/run_phase2_shared.py` の既存4モードは維持し、次を明示的に追加する。
 
