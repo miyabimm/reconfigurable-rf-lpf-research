@@ -42,6 +42,84 @@ def _base(plan, root, experiment_id, owner, request_id):
     return root, main, row
 
 
+def campaign_raw_directory(root, experiment_id):
+    """Only the ignored, non-symlink results/<reserved EXP> is a formal raw root."""
+    root = Path(root).resolve()
+    path = root/'results'/experiment_id
+    if path.resolve() != path or path.parent.is_symlink():
+        raise ValueError('Campaign raw path must not redirect through symlinks')
+    relative = path.relative_to(root).as_posix()
+    if subprocess.run(['git', '-C', str(root), 'check-ignore', '-q', relative+'/campaign.json'],
+                      capture_output=True).returncode:
+        raise ValueError('Campaign results must be Git ignored')
+    if _git(root, 'ls-files', '--', relative).strip():
+        raise ValueError('Campaign raw must not be Git tracked')
+    return path
+
+
+def verify_campaign_binding(binding, root):
+    """Recompute G0/G1; a cached ready report alone never authorizes forward."""
+    from .plan import Plan
+    from .storage import canonical
+    plan = Plan(canonical(binding['plan']), binding['plan_sha256'])
+    report = campaign_preflight(plan, binding['experiment_id'], owner=binding['owner'],
+        request_id=binding['request_id'], root=root)
+    if report != binding['preflight']:
+        raise ValueError('Campaign frozen G1/runtime binding changed')
+    return report
+
+
+def verify_campaign_job(spec, checkpoint, root):
+    """Check G1 plus the parent's durable active reservation before any RF."""
+    from .storage import plain
+    data = spec.data
+    if data.get('kind') != 'campaign_formal_job_v1':
+        raise ValueError('Formal entry rejects development JobSpec')
+    binding = data['formal_binding']
+    verify_campaign_binding(binding, root)
+    directory = campaign_raw_directory(root, binding['experiment_id'])
+    context = data['campaign_context']
+    expected = directory/(context['job_id']+'.json')
+    if Path(checkpoint).absolute() != expected or expected.resolve() != expected:
+        raise ValueError('Formal Worker raw path mismatch')
+    state = json.loads((directory/'campaign.json').read_bytes())
+    row = state['jobs'][-1] if state['jobs'] else {}
+    cap = data['plan']['costs']['jobs'][data['arm']]['max_requested_samples']
+    if (state['plan'] != binding['plan'] or state['source'] != data['source'] or
+            sha(data['source']) != spec.source_sha256 or sha(data['plan']) != spec.plan_sha256 or
+            state['reserved'] != sum(j['reserved'] for j in state['jobs']) or
+            state['requested'] != sum(j['requested'] for j in state['jobs']) or
+            row.get('definition_sha256') != sha(data['definition']) or
+            row.get('proposal_sha256') != context['proposal_sha256'] or
+            spec.trial_id != binding['experiment_id'] or
+            spec.job_id != spec.trial_id+'-'+context['job_id'] or
+            state.get('kind') != 'campaign_formal_v1' or state.get('formal_binding') != binding or
+            state['status'] != 'unknown' or row.get('status') != 'unknown' or
+            state['plan_sha256'] != binding['plan_sha256'] or
+            context['plan_sha256'] != binding['plan_sha256'] or
+            row.get('spec') != plain(spec) or row.get('spec_sha256') != sha(spec) or
+            row.get('raw_path') != expected.name or row.get('cap') != cap or
+            row.get('reserved') != cap or state['reserved'] != cap or
+            state['requested']+state['reserved'] > binding['plan']['config']['campaign']['max_rf_samples']):
+        raise ValueError('Formal Job/parent reservation mismatch')
+    from .proposals import load_proposal
+    accepted = [e for e in state['events'] if e.get('job_id') == context['job_id'] and e['status'] == 'accepted']
+    if len(accepted) != 1:
+        raise ValueError('Formal Job accepted proposal missing')
+    event = accepted[0]
+    index = state['events'].index(event)
+    if event['input_path'] != f'proposal-{index:06d}.yaml':
+        raise ValueError('Formal Job proposal path mismatch')
+    path = directory/event['input_path']
+    proposal = load_proposal(path)
+    if (path.resolve() != path or hashlib.sha256(path.read_bytes()).hexdigest() != event['input_sha256'] or
+            sha(proposal) != context['proposal_sha256'] or sha(proposal['definition']) != sha(data['definition']) or
+            proposal['based_on_state_sha256'] != context['based_on_state_sha256'] or
+            event['spec_sha256'] != sha(spec)):
+        raise ValueError('Formal Job proposal bytes/provenance mismatch')
+    return binding
+
+
 def _storage_estimate(root, selection, size_exception=None):
     validate_selection(selection)
     budget = json.loads((root/'data/phase2_git_storage_budget.json').read_bytes())

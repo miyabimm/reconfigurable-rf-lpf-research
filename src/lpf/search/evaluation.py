@@ -45,9 +45,7 @@ class FixedStageEvaluation:
         from .plan import ROOT
         self.root = Path(root or ROOT).resolve()
         self.path = Path(checkpoint).resolve()
-        if (not self.path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
-                self.path.is_relative_to(self.root)):
-            raise ValueError('Development checkpoint must be in system temp outside repository')
+        self._validate_checkpoint()
         if self.path.exists():
             raise ValueError('Existing raw/unknown checkpoint: no automatic resume or retry')
         self.plan, self.definition = plan, definition
@@ -68,6 +66,11 @@ class FixedStageEvaluation:
         self.other_jobs = (self.data['costs']['trial_job_cap_reservation'] -
                            self.job['max_requested_samples'])
         self._checkpoint()
+
+    def _validate_checkpoint(self):
+        if (not self.path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
+                self.path.is_relative_to(self.root)):
+            raise ValueError('Development checkpoint must be in system temp outside repository')
 
     def _contract(self):
         from lpf.constraint_versions import constraint_fingerprint
@@ -221,6 +224,7 @@ class FixedStageEvaluation:
             if vector_sha(x) != row['vector_sha256'] or row['grid_sha256'] != grid_fingerprint(self.grid):
                 raise ValueError('Independent audit candidate/grid identity mismatch')
             for i in ids:
+                self._contract()
                 ref = evaluate_independent_response(self.model, x,
                     float(self.grid.frequency_hz[i]), int(self.grid.setting[i]))
                 s = np.array(row['response']['s_real'][i]) + 1j*np.array(row['response']['s_imag'][i])

@@ -60,7 +60,10 @@ schema 2の `load_preflight()` → `freeze_development_job()` →
 状態SHA/構造SHA、採否イベント、Jobごとのcap予約・raw照合・余剰返還、unknown時の全体STOPを扱う。
 `search.gates.prepare_campaign()` / `campaign_preflight()` は既存中央予約・manifest/storage監査を
 Campaign単位で接続し、planned main bytesと承認code bytes/実行時HEADを分離照合する（RF実行なし）。
-正式Runner/Worker・G3〜G5接続は未実装であり、`run_campaign()` は常に `not_ready`。
+第3増分の `begin_campaign()` / `submit_campaign_proposal()` は正式G2用の明示APIで、
+main-backed G0/G1を各投入・各forward直前にも再照合し、別kindの正式JobSpecで既存科学Workerを使う。
+実運用には別の実験Issue・ユーザー起動と完全checkoutのG0/G1が必要。本実装では隔離偽Git fixtureのみ検証。
+G3〜G5は未実装、全ライフサイクルの `run_campaign()` は引き続き `not_ready`。
 Issue全体の完了ではない。[入力/API/段階境界](diagnostics/issue325_campaign.md)を参照。
 
 ## 共通YAML CLI（コード検証と本番実験は別）

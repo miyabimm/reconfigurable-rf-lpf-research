@@ -1,4 +1,4 @@
-"""Same-process fixed-step executor; production EXP execution is not_ready."""
+"""Shared fixed-step science with distinct development and G1-bound formal entries."""
 from dataclasses import dataclass
 import json
 import time
@@ -16,6 +16,22 @@ from .validation import select, pending
 def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=None, spot_checks=None,
                            campaign_context=None):
     """Freeze one schema-2 development Job; this is NOT a G1 JobSpec."""
+    return _freeze_fixed_job(plan, definition, policy, arm, seed, vector, root=root,
+        spot_checks=spot_checks, campaign_context=campaign_context)
+
+
+def freeze_campaign_job(plan, definition, policy, arm, seed, vector, *, root,
+                        spot_checks, campaign_context, formal_binding):
+    """Freeze a distinct formal Job after read-only G0/G1 revalidation."""
+    from .gates import verify_campaign_binding
+    verify_campaign_binding(formal_binding, root)
+    _campaign_job_envelope(plan, spot_checks, campaign_context, formal_binding)
+    return _freeze_fixed_job(plan, definition, policy, arm, seed, vector, root=root,
+        spot_checks=spot_checks, campaign_context=campaign_context, formal_binding=formal_binding)
+
+
+def _freeze_fixed_job(plan, definition, policy, arm, seed, vector, *, root=None,
+                      spot_checks=None, campaign_context=None, formal_binding=None):
     from dataclasses import asdict
     from pathlib import Path
     from .plan import ROOT
@@ -69,7 +85,31 @@ def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=
             raise ValueError('Invalid frozen Campaign Job provenance')
         frozen['campaign_context'] = campaign_context
         job_id = 'development-' + campaign_context['job_id']
-    return JobSpec(job_id, 'development_only', plan.sha256, sha(source), canonical(frozen))
+    trial_id = 'development_only'
+    if formal_binding is not None:
+        if campaign_context is None:
+            raise ValueError('Formal Job requires Campaign provenance')
+        frozen.update(kind='campaign_formal_job_v1', formal_binding=formal_binding)
+        trial_id = formal_binding['experiment_id']
+        job_id = trial_id + '-' + campaign_context['job_id']
+    return JobSpec(job_id, trial_id, plan.sha256, sha(source), canonical(frozen))
+
+
+def _campaign_job_envelope(plan, spot_checks, context, binding):
+    from .campaign import _structure
+    from .proposals import definition_from_data
+    import copy
+    expected = copy.deepcopy(binding['plan']['config'])
+    config = plan.data['config']
+    expected['definition'] = config['definition']
+    if config != expected or context['plan_sha256'] != binding['plan_sha256']:
+        raise ValueError('Formal Job outside G1 Campaign Plan')
+    # Use the same topology parser and envelope rules as proposal admission.
+    _structure(definition_from_data(config['definition']), config['campaign'])
+    independent = config['campaign']['independent']
+    expected_spots = {} if independent['stage'] == 'not_run' else {'terminal': independent['sample_indices']}
+    if spot_checks != expected_spots:
+        raise ValueError('Formal Job independent validation outside G1')
 
 
 def _development_options(step):
@@ -86,6 +126,19 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     solver_kind labels patched solver tests as fixture; it does not replace RF.
     No scheduler/CLI/production gate is enabled. Existing raw always STOPs.
     """
+    if spec.data.get('kind') != 'development_only' or spec.trial_id != 'development_only':
+        raise ValueError('not_ready: Development entry rejects formal/unknown JobSpec')
+    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
+
+
+def execute_campaign_job(spec, checkpoint, *, root, solver_kind='scipy'):
+    """Formal entrance; reuse scientific execution, never relabel a dev raw."""
+    from .gates import verify_campaign_job
+    verify_campaign_job(spec, checkpoint, root)
+    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
+
+
+def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
     from pathlib import Path
     import numpy as np
     from .plan import ROOT, Plan
@@ -99,8 +152,9 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     from lpf.topology_management import InductorTree, CapacitorPlacement
     root = Path(root or ROOT).resolve()
     d = spec.data
-    if d.get('kind') != 'development_only' or spec.trial_id != 'development_only':
-        raise ValueError('not_ready: production G0/G1 not connected')
+    formal = d.get('kind') == 'campaign_formal_job_v1'
+    if not formal and (d.get('kind') != 'development_only' or spec.trial_id != 'development_only'):
+        raise ValueError('Unknown fixed Job kind')
     if solver_kind not in ('scipy', 'fixture'):
         raise ValueError('Unknown solver execution kind')
     plan = Plan(canonical(d['plan']), spec.plan_sha256)
@@ -111,11 +165,14 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     cfg = plan.data['config']
     policy = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
     # Rebuild the minimal frozen record, not only its self-declared hashes.
-    expected = freeze_development_job(plan, definition, policy, d['arm'], d['seed'], d['start']['vector'],
+    if formal:
+        _campaign_job_envelope(plan, d['spot_checks'], d['campaign_context'], d['formal_binding'])
+    expected = _freeze_fixed_job(plan, definition, policy, d['arm'], d['seed'], d['start']['vector'],
                                       root=root, spot_checks=d['spot_checks'],
-                                      campaign_context=d.get('campaign_context'))
+                                      campaign_context=d.get('campaign_context'),
+                                      formal_binding=d.get('formal_binding') if formal else None)
     if expected != spec:
-        raise ValueError('Development Job/input/source/options SHA mismatch')
+        raise ValueError('Fixed Job/input/source/options SHA mismatch')
     meter = FixedJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
     result = meter.result
     result.update(status='unknown', solver_execution_kind=solver_kind, rf_backend='rf_core')

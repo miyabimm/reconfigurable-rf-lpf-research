@@ -126,12 +126,14 @@ def _development_readback(path, returned, spec):
     d = spec.data
     plan = d['plan']
     cap = plan['costs']['jobs'][d['arm']]['max_requested_samples']
-    expected = dict(spec=plain(spec), kind='stage4c1_development_only',
+    formal = d.get('kind') == 'campaign_formal_job_v1'
+    expected = dict(spec=plain(spec), kind='campaign_formal_raw_v1' if formal else 'stage4c1_development_only',
         plan_sha256=spec.plan_sha256, policy_id=plan['config']['rf']['constraint_id'],
         policy_fingerprint=plan['requirements']['policy_fingerprint'],
         requirements_fingerprint=plan['requirements']['fingerprint'],
         definition_sha256=sha(d['definition']), rf_inputs=plan['rf_inputs'], grids=plan['grids'],
-        gates=plan['gates'], rf_backend='rf_core')
+        gates=dict(G0_G1='passed', G2='running', G3_G5='not_run') if formal else plan['gates'],
+        rf_backend='rf_core')
     for key, value in expected.items():
         if result[key] != value:
             raise ValueError(f'Raw JobSpec/Plan identity mismatch: {key}')

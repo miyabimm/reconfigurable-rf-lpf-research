@@ -1,8 +1,8 @@
-"""Sequential file-submission Campaign boundary (isolated development only).
+"""Sequential file-submission Campaign boundary with separate dev/formal entries.
 
-No production EXP/G1 approval is manufactured here. The existing development
-Worker/raw contract remains explicitly labelled; formal G0/G1/G3-G5 integration
-is a separate gate, not a mode switch on this runner.
+Formal G2 requires existing main-backed G0/G1; it never manufactures approval.
+G3-G5 and the full lifecycle entrance remain not_ready. No automatic advisor,
+reservation, commit, cleanup, parallel execution or retry is provided.
 """
 import copy
 import hashlib
@@ -41,14 +41,31 @@ def _directory(output, root):
 
 def begin_development_campaign(plan, output, *, root=ROOT):
     """Freeze an envelope once, not future definitions, starts or JobSpecs."""
+    return _begin_campaign(plan, output, root=root)
+
+
+def begin_campaign(plan, experiment_id, *, owner, request_id, root=ROOT):
+    """Explicit formal initialization; no EXP reservation, commit or RF run."""
+    from .gates import campaign_preflight, campaign_raw_directory
+    report = campaign_preflight(plan, experiment_id, owner=owner, request_id=request_id, root=root)
+    binding = dict(experiment_id=experiment_id, owner=owner, request_id=request_id,
+        plan=plan.data, plan_sha256=plan.sha256, preflight=report)
+    output = campaign_raw_directory(root, experiment_id)
+    return _begin_campaign(plan, output, root=root, formal_binding=binding)
+
+
+def _begin_campaign(plan, output, *, root, formal_binding=None):
     root = Path(root).resolve()
     _plan(plan, root)
-    output = _directory(output, root)
-    state = dict(kind='campaign_development_only_not_an_EXP', status='ready',
+    output = Path(output) if formal_binding else _directory(output, root)
+    state = dict(kind='campaign_formal_v1' if formal_binding else 'campaign_development_only_not_an_EXP', status='ready',
         plan=plan.data, plan_sha256=plan.sha256, source=source_identity(root),
         topologies=[], jobs=[], events=[], proposal_ids=[], requested=0, completed=0,
         reserved=0, independent_requested=0, independent_completed=0,
         gates=plan.data['gates'], preservation_audit='not_run')
+    if formal_binding:
+        state.update(formal_binding=formal_binding,
+                     gates=dict(G0_G1='passed', G2='ready', G3_G5='not_run'))
     output.mkdir(parents=True, exist_ok=False)
     atomic(output/'campaign.json', state)
     return campaign_snapshot(output)
@@ -89,7 +106,10 @@ def _totals(state):
 def _check_ready_state(state, plan, output, root):
     """A new file submission must not trust cached totals or prior raw digests."""
     from .worker import JobSpec
-    if state['kind'] != 'campaign_development_only_not_an_EXP' or state['gates'] != plan.data['gates']:
+    formal = state['kind'] == 'campaign_formal_v1'
+    expected_gates = dict(G0_G1='passed', G2='ready', G3_G5='not_run') if formal else plan.data['gates']
+    if (state['kind'] not in ('campaign_development_only_not_an_EXP', 'campaign_formal_v1') or
+            state['gates'] != expected_gates):
         raise ValueError('Campaign kind/gate identity mismatch')
     proposal_ids = []
     for index, event in enumerate(state['events']):
@@ -121,6 +141,8 @@ def _check_ready_state(state, plan, output, root):
         event = accepted.get(job_id, {})
         if (row['job_id'] != job_id or row['raw_path'] != job_id+'.json' or
                 row['status'] != 'completed' or row['spec_sha256'] != sha(spec) or
+                data.get('kind') != ('campaign_formal_job_v1' if formal else 'development_only') or
+                (formal and data.get('formal_binding') != state['formal_binding']) or
                 data['source'] != state['source'] or spec.source_sha256 != sha(state['source']) or
                 row['campaign_plan_sha256'] != plan.sha256 or
                 row['job_plan_sha256'] != spec.plan_sha256 or sha(data['plan']) != spec.plan_sha256 or
@@ -176,11 +198,32 @@ def submit_development_proposal(plan, proposal_path, output, *, root=ROOT, solve
     All rejected submissions retain their original bytes and input SHA. Once a
     durable unknown marker exists, storage errors propagate without save retry.
     """
+    return _submit_proposal(plan, proposal_path, output, root=root, solver_kind=solver_kind)
+
+
+def submit_campaign_proposal(plan, proposal_path, experiment_id, *, owner, request_id,
+                             root=ROOT, solver_kind='scipy'):
+    """One explicit file submission to a G1-bound formal Campaign, no auto-loop."""
+    from .gates import campaign_preflight, campaign_raw_directory
+    report = campaign_preflight(plan, experiment_id, owner=owner, request_id=request_id, root=root)
+    output = campaign_raw_directory(root, experiment_id)
+    state = json.loads((output/'campaign.json').read_bytes())
+    binding = dict(experiment_id=experiment_id, owner=owner, request_id=request_id,
+        plan=plan.data, plan_sha256=plan.sha256, preflight=report)
+    if state.get('formal_binding') != binding or state['kind'] != 'campaign_formal_v1':
+        raise ValueError('Campaign formal binding mismatch')
+    return _submit_proposal(plan, proposal_path, output, root=root, solver_kind=solver_kind,
+                            formal_binding=binding)
+
+
+def _submit_proposal(plan, proposal_path, output, *, root, solver_kind, formal_binding=None):
     root = Path(root).resolve()
-    output = _directory(output, root)
+    output = Path(output) if formal_binding else _directory(output, root)
     ledger = output/'campaign.json'
     state = json.loads(ledger.read_bytes())
     _plan(plan, root)
+    if bool(formal_binding) != (state['kind'] == 'campaign_formal_v1'):
+        raise ValueError('Development/formal Campaign entry mismatch')
     if (state['plan_sha256'] != plan.sha256 or state['plan'] != plan.data or
             state['source'] != source_identity(root)):
         raise ValueError('Campaign frozen Plan/source mismatch; STOP')
@@ -237,8 +280,14 @@ def submit_development_proposal(plan, proposal_path, output, *, root=ROOT, solve
             parent_job_id=state['jobs'][-1]['job_id'] if state['jobs'] else None,
             plan_sha256=plan.sha256, proposal_sha256=digest,
             based_on_state_sha256=proposal['based_on_state_sha256'])
-        spec = runner.freeze_development_job(job_plan, definition, policy, arm['name'], action.seed,
-            start['vector'], root=root, spot_checks=spots, campaign_context=context)
+        if formal_binding:
+            from .worker import freeze_campaign_job
+            spec = freeze_campaign_job(job_plan, definition, policy, arm['name'], action.seed,
+                start['vector'], root=root, spot_checks=spots, campaign_context=context,
+                formal_binding=formal_binding)
+        else:
+            spec = runner.freeze_development_job(job_plan, definition, policy, arm['name'], action.seed,
+                start['vector'], root=root, spot_checks=spots, campaign_context=context)
         if spec.data['source'] != state['source']:
             raise ValueError('Campaign source changed while freezing Job')
     except (ValueError, TypeError, KeyError, yaml.YAMLError) as exc:
@@ -263,8 +312,12 @@ def submit_development_proposal(plan, proposal_path, output, *, root=ROOT, solve
     _totals(state)
     atomic(ledger, state)  # adopt+reserve+unknown is one durable transaction
     try:
-        returned = runner.execute_development_job(spec, output/row['raw_path'], root=root,
-                                                  solver_kind=solver_kind)
+        if formal_binding:
+            from .worker import execute_campaign_job
+            returned = execute_campaign_job(spec, output/row['raw_path'], root=root, solver_kind=solver_kind)
+        else:
+            returned = runner.execute_development_job(spec, output/row['raw_path'], root=root,
+                                                      solver_kind=solver_kind)
         imported = runner._development_readback(output/row['raw_path'], returned, spec)
     except (Exception, KeyboardInterrupt) as exc:
         # Only add a diagnostic to the already-unknown parent. Never retry a
@@ -290,5 +343,5 @@ def submit_development_proposal(plan, proposal_path, output, *, root=ROOT, solve
 
 
 def run_campaign(*args, **kwargs):
-    """Formal execution is deliberately fail-closed until G0/G1 is connected."""
-    raise ValueError('not_ready: formal Campaign G0/G1 and G3-G5 integration not implemented')
+    """Full lifecycle stays closed; explicit G2 submissions do not finalize EXPs."""
+    raise ValueError('not_ready: formal Campaign G0/G1 lifecycle requires G3-G5 integration')
