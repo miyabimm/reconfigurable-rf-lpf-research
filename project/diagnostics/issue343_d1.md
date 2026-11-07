@@ -73,7 +73,10 @@ uv run --frozen python scripts/audit_new_experiment_storage.py audit
 - GREEN: 対象27件＋fresh interpreter内31件PASS。
 - 通常FULL: PASS、既定opt-in実SciPy smoke 1件skip。選択CIは323経由で新しい307科学検査も実行。
 - sparse: 完全checkoutでの試行は`docs/`存在の前提検査でFAIL（PASS扱いしない）。
-  一時sparse worktreeでの最終実測・同一HEADの両GitHub CI URLはDraft PRへ記録する。
+  `/tmp/issue343-d1-sparse-worktree`（一時sparse worktree）のFULLはPASS。
+  同一最終HEADの両GitHub CI URLはDraft PRへ記録する。
+- 初回GitHub通常FULLは新診断文書の索引漏れでFAIL。`diagnostics/README.md`へ登録して修正。
+  RF科学回帰の失敗ではないが、初回CI全体のPASSは主張しない。
 - 保存audit: 既存checkoutでexit 0。これは本変更でEXPの科学結果・全歴史ソースを再監査した意味ではない。
 - 最初のsparse試行は120秒timeoutで中断。残留した一時テストdefinition/planだけを確認して削除した。
 
