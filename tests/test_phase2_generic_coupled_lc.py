@@ -3,18 +3,20 @@ import unittest
 
 import numpy as np
 
-from test_phase2_problem_seed import make
+from test_issue323_dependencies import make
+from lpf.rf_core import EvaluationGrid
 from lpf.topology_management.circuit_layout import InductorTree
 from lpf.rf_core.coupled_lc import CircuitValues, CoupledLCTopology, ParameterVectorSchema
 
 
 class GenericCircuitEvaluationTests(unittest.TestCase):
     def test_typed_forward_rejects_setting_dependent_fixed_or_ic_values(self):
-        problem, x = make('RF-T008', 4)
-        forward = problem.circuit.forward_evaluator(3)
-        original = forward.schema.decode(x)
-        np.testing.assert_allclose(forward.il(original), forward.il(x), atol=1e-12, rtol=0)
-        for index in (0, forward.schema.n_fixed + forward.schema.n_variable):
+        grid = EvaluationGrid(np.array([810e6]), np.array([0]), np.array([0]))
+        _, _, model, _, x = make('RF-T008')
+        forward = model.evaluator(grid)
+        original = model.schema.decode(x)
+        np.testing.assert_allclose(forward.evaluate(original).il_db, forward.evaluate(x).il_db, atol=1e-12, rtol=0)
+        for index in (0, model.schema.n_fixed + model.schema.n_variable):
             rows = list(original.capacitors_pf_by_setting)
             row = list(rows[3])
             row[index] += .01
@@ -22,16 +24,14 @@ class GenericCircuitEvaluationTests(unittest.TestCase):
             typed = CircuitValues(original.inductances_nh, original.coupling_k, tuple(rows))
             with self.subTest(capacitor_index=index):
                 with self.assertRaisesRegex(ValueError, 'differ by setting'):
-                    forward.il(typed)
-                with self.assertRaisesRegex(ValueError, 'differ by setting'):
-                    forward.summary(typed)
-        problem, x = make('RF-T007', 4)
-        forward = problem.circuit.forward_evaluator(3)
-        typed = forward.schema.decode(x)
+                    forward.evaluate(typed)
+        _, _, model, _, x = make('RF-T007')
+        forward = model.evaluator(grid)
+        typed = model.schema.decode(x)
         rows = list(typed.capacitors_pf_by_setting)
         rows[4] = rows[4][:-1] + (.51,)
         with self.assertRaisesRegex(ValueError, 'differ by setting'):
-            forward.il(CircuitValues(typed.inductances_nh, typed.coupling_k, tuple(rows)))
+            forward.evaluate(CircuitValues(typed.inductances_nh, typed.coupling_k, tuple(rows)))
 
     def test_schema_finite_shape_fixed_state_and_spd_guards(self):
         schema = ParameterVectorSchema(3, 1, 2, 1, 2, (0.5,))

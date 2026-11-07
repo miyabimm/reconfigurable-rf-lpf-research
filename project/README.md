@@ -45,6 +45,8 @@ Issue #343 D2で `run_phase2_shared.py` / `run_phase2_one_start.py`、旧実験r
 [Campaign操作ガイド](campaign_workflow.md)を使用する。
 
 以下のIssue別API・探索案は当時の限定記録であり、旧探索実行入口は廃止済み。
+Issue #343 D3で `multistart`、`SampledEpigraph`、旧SLSQP・候補・post-searchの
+APIも撤去した。以下の旧API呼出例は歴史的記述であり実行できない。
 現役Campaignの実行契約や本番実行許可を意味しない。
 
 ## Issue #245 A：Sobol RF選別（明示opt-in）
@@ -58,24 +60,20 @@ Stage Bの `candidate_pool='design_prototype'` は純直列L＋port-shunt IC 1�
 実固定S2Pでは適用不能で停止したため、有効性未確認のprototypeで止めている。
 [API・仮定・mockと実診断の区別](diagnostics/issue245_designed_starts.md)参照。Stage Cは未実装。
 
-## Issue #241：SciPy-DE最小接続（mockのみ）
+## Issue #241：SciPy-DE最小接続（履歴）
 
-[API・計測・本番接続ブロッカー](diagnostics/issue241_scipy_de_preview.md)を参照。
-`generate_starts(..., count=N, cost_meter=meter)` は既存16点Sobol blockを再利用し、
-既定3-startを維持する。`scipy_de_preview.run_de_preview` は公開SciPy制約APIを
-mock forwardで検査する小さなadapter。初期化も含むsample予算・中断時メーター/bestを保持し、
-物理不正proposalはRFスコアを作らずfail-closed停止する。本番runner/実RF探索は未提供。
+[当時の診断](diagnostics/issue241_scipy_de_preview.md)はmock限定の履歴記録。
+Issue #343 D3で旧 `scipy_de_preview` を撤去したため、記載のAPIは現役ではない。
 
 ## Issue #285：SLSQP v2 / Hybrid / SLP 同費用比較（計画のみ）
 
 [4群の比較案・sample予算・実行前ブロッカー・G0〜G5](diagnostics/issue285_rf_comparison_plan.md)を参照。
 未承認の計画であり、本番RF探索・EXP予約・科学的結果はない。
 
-## Issue #284：RF-T008 → Hybrid/SLP 薄型接続（限定検証）
+## Issue #284：RF-T008 → Hybrid/SLP 薄型接続（履歴）
 
-[API・目的/制約・費用・検証の限界](diagnostics/issue284_rf_pipeline_adapter.md)を参照。
-開発fixtureとmock中心の接続であり、実RF最適化・EXP・候補昇格を提供しない。
-独立レビューとmain統合前は#285の比較実行可能性の根拠にしない。
+[当時の診断](diagnostics/issue284_rf_pipeline_adapter.md)は開発fixtureとmock中心の履歴記録。
+Issue #343 D3で旧 `rf_pipeline_adapter` を撤去したため、記載のAPIは現役ではない。
 
 ## Issue #239：optimizer比較契約・RFコスト計測（本番EXPなし）
 

@@ -64,7 +64,7 @@ class DependenciesTests(unittest.TestCase):
         legacy_arrows = {path.name for path in (root/'phase2_models').glob('*.py')
                          if any('search' in name.split('.') for name in imports(path))}
         # Isolated old callers, not part of the schema2 import/call graph.
-        self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py'})
+        self.assertEqual(legacy_arrows, {'api.py'})
         for path in (root/'rf_core').glob('*.py'):
             self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
                                  for name in imports(path)), path)
@@ -86,6 +86,18 @@ class DependenciesTests(unittest.TestCase):
                      'src/lpf/phase2_models/experiment_run.py',
                      'src/lpf/phase2_models/experiment_post_search.py'):
             self.assertFalse((root / path).exists(), path)
+
+    def test_retired_optimizer_closure_is_absent(self):
+        root = Path(__file__).resolve().parents[1] / 'src/lpf/phase2_models'
+        for name in ('candidate_records', 'designed_starts', 'evaluation_cost',
+                     'frequency_exchange', 'frequency_exchange_c1', 'generic_starts',
+                     'multistart', 'normalized_epigraph', 'optimizer_comparison',
+                     'post_search_evidence', 'post_search_journal', 'post_search_validation',
+                     'rf_pipeline_adapter', 'sampled_epigraph', 'scipy_de_preview',
+                     'staged_optimization', 'start_selection', 'synthetic_plan',
+                     'synthetic_runner', 'candidate_audit', 'independent_scan',
+                     'limited_candidate_evidence', 'problem_seed', 'topology_enumeration'):
+            self.assertFalse((root / (name + '.py')).exists(), name)
 
     def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
         from lpf.search import checkout, gates, preservation

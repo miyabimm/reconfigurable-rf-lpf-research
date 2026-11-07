@@ -11,7 +11,7 @@ on:
         type: boolean
         default: true
       integration:
-        description: 'Also run full shared-entry, continuation, synthetic-runner and topology integration suites'
+        description: 'Also rerun current topology science checks'
         type: boolean
         default: false
 
@@ -70,10 +70,10 @@ jobs:
           CI_REF: ${{ github.ref }}
           CI_FULL: ${{ inputs.full }}
         run: python scripts/select_ci_tests.py
-      - name: Full runner and topology integration (manual)
+      - name: Additional topology science check (manual)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
         run: |
           set -euo pipefail
-          for test_file in test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
+          for test_file in test_issue343_d3_science.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done

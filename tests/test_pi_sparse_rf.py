@@ -1,13 +1,17 @@
 """Live RF API in an actual Pi sparse checkout; no historical evidence needed."""
+import csv
 import os
 import unittest
 from pathlib import Path
 
 import numpy as np
 
-from test_phase2_problem_seed import make
+from test_issue323_dependencies import make
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
+from lpf.rf_core import EvaluationGrid
+from lpf.rf_core._grid import validated_band_segments
 from lpf.rf_core.port_parasitics import get_two_port_s
+from lpf.search.component_constraints import validate_values
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,16 +26,21 @@ class PiSparseRFTests(unittest.TestCase):
         trial = load_constraint('RF-T008', allow_trial=True)
         for port in ('input_parasitic', 'output_parasitic'):
             self.assertTrue(np.isfinite(get_two_port_s(trial, port, 1e9, root=ROOT)).all())
-        problem, vector = make('RF-T008', 3)
-        vector[6] = 0.  # non-neighbor coupling is forbidden by this fixture
-        evaluator = problem.circuit.forward_evaluator(1)
-        self.assertEqual(len(evaluator.f), 28)
-        self.assertEqual(set(evaluator.setting), set(range(6)))
-        self.assertTrue(np.isfinite(evaluator.il(vector)).all())
-        result = problem.circuit.evaluate_sampled(vector, points_per_interval=1)
-        self.assertTrue(result['candidate_promotion_blocked'])
-        self.assertFalse(result['rf_compliance_certified'])
-        self.assertFalse(result['independent_mna_checked'])
+        policy, definition, model, _, vector = make('RF-T008')
+        # Use legal zero coupling; the midpoint of a signed k bound is zero.
+        validate_values(definition, model.schema, vector, policy)
+        with (ROOT / 'rf/bands.csv').open(newline='', encoding='utf-8') as source:
+            segments = validated_band_segments(list(csv.DictReader(source)))
+        grid = EvaluationGrid(
+            np.array([row[2] * 1e6 for row in segments]),
+            np.array([row[0] for row in segments]),
+            np.arange(len(segments)),
+        )
+        self.assertEqual(len(grid.frequency_hz), 28)
+        self.assertEqual(set(grid.setting), set(range(6)))
+        result = model.evaluator(grid).evaluate(vector)
+        self.assertTrue(np.isfinite(result.il_db).all())
+        self.assertFalse(result.independent_mna_checked)
 
 
 if __name__ == '__main__':

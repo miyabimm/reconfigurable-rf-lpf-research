@@ -26,9 +26,6 @@ class SelectionTests(unittest.TestCase):
                      'src/lpf/search/worker.py', 'src/lpf/search/gates.py',
                      'project/experiment_storage_policy.md', '.github/workflows/audit.yml',
                      'src/lpf/search/proposals.py',
-                     *(f'src/lpf/phase2_models/{name}.py' for name in (
-                         'post_search_validation', 'post_search_journal', 'post_search_evidence',
-                         'limited_candidate_evidence')),
                      'tests/test_issue309_rf_core.py', 'unknown.txt'):
             self.write(path, 'baseline\n')
         self.commit()
@@ -142,6 +139,9 @@ class SelectionTests(unittest.TestCase):
 
     def test_suite_boundaries(self):
         self.assertIn('test_phase2_branch_mna.py', selector.SUITES['RF'])
+        self.assertIn('test_issue343_d3_science.py', selector.SUITES['RF'])
+        self.assertIn('test_issue343_d3_science', selector.SPARSE['RF'])
+        self.assertEqual(selector.path_classes('src/lpf/phase2_models/limited_candidate_evidence.py'), {'FULL'})
         self.assertIn('test_issue317_fixed_worker.py', selector.SUITES['RUN'])
         self.assertNotIn('test_issue317_fixed_worker.py', selector.SUITES['GATE'])
         self.assertNotIn('test_issue325_campaign.py', selector.SUITES['GATE'])
@@ -159,10 +159,6 @@ class SelectionTests(unittest.TestCase):
 
     def test_reviewed_source_changes_select_direct_regressions(self):
         examples = [
-            *((f'src/lpf/phase2_models/{name}.py', {'RF', 'STORE'},
-               'test_phase2_post_search_validation.py', None) for name in (
-                   'post_search_validation', 'post_search_journal', 'post_search_evidence',
-                   'limited_candidate_evidence')),
             ('src/lpf/search/proposals.py', {'RUN', 'GATE'},
              'test_issue325_campaign.py', 'test_issue325_campaign'),
             ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py', 'test_issue313_preflight'),

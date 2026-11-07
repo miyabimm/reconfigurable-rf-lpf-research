@@ -1,4 +1,4 @@
-# Issue #343 D2 — 非現役の履歴資料
+# Issue #343 — 非現役の履歴資料
 
 これらは**実行可能な現役APIではない**。通常のPython import・CIは参照しない。
 元source・依存関係を含む実行環境が必要なら、元Git commitを隔離checkoutし、
@@ -23,3 +23,86 @@ git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/diagnose_phase2_scalin
 ```
 
 旧source固定の歴史integrationや実EXP再現はこの移設では実行しない。
+
+## D3：旧post-searchの歴史的手法
+
+元main `0698a87925b30ccaf11531a5197a5dc611d3f681` からバイト不変で移動。
+17点・独立84点・dense等の旧検証段階、候補証拠の再計算・source結合は
+現役G3/G4の保存検査とは同義でない。以下は直接importや実行を保証しない。
+旧条件・対象EXPの正確な対応は元manifestと元commitで確認する。完全証拠checkoutでの
+履歴再現は未実施。旧RF-T008の例は上記旧effective SHAであり現行条件に読み替えない。
+
+|元パス|元blob|内容SHA-256|保存理由|
+|---|---|---|---|
+|`src/lpf/phase2_models/post_search_evidence.py`|`64c8fed2f1d7952c30eb2542c80aab8af8643cb5`|`c8a7a42eb7a36d1848c5d5ec99681b3df741cf8fca5032eeee28601a57c631ff`|旧候補の証拠形式と検証意味。|
+|`src/lpf/phase2_models/post_search_validation.py`|`88ac720d8ea41bb59e8958d654b79bc3e27a9a51`|`b9e3939bfb60777595dd985b8998b834db22b897f6208aa7706a3e4130c6e1e2`|旧17/84/dense検証手順と段階分類。|
+
+`git show 0698a87925b30ccaf11531a5197a5dc611d3f681:src/lpf/phase2_models/post_search_validation.py` で元sourceを参照できる。
+
+### D3：独立scan・候補識別の非同値な旧手法
+
+同じ元mainから以下もバイト不変で隔離した。旧`candidate_audit`と旧topology列挙は
+削除し、現役への互換shimは設けない。
+
+|元パス|元blob|内容SHA-256|保存理由・対象|
+|---|---|---|---|
+|`src/lpf/phase2_models/independent_scan.py`|`c70dac32446ab4af877b65a68dfe10afe8b3e973`|`5aaa89a01dfc22dd6459151833b5a889309b55a41424ef3f682eb2cc2b5e9ed8`|`minimize_scalar`による個別区間内spot極値探索。現役固定格子MNAと非同値。|
+|`src/lpf/phase2_models/limited_candidate_evidence.py`|`665ed07056d2dc991e18ed70d789ebcfeba31aa3`|`58948d71c6688c91e769d93e8daf5ac1392accf5d8a4e5965abf785cb5d7a2c8`|旧candidateのdefinition/vector、環境・source・input結合と再計算証拠形式。現役raw形式とは異なる。|
+|`src/lpf/phase2_models/problem_seed.py`|`de22f5e722927c76f9a292eff4a92801154dc44a`|`e2d338b26f2a1c14fb30975bc4f17aca87138c18c9f3dcbd44e6a34b21632d75`|旧definition/vector fingerprint・seed/epigraph座標の意味。現役Job seedとの互換は不要。|
+|`tests/test_phase2_independent_rf.py`|`b8302e9cf632afa46e8b3308759950f3bf45a65b`|`4bb5017f92c39170a02d099e1e07737bb137677f87003fe10fbc3a6d72c918bb`|旧scanの極値・失敗oracleとEXP-042/043/055/058の固定vector参照・回路定義。現役CIからは実行しない。|
+
+旧scan/evidenceは特定EXPに固定した実行器ではなく、渡されたpolicy/回路を使用する。
+上記歴史testはRF-T005/T007/T008と保存EXP vectorを組み合わせているが、保存時の
+旧RF effective SHA／source／環境による実EXP再現を認定するtestではない。
+#307移行後のD1固定期待値の5条件回帰とは入力・条件・検証法が異なる。
+対応する歴史RF SHAは`rf/constraints/history/issue307-migration.json`、実EXPの条件は
+元manifestを参照し、現在の同名RF IDを過去のeffective SHAと同一視しない。
+
+各元パスは上記と同様に`git show <元main>:<元パス>`で復元できる。
+ここに移したtestは削除済み旧API/test fixtureも参照するため、コピー単体を現役
+Python pathへ追加して実行しない。必要なら**元commitの環境全体**で再現する。
+完全研究証拠の監査、保存EXP vectorの再実行、区間内極値探索・denseの再実行は未実施。
+現役への置換範囲と未代替の差は[整理記録](../../project/diagnostics/issue343_d3_cleanup.md)を参照。
+
+### D3レビュー補足：保存EXP固定テストの検証レシピ
+
+以下2件も一般的な旧runnerテストではなく、凍結EXP入力と旧評価・識別手法を結ぶ
+固有の再現レシピとして隔離する。元mainは
+`a86f47b6bf6fe3b722195167c88a6fbb07e220d6`。内容バイト不変で、通常`tests/`や
+現役CIへは戻さない。D1固定期待値は現行RF条件・別vectorであり、同値代替ではない。
+
+|元パス|元blob|内容SHA-256|保存理由・対象|
+|---|---|---|---|
+|`tests/test_phase2_problem_frozen.py`|`d67fa28d48b4709135730ff4174746f6b4c19a00`|`b7cd38d123cc360d33817229004e4e8ad6498fc82e683b034bc2385ebf4ef2a6`|EXP-042/055/058の入力ファイルSHA・回路定義、旧`SampledEpigraph.seed`の完全vector・encode/decode・28/56点残差照合。全証拠checkoutを要するread-only opt-in手順。|
+|`tests/test_phase2_candidate_records_frozen.py`|`7ff0eebb11bc4f33f4f4cd71b9b1ed0038c96f52`|`040addffd6b5ae2dd59dfb9ed642cd23eb6dafd84458728cc4e2cbb6ff57a5f7`|同EXP入力SHA、旧candidate roundtrip/再計算、`passed_limited`と`not_run`、限定MNA・電力残差、証拠深度の異なる候補を混同しない検証。synthetic callbackは歴史solver収束ではない。|
+
+入力参照はEXP-042 `preliminary_js_5pt.json`、EXP-055
+`checkpoints/cv1_input_tip_best.json`、EXP-058のarea4p667 snapshot、
+problem testではarea3〜3p667 snapshotも含む。ファイル内の凍結入力SHAと
+`831e9e56754e81d69b583893181c350396acc8f5`への参照をそのまま保存した。
+これらの入力SHAはRF effective SHAではない。旧RF条件との関係は以下のとおり
+（#307移行表の旧effective SHA、現行の同名IDとは非同値）:
+
+|旧trial ID|#307移行前effective SHA|
+|---|---|
+|RF-T005|`59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c`|
+|RF-T007|`c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430`|
+|RF-T008|`7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`|
+
+保存したtest自体はRF effective SHAを固定せず、実行checkoutの`load_constraint`を
+使用する。元mainは#307移行後なので、そこからコードを復元するだけで歴史EXPと
+同じRF条件の再実行になるとは限らない。旧条件の正本・新旧SHA対応は
+`rf/constraints/history/issue307-migration.json`、実EXPの条件/source/環境は
+元manifestで照合する。現行条件でのPASSやsynthetic収束を過去EXPの認定に読み替えない。
+
+元コードの読み出し（Git objectが存在する場合）:
+
+```sh
+git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_problem_frozen.py
+git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_candidate_records_frozen.py
+```
+
+旧API依存も必要なので、再現する場合は元Git commitのcheckoutと全証拠・対応環境を
+揃える。archiveコピーを現役Python pathへ追加して直接実行しない。今回確認したのは
+元blob/内容SHAの一致と現役回帰のみ。旧solver・歴史EXP固定テストの実行、
+完全研究証拠監査は未実施であり、この保存を実EXP再現PASSとは扱わない。
