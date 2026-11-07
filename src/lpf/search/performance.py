@@ -125,7 +125,7 @@ def compile_requirements(policy, bands, mode='full_lpf'):
             rows = list(csv.DictReader(f))
     else:
         rows = list(bands)
-    from lpf.phase2_models._grid import CASES, validated_band_segments
+    from lpf.rf_core._grid import CASES, validated_band_segments
     validated_band_segments(rows)  # existing six-setting/subband meaning checks
     settings = list(CASES)
     intervals = []
@@ -221,7 +221,7 @@ def build_evaluation_grid(requirements, points_per_interval):
     additional intervals keep their JSON density regardless of ordinary points.
     """
     from ..rf_core.model import EvaluationGrid
-    from ..phase2_models._grid import CASES
+    from lpf.rf_core._grid import CASES
     req = requirements
     if not isinstance(req, Requirements):
         raise ValueError('Compiled Requirements required')

@@ -157,7 +157,7 @@ class ProblemSeedTests(unittest.TestCase):
 
     def test_continuation_initial_forward_failure_never_skips_to_next_sobol(self):
         from unittest.mock import patch
-        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
         from lpf.phase2_models.experiment_config import prepare_continuation_starts, ContinuationPreparationError
         p, _ = make('RF-T008', 4)
         config = dict(schema_version=4, methods=['A', 'B', 'C', 'D'],

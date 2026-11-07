@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.circuit_layout import CapacitorPlacement
-from lpf.phase2_models.rft008_layout import RFT008CapacitorLayout
+from lpf.rf_core.rft008_layout import RFT008CapacitorLayout
 from lpf.phase2_models import exp058_area3, exp058_area4, exp058_area4l_gjm
 
 SNAP = ROOT / "data/pareto_snapshots"

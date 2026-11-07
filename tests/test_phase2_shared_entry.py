@@ -21,7 +21,7 @@ from lpf.experiment_manifest import new_manifest
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation
 from scripts.run_phase2_shared import exp_preflight, manifest_preview, one_start_gate, prepare_one_start, storage_audit
 from lpf.phase2_models.problem_seed import vector_fingerprint
-from lpf.phase2_models._grid import CASES
+from lpf.rf_core._grid import CASES
 from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
 from test_phase2_problem_seed import make
 from test_phase2_staged_optimization import status
@@ -262,7 +262,7 @@ class SharedEntryTests(unittest.TestCase):
                 return np.where(evaluator.role == 0, .25,
                                 np.where(evaluator.role == 1, 29. if h2_bad[0] else 36., 36.))
             h2_bad = [False]
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', forward), \
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', forward), \
                  patch('lpf.phase2_models.staged_optimization.minimize',
                        side_effect=AssertionError('real SciPy forbidden')) as minimize:
                 scenarios = (((0, 0), 'converged'),) if enumerated else (
@@ -445,7 +445,7 @@ class SharedEntryTests(unittest.TestCase):
                 if harmonic_failure[0]:
                     il[evaluator.role == 1] = 29.
                 return il
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', fake_il), \
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', fake_il), \
                  patch('lpf.phase2_models.staged_optimization.minimize',
                        side_effect=AssertionError('solver forbidden')) as minimize:
                 for codes, state, reason in (((0, 0), 'converged', None),
@@ -613,7 +613,7 @@ class SharedEntryTests(unittest.TestCase):
                 git('push', '-q', 'origin', 'main')
                 return m, storage, summary
 
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', fake_il), \
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', fake_il), \
                  patch('lpf.phase2_models.staged_optimization.minimize',
                        side_effect=AssertionError('solver forbidden')) as minimize:
                 # Reject contradictions BEFORE writing, not by correcting the preview.
@@ -733,6 +733,14 @@ class SharedEntryTests(unittest.TestCase):
 
 
 class FrozenConfigTests(unittest.TestCase):
+    def require_historical_t008(self):
+        # These legacy plans are hard-pinned to the pre-#307 trial policy.
+        # Do not rewrite historical inputs or silently mix the two SHAs.
+        from lpf.constraint_versions import constraint_fingerprint, load_constraint
+        from scripts.prepare_issue250_comparison import POLICY_SHA
+        if constraint_fingerprint(load_constraint('RF-T008', allow_trial=True)) != POLICY_SHA:
+            self.skipTest('historical plan RF-T008 SHA differs from current policy')
+
     """Reusable YAML/dispatch contracts, never real SciPy or a scientific EXP."""
 
     def fixture(self, root):
@@ -960,10 +968,11 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(prepare.call_count, 1)
 
     def test_20db_diagnostic_plan_and_two_arm_failure_isolation(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import (load_plan, stable_identity,
             prepare_diagnostic_starts)
-        from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+        from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
         from scripts.prepare_issue250_comparison import comparison_circuit
         import lpf.phase2_models.experiment_run as runner
         config = yaml.safe_load((ROOT / 'project/experiments/issue276.yaml').read_text())
@@ -1178,19 +1187,21 @@ class FrozenConfigTests(unittest.TestCase):
                 load_plan(root, path)
 
     def test_continuation_reference_definition_matches_historical_structure_only(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import _check_continuation_reference
         from scripts.prepare_issue250_comparison import comparison_circuit
         config = yaml.safe_load((ROOT / 'project/experiments/issue270.yaml').read_text())
         if not (ROOT / config['topology_reference']['path']).exists():
             self.skipTest('Complete historical evidence checkout required')
-        with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('RF')):
+        with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('RF')):
             _check_continuation_reference(ROOT, config, comparison_circuit())
         config['topology_reference']['sha256'] = '0' * 64
         with self.assertRaisesRegex(ValueError, 'path/SHA'):
             _check_continuation_reference(ROOT, config, comparison_circuit())
 
     def test_continuation_plan_mock_dispatch_and_fail_closed(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import load_plan, stable_identity
         from lpf.phase2_models.experiment_run import run_plan
@@ -1271,7 +1282,7 @@ class FrozenConfigTests(unittest.TestCase):
                 plan_path.write_text(json.dumps(envelope))
                 path.write_text(yaml.safe_dump(config))
             save()
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('RF')):
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('RF')):
                 loaded = load_plan(root, path)
                 frozen = json.loads(json.dumps(loaded['input_source']))
                 self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
@@ -1364,7 +1375,7 @@ class FrozenConfigTests(unittest.TestCase):
                     self.assertEqual(runner.restore_curated_result(curated, loaded['input_source']),
                                      runner._curated_result(item))
                 before = raw.read_bytes()
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
                     run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=optimizer)
                 self.assertEqual(raw.read_bytes(), before)
                 gate['run'].mkdir(parents=True)
@@ -1479,7 +1490,7 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertTrue(all('frequency_exchange' in v for v in saved_summary['actual_results'].values()))
                 raw = root / 'results/EXP-999/run.json'
                 before = raw.read_bytes()
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
                     run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
                 self.assertEqual(raw.read_bytes(), before)
                 def failed(*args, **kwargs):
@@ -1529,7 +1540,7 @@ class FrozenConfigTests(unittest.TestCase):
             plan = root / config['plan']['path']
             before = plan.read_bytes()
             plan.unlink()
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('static only')):
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('static only')):
                 self.assertEqual(load_plan(root, path, frozen_input=frozen)['input_source'], frozen)
             plan.write_bytes(before)
             for field, value in [('coordinates', 'physical'), ('coordinates', 'unknown')]:
@@ -1572,7 +1583,7 @@ class FrozenConfigTests(unittest.TestCase):
                     self.assertEqual(restore_curated_result(curated, loaded['input_source']), _curated_result(result))
                 raw = root / 'results/EXP-999/run.json'
                 before = raw.read_bytes()
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', side_effect=AssertionError('no-op')):
                     run_plan(root, path, 'EXP-999', 'remaining', optimize_stage=mock)
                 self.assertEqual(raw.read_bytes(), before)
                 self.assertEqual(len(calls), 8)
@@ -1640,7 +1651,7 @@ class FrozenConfigTests(unittest.TestCase):
             original = load_plan(root, path)
             frozen = json.loads(json.dumps(original['input_source']))
             (root / config['plan']['path']).unlink()
-            with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+            with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il',
                        side_effect=AssertionError('G1 static load must not evaluate RF')):
                 portable = load_plan(root, path, frozen_input=frozen)
                 self.assertEqual(portable['input_source_sha256'], original['input_source_sha256'])
@@ -1687,7 +1698,7 @@ class FrozenConfigTests(unittest.TestCase):
                 raw = root / 'results/EXP-999/run.json'
                 before = raw.read_bytes()
                 package_count = package.call_count
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il',
                            side_effect=AssertionError('completed phase must not evaluate RF')):
                     repeated = run_plan(root, path, 'EXP-999', 'pilot', optimize_stage=mock)
                 self.assertEqual(json.loads(json.dumps(pilot)), repeated)
@@ -1797,7 +1808,7 @@ class FrozenConfigTests(unittest.TestCase):
                             self.assertIsNone(result['candidate'])
                             self.assertLessEqual(staged['evaluation_cost']['frequency_samples_requested'], 196)
 
-    @patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+    @patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il',
            lambda ev, x: np.where(ev.role == 0, .25, 36.))
     def test_multistart_real_remote_gate_storage_and_finalize(self):
         from lpf.phase2_models.experiment_config import load_plan
@@ -1884,7 +1895,7 @@ class FrozenConfigTests(unittest.TestCase):
                 before = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
                 raw = repo / 'results' / ident / 'run.json'
                 before[raw.relative_to(repo)] = raw.read_bytes()
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il',
                            side_effect=AssertionError('no-op must not evaluate RF')):
                     repeated = run_plan(repo, path, ident, 'pilot', optimize_stage=solver)
                 self.assertEqual(json.loads(json.dumps(pilot)), repeated)
@@ -1903,7 +1914,7 @@ class FrozenConfigTests(unittest.TestCase):
                 preserved = {p.relative_to(repo): p.read_bytes() for p in run.rglob('*') if p.is_file()}
                 preserved[raw.relative_to(repo)] = raw.read_bytes()
                 for phase in ('remaining', 'pilot'):
-                    with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il',
+                    with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il',
                                side_effect=AssertionError('completed phase must not evaluate RF')):
                         repeated = run_plan(repo, path, ident, phase, optimize_stage=solver)
                     self.assertEqual(json.loads(json.dumps(final)), repeated)

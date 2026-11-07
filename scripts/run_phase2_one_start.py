@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.phase2_models.candidate_records import record_candidate, CandidateRecord, recheck_record
 from lpf.phase2_models.api import build_nominal_circuit
-from lpf.phase2_models._grid import CASES
+from lpf.rf_core._grid import CASES
 from lpf.phase2_models.staged_optimization import run_c1_staged, scipy_slsqp_stage, _json_value
 from lpf.phase2_models.synthetic_runner import checked_one_start_selection
 from scripts.run_phase2_shared import prepare_one_start

@@ -36,6 +36,13 @@ class ContinuationIntegrationTests(unittest.TestCase):
     @unittest.skipUnless((ROOT / 'experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json').is_file(),
                          'full evidence checkout required for topology-reference fixture')
     def test_temporary_remote_full_lifecycle(self):
+        # Historical schema4 preparation is pinned to the pre-#307 RF SHA;
+        # the old CLI explicitly rejects substituting the migrated policy.
+        # This legacy integration cannot run against the current model.
+        from lpf.constraint_versions import constraint_fingerprint, load_constraint
+        pinned = yaml.safe_load((ROOT / 'project/experiments/issue270.yaml').read_text())['rf']['effective_sha256']
+        if pinned != constraint_fingerprint(load_constraint('RF-T008', allow_trial=True)):
+            self.skipTest('historical schema4 policy SHA is incompatible with current RF-T008')
         with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
             repo, remote = Path(tmp) / 'repo', Path(tmp) / 'remote.git'
             repo.mkdir()
@@ -83,7 +90,7 @@ class ContinuationIntegrationTests(unittest.TestCase):
             for module in ('scripts.run_phase2_shared', 'lpf.phase2_models.limited_candidate_evidence',
                            'lpf.phase2_models.post_search_validation'):
                 stack.enter_context(patch(module + '.ROOT', repo))
-            from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+            from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
             eligible = []
             def fake_forward(ev, x):
                 passed = not eligible or np.array_equal(np.asarray(x)[:len(eligible[0])], eligible[0])

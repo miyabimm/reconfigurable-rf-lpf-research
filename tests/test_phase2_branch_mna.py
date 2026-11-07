@@ -10,10 +10,10 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.branch_mna import solve_branch_mna
+from lpf.rf_core.branch_mna import solve_branch_mna
 from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
-from lpf.phase2_models.coupled_lc import CoupledLCTopology
-from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+from lpf.rf_core.coupled_lc import CoupledLCTopology
+from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 
 
 def circuit(n, trial="RF-T005"):

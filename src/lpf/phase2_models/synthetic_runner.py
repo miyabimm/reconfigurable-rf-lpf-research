@@ -11,7 +11,7 @@ from pathlib import Path
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, run_termination_aware_slsqp
 import numpy as np
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from .candidate_records import CandidateRecord, record_candidate, recheck_record, pareto_report
 from .staged_optimization import run_c1_staged, scipy_slsqp_stage
 from .problem_seed import vector_fingerprint

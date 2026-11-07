@@ -14,7 +14,7 @@ import numpy as np
 import scipy
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_input_file
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from .api import NominalCircuit, build_nominal_circuit
 from .independent_scan import scan_independent_rf
 

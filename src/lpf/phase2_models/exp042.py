@@ -6,8 +6,8 @@ import csv
 import json
 from pathlib import Path
 import numpy as np
-from lpf.port_parasitics import get_two_port_s, s_to_abcd
-from ._grid import ROOT
+from lpf.rf_core.port_parasitics import get_two_port_s, s_to_abcd
+from lpf.rf_core._grid import ROOT
 HERE = ROOT / "experiments/chatgpt_topology_search/runs/EXP-042"
 
 CASES = ("B71", "B12", "B28", "B13+B14", "B26", "B8")

@@ -11,8 +11,8 @@ import numpy as np
 
 from test_issue307_constraints import make
 from lpf.constraint_versions import load_constraint, rf_input_file
-from lpf.phase2_models._grid import validated_band_segments
-from lpf.phase2_models.coupled_lc import CoupledLCTopology
+from lpf.rf_core._grid import validated_band_segments
+from lpf.rf_core.coupled_lc import CoupledLCTopology
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import power_response, _cascade
 from lpf.rf_core.independent import validate_response, evaluate_independent_response
@@ -133,7 +133,7 @@ class RFCoreTests(unittest.TestCase):
     def test_independent_zero_and_subnormal_power_transmission(self):
         # Synthetic passive external 2-port fixture, not a new RF policy or
         # S2P file. Real branch-current MNA still solves the connected LC core.
-        from lpf.port_parasitics import get_two_port_s
+        from lpf.rf_core.port_parasitics import get_two_port_s
         p, d, _, _, x = make('RF-F003')
         model = build_rf_model(d, p)
         g = EvaluationGrid([1e9], [0], [0])
@@ -144,7 +144,7 @@ class RFCoreTests(unittest.TestCase):
                 return get_two_port_s(policy, role, f)
             with self.subTest(transmission=transmission), ExitStack() as stack:
                 for module in ('lpf.rf_core.model', 'lpf.rf_core.independent',
-                               'lpf.phase2_models.independent_rf'):
+                               'lpf.rf_core.independent_rf'):
                     stack.enter_context(patch(module+'.get_two_port_s', side_effect=external))
                 response = model.evaluator(g).evaluate(x)
                 for key in ('il_db', 'apl_db'):
@@ -163,7 +163,7 @@ class RFCoreTests(unittest.TestCase):
             def external(policy, role, f):
                 return output if role == 'output_parasitic' else get_two_port_s(policy, role, f)
             with self.subTest(output=output), ExitStack() as stack:
-                for module in ('lpf.rf_core.independent', 'lpf.phase2_models.independent_rf'):
+                for module in ('lpf.rf_core.independent', 'lpf.rf_core.independent_rf'):
                     stack.enter_context(patch(module+'.get_two_port_s', side_effect=external))
                 with self.assertRaises(ValueError):
                     evaluate_independent_response(model, x, 1e9, 0)
@@ -180,7 +180,7 @@ class RFCoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tampered = Path(tmp)/'tampered.s2p'
             tampered.write_bytes(original.read_bytes()+b'! tampered\n')
-            with patch('lpf.port_parasitics._file_under_repo', return_value=tampered):
+            with patch('lpf.rf_core.port_parasitics._file_under_repo', return_value=tampered):
                 with self.assertRaisesRegex(ValueError, 'SHA256 mismatch'):
                     model.evaluator(g)
                 with self.assertRaisesRegex(ValueError, 'SHA256 mismatch'):

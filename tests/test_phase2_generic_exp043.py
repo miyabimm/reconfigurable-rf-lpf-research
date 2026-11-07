@@ -9,6 +9,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -17,8 +18,9 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.circuit_layout import InductorTree
-from lpf.phase2_models.coupled_lc import (
-    CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema
+from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
+from lpf.rf_core.coupled_lc import (
+    CoupledLCTopology, ParameterVectorSchema
 )
 
 ARCHIVE = ROOT / "experiments/chatgpt_topology_search/runs/EXP-043"
@@ -33,7 +35,12 @@ class EXP043GenericParityTests(unittest.TestCase):
         if spec is None or spec.loader is None:
             raise RuntimeError("EXP-043 frozen source is unavailable")
         source = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(source)
+        # Only this read-only historical oracle needs its original import name.
+        # Bind it to the single current S2P implementation during module load;
+        # do not modify archived source or add a production compatibility shim.
+        from lpf.rf_core import port_parasitics
+        with patch.dict(sys.modules, {'lpf.port_parasitics': port_parasitics}):
+            spec.loader.exec_module(source)
         cls.source = source
         cls.policy = load_constraint("RF-T005", allow_trial=True)
 

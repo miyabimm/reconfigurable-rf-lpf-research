@@ -81,7 +81,7 @@ class CandidateRecordTests(unittest.TestCase):
             # Deterministic forward boundary, NOT simulated RF performance.
             return np.where(evaluator.role == 0, .25, 36.)
 
-        with patch("lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il", synthetic_il):
+        with patch("lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il", synthetic_il):
             for final_t in (0., .25, .5):
                 def callback(problem, vector, maxiter, target):
                     # Coarse is always infeasible; only the final output qualifies.
@@ -156,7 +156,7 @@ class CandidateRecordTests(unittest.TestCase):
         # recomputed summary consistent, with feasible t on both stage grids.
         def synthetic_il(evaluator, vector):
             return np.where(evaluator.role == 0, il, stop)
-        with patch("lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il", synthetic_il):
+        with patch("lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il", synthetic_il):
             s = staged(p, x, source=source)
             return record_candidate(cid, p.circuit, x, staged_record=s, sampled_points=points)
 

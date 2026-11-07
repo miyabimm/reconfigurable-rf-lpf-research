@@ -7,6 +7,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -18,11 +19,15 @@ sys.path.insert(0, str(
 
 from lpf.constraint_versions import load_constraint
 from lpf.twoport_reduction import external_port_il_db
-from sweep_area4l_gjm import (
-    Evaluator as Legacy4LEvaluator,
-    independent_mna,
-    inductance,
-)
+from lpf.rf_core import port_parasitics
+# Archived EXP-058 imports EXP-043's historical S2P name. Resolve it only
+# while loading the unchanged oracle, without a production compatibility shim.
+with patch.dict(sys.modules, {'lpf.port_parasitics': port_parasitics}):
+    from sweep_area4l_gjm import (
+        Evaluator as Legacy4LEvaluator,
+        independent_mna,
+        inductance,
+    )
 
 SNAPSHOT = ROOT / "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json"
 

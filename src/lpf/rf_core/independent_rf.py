@@ -5,7 +5,7 @@ LPF nodal, Schur or ABCD matrix is used. A sample is not RF certification.
 """
 import numpy as np
 
-from lpf.port_parasitics import get_two_port_s
+from .port_parasitics import get_two_port_s
 from .branch_mna import solve_branch_mna
 from lpf.topology_management.circuit_layout import incidence_matrix
 from .coupled_lc import _fixed_port_impedance

@@ -7,7 +7,7 @@ EM, continuous-frequency extremum, or independent MNA is performed here.
 """
 import math
 
-from .port_parasitics import external_transducer_gain
+from .rf_core.port_parasitics import external_transducer_gain
 from .search.performance import additional_stopband as required_stopband, harmonic_limit_db, limit_db
 
 

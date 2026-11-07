@@ -5,7 +5,7 @@ import numpy as np
 
 from test_phase2_problem_seed import make
 from lpf.phase2_models.circuit_layout import InductorTree
-from lpf.phase2_models.coupled_lc import CircuitValues, CoupledLCTopology, ParameterVectorSchema
+from lpf.rf_core.coupled_lc import CircuitValues, CoupledLCTopology, ParameterVectorSchema
 
 
 class GenericCircuitEvaluationTests(unittest.TestCase):

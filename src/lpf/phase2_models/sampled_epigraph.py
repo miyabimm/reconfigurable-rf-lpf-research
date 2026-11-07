@@ -10,7 +10,7 @@ import numpy as np
 
 from .api import NominalCircuit, build_nominal_circuit
 from .problem_seed import circuit_box, make_seed
-from ._grid import CASES
+from lpf.rf_core._grid import CASES
 from lpf.policy_schema import harmonic_limit_db
 
 

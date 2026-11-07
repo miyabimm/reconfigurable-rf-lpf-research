@@ -13,7 +13,7 @@ from scipy.stats import qmc
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.constraint_versions import load_constraint, rf_input_file
 from lpf.experiment_manifest import file_sha256
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from .api import CircuitDefinition, build_nominal_circuit
 from .circuit_layout import InductorTree, CapacitorPlacement
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint

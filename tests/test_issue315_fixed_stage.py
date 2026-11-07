@@ -134,7 +134,7 @@ class FixedStageTests(unittest.TestCase):
             self.assertEqual((e.requested, e.completed), (0, 0))
             self.assertEqual(json.loads(e.path.read_text())['status'], 'stopped')
         e = self.evaluator(plan, d, p)
-        with patch('lpf.phase2_models.nominal_inductors.check_nominal_inductors', side_effect=ValueError('SPD failed')), \
+        with patch('lpf.rf_core.nominal_inductors.check_nominal_inductors', side_effect=ValueError('SPD failed')), \
              patch.object(RFEvaluator, 'evaluate') as f:
             with self.assertRaisesRegex(ValueError, 'SPD'): e.evaluate(x)
             f.assert_not_called()

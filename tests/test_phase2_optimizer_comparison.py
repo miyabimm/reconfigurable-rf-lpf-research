@@ -134,7 +134,7 @@ class ComparisonTests(unittest.TestCase):
                 comparison.evaluate(np.r_[x, 1.])  # global API has no epigraph
 
     def test_failure_counters_survive_without_repair(self):
-        from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
         p, x = make('RF-T008', 4)
         comparison = PhysicalComparison(p.circuit, 2)
         with patch.object(type(p.circuit), 'validate_components',
@@ -170,7 +170,7 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(comparison.cost.RF_forward_calls, 2)
 
     def test_slsqp_failure_retains_external_meter(self):
-        from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
         p, x = make('RF-T008', 4)
         meter = EvaluationCost()
         def solver(objective, initial, **kwargs):

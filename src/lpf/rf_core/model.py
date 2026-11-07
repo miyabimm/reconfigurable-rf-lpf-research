@@ -12,17 +12,17 @@ import json
 import numpy as np
 
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
-from lpf.port_parasitics import get_two_port_s
+from .port_parasitics import get_two_port_s
 from lpf.topology_management import CircuitDefinition
-from lpf.phase2_models.coupled_lc import (
+from .coupled_lc import (
     CoupledLCTopology, ParameterVectorSchema, CircuitValues, _fixed_port_impedance,
 )
-from lpf.phase2_models.nominal_parts import checked_inductor_metadata, checked_fixed_c_types
+from .nominal_parts import checked_inductor_metadata, checked_fixed_c_types
 from lpf.topology_management import audit_variable_connection_roles
-from lpf.phase2_models.rft008_layout import RFT008CapacitorLayout, policy_edges
+from .rft008_layout import RFT008CapacitorLayout, policy_edges
 from lpf.constraint_versions import validate_variable_c_connections
 from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
-from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+from .numerical_diagnostics import CircuitNumericalError
 
 
 def _frozen(array, dtype):

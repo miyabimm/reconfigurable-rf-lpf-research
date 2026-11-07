@@ -10,8 +10,8 @@ from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
 from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.independent_scan import scan_independent_rf
-from lpf.phase2_models.coupled_lc import CoupledLCTopology
-from lpf.phase2_models.independent_rf import evaluate_independent_sample
+from lpf.rf_core.coupled_lc import CoupledLCTopology
+from lpf.rf_core.independent_rf import evaluate_independent_sample
 
 
 class IndependentRFTests(unittest.TestCase):
@@ -193,7 +193,7 @@ class IndependentRFTests(unittest.TestCase):
                                   validate_components=lambda x: {'component_policy_pass': True})
         # Smooth synthetic maximum in the first UL segment, resolved by the
         # midpoint but underestimated by the endpoints and by the midpoint itself.
-        from lpf.phase2_models._grid import ROOT
+        from lpf.rf_core._grid import ROOT
         import csv
         with (ROOT / 'data/bands.csv').open(newline='', encoding='utf-8') as f:
             rows = list(csv.DictReader(f))
@@ -272,7 +272,7 @@ class IndependentRFTests(unittest.TestCase):
             with patch('lpf.phase2_models.independent_scan.evaluate_independent_sample', side_effect=ValueError(reason)):
                 with self.assertRaisesRegex(ValueError, reason):
                     scan_independent_rf(circuit, None, points_per_interval=3)
-        from lpf.phase2_models._grid import ROOT
+        from lpf.rf_core._grid import ROOT
         import csv
         with (ROOT / 'data/bands.csv').open(newline='', encoding='utf-8') as f:
             row = next(r for r in csv.DictReader(f) if r['region'] == 'H2')

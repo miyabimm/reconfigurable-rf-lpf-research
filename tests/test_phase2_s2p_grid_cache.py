@@ -18,16 +18,32 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
-from lpf.port_parasitics import (
+from lpf.rf_core.port_parasitics import (
     _load_verified, get_two_port_s, s_to_abcd,
 )
-from lpf.phase2_models._grid import CASES, SampledExternalEvaluator, validated_band_segments
+from lpf.rf_core._grid import CASES, validated_band_segments
+from lpf.phase2_models._grid import SampledExternalEvaluator
 
 
 class Phase2S2PCacheAndGridTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.policy = load_constraint("RF-T008", allow_trial=True)
+
+    def test_s2p_kernel_origin_default_root_and_interpolation(self):
+        from lpf.rf_core import port_parasitics as s2p
+        self.assertEqual(Path(s2p.__file__).resolve(), ROOT / 'src/lpf/rf_core/port_parasitics.py')
+        self.assertFalse((ROOT / 'src/lpf/port_parasitics.py').exists())
+        self.assertEqual(s2p.ROOT, ROOT)
+        for role in ('input_parasitic', 'output_parasitic'):
+            lo = s2p.get_two_port_s(self.policy, role, 810e6)
+            hi = s2p.get_two_port_s(self.policy, role, 811e6)
+            mid = s2p.get_two_port_s(self.policy, role, 810.5e6)
+            np.testing.assert_array_equal(mid, 0.5 * lo + 0.5 * hi)
+            np.testing.assert_array_equal(mid, s2p.get_two_port_s(self.policy, role, 810.5e6, root=ROOT))
+            for f in (0., 6e9):
+                np.testing.assert_array_equal(s2p.get_two_port_s(self.policy, role, f),
+                                              s2p.get_two_port_s(self.policy, role, f, root=ROOT))
 
     def test_frozen_s2p_returned_matrices_do_not_alias_cached_data(self):
         p = self.policy

@@ -10,7 +10,7 @@ from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
 from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.sampled_epigraph import SampledEpigraph
-from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 
 
 def circuit(policy_id):

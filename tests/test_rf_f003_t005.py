@@ -1,22 +1,24 @@
 """RF-F003 fixed parasitics and RF-T005/T006 explicit trial regression."""
 import hashlib
 import json
+import sys
 import unittest
 from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
-from src.lpf.constraint_versions import (load_constraint, validate_registry,
-                                         constraint_fingerprint,
-                                         validate_variable_c_connections)
-from src.lpf.port_parasitics import (get_two_port_s, external_cascade_abcd,
-                                      external_transducer_gain, _load_verified)
-from src.lpf.constraints import check_counts
-from src.lpf.trial_stopband import (
-    evaluate_trial_additional_stopband, summarize_full_lpf_trial_feasibility,
-)
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'src'))
+from lpf.constraint_versions import (load_constraint, validate_registry,
+                                     constraint_fingerprint,
+                                     validate_variable_c_connections)
+from lpf.rf_core.port_parasitics import (get_two_port_s, external_cascade_abcd,
+                                         external_transducer_gain, _load_verified)
+from lpf.constraints import check_counts
+from lpf.trial_stopband import (
+    evaluate_trial_additional_stopband, summarize_full_lpf_trial_feasibility,
+)
 
 
 class RFF003T005Tests(unittest.TestCase):
@@ -91,7 +93,7 @@ class RFF003T005Tests(unittest.TestCase):
     def test_t006_wideband_sweep_and_full_lpf_gate(self):
         trial = load_constraint("RF-T006", allow_trial=True)
         eye = np.eye(2, dtype=complex)
-        with patch("src.lpf.trial_stopband.external_transducer_gain", return_value=0.001) as gain:
+        with patch("lpf.trial_stopband.external_transducer_gain", return_value=0.001) as gain:
             ok = evaluate_trial_additional_stopband(trial, lambda setting, f: eye)
         self.assertEqual(gain.call_count, 6 * 3001)
         self.assertEqual(ok["total_points"], 18006)
@@ -111,7 +113,7 @@ class RFF003T005Tests(unittest.TestCase):
             return eye
         def gain_at_one_failure(policy, frequency_hz, lpf_abcd):
             return 0.02 if current[0] == "B71" and frequency_hz == 3_000_000_000 else 0.001
-        with patch("src.lpf.trial_stopband.external_transducer_gain",
+        with patch("lpf.trial_stopband.external_transducer_gain",
                    side_effect=gain_at_one_failure):
             failed = evaluate_trial_additional_stopband(trial, callback)
         self.assertFalse(failed["passes_minimum"])

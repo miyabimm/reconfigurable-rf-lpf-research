@@ -29,7 +29,7 @@ from scripts.experiment_id_registry import PATH as LEDGER_PATH, as_csv, next_res
 from lpf.phase2_models.candidate_records import record_candidate
 from lpf.phase2_models.post_search_evidence import verify_candidate_evidence
 from lpf.phase2_models.api import NominalCircuit
-from lpf.phase2_models.independent_rf import evaluate_independent_sample
+from lpf.rf_core.independent_rf import evaluate_independent_sample
 from lpf.phase2_models.evaluation_cost import SampleBudgetCost, SampleBudgetExceeded
 from lpf.phase2_models.staged_optimization import run_c1_staged
 

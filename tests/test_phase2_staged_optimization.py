@@ -263,7 +263,7 @@ class StageTests(unittest.TestCase):
                     calls.append(budget)
                     x[-1] = .5
                     return x, status(code)
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', fake_il), \
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', fake_il), \
                      patch('lpf.phase2_models.staged_optimization.minimize',
                            side_effect=AssertionError('solver forbidden')) as minimize:
                     initial = seed(problem, vector)

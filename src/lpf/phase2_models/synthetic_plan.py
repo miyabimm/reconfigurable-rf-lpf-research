@@ -12,7 +12,7 @@ import subprocess
 
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.slsqp_budget import STANDARD_SLSQP_BUDGET, TERMINATION_AWARE_POLICY_ID
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from .limited_candidate_evidence import _identity
 from .problem_seed import definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SampledEpigraph

@@ -72,13 +72,7 @@ class DevelopmentCLITests(unittest.TestCase):
 import importlib.abc, runpy, sys
 class NoLegacy(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
-        if fullname in {
-            'lpf.phase2_models.api', 'lpf.phase2_models.problem_seed',
-            'lpf.phase2_models.circuit_layout', 'lpf.phase2_models.role_audit',
-            'lpf.phase2_models.rft005_t007_policy_circuit',
-            'lpf.phase2_models.rft008_policy_circuit',
-            'lpf.search._legacy_schema1',
-        }:
+        if fullname == 'lpf.phase2_models' or fullname.startswith('lpf.phase2_models.') or fullname == 'lpf.search._legacy_schema1':
             raise ImportError('schema2 imported legacy: ' + fullname)
 sys.meta_path.insert(0, NoLegacy())
 sys.argv = sys.argv[1:]

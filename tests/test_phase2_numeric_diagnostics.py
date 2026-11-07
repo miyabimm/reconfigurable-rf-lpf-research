@@ -19,10 +19,11 @@ from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.circuit_layout import (
     CapacitorPlacement, InductorTree, incidence_matrix,
 )
-from lpf.phase2_models.coupled_lc import (
-    CircuitValues, CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
+from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
+from lpf.rf_core.coupled_lc import (
+    CircuitValues, CoupledLCTopology, ParameterVectorSchema,
 )
-from lpf.phase2_models.numerical_diagnostics import CircuitNumericalError
+from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 from lpf.phase2_models import exp055
 
 RUNS = ROOT / "experiments/chatgpt_topology_search/runs"

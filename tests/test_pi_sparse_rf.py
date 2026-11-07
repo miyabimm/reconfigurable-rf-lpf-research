@@ -7,7 +7,7 @@ import numpy as np
 
 from test_phase2_problem_seed import make
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
-from lpf.port_parasitics import get_two_port_s
+from lpf.rf_core.port_parasitics import get_two_port_s
 
 ROOT = Path(__file__).resolve().parents[1]
 
