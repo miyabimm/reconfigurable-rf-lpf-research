@@ -63,8 +63,9 @@ Campaign単位で接続し、planned main bytesと承認code bytes/実行時HEAD
 第3増分の `begin_campaign()` / `submit_campaign_proposal()` は正式G2用の明示APIで、
 main-backed G0/G1を各投入・各forward直前にも再照合し、別kindの正式JobSpecで既存科学Workerを使う。
 実運用には別の実験Issue・ユーザー起動と完全checkoutのG0/G1が必要。本実装では隔離偽Git fixtureのみ検証。
-G3〜G5は未実装、全ライフサイクルの `run_campaign()` は引き続き `not_ready`。
-Issue全体の完了ではない。[入力/API/段階境界](diagnostics/issue325_campaign.md)を参照。
+`search.preservation` の明示APIはG3成果変換、既存G3/G4 Git保存・実バイト監査、
+remote main保全確認後のG5 cleanup可否判定（削除なし）を提供する。
+自動ライフサイクルの `run_campaign()` は引き続き `not_ready`。実EXPの運用・科学合格を意味しない。[入力/API/段階境界](diagnostics/issue325_campaign.md)を参照。
 
 ## 共通YAML CLI（コード検証と本番実験は別）
 

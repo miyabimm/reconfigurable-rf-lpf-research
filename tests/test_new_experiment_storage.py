@@ -332,6 +332,8 @@ class StoragePolicyGateTests(unittest.TestCase):
             "limitations": [],
         }
         validate_summary(summary, "EXP-050", 0)
+        summary['attempts'].update(failed=0, unknown=1)
+        validate_summary(summary, 'EXP-050', 0)
         summary["attempts"]["failed"] = 2
         with self.assertRaisesRegex(ValueError, "outcomes do not sum"):
             validate_summary(summary, "EXP-050", 0)

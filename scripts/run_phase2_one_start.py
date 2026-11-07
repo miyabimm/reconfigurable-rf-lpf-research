@@ -287,6 +287,9 @@ def _package(root, run, circuit, state, manifest, storage):
 
 def _post_search_finalize_guard(root, run, manifest, storage, summary):
     """Bind new opt-in post-search evidence and index before G3 Git commits."""
+    if 'campaign' in manifest['search_scope']:
+        from lpf.search.preservation import campaign_index_guard
+        return campaign_index_guard(root, run, manifest, storage, summary)
     planned = manifest['search_scope'].get('post_search_validation')
     post = summary.get('post_search')
     if planned is None and post is None:

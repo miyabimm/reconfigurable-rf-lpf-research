@@ -356,6 +356,126 @@ class CampaignGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'symlinks'):
             campaign.begin_campaign(self.plan, self.ident, **self.kw)
 
+    def test_campaign_preservation_real_git_and_conditional_cleanup(self):
+        from dataclasses import replace
+        from lpf.search import preservation, worker
+        for cid in ('RF-F003', 'RF-T008'):
+            with self.subTest(cid=cid):
+                output, snapshot = self.formal_start(cid, independent=True)
+                # Isolated evidence checkout has a real, schema-correct index.
+                from lpf.experiment_manifest import INDEX_FIELDS
+                (self.repo/'data/experiment_index.csv').write_text(','.join(INDEX_FIELDS)+'\n')
+                self.commit('fixture index')
+                self.publish()
+                # New planned runtime binding after index-only commit.
+                shutil.rmtree(output)
+                from lpf.search import campaign
+                snapshot = campaign.begin_campaign(self.plan, self.ident, **self.kw)
+                changed = replace(self.definition, capacitor_placement=replace(
+                    self.definition.capacitor_placement, fixed_edges=((2, -1), (2, -1), (1, 3))))
+                with patch.object(worker, 'slsqp_minimize', side_effect=campaign_tests.worker_tests.FixedWorkerTests.fixture):
+                    for i, definition in enumerate((self.definition, changed, self.definition)):
+                        snapshot = self.formal_submit(snapshot, definition, f'p{i}')
+                stale = copy.deepcopy(snapshot)
+                stale['based_on_state_sha256'] = '0'*64
+                self.formal_submit(stale, name='rejected-stale')
+                before = {p.name: p.read_bytes() for p in output.iterdir()}
+                with patch.object(RFEvaluator, 'evaluate') as forward:
+                    summary = preservation.curate_campaign(self.ident, root=self.repo)
+                    self.assertEqual(summary['preservation_errors'], [])
+                    self.assertEqual(summary['attempts']['attempted'], 3)
+                    self.assertEqual(summary['attempts']['nonconverged'], 3)
+                    from scripts.audit_new_experiment_storage import find_run
+                    journal = json.loads((find_run(self.repo, self.ident)/'campaign_evidence.json').read_bytes())
+                    self.assertEqual(journal['proposals'][-1]['event']['status'], 'rejected')
+                    self.assertTrue(journal['proposals'][-1]['original_base64'])
+                    self.assertGreaterEqual(summary['selected_candidate_count'], 2)
+                    report = preservation.finalize_campaign(self.ident, root=self.repo)
+                    self.assertEqual(report['stage'], 'complete')
+                    self.assertTrue(report['committed_readback'])
+                    self.assertEqual(report['independent_validation'], 'not_run')
+                    kw = dict(root=self.repo, resume_needed=False, classification_complete=True)
+                    with self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                        preservation.campaign_cleanup_eligibility(self.ident, **kw)
+                    self.publish()
+                    decision = preservation.campaign_cleanup_eligibility(self.ident, **kw)
+                    self.assertTrue(decision['eligible'])
+                    self.assertFalse(decision['deleted'])
+                    self.assertEqual(set(before), {Path(p).name for p in decision['temporary_c']})
+                    with self.assertRaises(ValueError):
+                        preservation.campaign_cleanup_eligibility(self.ident, **(kw | {'resume_needed': True}))
+                    (output/'unclassified.log').write_text('do not delete')
+                    with self.assertRaisesRegex(ValueError, 'Raw changed'):
+                        preservation.campaign_cleanup_eligibility(self.ident, **kw)
+                    forward.assert_not_called()
+                for name, raw in before.items():
+                    self.assertEqual((output/name).read_bytes(), raw)
+
+    def test_campaign_unknown_preservation_retains_reservation_and_raw(self):
+        from lpf.search import preservation, worker
+        from lpf.experiment_manifest import INDEX_FIELDS
+        output, snapshot = self.formal_start()
+        (self.repo/'data/experiment_index.csv').write_text(','.join(INDEX_FIELDS)+'\n')
+        self.commit('index'); self.publish()
+        shutil.rmtree(output)
+        from lpf.search import campaign
+        snapshot = campaign.begin_campaign(self.plan, self.ident, **self.kw)
+        with patch.object(worker, 'execute_campaign_job', side_effect=OSError('worker lost')):
+            self.formal_submit(snapshot)
+        before = (output/'campaign.json').read_bytes()
+        with patch.object(RFEvaluator, 'evaluate') as forward:
+            summary = preservation.curate_campaign(self.ident, root=self.repo)
+            self.assertTrue(summary['preservation_errors'])
+            self.assertEqual(summary['attempts']['unknown'], 1)
+            self.assertEqual(summary['attempts']['failed'], 0)
+            with self.assertRaises(ValueError):
+                preservation.finalize_campaign(self.ident, root=self.repo)
+            with self.assertRaises(ValueError):
+                preservation.campaign_cleanup_eligibility(self.ident, root=self.repo,
+                    resume_needed=False, classification_complete=True)
+            forward.assert_not_called()
+        self.assertEqual((output/'campaign.json').read_bytes(), before)
+
+    def test_campaign_missing_raw_and_git_readback_failure_remain_incomplete(self):
+        from lpf.search import campaign, preservation, worker
+        from lpf.experiment_manifest import INDEX_FIELDS
+        from scripts.audit_new_experiment_storage import find_run
+        for failure in ('missing_raw', 'proposal_escape', 'git_readback'):
+            with self.subTest(failure=failure):
+                output, snapshot = self.formal_start()
+                (self.repo/'data/experiment_index.csv').write_text(','.join(INDEX_FIELDS)+'\n')
+                self.commit('index'); self.publish()
+                shutil.rmtree(output)
+                snapshot = campaign.begin_campaign(self.plan, self.ident, **self.kw)
+                with patch.object(worker, 'slsqp_minimize', side_effect=campaign_tests.worker_tests.FixedWorkerTests.fixture):
+                    self.formal_submit(snapshot)
+                if failure == 'missing_raw':
+                    (output/'job-000000.json').unlink()
+                elif failure == 'proposal_escape':
+                    durable = json.loads((output/'campaign.json').read_bytes())
+                    durable['events'][0]['input_path'] = '../../private-input.yaml'
+                    atomic(output/'campaign.json', durable)
+                before = {p.name: p.read_bytes() for p in output.iterdir()}
+                summary = preservation.curate_campaign(self.ident, root=self.repo)
+                if failure in ('missing_raw', 'proposal_escape'):
+                    self.assertTrue(summary['preservation_errors'])
+                    if failure == 'proposal_escape':
+                        journal = json.loads((find_run(self.repo, self.ident)/'campaign_evidence.json').read_bytes())
+                        self.assertIsNone(journal['proposals'][0]['original_base64'])
+                    with self.assertRaises(ValueError):
+                        preservation.finalize_campaign(self.ident, root=self.repo)
+                else:
+                    self.assertEqual(summary['preservation_errors'], [])
+                    with patch('scripts.run_phase2_one_start.tracked_file', side_effect=ValueError('readback mismatch')):
+                        with self.assertRaisesRegex(ValueError, 'readback mismatch'):
+                            preservation.finalize_campaign(self.ident, root=self.repo)
+                record = json.loads((find_run(self.repo, self.ident)/'storage_record.json').read_bytes())
+                self.assertEqual(record['stage'], 'preservation_incomplete')
+                self.assertEqual(record['git_readback'], 'not_run')
+                self.assertEqual(before, {p.name: p.read_bytes() for p in output.iterdir()})
+                with self.assertRaises(ValueError):
+                    preservation.curate_campaign(self.ident, root=self.repo)
+
     def test_existing_run_never_overwritten(self):
         self.fixture()
         self.prepare(); self.commit(); self.publish()
