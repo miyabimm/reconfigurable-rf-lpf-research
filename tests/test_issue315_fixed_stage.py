@@ -56,10 +56,10 @@ class FixedStageTests(unittest.TestCase):
                 mode = 'matching_only' if cid == 'RF-T006' else 'full_lpf'
                 plan, d, p, x = self.setup_model(cid, mode)
                 e = self.evaluator(plan, d, p)
-                # The new path must not use the old circuit forward.
-                with patch('lpf.phase2_models.api.NominalCircuit.forward_evaluator', side_effect=AssertionError('legacy')):
-                    result = e.evaluate(x)
-                    ranked = rank_candidates([result])['ranked']
+                # The fresh-interpreter regression in test_issue323_dependencies
+                # runs this entire module with all legacy imports forbidden.
+                result = e.evaluate(x)
+                ranked = rank_candidates([result])['ranked']
                 n = 28 if mode == 'matching_only' else 56
                 self.assertEqual((e.requested, e.completed), (n, n))
                 self.assertEqual(set(e.grid.setting), set(range(6)))
