@@ -2,7 +2,7 @@
 import numpy as np
 import csv
 from lpf.rf_core._grid import ROOT, CASES, validated_band_segments
-from lpf.port_parasitics import get_two_port_s, s_to_abcd
+from lpf.rf_core.port_parasitics import get_two_port_s, s_to_abcd
 from lpf.constraint_versions import rf_input_file
 
 THREE_L_EDGES = ((0, 1), (1, 2), (1, 3))

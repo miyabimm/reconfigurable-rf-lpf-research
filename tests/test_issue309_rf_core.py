@@ -133,7 +133,7 @@ class RFCoreTests(unittest.TestCase):
     def test_independent_zero_and_subnormal_power_transmission(self):
         # Synthetic passive external 2-port fixture, not a new RF policy or
         # S2P file. Real branch-current MNA still solves the connected LC core.
-        from lpf.port_parasitics import get_two_port_s
+        from lpf.rf_core.port_parasitics import get_two_port_s
         p, d, _, _, x = make('RF-F003')
         model = build_rf_model(d, p)
         g = EvaluationGrid([1e9], [0], [0])
@@ -180,7 +180,7 @@ class RFCoreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             tampered = Path(tmp)/'tampered.s2p'
             tampered.write_bytes(original.read_bytes()+b'! tampered\n')
-            with patch('lpf.port_parasitics._file_under_repo', return_value=tampered):
+            with patch('lpf.rf_core.port_parasitics._file_under_repo', return_value=tampered):
                 with self.assertRaisesRegex(ValueError, 'SHA256 mismatch'):
                     model.evaluator(g)
                 with self.assertRaisesRegex(ValueError, 'SHA256 mismatch'):

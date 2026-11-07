@@ -12,7 +12,7 @@ import json
 import numpy as np
 
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
-from lpf.port_parasitics import get_two_port_s
+from .port_parasitics import get_two_port_s
 from lpf.topology_management import CircuitDefinition
 from .coupled_lc import (
     CoupledLCTopology, ParameterVectorSchema, CircuitValues, _fixed_port_impedance,

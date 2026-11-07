@@ -10,9 +10,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .constraint_versions import rf_input_file
+from lpf.constraint_versions import rf_input_file
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 Z0 = 50.0
 
 
