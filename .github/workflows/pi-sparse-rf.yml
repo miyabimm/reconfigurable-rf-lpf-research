@@ -2,18 +2,12 @@ name: Pi sparse RF smoke
 
 on:
   pull_request:
-    paths:
-      - '.github/workflows/pi-sparse-rf.yml'
-      - 'rf/**'
-      - 'AGENTS.md'
-      - 'README.md'
-      - 'scripts/**'
-      - 'project/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'pyproject.toml'
-      - 'uv.lock'
   workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run the complete sparse regression suite'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -30,7 +24,8 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          filter: blob:none
+          fetch-depth: 0
+          # checkout automatically applies blob:none for sparse-checkout.
           sparse-checkout: |
             project
             rf
@@ -65,26 +60,14 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: uv sync --frozen
-      - name: Validate RF registry and sparse model regressions
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Full numerical/search regressions belong to Phase 2 smoke, not here.
-          # The grid test checks all separate intervals and both verified S2Ps.
-          PI_SPARSE_RF=1 PYTHONPATH=tests uv run --frozen python -m unittest -v \
-            test_constraint_versioning \
-            test_issue307_history \
-            test_issue307_snapshot_equivalence \
-            test_issue307_constraints \
-            test_issue309_rf_core \
-            test_issue311_performance \
-            test_issue313_preflight \
-            test_issue315_fixed_stage \
-            test_issue317_fixed_worker \
-            test_issue319_parent_runner \
-            test_issue321_development_cli \
-            test_issue325_campaign \
-            test_issue325_campaign_gates \
-            test_issue323_dependencies \
-            test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints \
-            test_pi_sparse_rf
+      - name: Classify complete event diff and run sparse tests
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CI_BASE: ${{ github.event.pull_request.base.sha }}
+          CI_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CI_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          CI_HEAD_REF: ${{ github.head_ref }}
+          CI_EVENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          CI_REF: ${{ github.ref }}
+          CI_FULL: ${{ inputs.full }}
+        run: uv run --frozen python scripts/select_ci_tests.py --sparse
