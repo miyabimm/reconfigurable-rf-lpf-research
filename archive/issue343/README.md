@@ -106,3 +106,37 @@ git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_candidate_re
 揃える。archiveコピーを現役Python pathへ追加して直接実行しない。今回確認したのは
 元blob/内容SHAの一致と現役回帰のみ。旧solver・歴史EXP固定テストの実行、
 完全研究証拠監査は未実施であり、この保存を実EXP再現PASSとは扱わない。
+
+## D4：旧ABCD evaluator・EXPモデルとテスト資料
+
+元main `d3616b8b832c9f44fe7811d459d59664e3db8a0b`。以下はすべて元パスの
+バイト不変コピー（移動または編集前のコピー）であり、Git blobとSHA-256を照合。
+現役Python path・CIに追加しない。元commitは#307移行後であり、元EXPの実行条件や
+旧effective SHAに自動的に一致しない。旧T005/T007/T008のSHAは上表、実EXPは
+元manifestを参照する。各行は`git show d3616b8b832c9f44fe7811d459d59664e3db8a0b:<元パス>`で読める。
+
+|元パス|元blob|内容SHA-256|保存理由|
+|---|---|---|---|
+|`src/lpf/phase2_models/_grid.py`|`79c27a7f326bbf5ef3c2ab9abf50054f7157e900`|`a6e721a9b10360e2f7169a6e7feaf8fcf259a8823a45fa4b163637a49f232927`|旧3L格子とABCD外部寄生配列の生成、extra周波数。|
+|`src/lpf/phase2_models/coupled_lc_evaluator.py`|`733612fc2d469f68353226f7bdf04263a3888261`|`9f9ef956230dbef1cbb9109e39f34d7a4657c71f73a3c97be186a986c560835a`|旧ABCD sampled forward。現役power-wave Sとは同じ実装でも独立MNAでもない。|
+|`src/lpf/phase2_models/exp042.py`|`702ef2c8723c449ac9a832c44a898c14f5518e5a`|`7e28dc6ff042f692f94bf5f5c279c124cef1c9b4854f0ee6f0a14e4582d0fbc4`|EXP-042固有の構成と評価方式。|
+|`src/lpf/phase2_models/exp055.py`|`507c341534adf62af776e9c7de330e7cc761762d`|`1c6eaf3fbef1bedb1d49b1f10cda7111237cbc3e78cf1d9c9a48002db6f88cc0`|EXP-055の構成、T007固定寄生、旧独立検証。|
+|`src/lpf/phase2_models/exp058_area3.py`|`02b14057e0995c57a1e7ccf8da3fb5680a36a9f4`|`720d4a6189a6fc51d60f2249fba9f5f51638b083e0f34f0fe4d226ad970aced8`|EXP-058 3L構成・独立検証。|
+|`src/lpf/phase2_models/exp058_area4.py`|`8bac346201ede3eb6bddb7e260668dd934a12268`|`c29dc8bfae8b34cb3ba99788f552af86b6f2126bf7889afd541ab529798d26fb`|EXP-058 4L構成・独立検証。|
+|`src/lpf/phase2_models/exp058_area4l_gjm.py`|`d13ed0caf6aca4e55946a81e90b6873493723ba4`|`9582e4f42863f6076e64be8c916d1a10107de78b6d3de3cf6428aad33a0972c9`|EXP-058 4L+GJM構成・独立検証。|
+|`tests/test_phase2_branch_mna.py`|`701e69fc4609a4ccb32f4926fbd47b0fa3b6702f`|`1d9666b03077e3e4afe531a23a13b01d32c85505da4a3a5fc5c8d54f46003ce8`|移行前独立MNAアサーション。|
+|`tests/test_phase2_circuit_layout.py`|`402d4ac1c47a016a5f59f379e0bde9b740fb18e1`|`fcd130ecc9ce60ddaf83c5b7ad9f57f7d7bdc7428bc778a592a8d744bf035238`|EXP-055/058固定vectorの旧構造注入。|
+|`tests/test_phase2_connection_roles.py`|`f44d4689979d527f888ed4bbbe6909d2895ac1ba`|`4823116b625d9cb52b7812509f38788cb1dc4436306fb30fda4a55e0797be62a`|旧role昇格報告とEXP-055固定vector。|
+|`tests/test_phase2_numeric_diagnostics.py`|`2c1206cc6cc1c6be5745068dbb2c1d82d6c73c6c`|`65720e4eb3554d048b7044a6beca4f3ac3a4303ccb7455bf2e3c9c16f879349e`|旧ABCD固有のSchur/transferエラー。|
+|`tests/test_phase2_rft008_layout.py`|`abca72407eb7cd6a9a18b24e449c4605fdc13cb8`|`b16e485500defb1ca74649a014fac52f0b58de24c2dac7fa58c471e8e3e08d4c`|EXP-058固定vectorの旧C配置とMNA。|
+|`tests/test_phase2_s2p_grid_cache.py`|`9229f4f99e7962249347f3f9ab73b85d9485cb81`|`17cbe5c1d698473debcb717970f52d36c13f19a04fa5a6981efb2cfc3d85018c`|旧MHz格子hashとABCD cache。現役Hz格子と異なる。|
+|`tests/test_phase2_generic_exp043.py`|`1e5a643a73c59d6f3e4db3abb63293d207428b6e`|`1ea5ea6e30b80d82d10ac11a97b8835babd06af090dddd831f7848cdeaf20df6`|EXP-043固定vectorと保存source比較。|
+|`tests/test_phase2_public_circuit_api.py`|`747f263bb5346d7b8f66d62defc8b3fdbf7eea20`|`692522fb38a1c636f1b3c91874b0aa4ba2f1f938192933659de26dda603ca5cd`|EXP-042/055/058旧wrapper入力と出力。|
+|`tests/test_phase2_rft005_t007_policy_circuit.py`|`c22768ebb02f663a1c3a400ad99034556f9afac1`|`c9f1c0f4bb717acabc71efbadc499225c81ff85c8f68451dbbacbd9b19d6fd9f`|EXP-042/055旧試験条件wrapper。|
+|`tests/test_phase2_rft008_policy_circuit.py`|`716daa7947e98093efbb1bd2e7a8e719749da2bd`|`4c2c7c0c390e513313e3ed3e976a440a2e9ca9c652842dc7af59f79ef482dc95`|EXP-058旧試験条件wrapperと候補。|
+|`tests/test_phase2_shared_exp_evaluators.py`|`99692cdab076597fe6767262c6c557907606109c`|`b989c37633852be823161fd6f907525188cf2c2f6da1477b376527b2c32ddd9b`|EXP-042/055/058旧sourceと共通評価器の比較。|
+|`tests/test_phase2_zero_branch_projection.py`|`35bca64ea619cf69cb9e9320684dfa00de66ee11`|`351d1f8ebdaa7bf500ab93e0cbc4de61603decda8d0f8b2a1d46827ff8036591`|EXP-055/058旧zero-placeholder投影、現役searchに移植しない。|
+
+現役検査への対応と残存旧layoutの理由は
+[`project/diagnostics/issue343_d4_cleanup.md`](../../project/diagnostics/issue343_d4_cleanup.md)。
+元EXPの再実行・旧ABCD固有エラー・旧格子hashの現役意味への同値変換は未実施。

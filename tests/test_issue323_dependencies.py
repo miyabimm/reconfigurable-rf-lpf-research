@@ -61,10 +61,8 @@ class DependenciesTests(unittest.TestCase):
             self.assertFalse(any(any(part in name.split('.') for part in
                                      ('search', 'rf_core', 'phase2_models')) for name in imports(path)))
         self.assertFalse(any('search' in name.split('.') for name in imports(root/'constraint_versions.py')))
-        legacy_arrows = {path.name for path in (root/'phase2_models').glob('*.py')
-                         if any('search' in name.split('.') for name in imports(path))}
-        # Isolated old callers, not part of the schema2 import/call graph.
-        self.assertEqual(legacy_arrows, {'api.py'})
+        # The retired package must not survive as an importable directory.
+        self.assertFalse((root/'phase2_models').exists())
         for path in (root/'rf_core').glob('*.py'):
             self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
                                  for name in imports(path)), path)
@@ -76,7 +74,9 @@ class DependenciesTests(unittest.TestCase):
         paths = list((root/'search').glob('*.py')) + list((root/'rf_core').glob('*.py'))
         paths += [root.parents[1]/'scripts/run_rf_search.py']
         for path in paths:
-            self.assertFalse(any(retired.intersection(name.split('.')) for name in imports(path)), path)
+            self.assertFalse(any('phase2_models' in name.split('.') or
+                                 retired.intersection(name.split('.')) or
+                                 'archive' in name.split('.') for name in imports(path)), path)
 
     def test_retired_experiment_entrypoints_absent(self):
         root = Path(__file__).resolve().parents[1]

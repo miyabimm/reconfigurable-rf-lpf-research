@@ -9,7 +9,9 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lpf.constraint_versions import load_constraint
-from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
+from lpf.topology_management import CircuitDefinition
+from lpf.rf_core import build_rf_model
+from lpf.search.component_constraints import validate_values
 from lpf.rf_core.branch_mna import solve_branch_mna
 from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.rf_core.coupled_lc import CoupledLCTopology
@@ -26,7 +28,7 @@ def circuit(n, trial="RF-T005"):
                            variable if trial == "RF-T008" else ()),
         ("PCB_PATTERN_C",), ("shunt_to_ground",),
     )
-    return build_nominal_circuit(load_constraint(trial, allow_trial=True), definition)
+    return build_rf_model(definition, load_constraint(trial, allow_trial=True))
 
 
 def values(c, k=.2):
@@ -111,9 +113,9 @@ class BranchMNATests(unittest.TestCase):
             CapacitorPlacement(5, ((2, 4),), ((3, -1),)),
             ("PCB_PATTERN_C",), ("shunt_to_ground",),
         )
-        c = build_nominal_circuit(load_constraint("RF-T005", allow_trial=True), definition)
+        c = build_rf_model(definition, load_constraint("RF-T005", allow_trial=True))
         v = c.decode([2., 3., 4., 5., .1, .08, -.09] + [.7] * 6)
-        self.assertTrue(c.validate_components(v)["component_policy_pass"])
+        self.assertTrue(validate_values(c.definition, c.schema, v, c.resolved_policy)["component_policy_pass"])
         f = 1.1e9
         omega = 2 * np.pi * f
         source = np.array([.02, 0, 0, 0, 0], dtype=complex)
@@ -154,8 +156,8 @@ class BranchMNATests(unittest.TestCase):
         definition = original.definition
         tree = definition.inductor_tree
         reversed_tree = replace(tree, edges=((1, 0),) + tree.edges[1:])
-        other = build_nominal_circuit(load_constraint("RF-T005", allow_trial=True),
-                                      replace(definition, inductor_tree=reversed_tree))
+        other = build_rf_model(replace(definition, inductor_tree=reversed_tree),
+                               load_constraint("RF-T005", allow_trial=True))
         boundary = dict(injected_currents_a=[.02, 0, 0, 0],
                         termination_admittances_s=[.02, 0, 0, 1/60])
         va, ia = solve_branch_mna(original, values(original), 1e9, 0, **boundary)
