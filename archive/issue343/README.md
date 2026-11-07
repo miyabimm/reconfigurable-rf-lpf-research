@@ -1,4 +1,4 @@
-# Issue #343 D2 — 非現役の履歴資料
+# Issue #343 — 非現役の履歴資料
 
 これらは**実行可能な現役APIではない**。通常のPython import・CIは参照しない。
 元source・依存関係を含む実行環境が必要なら、元Git commitを隔離checkoutし、
@@ -38,3 +38,28 @@ git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/diagnose_phase2_scalin
 |`src/lpf/phase2_models/post_search_validation.py`|`88ac720d8ea41bb59e8958d654b79bc3e27a9a51`|`b9e3939bfb60777595dd985b8998b834db22b897f6208aa7706a3e4130c6e1e2`|旧17/84/dense検証手順と段階分類。|
 
 `git show 0698a87925b30ccaf11531a5197a5dc611d3f681:src/lpf/phase2_models/post_search_validation.py` で元sourceを参照できる。
+
+### D3：独立scan・候補識別の非同値な旧手法
+
+同じ元mainから以下もバイト不変で隔離した。旧`candidate_audit`と旧topology列挙は
+削除し、現役への互換shimは設けない。
+
+|元パス|元blob|内容SHA-256|保存理由・対象|
+|---|---|---|---|
+|`src/lpf/phase2_models/independent_scan.py`|`c70dac32446ab4af877b65a68dfe10afe8b3e973`|`5aaa89a01dfc22dd6459151833b5a889309b55a41424ef3f682eb2cc2b5e9ed8`|`minimize_scalar`による個別区間内spot極値探索。現役固定格子MNAと非同値。|
+|`src/lpf/phase2_models/limited_candidate_evidence.py`|`665ed07056d2dc991e18ed70d789ebcfeba31aa3`|`58948d71c6688c91e769d93e8daf5ac1392accf5d8a4e5965abf785cb5d7a2c8`|旧candidateのdefinition/vector、環境・source・input結合と再計算証拠形式。現役raw形式とは異なる。|
+|`src/lpf/phase2_models/problem_seed.py`|`de22f5e722927c76f9a292eff4a92801154dc44a`|`e2d338b26f2a1c14fb30975bc4f17aca87138c18c9f3dcbd44e6a34b21632d75`|旧definition/vector fingerprint・seed/epigraph座標の意味。現役Job seedとの互換は不要。|
+|`tests/test_phase2_independent_rf.py`|`b8302e9cf632afa46e8b3308759950f3bf45a65b`|`4bb5017f92c39170a02d099e1e07737bb137677f87003fe10fbc3a6d72c918bb`|旧scanの極値・失敗oracleとEXP-042/043/055/058の固定vector参照・回路定義。現役CIからは実行しない。|
+
+旧scan/evidenceは特定EXPに固定した実行器ではなく、渡されたpolicy/回路を使用する。
+上記歴史testはRF-T005/T007/T008と保存EXP vectorを組み合わせているが、保存時の
+旧RF effective SHA／source／環境による実EXP再現を認定するtestではない。
+#307移行後のD1固定期待値の5条件回帰とは入力・条件・検証法が異なる。
+対応する歴史RF SHAは`rf/constraints/history/issue307-migration.json`、実EXPの条件は
+元manifestを参照し、現在の同名RF IDを過去のeffective SHAと同一視しない。
+
+各元パスは上記と同様に`git show <元main>:<元パス>`で復元できる。
+ここに移したtestは削除済み旧API/test fixtureも参照するため、コピー単体を現役
+Python pathへ追加して実行しない。必要なら**元commitの環境全体**で再現する。
+完全研究証拠の監査、保存EXP vectorの再実行、区間内極値探索・denseの再実行は未実施。
+現役への置換範囲と未代替の差は[整理記録](../../project/diagnostics/issue343_d3_cleanup.md)を参照。
