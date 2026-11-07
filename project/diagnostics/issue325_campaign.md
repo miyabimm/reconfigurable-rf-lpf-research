@@ -1,10 +1,10 @@
-# Issue #325 — Campaign逐次提案境界（第1段階の開発API部分）
+# Issue #325 — Campaign逐次提案境界・G0/G1 planned保存接続
 
 ## 状態とレビュー単位
 
-本差分は#325の段階分割Draftの最初の増分。**Issue全体のDoD、および第1段階の正式G0/G1接続は未完了**。
-未検証の構造提案→Controller→親Runner→既存開発Workerの境界と2予算を、
-正式保存ゲートへ接続する前に独立レビューできる単位とする。
+PR #326で第1増分の開発APIをmainへ反映済み。次の増分は `search.gates` による
+Campaign単位のG0/G1 planned保存・read-only照合。**Issue全体のDoDと正式Runner接続は未完了**。
+G1の技術照合成功を、正式Workerへの実行権限やG3〜G5保存完了と混同しない。
 
 - 実EXPの予約、中央台帳・歴史証拠の変更、本番探索は行わない。
 - `campaign.run_campaign()` は常に `not_ready` で停止する。正式G0/G1の代替承認機構ではない。
@@ -80,7 +80,7 @@ Jobごとの完全definitionは既存schema2の `definition` 欄へ同じdatacla
   次の提出時にも既存JobSpec/Plan/費用/元proposal bytes/Worker rawを再読込し、
   キャッシュされた総費用・構造一覧だけを信用しない。
 - source_identityには実行コードbytes/lock/環境/HEADを記録し、Jobごと/forward前にも再照合する。
-  **正式planned manifest commitによるHEAD変化の解決は未実装**であり、この開発source照合を正式G1と呼ばない。
+  開発経路ではHEAD変更を許さない。正式planned保存のHEAD変化は下記の独立したG1照合で扱う。
 
 ## 検証範囲
 
@@ -96,12 +96,45 @@ Jobごとの完全definitionは既存schema2の `definition` 欄へ同じdatacla
   独立MNA 1 spot。6設定×28不連続区間、既存複素S/IL/APL/RL・受動性/電力検査を再利用。
   solverはfixtureであり、収束・strict適合・物理実装性を認定しない。
 
+## G0/G1 planned保存・read-only照合（次の増分）
+
+`search.gates.prepare_campaign(plan, experiment_id, owner=..., request_id=..., purpose=...,
+selection=..., root=...)` は以下を検査して**新しい当該EXPだけ**にplanned manifest/storageを作る。
+既存EXPは上書きせず、予約・commit・push・RF計算・自動再試行はしない。
+
+- 既存 `_complete_checkout` / `_fresh_main`、最新mainを含むclean HEAD、
+  `is_reserved_on_main` / `reservation_on_main` で完全checkout・最新remote・中央予約を照合。
+  owner/request IDは出典整合であり、追加の本人認証ではない。
+- 既存schema1 `new_manifest` / `validate_manifest` と `validate_run(mode='preflight')` を再利用。
+  `search_scope.campaign` にschema2 Plan全体/SHA、承認code bytes/HEAD/lock/env/threads、予約出典を格納。
+  未来のdefinition/start/Jobを予測しない。selectionは既存保存ポリシー形式の明示入力。
+  prepare/preflightとも見積容量をbudget JSONのEXP容量上限と照合する。prepareは例外を発行せず、
+  超過見込みならファイル作成前にSTOP。preflightでも記録済みsize exceptionなしの超過はSTOPし、
+  例外の必須フィールド検査は既存storage監査へ委ねる。
+- RF-F003と明示trial RF-T008を同じ入口で扱う。RF/格子/総2予算・構造/solver範囲は凍結Planで照合。
+
+plannedファイルをmainへcommit/pushした後、
+`search.gates.campaign_preflight(plan, experiment_id, owner=..., request_id=..., root=...)`
+を呼ぶ。manifest/storageの **最新main・HEAD・working treeの実bytes** が全て一致し、
+planned状態・Plan/予約/目的/seed・既存manifest/storage監査が健全な場合だけ `preflight_ready` を返す。
+承認HEADと予約mainは現在mainの祖先であることを要求する。
+コードfiles/環境の一致と、承認HEAD以降のsrc/scripts/rf/project/pyproject/lockおよび
+`data/phase2_git_storage_budget.json`の無変更を検査し（data全体は凍結しない）、
+**planned commit前のapproved_sourceと、commit後のruntime_sourceを別に返す**。自己参照SHAは要求しない。
+
+返値は常に `execution='not_run'`, `execution_allowed=False`, `G2_G5='not_ready'`。
+read-only技術照合であり、正式Runnerは依然fail-closed。開発rawを正式EXPへ遡及昇格させない。
+
+`tests/test_issue325_campaign_gates.py` はsystem tmpの隔離した実Git working tree＋bare originで検査する。
+架空EXP-050の予約台帳・RF入力コピーのみを使い、本物の中央台帳・歴史証拠に書き込まない。
+F003/T008、planned commitによるHEAD変化、未予約/branchだけの予約、owner/request不一致、
+sparse/欠落/stale remote、remote bytes不一致、code/env/project入力/Plan改変、storage検査、既存EXP保護で
+RF forwardゼロを確認する。これは完全な歴史証拠auditや正式実行fixtureではない。
+
 ## 残る実装（このDraftではPASSとしない）
 
-1. 完全checkout/最新main/G0中央予約と `new_manifest/validate_manifest`、
-   `validate_run(mode='preflight')` をCampaign単位で接続する正式G1。
-   EXP/owner/目的、保存/停止方針、承認実行code bytesと実行時HEADの分離・照合。
-2. 正式Worker入口のゲート接続。開発JobSpecをそのまま正式EXPとして流さない。
+1. G1照合結果を正式Runner/JobSpec/Worker入口へ接続し、投入ごと/forward前の再照合を行う。
+   開発JobSpecをそのまま正式EXPとして流さない。
 3. 複数Jobのraw→run_summary/checkpoint/manifest/storage_recordへの選別、Git HEAD byte readback、
    G4独立audit、G5削除可否を偽Git main/EXPの完全fixtureで通す第2段階。
 4. 上記正式経路を実装した同一HEADでの通常/sparse CIとfull checkout専用実Git監査。

@@ -58,7 +58,9 @@ schema 2の `load_preflight()` → `freeze_development_job()` →
 `search.campaign` はschema2 Campaign envelopeと2予算を凍結し、別ファイルの構造提案YAMLを
 1件ずつController→既存開発Workerへ渡すsystem tmp専用の親API。
 状態SHA/構造SHA、採否イベント、Jobごとのcap予約・raw照合・余剰返還、unknown時の全体STOPを扱う。
-正式G0/G1、G3〜G5接続は未実装であり、`run_campaign()` は常に `not_ready`。
+`search.gates.prepare_campaign()` / `campaign_preflight()` は既存中央予約・manifest/storage監査を
+Campaign単位で接続し、planned main bytesと承認code bytes/実行時HEADを分離照合する（RF実行なし）。
+正式Runner/Worker・G3〜G5接続は未実装であり、`run_campaign()` は常に `not_ready`。
 Issue全体の完了ではない。[入力/API/段階境界](diagnostics/issue325_campaign.md)を参照。
 
 ## 共通YAML CLI（コード検証と本番実験は別）
