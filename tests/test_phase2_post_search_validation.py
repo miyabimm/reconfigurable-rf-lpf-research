@@ -22,8 +22,6 @@ from lpf.phase2_models.post_search_validation import validate_post_search, _forw
 from lpf.phase2_models.post_search_journal import PostSearchJournal, candidate_binding, aggregate_selected
 from lpf.checkpoint_io import canonical_config_hash, atomic_write_json
 from lpf.experiment_manifest import INDEX_FIELDS, new_manifest, experiment_index
-from lpf.phase2_models.experiment_post_search import _package as package_post_search_fixture
-from scripts.run_phase2_one_start import _post_search_finalize_guard, candidate_checkpoint, finalize_experiment
 from scripts.audit_new_experiment_storage import validate_run
 from scripts.experiment_id_registry import PATH as LEDGER_PATH, as_csv, next_reservation
 from lpf.phase2_models.candidate_records import record_candidate
@@ -206,30 +204,6 @@ class PostSearchTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Validation mode'):
                 verify_candidate_evidence(self.c, bad, report)
 
-    def test_continuation_anchor_raw_binding_rejects_changed_evidence(self):
-        from lpf.phase2_models.experiment_post_search import _check_bindings
-        raw = deepcopy(self.raw)
-        raw['numerical_state'] = 'budget_exhausted'
-        continuation = {'method': 'B', 'last_valid_vector': list(self.x) + [1.]}
-        source = dict(self.source, input_source_sha256='c' * 64)
-        raw['source_provenance'] = {'state': 'provided', 'value': source}
-        binding = candidate_binding('anchor', self.c, self.x, optimization_record=raw,
-            source_provenance=source, budgets=self.budgets, run_dense=True, run_independent=True,
-            validate_terminal_anchor=True, continuation_record=continuation)
-        loaded = {'config': {'schema_version': 4, 'budgets': {
-            'intermediate_samples': 3808, 'dense_samples': 224224}}, 'circuit': self.c,
-            'input_source_sha256': source['input_source_sha256'],
-            'actual': {'anchor': {'method': 'B', 'seed_record': raw['seed']}}}
-        optimization = {'identity': {'source_provenance': source}, 'completed': {'anchor': {
-            'staged_record': raw, 'continuation': continuation, 'validation_anchor': {
-                'vector_sha256': binding['vector_sha256']}}}}
-        plan = dict(schema='post-search-g1-1', selection_rule='all anchors', search_guard=True,
-                    max_selected=8, separate17=3808, dense1001=224224,
-                    independent_forward84=672, independent_mna84=672)
-        _check_bindings([binding], optimization, loaded, plan, source['git_head'])
-        optimization['completed']['anchor']['continuation']['method'] = 'C'
-        with self.assertRaisesRegex(ValueError, 'last valid anchor'):
-            _check_bindings([binding], optimization, loaded, plan, source['git_head'])
 
     def test_component_counterexample_and_missing_role_are_distinct(self):
         x = self.x.copy()
@@ -464,107 +438,6 @@ class PostSearchTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'automatic retry prohibited'):
                 saved.run_candidate('a', self.c, self.x, **kwargs)
 
-    def test_real_storage_audit_finalize_and_index_in_temporary_git(self):
-        # A self-contained synthetic repository; never writes a real EXP.
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            def git(*args):
-                return subprocess.check_output(['git', *args], cwd=root, stderr=subprocess.PIPE, text=True).strip()
-            git('init', '-q', '-b', 'main')
-            git('config', 'user.name', 'Fixture')
-            git('config', 'user.email', 'fixture@example.invalid')
-            (root / '.gitignore').write_text('results/\n')
-            shutil.copytree(Path(__file__).resolve().parents[1] / 'rf', root / 'rf')
-            (root / 'data').mkdir()
-            (root / 'data/phase2_git_storage_budget.json').write_text(json.dumps({'thresholds': {
-                'individual_new_file_soft_bytes': 131072, 'individual_new_file_hard_bytes': 1048576,
-                'new_experiment_curated_soft_bytes': 10000000}}))
-            ledger = root / LEDGER_PATH
-            ledger.parent.mkdir(parents=True, exist_ok=True)
-            rows = [{'experiment_id': f'EXP-{i:03}',
-                     'state': 'legacy_gap_retired' if i in (18, 19) else 'legacy_recorded',
-                     'owner': '', 'request_id': '', 'purpose': '', 'constraint_id': '',
-                     'reserved_at_utc': '', 'origin': ''} for i in range(1, 50)]
-            rows, expid, _ = next_reservation(rows, owner='fixture', purpose='fixture only',
-                request_id='fixture-post', constraint_id='RF-T008', reserved_at_utc='2026-11-03T00:00:00Z')
-            ledger.write_text(as_csv(rows))
-            git('add', '.'); git('commit', '-qm', 'fixture reservation')
-            plan = {'schema': 'post-search-g1-1', 'selection_rule': 'fixture fixed candidate', 'search_guard': True,
-                    'max_selected': 1, 'separate17': 476, 'dense1001': 28028,
-                    'independent_forward84': 84, 'independent_mna84': 84}
-            source_input = {'fixture': 'synthetic'}
-            input_sha = canonical_config_hash(source_input)
-            scope = {'input_source': source_input, 'input_source_sha256': input_sha,
-                     'post_search_validation': plan}
-            g1 = new_manifest(expid, 'fixture only', scope, objective='full_lpf', seed=23,
-                              root=root, constraint_id='RF-T008', allow_trial=True)
-            # The fixture invokes the packager directly with a synthetic gate;
-            # production's _gate additionally checks the actual source checkout.
-            g1['code']['execution_sha'] = self.source['git_head']
-            run = root / 'experiments/chatgpt_topology_search/runs' / expid
-            run.mkdir(parents=True)
-            storage = {'schema_version': 1, 'policy': 'phase2-git-only-v1', 'experiment_id': expid,
-                       'phase': 'Phase 2', 'stage': 'planned', 'git_readback': 'not_run',
-                       'selection': {'top_k': 0, 'retain': ['pareto'],
-                                     'rule': 'fixture checked Pareto and retained diagnostics',
-                                     'estimated_curated_bytes': 200000},
-                       'summary': None, 'checkpoints': [], 'validation_overlays': [],
-                       'supporting_evidence': [], 'size_exception': None, 'limitations': []}
-            atomic_write_json(run / 'manifest.json', g1, compact=True)
-            atomic_write_json(run / 'storage_record.json', storage, compact=True)
-            rel = lambda p: p.relative_to(root).as_posix()
-            (root / 'data/experiment_index.csv').write_text(experiment_index([(rel(run / 'manifest.json'), g1)]))
-            git('add', '.'); git('commit', '-qm', 'fixture G1')
-            git('update-ref', 'refs/remotes/origin/main', git('rev-parse', 'HEAD'))
-            source = self.source | {'kind': 'synthetic', 'dirty_patch_sha256': hashlib.sha256(b'').hexdigest(),
-                                    'input_source_sha256': input_sha}
-            problem, vector = make('RF-T008', 4)
-            def optimizer(p, x, maxiter, target):
-                return x, {'success': True, 'status': 0, 'message': 'mock', 'nit': 0, 'nfev': 0}
-            staged = run_c1_staged(problem.circuit, seed(problem, vector), coarse_points=1, fine_points=2,
-                optimize_stage=optimizer, source_provenance=source, cost_meter=SampleBudgetCost(1000), search_guard=True)
-            candidate = record_candidate('a', problem.circuit, vector, staged_record=staged,
-                                         source_provenance=source).as_dict()
-            checkpoint_path = run / 'checkpoints/a.json'
-            atomic_write_json(checkpoint_path, candidate_checkpoint(problem.circuit, candidate), compact=True)
-            ref = lambda p: {'path': rel(p), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
-            checkpoint_ref = {'candidate_id': 'a', 'selection_reason': 'pareto', **ref(checkpoint_path)}
-            summary_path = run / 'run_summary.json'
-            summary = {'experiment_id': expid, 'attempts': {'planned': 1, 'attempted': 1, 'converged': 1,
-                        'nonconverged': 0, 'failed': 0, 'not_started': 0},
-                       'selected_candidate_count': 1, 'best_found': ['a'], 'limitations': [], 'validation': {}}
-            atomic_write_json(summary_path, summary, compact=True)
-            manifest = deepcopy(g1)
-            manifest['execution'].update(status='completed', elapsed_seconds=1., evaluation_count=0)
-            manifest['evidence'] = [ref(summary_path), ref(checkpoint_path)]
-            storage.update(stage='preservation_incomplete', summary=ref(summary_path), checkpoints=[checkpoint_ref])
-            atomic_write_json(run / 'manifest.json', manifest, compact=True)
-            atomic_write_json(run / 'storage_record.json', storage, compact=True)
-            raw = root / 'results' / expid
-            raw.mkdir(parents=True)
-            optimization = {'identity': {'input_source_sha256': input_sha, 'source_provenance': source},
-                            'input_source': source_input, 'in_progress': None,
-                            'completed': {'a': {'staged_record': staged}}}
-            atomic_write_json(raw / 'run.json', {'body': optimization, 'sha256': canonical_config_hash(optimization)}, compact=True)
-            args = dict(optimization_record=staged, source_provenance=source,
-                        budgets=self.budgets, run_dense=False, run_independent=False)
-            binding = candidate_binding('a', problem.circuit, vector, **args)
-            journal = PostSearchJournal.create(raw / 'post-search', [binding])
-            journal.run_candidate('a', problem.circuit, vector, **args)
-            loaded = {'actual': {'a': {'seed_record': staged['seed']}}, 'circuit': problem.circuit,
-                      'input_source': source_input, 'input_source_sha256': input_sha,
-                      'config': {'budgets': {'intermediate_samples': 476, 'dense_samples': 28028}}}
-            validate_run(root, expid, mode='audit')
-            package_post_search_fixture(root, expid, loaded, {'run': run, 'manifest': g1}, raw, journal, validate_run)
-            before = validate_run(root, expid, mode='audit')
-            self.assertEqual(before['stage'], 'preservation_incomplete')
-            self.assertEqual(before['independent_validation'], 'not_run')
-            result = finalize_experiment(root, expid)
-            self.assertEqual(result['stage'], 'complete')
-            self.assertTrue(result['committed_readback'])
-            for path in (run / 'manifest.json', run / 'storage_record.json', root / 'data/experiment_index.csv'):
-                self.assertEqual(subprocess.check_output(['git', 'show', 'HEAD:' + rel(path)], cwd=root), path.read_bytes())
-            self.assertTrue((raw / 'run.json').exists())
 
     def test_supplemental_validation_identity_preserves_original_stage_source(self):
         source = {'kind': 'recorded', 'git_head': self.source['git_head'],
@@ -584,109 +457,6 @@ class PostSearchTests(unittest.TestCase):
                 source_provenance=bad, validation_identity=self.source, budgets=self.budgets,
                 run_dense=False, run_independent=False, record_sink=lambda _: None)
 
-    def test_packaging_index_and_failure_marker_in_isolated_git(self):
-        for inject_failure in (False, True):
-            with self.subTest(inject_failure=inject_failure), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
-                def git(*args):
-                    return subprocess.check_output(['git', *args], cwd=root, stderr=subprocess.PIPE, text=True)
-                git('init', '-q', '-b', 'main')
-                git('config', 'user.name', 'Fixture')
-                git('config', 'user.email', 'fixture@example.invalid')
-                (root / '.gitignore').write_text('results/\n')
-                expid = 'EXP-999'
-                run = root / 'experiments/chatgpt_topology_search/runs' / expid
-                run.mkdir(parents=True)
-                (root / 'data').mkdir()
-                raw = root / 'results' / expid
-                raw.mkdir(parents=True)
-                plan = {'schema': 'post-search-g1-1', 'selection_rule': 'fixture fixed candidate', 'search_guard': True,
-                        'max_selected': 1, 'separate17': 476, 'dense1001': 28028,
-                        'independent_forward84': 84, 'independent_mna84': 84}
-                scope = {'input_source': {'fixture': True}, 'post_search_validation': plan}
-                scope['input_source_sha256'] = canonical_config_hash(scope['input_source'])
-                constraints = {'constraint_id': self.c.policy_id,
-                               'effective_constraint_sha256': self.c.policy_fingerprint}
-                g1 = {'experiment_id': expid, 'constraints': constraints, 'objective': 'full_lpf',
-                      'search_scope': scope, 'code': {'execution_sha': self.source['git_head']},
-                      'environment': {}, 'bands_sha256': 'b' * 64, 'random_seed': 23,
-                      'execution': {'status': 'planned'},
-                      'validation': {'numerical': 'not_run', 'independent': 'not_run'}}
-                manifest = deepcopy(g1)
-                manifest['execution']['status'] = 'completed'
-                manifest['limitations'] = []
-                checkpoint = run / 'checkpoints' / 'a.json'
-                checkpoint.parent.mkdir()
-                checkpoint.write_text(json.dumps({'candidate_record': {
-                    'vector_sha256': __import__('lpf.phase2_models.problem_seed', fromlist=['vector_fingerprint']).vector_fingerprint(self.x),
-                    'policy_sha256': self.c.policy_fingerprint,
-                    'definition_sha256': self.raw['definition_sha256']}}))
-                rel = lambda p: p.relative_to(root).as_posix()
-                digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
-                summary_path = run / 'run_summary.json'
-                summary_path.write_text(json.dumps({'limitations': [], 'validation': {}}))
-                storage = {'stage': 'preservation_incomplete', 'git_readback': 'not_run',
-                           'summary': {'path': rel(summary_path), 'sha256': digest(summary_path)},
-                           'checkpoints': [{'candidate_id': 'a', 'path': rel(checkpoint), 'sha256': digest(checkpoint)}],
-                           'validation_overlays': [], 'supporting_evidence': [], 'limitations': []}
-                atomic_write_json(run / 'manifest.json', manifest, compact=True)
-                atomic_write_json(run / 'storage_record.json', storage, compact=True)
-                index_path = root / 'data/experiment_index.csv'
-                row = dict.fromkeys(INDEX_FIELDS, '')
-                row.update(experiment_id=expid, constraint_id=self.c.policy_id,
-                           effective_constraint_sha256=self.c.policy_fingerprint, objective='full_lpf',
-                           execution_status='planned', numerical_validation='not_run', independent_validation='not_run',
-                           manifest=rel(run / 'manifest.json'))
-                with index_path.open('w', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=INDEX_FIELDS, lineterminator='\n')
-                    writer.writeheader(); writer.writerow(row)
-                git('add', '.'); git('commit', '-qm', 'fixture')
-                source = self.source | {'kind': 'synthetic', 'dirty_patch_sha256': '0' * 64,
-                                        'input_source_sha256': scope['input_source_sha256']}
-                def guarded_optimizer(p, vector, maxiter, target):
-                    return vector, dict(success=True, status=0, message='mock', nit=0, nfev=0)
-                staged = run_c1_staged(self.c, self.raw['seed'], coarse_points=1, fine_points=2,
-                    optimize_stage=guarded_optimizer, source_provenance=source,
-                    cost_meter=SampleBudgetCost(1000), search_guard=True)
-                identity = {'input_source_sha256': scope['input_source_sha256'], 'source_provenance': source}
-                optimization = {'identity': identity, 'input_source': scope['input_source'], 'in_progress': None,
-                                'completed': {'a': {'staged_record': staged}}}
-                atomic_write_json(raw / 'run.json', {'body': optimization, 'sha256': canonical_config_hash(optimization)}, compact=True)
-                kwargs = dict(optimization_record=staged, source_provenance=source,
-                              budgets=self.budgets, run_dense=False, run_independent=False)
-                binding = candidate_binding('a', self.c, self.x, **kwargs)
-                journal = PostSearchJournal.create(raw / 'post-search', [binding])
-                journal.run_candidate('a', self.c, self.x, **kwargs)
-                loaded = {'actual': {'a': {'seed_record': self.raw['seed']}}, 'circuit': self.c,
-                          'input_source': scope['input_source'], 'input_source_sha256': scope['input_source_sha256'],
-                          'config': {'budgets': {'intermediate_samples': 476, 'dense_samples': 28028}}}
-                gate = {'run': run, 'manifest': g1}
-                if inject_failure:
-                    with patch('lpf.phase2_models.experiment_post_search._write_text', side_effect=OSError('disk failure')):
-                        with self.assertRaisesRegex(OSError, 'disk failure'):
-                            package_post_search_fixture(root, expid, loaded, gate, raw, journal, lambda *a, **kw: None)
-                    marker = json.loads((raw / 'post-search/packaging.json').read_text())
-                    self.assertEqual(marker['state'], 'running')
-                    self.assertEqual(json.loads((run / 'storage_record.json').read_text())['stage'], 'preservation_incomplete')
-                    with self.assertRaisesRegex(ValueError, 'receipt'):
-                        _post_search_finalize_guard(root, run, json.loads((run / 'manifest.json').read_text()),
-                            json.loads((run / 'storage_record.json').read_text()), json.loads(summary_path.read_text()))
-                else:
-                    audits = []
-                    result = package_post_search_fixture(root, expid, loaded, gate, raw, journal,
-                                                         lambda *a, **kw: audits.append((a, kw)))
-                    self.assertTrue(audits)
-                    self.assertEqual(result['preservation'], 'awaiting_git_readback')
-                    manifest = json.loads((run / 'manifest.json').read_text())
-                    storage = json.loads((run / 'storage_record.json').read_text())
-                    summary = json.loads(summary_path.read_text())
-                    self.assertEqual(storage['stage'], 'preservation_incomplete')
-                    self.assertEqual(manifest['validation']['independent'], 'not_run')
-                    with index_path.open(newline='') as f:
-                        saved = next(csv.DictReader(f))
-                    self.assertEqual(saved['numerical_validation'], manifest['validation']['numerical'])
-                    self.assertEqual(saved['independent_validation'], manifest['validation']['independent'])
-                    self.assertEqual(_post_search_finalize_guard(root, run, manifest, storage, summary), index_path)
 
     def test_provenance_and_sink_fail_closed(self):
         wrong = self.x.copy()

@@ -15,7 +15,7 @@
 | 限定実証・レビュー証拠 | [#307](issue307_constraints.md)、[#309](issue309_rf_core.md)、[#311](issue311_performance.md) | 制約移行・科学コア・性能評価の実装と限定回帰 |
 | 限定実証・レビュー証拠 | [#313](issue313_preflight.md)、[#315](issue315_fixed_stage.md)、[#317](issue317_fixed_worker.md)、[#319](issue319_parent_runner.md)、[#321](issue321_development_cli.md) | schema2静的検査→固定stage→Worker→親→固定definition CLIの実装契約 |
 | 限定実証・レビュー証拠 | [#323](issue323_layer_dependencies.md)、[#325](issue325_campaign.md) | 現役依存境界、Campaign各増分と隔離G0〜G5検査。実験の実施指示ではない |
-| 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md) | 構造正本・保存ゲートの旧caller分離と科学回帰の現役API化、削除/残存閉包の棚卸し。旧wrapper全廃の宣言ではない |
+| 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md)、[D2](issue343_d2.md) | 構造正本・保存ゲートの旧caller分離、科学回帰の現役API化、旧実験入口の撤去。旧wrapper全廃の宣言ではない |
 | 限定実証・レビュー証拠 | [#330報告](issue330_real_scipy.md)・[再現コード](issue330_real_scipy.py) | 実SciPy callback非EXP検証、旧実行との差、source/import制限。再現コードはRF計算を行うので文書確認時に起動しない |
 | 限定実証・レビュー証拠 | [#254](issue254_curated_storage.md) | 旧共通curated保存と容量STOPの実測。現保存規則の代わりではない |
 | 歴史・旧仕様 | [#235報告](issue235_scaling.md)・[JSON](issue235_scaling.json)、[#239](issue239_optimizer_comparison.md) | 旧座標正規化・optimizer比較契約・診断。保存vector/SHAは原証拠 |
@@ -27,7 +27,7 @@
 | 歴史・旧仕様 | [#302](issue302_sequential_search.md) | schema1 fixture runnerの実装時契約。現Campaignの正式G2とは別 |
 | 限定実証・レビュー証拠 | [静的schema2 fixture](../fixtures/issue313_preflight.yaml) | #313/#315等のテスト入力。`definition: null`の基底例であってCampaign研究計画ではない |
 | 歴史・旧仕様 | [旧Stage候補記録](../stage4_candidate_records.md)・[有限列挙](../stage4_topology_enumeration.md)、[legacy Git replay](../legacy_git_replay.md) | 旧候補／履歴再取得の詳細。現ガイドの通常事前参照にはしない |
-| 歴史・旧仕様 | [旧共通CLI入力](../experiments/) | Issue限定YAML/starts/definitionとschema1 fixture。動作中CLIの注意書きは[project README](../README.md#旧経路のcli設定契約必要時のみ参照)に保持。未凍結templateを起動しない |
+| 歴史・旧仕様 | [旧共通CLI入力](../experiments/) | Issue限定YAML/starts/definitionとschema1 fixture。旧実験CLIは廃止済み（[project README](../README.md#廃止済み旧探索入口)）。未凍結templateを起動しない |
 | 未整理（本Issue外） | 広域 `docs/`・`data/`・旧EXP | [#170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)の棚卸し領域。ここでは完全な歴史証拠auditを実施したとはしない |
 
 ## 履歴文書監査（通常CIとは別）

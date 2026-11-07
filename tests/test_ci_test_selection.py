@@ -28,7 +28,7 @@ class SelectionTests(unittest.TestCase):
                      'src/lpf/search/proposals.py',
                      *(f'src/lpf/phase2_models/{name}.py' for name in (
                          'post_search_validation', 'post_search_journal', 'post_search_evidence',
-                         'experiment_post_search', 'limited_candidate_evidence')),
+                         'limited_candidate_evidence')),
                      'tests/test_issue309_rf_core.py', 'unknown.txt'):
             self.write(path, 'baseline\n')
         self.commit()
@@ -162,7 +162,7 @@ class SelectionTests(unittest.TestCase):
             *((f'src/lpf/phase2_models/{name}.py', {'RF', 'STORE'},
                'test_phase2_post_search_validation.py', None) for name in (
                    'post_search_validation', 'post_search_journal', 'post_search_evidence',
-                   'experiment_post_search', 'limited_candidate_evidence')),
+                   'limited_candidate_evidence')),
             ('src/lpf/search/proposals.py', {'RUN', 'GATE'},
              'test_issue325_campaign.py', 'test_issue325_campaign'),
             ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py', 'test_issue313_preflight'),

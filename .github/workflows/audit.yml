@@ -74,6 +74,6 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
         run: |
           set -euo pipefail
-          for test_file in test_phase2_shared_entry.py test_phase2_continuation_integration.py test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
+          for test_file in test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done

@@ -22,7 +22,7 @@ SUITES = {
     'OPT': '''test_phase2_candidate_records.py test_phase2_problem_seed.py test_phase2_sampled_epigraph.py test_phase2_staged_optimization.py test_phase2_frequency_exchange.py test_phase2_optimizer_comparison.py test_phase2_rf_pipeline_adapter.py test_hybrid_optimizer.py test_phase2_scipy_de_preview.py test_phase2_generic_starts.py test_phase2_normalized_epigraph.py test_phase2_post_search_validation.py test_phase2_real_scipy_smoke.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py test_phase2_rf_pipeline_adapter.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
-    'STORE': '''test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue325_campaign_gates.py''',
+    'STORE': '''test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue325_campaign_gates.py test_issue343_d2_preservation.py''',
     'CI': '''test_github_actions_yaml_keys.py test_storage_ci_classification.py test_ci_test_selection.py''',
 }
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
@@ -32,21 +32,14 @@ SPARSE = {
     'OPT': 'test_issue315_fixed_stage',
     'RUN': 'test_issue315_fixed_stage test_issue317_fixed_worker test_issue319_parent_runner test_issue321_development_cli test_issue325_campaign test_issue325_campaign_gates test_issue323_dependencies',
     'GATE': 'test_issue313_preflight test_issue325_campaign_gates test_issue323_dependencies',
-    'STORE': 'test_issue325_campaign_gates', 'DOC': '', 'CI': 'test_github_actions_yaml_keys test_storage_ci_classification test_ci_test_selection',
+    'STORE': 'test_issue325_campaign_gates test_issue343_d2_preservation', 'DOC': '', 'CI': 'test_github_actions_yaml_keys test_storage_ci_classification test_ci_test_selection',
 }
 SPARSE = {k: tuple(v.split()) for k, v in SPARSE.items()}
 RF_RUN_BOUNDARY = (
     'test_issue317_fixed_worker.FixedWorkerTests.test_frozen_independent_samples_in_worker',
     'test_issue325_campaign.CampaignTests.test_real_rf_f003_and_explicit_trial_392_with_one_independent_spot',
 )
-BOUNDARY = '''test_phase2_shared_entry.SharedEntryTests.test_driver_unsupported_policies_never_preflight_or_dispatch
-test_phase2_shared_entry.SharedEntryTests.test_scipy_opt_in_provenance_not_synthetic
-test_phase2_shared_entry.FrozenConfigTests.test_yaml_read_only_hash_stability_and_invalid_inputs
-test_phase2_shared_entry.FrozenConfigTests.test_g1_complete_seed_input_without_preparation_or_rf
-test_phase2_shared_entry.FrozenConfigTests.test_budget_exhaustion_partial_failure_and_interrupt_are_distinct
-test_phase2_shared_entry.FrozenConfigTests.test_curated_lossless_vectors_and_fail_closed_references
-test_phase2_shared_entry.FrozenConfigTests.test_gate_rejects_sparse_before_dispatch
-test_phase2_synthetic_runner.SyntheticRunnerTests.test_resume_and_failure
+BOUNDARY = '''test_phase2_synthetic_runner.SyntheticRunnerTests.test_resume_and_failure
 test_phase2_synthetic_runner.SyntheticRunnerTests.test_interrupted_start_fails_closed
 test_phase2_topology_enumeration.TopologyEnumerationTests.test_all_six_nominal_structures_components_area_and_trial_stamps
 test_phase2_topology_enumeration.TopologyEnumerationTests.test_exact_identity_counterexamples_no_unsafe_canonical_merges
@@ -79,9 +72,9 @@ for name in '''independent_scan rft008_policy_circuit rft005_t007_policy_circuit
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'RF'
 for name in '''candidate_records problem_seed sampled_epigraph staged_optimization frequency_exchange frequency_exchange_c1 optimizer_comparison rf_pipeline_adapter scipy_de_preview generic_starts normalized_epigraph start_selection designed_starts multistart topology_enumeration'''.split():
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'OPT'
-for name in '''experiment_run experiment_config synthetic_runner synthetic_plan'''.split():
+for name in '''synthetic_runner synthetic_plan'''.split():
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'RUN GATE STORE'
-for name in '''post_search_validation post_search_evidence post_search_journal experiment_post_search limited_candidate_evidence'''.split():
+for name in '''post_search_validation post_search_evidence post_search_journal limited_candidate_evidence'''.split():
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'RF STORE'
 
 
@@ -105,7 +98,7 @@ def path_classes(path):
         name = path.split('/')[-1]
         found = {group for group, files in SUITES.items() if name in files}
         found |= {group for group, modules in SPARSE.items() if name[:-3] in modules}
-        if name in EXTRA_FULL or name in {'test_phase2_shared_entry.py', 'test_phase2_synthetic_runner.py', 'test_phase2_topology_enumeration.py'}:
+        if name in EXTRA_FULL or name in {'test_phase2_synthetic_runner.py', 'test_phase2_topology_enumeration.py'}:
             found.add('FULL')
         return found or {'FULL'}
     return {'FULL'}
