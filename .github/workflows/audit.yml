@@ -11,7 +11,7 @@ on:
         type: boolean
         default: true
       integration:
-        description: 'Also run full shared-entry, continuation, synthetic-runner and topology integration suites'
+        description: 'Also run historical topology integration suite'
         type: boolean
         default: false
 
@@ -74,6 +74,6 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
         run: |
           set -euo pipefail
-          for test_file in test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
+          for test_file in test_phase2_topology_enumeration.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done

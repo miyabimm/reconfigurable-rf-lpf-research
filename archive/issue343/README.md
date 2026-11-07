@@ -23,3 +23,18 @@ git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/diagnose_phase2_scalin
 ```
 
 旧source固定の歴史integrationや実EXP再現はこの移設では実行しない。
+
+## D3：旧post-searchの歴史的手法
+
+元main `0698a87925b30ccaf11531a5197a5dc611d3f681` からバイト不変で移動。
+17点・独立84点・dense等の旧検証段階、候補証拠の再計算・source結合は
+現役G3/G4の保存検査とは同義でない。以下は直接importや実行を保証しない。
+旧条件・対象EXPの正確な対応は元manifestと元commitで確認する。完全証拠checkoutでの
+履歴再現は未実施。旧RF-T008の例は上記旧effective SHAであり現行条件に読み替えない。
+
+|元パス|元blob|内容SHA-256|保存理由|
+|---|---|---|---|
+|`src/lpf/phase2_models/post_search_evidence.py`|`64c8fed2f1d7952c30eb2542c80aab8af8643cb5`|`c8a7a42eb7a36d1848c5d5ec99681b3df741cf8fca5032eeee28601a57c631ff`|旧候補の証拠形式と検証意味。|
+|`src/lpf/phase2_models/post_search_validation.py`|`88ac720d8ea41bb59e8958d654b79bc3e27a9a51`|`b9e3939bfb60777595dd985b8998b834db22b897f6208aa7706a3e4130c6e1e2`|旧17/84/dense検証手順と段階分類。|
+
+`git show 0698a87925b30ccaf11531a5197a5dc611d3f681:src/lpf/phase2_models/post_search_validation.py` で元sourceを参照できる。

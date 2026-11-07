@@ -87,6 +87,17 @@ class DependenciesTests(unittest.TestCase):
                      'src/lpf/phase2_models/experiment_post_search.py'):
             self.assertFalse((root / path).exists(), path)
 
+    def test_retired_optimizer_closure_is_absent(self):
+        root = Path(__file__).resolve().parents[1] / 'src/lpf/phase2_models'
+        for name in ('candidate_records', 'designed_starts', 'evaluation_cost',
+                     'frequency_exchange', 'frequency_exchange_c1', 'generic_starts',
+                     'multistart', 'normalized_epigraph', 'optimizer_comparison',
+                     'post_search_evidence', 'post_search_journal', 'post_search_validation',
+                     'rf_pipeline_adapter', 'sampled_epigraph', 'scipy_de_preview',
+                     'staged_optimization', 'start_selection', 'synthetic_plan',
+                     'synthetic_runner'):
+            self.assertFalse((root / (name + '.py')).exists(), name)
+
     def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
         from lpf.search import checkout, gates, preservation
         for name in ('_complete_checkout', '_fresh_main'):
