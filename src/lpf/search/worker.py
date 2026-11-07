@@ -97,7 +97,7 @@ def _freeze_fixed_job(plan, definition, policy, arm, seed, vector, *, root=None,
 
 def _campaign_job_envelope(plan, spot_checks, context, binding):
     from .campaign import _structure
-    from .proposals import normalize_proposal
+    from .proposals import definition_from_data
     import copy
     expected = copy.deepcopy(binding['plan']['config'])
     config = plan.data['config']
@@ -105,10 +105,7 @@ def _campaign_job_envelope(plan, spot_checks, context, binding):
     if config != expected or context['plan_sha256'] != binding['plan_sha256']:
         raise ValueError('Formal Job outside G1 Campaign Plan')
     # Use the same topology parser and envelope rules as proposal admission.
-    proposal = dict(schema_version=1, proposal_id='job_validation', reason='Job envelope validation',
-        based_on_state_sha256=context['based_on_state_sha256'], definition=config['definition'])
-    _, definition, _, _ = normalize_proposal(proposal)
-    _structure(definition, config['campaign'])
+    _structure(definition_from_data(config['definition']), config['campaign'])
     independent = config['campaign']['independent']
     expected_spots = {} if independent['stage'] == 'not_run' else {'terminal': independent['sample_indices']}
     if spot_checks != expected_spots:
