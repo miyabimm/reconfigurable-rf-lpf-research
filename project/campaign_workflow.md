@@ -114,7 +114,7 @@ uv run --frozen python scripts/audit_new_experiment_storage.py audit
 ```
 
 現行CIは[通常smoke](../.github/workflows/audit.yml)と[Pi sparse](../.github/workflows/pi-sparse-rf.yml)。
-保存専用CIの分離は[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)で未統合（基準main `11572ba`）。未実装のworkflowを利用可能とはしない。
+保存専用CIの軽量化は[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334)でmainへ統合済み。保存専用と確実に分類できる場合のみ一般回帰を省き、全新規EXP保存監査と予約・provenance検証は常時実行する。不明・混在・対象外ファイルは通常回帰へ戻す。
 
 報告はIssue/範囲、branch/HEAD/dirty差分、PR、RF ID/effective SHA・bands/S2P、Plan/提案/start、
 予算/格子/seed/環境、requested/completed/reserved、停止理由、保存先と実施チェックを示す。
