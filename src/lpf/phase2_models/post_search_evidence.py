@@ -13,7 +13,7 @@ import numpy as np
 from lpf.checkpoint_io import canonical_config_hash
 from lpf.constraint_versions import rf_input_file
 from lpf.policy_schema import harmonic_limit_db
-from ._grid import ROOT, validated_band_segments
+from lpf.rf_core._grid import ROOT, validated_band_segments
 from .limited_candidate_evidence import _identity
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SEARCH_GUARD_DB

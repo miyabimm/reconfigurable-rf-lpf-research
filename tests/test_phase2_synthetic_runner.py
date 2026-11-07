@@ -206,7 +206,7 @@ class SyntheticRunnerTests(unittest.TestCase):
                     if case == 'component':
                         v[0] = 99.
                     return v, status(8 if case == 'nonconverged' else 0)
-                with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', synthetic_il), \
+                with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', synthetic_il), \
                         patch('lpf.phase2_models.staged_optimization.minimize',
                               side_effect=AssertionError('Real solver forbidden')), \
                         tempfile.TemporaryDirectory() as tmp:
@@ -289,7 +289,7 @@ class SyntheticRunnerTests(unittest.TestCase):
                 values[evaluator.role == 1] = np.nextafter(30., -np.inf)
             return values
         calls = []
-        with patch('lpf.phase2_models.coupled_lc.CoupledLCEvaluator.il', il), \
+        with patch('lpf.phase2_models.coupled_lc_evaluator.CoupledLCEvaluator.il', il), \
                 patch('lpf.phase2_models.staged_optimization.minimize',
                       side_effect=AssertionError('Real solver forbidden')), \
                 tempfile.TemporaryDirectory() as tmp:

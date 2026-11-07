@@ -12,7 +12,7 @@ from lpf.policy_schema import interval
 def physical_bounds(definition, schema, policy):
     """Return exactly one closed interval per complete vector coordinate."""
     d, s, p = definition, schema, policy
-    from lpf.phase2_models.nominal_inductors import nominal_inductor_series
+    from lpf.rf_core.nominal_inductors import nominal_inductor_series
     bounds = [nominal_inductor_series(p, kind)[1:] for kind in d.inductor_types]
     for kind, edge in zip(d.fixed_c_types, d.capacitor_placement.fixed_edges):
         if kind not in ('GJM01', 'PCB_PATTERN_C'):
@@ -47,8 +47,8 @@ def validate_values(definition, schema, x, policy):
     """Check complete values, structural/Q/layout model, all-L SPD; not RF PASS."""
     from lpf.rf_core import build_rf_model
     from lpf.topology_management import audit_variable_connection_roles
-    from lpf.phase2_models.coupled_lc import CircuitValues
-    from lpf.phase2_models.nominal_inductors import check_nominal_inductors
+    from lpf.rf_core.coupled_lc import CircuitValues
+    from lpf.rf_core.nominal_inductors import check_nominal_inductors
     if not isinstance(x, CircuitValues) and np.asarray(x).dtype.kind not in 'fiu':
         raise ValueError('Expected numeric component values, not boolean/string coercion')
     values = x if isinstance(x, CircuitValues) else schema.decode(x)

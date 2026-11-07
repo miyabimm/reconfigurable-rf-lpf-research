@@ -26,7 +26,7 @@ from scipy.optimize import minimize
 from lpf.slsqp_budget import (run_termination_aware_slsqp, TERMINATION_AWARE_POLICY_ID,
                               STANDARD_SLSQP_BUDGET)
 from lpf.constraint_versions import rf_input_file
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint, VectorBox
 from .sampled_epigraph import SampledEpigraph
 from .evaluation_cost import SampleBudgetExceeded
@@ -467,7 +467,7 @@ def run_c1_continuation(circuit, seed_record, *, method, cost_meter, source_prov
     A caller must provide the same per-start budget and a durable sink. Each
     intermediate stage stops on nonconvergence or an invalid physical result.
     """
-    from ._grid import CASES
+    from lpf.rf_core._grid import CASES
     from .evaluation_cost import SampleBudgetCost
     from .frequency_exchange_c1 import run_c1_frequency_exchange
 

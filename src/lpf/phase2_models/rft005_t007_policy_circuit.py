@@ -18,11 +18,12 @@ from lpf.constraint_versions import (
 )
 from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
 from .circuit_layout import CapacitorPlacement, InductorTree
-from .coupled_lc import (
-    CircuitValues, CoupledLCTopology, CoupledLCEvaluator, ParameterVectorSchema,
+from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
+from lpf.rf_core.coupled_lc import (
+    CircuitValues, CoupledLCTopology, ParameterVectorSchema,
 )
-from .nominal_inductors import check_nominal_inductors
-from .nominal_parts import checked_inductor_metadata, checked_fixed_c_types
+from lpf.rf_core.nominal_inductors import check_nominal_inductors
+from lpf.rf_core.nominal_parts import checked_inductor_metadata, checked_fixed_c_types
 
 
 def _policy_connections(edges, roles):

@@ -6,7 +6,7 @@ or permanent shunt parasitic may be removed, subject to strict checks.
 """ 
 from dataclasses import dataclass
 from .circuit_layout import normalized_capacitor_edge
-from .coupled_lc import CircuitValues
+from lpf.rf_core.coupled_lc import CircuitValues
 
 
 @dataclass(frozen=True)

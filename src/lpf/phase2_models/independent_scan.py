@@ -5,10 +5,10 @@ import math
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from ._grid import ROOT, validated_band_segments
+from lpf.rf_core._grid import ROOT, validated_band_segments
 from lpf.constraint_versions import rf_input_file
 from lpf.policy_schema import harmonic_limit_db, limit_db
-from .independent_rf import evaluate_independent_sample
+from lpf.rf_core.independent_rf import evaluate_independent_sample
 
 
 def scan_independent_rf(circuit, vector, *, points_per_interval, coverage="canonical",

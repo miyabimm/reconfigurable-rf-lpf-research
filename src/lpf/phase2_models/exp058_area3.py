@@ -3,9 +3,10 @@ import math
 import numpy as np
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from scipy.optimize import minimize
-from ._grid import ROOT, CASES, ThreeLGrid, THREE_L_EDGES, THREE_L_FIXED_EDGES, THREE_L_BL, incidence
+from lpf.rf_core._grid import ROOT, CASES
+from ._grid import ThreeLGrid, THREE_L_EDGES, THREE_L_FIXED_EDGES, THREE_L_BL, incidence
 from .circuit_layout import CapacitorPlacement
-from .rft008_layout import RFT008CapacitorLayout
+from lpf.rf_core.rft008_layout import RFT008CapacitorLayout
 
 ORIGINAL = ROOT / "experiments/chatgpt_topology_search/runs/EXP-043/checkpoints/zero_gjm_double.json"
 VARIANTS = {

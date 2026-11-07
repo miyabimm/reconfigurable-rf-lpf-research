@@ -21,7 +21,8 @@ from lpf.constraint_versions import load_constraint
 from lpf.port_parasitics import (
     _load_verified, get_two_port_s, s_to_abcd,
 )
-from lpf.phase2_models._grid import CASES, SampledExternalEvaluator, validated_band_segments
+from lpf.rf_core._grid import CASES, validated_band_segments
+from lpf.phase2_models._grid import SampledExternalEvaluator
 
 
 class Phase2S2PCacheAndGridTests(unittest.TestCase):

@@ -67,7 +67,13 @@ class DependenciesTests(unittest.TestCase):
                          if any('search' in name.split('.') for name in imports(path))}
         # Isolated old callers, not part of the schema2 import/call graph.
         self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py'})
-        self.assertFalse(any('rf_core' in name.split('.') for name in imports(root/'phase2_models/branch_mna.py')))
+        for path in (root/'rf_core').glob('*.py'):
+            self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
+                                 for name in imports(path)), path)
+        for path in (root/'search').glob('*.py'):
+            self.assertFalse(any('phase2_models' in name.split('.') for name in imports(path)), path)
+        # Independent branch-current MNA must not call the forward implementation.
+        self.assertFalse(any(name.endswith('.model') for name in imports(root/'rf_core/branch_mna.py')))
         retired = {'api', 'problem_seed', 'rft005_t007_policy_circuit', 'rft008_policy_circuit'}
         paths = list((root/'search').glob('*.py')) + list((root/'rf_core').glob('*.py'))
         paths += [root.parents[1]/'scripts/run_rf_search.py']
@@ -122,7 +128,7 @@ class DependenciesTests(unittest.TestCase):
                     with self.assertRaises(ValueError): validate_values(d, c.schema, bad, p)
                 invalid = replace(d, variable_roles=('series', 'bridge'))
                 with self.assertRaises(ValueError): validate_values(invalid, c.schema, x, p)
-                with patch('lpf.phase2_models.nominal_inductors.validate_inductor_coupling',
+                with patch('lpf.rf_core.nominal_inductors.validate_inductor_coupling',
                            side_effect=ValueError('non-SPD')):
                     with self.assertRaisesRegex(ValueError, 'non-SPD'): validate_values(d, c.schema, x, p)
                 for field in ('q', 'max_count'):

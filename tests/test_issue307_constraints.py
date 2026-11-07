@@ -117,7 +117,7 @@ class Issue307Tests(unittest.TestCase):
             with self.assertRaises(ValueError): physical_bounds(invalid, c.schema, p)
         # Even a legal k endpoint must pass the existing all-L SPD gate.
         x[10] = bounds[10][1]
-        with patch('lpf.phase2_models.nominal_inductors.validate_inductor_coupling',
+        with patch('lpf.rf_core.nominal_inductors.validate_inductor_coupling',
                    side_effect=ValueError('non-SPD')):
             with self.assertRaisesRegex(ValueError, 'non-SPD'): validate_values(d, c.schema, x, p)
         invalid = replace(d, variable_roles=('series', 'bridge'))

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
-from lpf.phase2_models.coupled_lc import CircuitValues
+from lpf.rf_core.coupled_lc import CircuitValues
 from lpf.phase2_models.rft005_t007_policy_circuit import PolicyBoundRFT005T007Circuit
 from lpf.phase2_models import exp042, exp055
 

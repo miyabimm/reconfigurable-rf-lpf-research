@@ -6,9 +6,9 @@ No call constitutes continuous-band or physical/EM certification.
 """
 import numpy as np
 from lpf.port_parasitics import get_two_port_s
-from lpf.phase2_models.independent_rf import _s_admittance, evaluate_independent_sample
-from lpf.phase2_models.branch_mna import solve_branch_mna
-from lpf.phase2_models.coupled_lc import _fixed_port_impedance
+from .independent_rf import _s_admittance, evaluate_independent_sample
+from .branch_mna import solve_branch_mna
+from .coupled_lc import _fixed_port_impedance
 
 
 def evaluate_independent_response(model, x, frequency_hz, setting):

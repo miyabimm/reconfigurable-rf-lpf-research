@@ -6,7 +6,9 @@ checks are kept separate from the forward model.
 import math
 import numpy as np
 from scipy.optimize import minimize
-from ._grid import ROOT, CASES as SHARED_CASES, incidence as incidence_edges, SampledExternalEvaluator
+from lpf.rf_core._grid import ROOT, CASES as SHARED_CASES
+from ._grid import SampledExternalEvaluator
+from ._grid import incidence as incidence_edges
 from .circuit_layout import InductorTree
 
 # Branch L0,L1,L2,L3; single physical row L0-L1-L3-L2.

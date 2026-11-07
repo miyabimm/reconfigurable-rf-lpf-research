@@ -83,7 +83,7 @@ class ContinuationIntegrationTests(unittest.TestCase):
             for module in ('scripts.run_phase2_shared', 'lpf.phase2_models.limited_candidate_evidence',
                            'lpf.phase2_models.post_search_validation'):
                 stack.enter_context(patch(module + '.ROOT', repo))
-            from lpf.phase2_models.coupled_lc import CoupledLCEvaluator
+            from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
             eligible = []
             def fake_forward(ev, x):
                 passed = not eligible or np.array_equal(np.asarray(x)[:len(eligible[0])], eligible[0])

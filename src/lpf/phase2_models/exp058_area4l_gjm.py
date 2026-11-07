@@ -2,11 +2,11 @@
 import math
 import numpy as np
 from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
-from ._grid import ROOT
+from lpf.rf_core._grid import ROOT
 from . import exp055 as old4
 from . import exp058_area3 as optim
 from .circuit_layout import CapacitorPlacement
-from .rft008_layout import RFT008CapacitorLayout
+from lpf.rf_core.rft008_layout import RFT008CapacitorLayout
 
 CASES=old4.CASES
 SOURCE=ROOT/"experiments/chatgpt_topology_search/runs/EXP-047/area5p333_g2_independent_28x1001_20261017.json"
