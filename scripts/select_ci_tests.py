@@ -132,6 +132,26 @@ def changes(event, base, head, ref):
     return paths
 
 
+def recover_changed_tests(event, base, head, ref):
+    """Even an unsafe diff must not hide added/modified test modules."""
+    if event not in {'pull_request', 'push'} or ref != 'main' or any(
+            not re.fullmatch(r'[0-9a-f]{40}', x or '') or x == '0' * 40 for x in (base, head)):
+        raise ValueError('cannot establish test diff')
+    if storage.git('rev-parse', 'HEAD').strip().decode() != head:
+        raise ValueError('HEAD mismatch')
+    if event == 'pull_request':
+        base = storage.git('merge-base', base, head).strip().decode()
+    elif subprocess.run(['git', 'merge-base', '--is-ancestor', base, head],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30).returncode:
+        raise ValueError('push is not fast-forward')
+    raw = storage.git('diff', '--no-ext-diff', '--no-textconv', '--no-renames',
+                      '--diff-filter=AM', '--name-only', '-z', base, head, '--', 'tests/')
+    if len(raw) > storage.MAX_DIFF_BYTES or (raw and not raw.endswith(b'\0')):
+        raise ValueError('test diff unavailable')
+    return [name for item in raw.split(b'\0') if item
+            if re.fullmatch(r'tests/test_[A-Za-z0-9_]+\.py', name := item.decode('utf-8'))]
+
+
 def plan(event, base, head, ref, force=False):
     result = {'classes': [], 'full': False, 'reasons': [], 'changed_tests': [], 'storage_only': False}
     try:
@@ -159,6 +179,11 @@ def plan(event, base, head, ref, force=False):
     except Exception as exc:
         result['full'] = True
         result['reasons'].append('comparison unavailable: ' + str(exc))
+        if not force:
+            try:
+                result['changed_tests'] = recover_changed_tests(event, base, head, ref)
+            except Exception:
+                result['reasons'].append('changed tests cannot be independently verified')
     return result
 
 
@@ -167,7 +192,7 @@ def execute(plan_data, sparse):
     modules = set()
     # The existing strict storage-only fast path retains only the unconditional
     # storage checks in normal CI; it must not expand to G3-G5 integration.
-    suite_groups = () if plan_data['storage_only'] else groups
+    suite_groups = () if plan_data['storage_only'] and not plan_data['full'] else groups
     if sparse:
         for group in suite_groups:
             modules.update(SPARSE[group])
@@ -233,6 +258,8 @@ def main():
         selected['full'] = True
         selected['reasons'].append('push branch mismatch or missing')
     execute(selected, '--sparse' in sys.argv)
+    if 'changed tests cannot be independently verified' in selected['reasons']:
+        raise RuntimeError('FULL ran, but changed tests could not be verified')
 
 
 if __name__ == '__main__':

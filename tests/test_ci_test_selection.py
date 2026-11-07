@@ -117,6 +117,14 @@ class SelectionTests(unittest.TestCase):
         self.git('commit', '-qm', 'mode')
         self.assertTrue(self.plan()['full'])
 
+    def test_delete_or_rename_cannot_hide_new_test(self):
+        self.git('mv', 'README.md', 'renamed.md')
+        self.write('tests/test_new_contract.py', 'changed\n')
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'])
+        self.assertIn('tests/test_new_contract.py', result['changed_tests'])
+
     def test_sparse_history_comparison(self):
         self.write('src/lpf/search/starts.py', 'changed\n')
         self.commit()
