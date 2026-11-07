@@ -48,14 +48,15 @@ class ExplicitSeriesSearchTests(unittest.TestCase):
 
     def test_series_bounds_and_three_variable_dimensions(self):
         graph=(4,((1,3,'LQP02HV'),(3,2,'LQP02HQ')))
-        from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
+        from lpf.topology_management import CircuitDefinition
+        from lpf.rf_core import build_rf_model
         from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
         from lpf.search.component_constraints import physical_bounds
         policy=load_constraint('RF-T005',allow_trial=True)
         definition = CircuitDefinition(InductorTree(3, ((0,1),(1,2))),
             ('LQP02HV','LQP02HQ'), (0,1), (),
             CapacitorPlacement(3, (), ((0,-1),(1,-1),(2,-1))), (), ('shunt_to_ground',)*3)
-        circuit = build_nominal_circuit(policy, definition)
+        circuit = build_rf_model(definition, policy)
         np.testing.assert_allclose(physical_bounds(definition, circuit.schema, policy),
                                    [(0.4,27),(0.2,56)]+[(0,3)]*18)
         layout={'edges':((3,0),(1,0),(2,0)),

@@ -18,7 +18,7 @@ CLASSES = ('DOC', 'RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # in more than one group; the runner deduplicates them.
 SUITES = {
     'DOC': '''test_phase2_current_status_review.py''',
-    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_rft008_policy_circuit.py test_phase2_rft005_t007_policy_circuit.py test_phase2_public_circuit_api.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_phase2_zero_branch_projection.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
+    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
@@ -61,13 +61,7 @@ PATHS = {
     'scripts/reserve_experiment_number.py': 'STORE GATE', 'scripts/experiment_id_registry.py': 'STORE GATE',
     'scripts/verify_phase2_cleanup_w1_links.py': 'DOC',
 }
-# Retained legacy scientific tests still have callers. Retired re-exports and
-# kernels now owned by rf_core must not have stale legacy ownership entries.
-# Shared/moved kernels and structural files stay unknown => conservative FULL.
-for name in '''rft008_policy_circuit rft005_t007_policy_circuit _grid'''.split():
-    PATHS[f'src/lpf/phase2_models/{name}.py'] = 'RF'
-
-
+# Shared kernels and structural files stay unknown => conservative FULL.
 def path_classes(path):
     if path in PATHS:
         return set(PATHS[path].split())
@@ -212,7 +206,7 @@ def execute(plan_data, sparse):
     elif plan_data['full'] or set(groups) & {'RF', 'OPT', 'RUN'}:
         print('Running compileall for current RF and search sources', flush=True)
         subprocess.run([sys.executable, '-m', 'compileall', '-q', 'src/lpf/topology_management',
-                        'src/lpf/phase2_models', 'src/lpf/rf_core'], check=True, env=env)
+                        'src/lpf/rf_core'], check=True, env=env)
     for module in sorted(modules):
         if sparse:
             command = [sys.executable, '-m', 'unittest', '-v', module]

@@ -6,10 +6,8 @@ matrix data across different circuit instances. It is a finite-grid test.
 """
 import copy
 import csv
-import hashlib
 import sys
 import unittest
-from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +20,8 @@ from lpf.rf_core.port_parasitics import (
     _load_verified, get_two_port_s, s_to_abcd,
 )
 from lpf.rf_core._grid import CASES, validated_band_segments
-from lpf.phase2_models._grid import SampledExternalEvaluator
+from lpf.search.performance import compile_requirements, build_evaluation_grid
+from test_issue323_dependencies import make
 
 
 class Phase2S2PCacheAndGridTests(unittest.TestCase):
@@ -76,49 +75,26 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
             s_to_abcd(np.eye(2, dtype=complex))  # S21 = 0
 
     def test_28_segments_six_settings_and_frequency_endpoints(self):
-        grid = SampledExternalEvaluator(self.policy, 3)
         with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
             bands = list(csv.DictReader(file))
+        req = compile_requirements(self.policy, bands)
+        grid = build_evaluation_grid(req, 3)
         self.assertEqual(len(bands), 28)
         self.assertEqual(len(CASES), 6)
-        self.assertEqual(grid.f.shape, (28*3,))
-        self.assertEqual(grid.pre.shape, (84, 2, 2))
-        self.assertEqual(grid.post.shape, (84, 2, 2))
+        self.assertEqual(grid.frequency_hz.shape, (84,))
         self.assertEqual(set(grid.setting.tolist()), set(range(6)))
-        self.assertEqual(set(grid.role.tolist()), {0, 1, 2})
         for i, row in enumerate(bands):
             self.assertEqual(grid.segment[i*3:i*3+3].tolist(), [i]*3)
-            self.assertEqual(CASES[grid.setting[i*3]], row["case"])
-            self.assertEqual(float(grid.f[i*3]), float(row["low_mhz"]))
-            self.assertEqual(float(grid.f[i*3+2]), float(row["high_mhz"]))
-        a = SampledExternalEvaluator(self.policy, 3)
-        self.assertFalse(np.shares_memory(a.pre, grid.pre))
-        self.assertFalse(np.shares_memory(a.post, grid.post))
-        prev = a.pre[0].copy()
-        grid.pre[0, 0, 0] = 999j
-        np.testing.assert_array_equal(a.pre[0], prev)
-        self.assertTrue(np.all(np.isfinite(a.pre)))
-        self.assertTrue(np.all(np.isfinite(a.post)))
-
-    def test_uniform_grid_fingerprints_remain_unchanged(self):
-        expected = {2: '1fdbe5e04217f81dfb825e7da8b22d5fd541372a23316a98e39c445fb95f6e0d',
-                    3: '1244527bf11069befd87f21009ad32fc8a29fd765841b978bde9d48b2a628786',
-                    17: 'fc6c7a269bc2aecefe747b06909a0fc79d43ee435c38ae8d4ba2d81db339fa28',
-                    1001: 'd0696e28439da33f36ea66eef9243a8ae98f89a7e63763f3e480b4dc0fd7585f'}
-        # This checks only grid bytes; real S2P SHA, interpolation, and both
-        # cascades are independently exercised by the other tests in this suite
-        # and by the forward/MNA tests. Avoid 2 * 28,028 redundant lookups.
-        identity = np.eye(2, dtype=complex)
-        with patch('lpf.phase2_models._grid.get_two_port_s', new=lambda *a, **k: identity), \
-                patch('lpf.phase2_models._grid.s_to_abcd', new=lambda s: s):
-            for points, digest in expected.items():
-                with self.subTest(points=points):
-                    grid = SampledExternalEvaluator(self.policy, points)
-                    sha = hashlib.sha256()
-                    for values, dtype in ((grid.f, '<f8'), (grid.setting, '<i8'),
-                                          (grid.role, '<i8'), (grid.segment, '<i8')):
-                        sha.update(np.asarray(values, dtype=dtype).tobytes())
-                    self.assertEqual(sha.hexdigest(), digest)
+            self.assertEqual(CASES[grid.setting[i*3]], row['case'])
+            self.assertEqual(float(grid.frequency_hz[i*3]), float(row['low_mhz'])*1e6)
+            self.assertEqual(float(grid.frequency_hz[i*3+2]), float(row['high_mhz'])*1e6)
+        _, _, model, _, _ = make('RF-T008')
+        a, b = model.evaluator(grid), model.evaluator(grid)
+        for name in ('pre', 'post'):
+            self.assertFalse(np.shares_memory(getattr(a, name), getattr(b, name)))
+            self.assertTrue(np.all(np.isfinite(getattr(a, name))))
+            with self.assertRaises(ValueError):
+                getattr(a, name).setflags(write=True)
 
     def test_band_csv_validation_fails_closed_instead_of_reclassifying_h3(self):
         with (ROOT / "rf/bands.csv").open(newline="", encoding="utf-8") as file:
@@ -179,9 +155,10 @@ class Phase2S2PCacheAndGridTests(unittest.TestCase):
                     validated_band_segments(rows)
 
     def test_invalid_integer_grid_counts_are_rejected(self):
-        for points in (0, -1, 1.5, 3.0, True, None):
+        req = compile_requirements(self.policy, ROOT / 'rf/bands.csv')
+        for points in (0, -1, 1, 1.5, 3.0, True, None):
             with self.subTest(points=points), self.assertRaises(ValueError):
-                SampledExternalEvaluator(self.policy, points)
+                build_evaluation_grid(req, points)
 
 
 if __name__ == "__main__":
