@@ -243,11 +243,9 @@ class WorkflowContractTests(unittest.TestCase):
         for test in ('test_experiment_number_reservation.py', 'test_experiment_provenance.py',
                      'test_new_experiment_storage.py'):
             self.assertIn(test, reservation)
-        for name in ('Check current RF constraints, RF model, six settings and candidate sources',
-                     'Verify current RF model and search contracts',
-                     'Check runner and topology safety boundaries', 'Check shared search primitives'):
-            self.assertEqual("${{ steps.changes.outputs.storage_only != 'true' }}", by_name[name]['if'])
-        classify = by_name['Classify complete event diff (fail closed)']
+        classify = by_name['Classify complete event diff and run selected tests']
+        self.assertEqual('python scripts/select_ci_tests.py', classify['run'])
+        self.assertNotIn('if', classify)
         self.assertIn('github.event.pull_request.base.sha || github.event.before', classify['env']['CI_BASE'])
         self.assertIn('github.event.pull_request.head.sha || github.sha', classify['env']['CI_HEAD'])
 

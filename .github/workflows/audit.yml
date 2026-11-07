@@ -1,57 +1,17 @@
 name: Phase 2 smoke (lightweight)
 
-# Code and research-data changes only. Docs-only edits do not run routine CI.
-# Deep historical audits and dense RF numerical checks are run manually as needed.
-# SLSQP policy and RF-T008 trial regressions are included in this smoke suite.
 on:
   push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/**'
-      - 'src/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'data/**'
-      - 'rf/**'
-      - 'project/**'
-      - 'candidates/**'
-      - 'experiments/**'
-      - 'actions/**'
-      - 'results/**'
-      - 'artifacts/**'
-      - 'checkpoints/**'
-      - 'scratch/**'
-      - 'tmp/**'
-      - '.gitignore'
-      - 'pyproject.toml'
-      - 'requirements.txt'
-      - 'uv.lock'
+    branches: [main]
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'src/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'data/**'
-      - 'rf/**'
-      - 'project/**'
-      - 'candidates/**'
-      - 'experiments/**'
-      - 'actions/**'
-      - 'results/**'
-      - 'artifacts/**'
-      - 'checkpoints/**'
-      - 'scratch/**'
-      - 'tmp/**'
-      - '.gitignore'
-      - 'pyproject.toml'
-      - 'requirements.txt'
-      - 'uv.lock'
   workflow_dispatch:
     inputs:
+      full:
+        description: 'Run the complete routine regression suite'
+        type: boolean
+        default: true
       integration:
-        description: 'Run full shared-entry, continuation, synthetic-runner and topology integration suites'
+        description: 'Also run full shared-entry, continuation, synthetic-runner and topology integration suites'
         type: boolean
         default: false
 
@@ -79,19 +39,6 @@ jobs:
         run: |
           git rev-parse HEAD
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-      - name: Classify complete event diff (fail closed)
-        id: changes
-        env:
-          CI_EVENT: ${{ github.event_name }}
-          CI_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-          CI_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-          CI_BASE_REF: ${{ github.event.pull_request.base.ref || github.ref_name }}
-        run: |
-          # An unexpected classifier crash must also select the full suite.
-          result=$(python3 scripts/classify_storage_ci.py) || result=storage_only=false
-          if [ "$result" != "storage_only=true" ]; then result=storage_only=false; fi
-          echo "$result" >> "$GITHUB_OUTPUT"
-          echo "CI classification: $result"
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
@@ -102,151 +49,31 @@ jobs:
           cache-dependency-glob: uv.lock
       - run: uv sync --frozen
       - run: echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
-      - name: Check current RF constraints, RF model, six settings and candidate sources
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: |
-          set -euo pipefail
-          for test_file in \
-            test_circuit.py \
-            test_evaluate.py \
-            test_rf_f003_t005.py \
-            test_trial_pcb_pattern_c_t008.py \
-            test_trial_ic_fixed_c_t008.py \
-            test_trial_shunt_dtc.py \
-            test_phase2_candidate_catalog.py \
-            test_exp047_legacy_manifest_adapter.py \
-            test_github_actions_yaml_keys.py; do
-            echo "Running smoke module: $test_file"
-            python -m unittest discover -s tests -p "$test_file" -v
-          done
-
-      - name: Verify current RF model and search contracts
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: |
-          set -euo pipefail
-          python -m compileall -q src/lpf/topology_management src/lpf/phase2_models src/lpf/rf_core
-          python -m unittest discover -s tests -p test_issue323_dependencies.py -v
-          python -m unittest discover -s tests -p test_issue309_rf_core.py -v
-          python -m unittest discover -s tests -p test_issue311_performance.py -v
-          python -m unittest discover -s tests -p test_issue313_preflight.py -v
-          python -m unittest discover -s tests -p test_issue315_fixed_stage.py -v
-          python -m unittest discover -s tests -p test_issue317_fixed_worker.py -v
-          python -m unittest discover -s tests -p test_issue319_parent_runner.py -v
-          python -m unittest discover -s tests -p test_issue321_development_cli.py -v
-          python -m unittest discover -s tests -p 'test_issue325_campaign*.py' -v
-          python -m unittest discover -s tests -p test_phase2_circuit_layout.py -v
-          python -m unittest discover -s tests -p test_phase2_rft008_layout.py -v
-          python -m unittest discover -s tests -p test_phase2_generic_coupled_lc.py -v
-          python -m unittest discover -s tests -p test_phase2_rft008_policy_circuit.py -v
-          python -m unittest discover -s tests -p test_phase2_rft005_t007_policy_circuit.py -v
-          python -m unittest discover -s tests -p test_phase2_public_circuit_api.py -v
-          python -m unittest discover -s tests -p test_phase2_branch_mna.py -v
-          python -m unittest discover -s tests -p test_phase2_independent_rf.py -v
-          python -m unittest discover -s tests -p test_phase2_connection_roles.py -v
-          python -m unittest discover -s tests -p test_phase2_s2p_grid_cache.py -v
-          python -m unittest discover -s tests -p test_phase2_numeric_diagnostics.py -v
-          python -m unittest discover -s tests -p test_phase2_zero_branch_projection.py -v
-          python -m unittest discover -s tests -p test_phase2_candidate_records.py -v
-          python -m unittest discover -s tests -p test_phase2_problem_seed.py -v
-          python -m unittest discover -s tests -p test_phase2_sampled_epigraph.py -v
-          python -m unittest discover -s tests -p test_phase2_staged_optimization.py -v
-          python -m unittest discover -s tests -p test_phase2_frequency_exchange.py -v
-          python -m unittest discover -s tests -p test_phase2_optimizer_comparison.py -v
-          python -m unittest discover -s tests -p test_phase2_rf_pipeline_adapter.py -v
-          python -m unittest discover -s tests -p test_rf_search.py -v
-          python -m unittest discover -s tests -p test_hybrid_optimizer.py -v
-          python -m unittest discover -s tests -p test_phase2_scipy_de_preview.py -v
-          python -m unittest discover -s tests -p test_phase2_generic_starts.py -v
-          python -m unittest discover -s tests -p test_phase2_normalized_epigraph.py -v
-          python -m unittest discover -s tests -p test_phase2_post_search_validation.py -v
-          python -m unittest discover -s tests -p test_phase2_real_scipy_smoke.py -v
-          LPF_EVIDENCE_ROOT="$GITHUB_WORKSPACE" python -m unittest discover -s tests -p test_phase2_candidate_records_frozen.py -v
-
-      # Selected fail-closed/provenance cases run on every PR. Run the complete
-      # integration suites via workflow_dispatch (integration=true) for changes
-      # to the shared runner, checkpoint, topology or experiment storage paths.
-      - name: Check runner and topology safety boundaries
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: |
-          set -euo pipefail
-          PYTHONPATH=tests python -m unittest -v \
-            test_phase2_shared_entry.SharedEntryTests.test_driver_unsupported_policies_never_preflight_or_dispatch \
-            test_phase2_shared_entry.SharedEntryTests.test_scipy_opt_in_provenance_not_synthetic \
-            test_phase2_shared_entry.FrozenConfigTests.test_yaml_read_only_hash_stability_and_invalid_inputs \
-            test_phase2_shared_entry.FrozenConfigTests.test_g1_complete_seed_input_without_preparation_or_rf \
-            test_phase2_shared_entry.FrozenConfigTests.test_budget_exhaustion_partial_failure_and_interrupt_are_distinct \
-            test_phase2_shared_entry.FrozenConfigTests.test_curated_lossless_vectors_and_fail_closed_references \
-            test_phase2_shared_entry.FrozenConfigTests.test_gate_rejects_sparse_before_dispatch \
-            test_phase2_synthetic_runner.SyntheticRunnerTests.test_resume_and_failure \
-            test_phase2_synthetic_runner.SyntheticRunnerTests.test_interrupted_start_fails_closed \
-            test_phase2_topology_enumeration.TopologyEnumerationTests.test_all_six_nominal_structures_components_area_and_trial_stamps \
-            test_phase2_topology_enumeration.TopologyEnumerationTests.test_exact_identity_counterexamples_no_unsafe_canonical_merges \
-            test_phase2_topology_enumeration.TopologyEnumerationTests.test_illegal_branch_and_component_cases_rejected_not_silently_repaired
-
-      - name: Full runner and topology integration (manual)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
-        run: |
-          set -euo pipefail
-          for test_file in test_phase2_shared_entry.py test_phase2_continuation_integration.py test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
-            echo "Running integration module: $test_file"
-            python -m unittest discover -s tests -p "$test_file" -v
-          done
-
-      - name: Guard unique RF and project sources with read-only legacy aliases
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
-      - name: Check current documentation entrypoints and links
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: |
-          set -euo pipefail
-          python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
-          python scripts/verify_phase2_cleanup_w1_links.py --active-only
-      - name: Verify active RF registry and historical candidate audits
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: |
-          set -euo pipefail
-          python -m unittest discover -s tests -p test_audit.py -v
-          python -m unittest discover -s tests -p test_rf_f002_t004.py -v
-          python -m unittest discover -s tests -p test_research_catalog.py -v
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
-      # These deterministic tests are cheap and their dependencies include policy,
-      # ledger and evidence files. Run unconditionally rather than risk missing a
-      # dependency or an earlier commit in a multi-commit push.
       - name: Check classifier fail-closed behavior
         run: python -m unittest discover -s tests -p test_storage_ci_classification.py -v
       - name: Check experiment reservation and provenance
         run: |
           set -euo pipefail
-          for test_file in \
-            test_experiment_number_reservation.py \
-            test_experiment_provenance.py \
-            test_new_experiment_storage.py; do
+          for test_file in test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done
-
-      - name: Check optimization status
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
-        run: python -m unittest discover -s tests -p test_slsqp_budget.py -v
-
-      - name: Check shared search primitives
-        if: ${{ steps.changes.outputs.storage_only != 'true' }}
+      - name: Classify complete event diff and run selected tests
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CI_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CI_BASE_REF: ${{ github.event.pull_request.base.ref || github.ref_name }}
+          CI_HEAD_REF: ${{ github.head_ref }}
+          CI_EVENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          CI_REF: ${{ github.ref }}
+          CI_FULL: ${{ inputs.full }}
+        run: python scripts/select_ci_tests.py
+      - name: Full runner and topology integration (manual)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.integration }}
         run: |
           set -euo pipefail
-          for test_file in \
-            test_shared_graph_core.py \
-            test_shared_checkpoint_io.py \
-            test_shared_variable_c_layouts.py \
-            test_topology_selection.py \
-            test_coupling_layout.py \
-            test_search_space_extensions.py \
-            test_graph_instantiation.py \
-            test_shared_graph_builder.py \
-            test_matching_numeric_reference.py \
-            test_twoport_reduction.py \
-            test_grounded_enumeration.py \
-            test_p4_sharding.py \
-            test_three_variable_c_trials.py; do
-            echo "Running shared-core regression: $test_file"
+          for test_file in test_phase2_shared_entry.py test_phase2_continuation_integration.py test_phase2_synthetic_runner.py test_phase2_topology_enumeration.py; do
             python -m unittest discover -s tests -p "$test_file" -v
           done
