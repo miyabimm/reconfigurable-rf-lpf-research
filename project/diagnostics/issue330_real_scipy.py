@@ -20,8 +20,8 @@ class Tiny:
         def tiny(c):
             c['anytime_samples'] = [56]
             first = c['arms'][0]['steps'][0]
-            first['max_requested_samples'] = 56
-            first['options'] = dict(max_iterations=1, max_evaluations=1)
+            first['max_requested_samples'] = 3 * 56
+            first['options'] = dict(max_iterations=1, max_evaluations=3)
             second = copy.deepcopy(first); second['name'] = 'fine'
             c['arms'][0]['steps'].append(second)
             if mutate: mutate(c)
@@ -37,8 +37,14 @@ def check_plan(plan):
     assert c['campaign']['max_topologies'] == 1 and c['campaign']['max_rf_samples'] == 1500
     assert len(c['seeds']) == len(c['arms']) == 1
     assert c['arms'][0]['max_requested_samples'] == 1500
-    assert len(steps) == 2 and all(s['max_requested_samples'] == 56 and s['options'] == {'max_iterations':1,'max_evaluations':1} for s in steps)
+    assert len(steps) == 2 and all(s['points_per_interval'] == 2 and s['max_requested_samples'] == 168 and s['options'] == {'max_iterations':1,'max_evaluations':3} for s in steps)
     assert c['campaign']['independent'] == {'stage':'terminal','max_candidates':1,'sample_indices':[0]}
+    job = plan.data['costs']['jobs'][c['arms'][0]['name']]
+    assert all(s['one_forward_samples'] == 56 and s['upper_reservation'] == 168 for s in job['stages'].values())
+    required = (sum(s['upper_reservation'] for s in job['stages'].values()) +
+                job['selection_upper_reservation'] + job['terminal_fixed_reservation'] + job['anytime_fixed_reservation'])
+    assert required <= 1500
+    print('PREFLIGHT_RESERVED', required, 'JOB_CAP', 1500, flush=True)
     print('PREFLIGHT', json.dumps(c, ensure_ascii=False, sort_keys=True), flush=True)
 
 def inspect(output, plan):
@@ -60,6 +66,17 @@ def inspect(output, plan):
     assert sum(b['requested'] for b in raw['batches']) == state['requested']
     assert all(b['requested'] == b['completed'] for b in raw['batches'])
     assert raw['batches'][-1]['independent']['status'] == 'pass'
+    for step in raw['steps']:
+        result = step['solver_result']
+        # With physical constraints and free coordinates, the first two calls
+        # occur before minimize; a third callback must come from inside SciPy.
+        assert result['nfev'] + result['ncev'] >= 3
+        assert result['evaluations'] == result['nfev'] + result['ncev']
+        batches = [b for b in raw['batches'] if b['allocation'].endswith('/'+step['name'])]
+        assert len(batches) == result['evaluations'] and all(b['completed'] == 56 for b in batches)
+        print('SCIPY_CALLBACK_EVIDENCE', step['name'], json.dumps({k: result[k] for k in
+            ('nfev', 'ncev', 'evaluations', 'stop_reason', 'status', 'solver_success')}, sort_keys=True),
+            'RF_BATCHES', len(batches), flush=True)
     assert not raw['rf_compliance_certified']
     ev = state['events'][0]; pb=(output/ev['input_path']).read_bytes()
     print('PROPOSAL_PATH',output/ev['input_path'],'SHA256',hashlib.sha256(pb).hexdigest(),flush=True)
