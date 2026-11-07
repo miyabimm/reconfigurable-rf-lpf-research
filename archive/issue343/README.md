@@ -12,12 +12,14 @@
 |---|---|---|---|
 |`src/lpf/phase2_models/experiment_config.py`|`4b2a02ab46ae272a8b4326e48598ecdee3f04669`|`964a9405ee2296fd3ff8814f89f29d36c87efac4bf3681cf335544a74a8a4768`|旧schema4/5 continuation計画、EXP-116 nominal input参照、固定SHAと準備方式の解釈。schema2と同値ではない。|
 |`scripts/prepare_issue250_comparison.py`|`cd2a7391eabb16f1bb0035d2a706aac1e522e660`|`164d7566d943b029b28dd6e78822e98dc74b31ed1ab22207d3c5c121a4c28e35`|Issue #250のEXP-062参照・比較start準備の歴史的意味。|
+|`scripts/diagnose_phase2_scaling.py`|`a7c5d2e200009917f98cf26bccbd1258e9d0fdf0`|`6d18d6126dad8268942ecbb2a5a5f5ff47e2c539c05f6fe65408edd8efdef194`|Issue #235のEXP-086〜094の保存初期値、seed replayと有限差分尺度診断。旧RF条件に依存し、現役schema2とは同義でない。|
 
-両者は旧RF-T008 effective SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4` に関係する。現行条件とは異なり、再評価・現行RF合格として読み替えない。元ファイルを読む例（Gitのobjectが存在する場合）:
+これらは旧RF-T008 effective SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4` に関係する。現行条件とは異なり、再評価・現行RF合格として読み替えない。元ファイルを読む例（Gitのobjectが存在する場合）:
 
 ```sh
 git show 681dabee30a7804d63bacc3afa5932e320c1d11a:src/lpf/phase2_models/experiment_config.py
 git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/prepare_issue250_comparison.py
+git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/diagnose_phase2_scaling.py
 ```
 
 旧source固定の歴史integrationや実EXP再現はこの移設では実行しない。

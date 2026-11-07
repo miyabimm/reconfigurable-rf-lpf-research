@@ -13,7 +13,12 @@ Issue #233 / merged PR #234の3構成・9保存初期値だけを使用した。
 - Python3.12 / frozen uv環境。NumPy/SciPyバージョン・診断script SHAはJSON内。
   全evidence checkoutが必要。sparse環境では履歴診断をPASS扱いしない。
 
-再現（最適化しない）：
+以下は当時の再現コマンド（最適化しない）。旧入口は現役mainから撤去済みのため、
+そのままでは実行できない。元sourceは[履歴資料](../../archive/issue343/README.md)に隔離し、
+再現が必要な場合は元commit・依存関係・完全evidenceを隔離checkoutして確認する。
+現行RF条件やarchiveコピーの直接実行へ読み替えない。
+
+再現（当時）：
 
 ```bash
 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src uv run --frozen python scripts/diagnose_phase2_scaling.py > /tmp/issue235.json

@@ -6,9 +6,10 @@
 
 ## 削除・隔離と現役依存
 
-- 削除：`scripts/run_phase2_{shared,one_start}.py`、`diagnose_phase2_scaling.py`、
+- 削除：`scripts/run_phase2_{shared,one_start}.py`、
   `phase2_models/{experiment_run,experiment_post_search}.py`。旧互換shimなし。
-- 旧`experiment_config.py`、`prepare_issue250_comparison.py`は履歴資料として
+- 旧`experiment_config.py`、`prepare_issue250_comparison.py`、
+  `diagnose_phase2_scaling.py`は履歴資料として
   `archive/issue343/`へ内容不変で移設。元blob、SHA-256、旧RF SHA、対象と復元方法は同README。
   archiveを現役APIやCIのimport元にしない。
 - 現役依存は schema2 CLI → `search` Plan/Runner/Worker → `component_constraints` →
