@@ -11,6 +11,12 @@ import yaml
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/classify_storage_ci.py'
 RUN = 'experiments/chatgpt_topology_search/runs/EXP-050'
+HEADER = ('experiment_id,constraint_class,constraint_id,effective_constraint_sha256,'
+          'objective,execution_status,numerical_validation,independent_validation,manifest,purpose\n')
+
+
+def row(exp, status):
+    return f'{exp},trial,RF-F003,sha,full_lpf,{status},not_run,not_run,path,purpose\n'
 
 
 class ClassificationTests(unittest.TestCase):
@@ -29,7 +35,7 @@ class ClassificationTests(unittest.TestCase):
             else:
                 rows.append(f'EXP-{n:03d},reserved,test,req-{n},purpose,RF-F003,2026-01-01T00:00:00Z,main')
         self.write('data/experiment_number_registry.csv', '\n'.join(rows) + '\n')
-        self.write('data/experiment_index.csv', 'experiment_id,status\nEXP-050,planned\nEXP-049,old\n')
+        self.write('data/experiment_index.csv', HEADER + row('EXP-049', 'old') + row('EXP-050', 'planned'))
         self.write(f'{RUN}/storage_record.json', json.dumps({'experiment_id': 'EXP-050',
                    'policy': 'phase2-git-only-v1', 'stage': 'planned'}))
         self.write(f'{RUN}/manifest.json', '{"planned":true}')
@@ -69,6 +75,68 @@ class ClassificationTests(unittest.TestCase):
         self.write(f'{RUN}/checkpoints/candidate.json', '{"candidate":123}')
         self.commit()
         self.assertEqual('storage_only=true', self.classify('push'))
+
+    def test_g4_index_update_and_insert_pr_and_push(self):
+        for add in (False, True):
+            with self.subTest(add=add):
+                self.git('reset', '--hard', self.base)
+                if add:
+                    self.write('data/experiment_index.csv', HEADER + row('EXP-049', 'old'))
+                    self.commit()
+                    baseline = self.head()
+                else:
+                    baseline = self.base
+                self.storage()
+                self.write('data/experiment_index.csv', HEADER + row('EXP-049', 'old') + row('EXP-050', 'complete'))
+                self.commit()
+                for event in ('pull_request', 'push'):
+                    self.assertEqual('storage_only=true', self.classify(event, base=baseline))
+
+    def test_index_other_rows_header_reorder_and_invalid_rejected(self):
+        for contents in (
+            HEADER + row('EXP-049', 'changed') + row('EXP-050', 'complete'),
+            HEADER + row('EXP-049', 'old').replace('purpose', '"purpose"') + row('EXP-050', 'complete'),
+            HEADER.replace('purpose', 'other') + row('EXP-049', 'old') + row('EXP-050', 'complete'),
+            HEADER + row('EXP-050', 'complete') + row('EXP-049', 'old'),
+            HEADER + row('EXP-050', 'complete'),
+            HEADER + row('EXP-049', 'old') + row('EXP-050', 'complete') + row('EXP-050', 'duplicate'),
+            HEADER + row('EXP-049', 'old') + 'EXP-050,"broken\n',
+            HEADER + row('EXP-049', 'old') + row('EXP-050', 'complete') + row('EXP-051', 'extra'),
+        ):
+            with self.subTest(contents=contents):
+                self.git('reset', '--hard', self.base)
+                self.git('clean', '-fdq')
+                self.storage()
+                self.write('data/experiment_index.csv', contents)
+                self.commit()
+                for event in ('pull_request', 'push'):
+                    self.assertEqual('storage_only=false', self.classify(event))
+
+    def test_quoted_multiline_and_unicode_other_record_is_preserved(self):
+        other = row('EXP-049', 'old').replace('purpose', '"first\nsecond\u0085third"')
+        self.write('data/experiment_index.csv', HEADER + other + row('EXP-050', 'planned'))
+        self.commit()
+        baseline = self.head()
+        self.storage()
+        self.write('data/experiment_index.csv', HEADER + other + row('EXP-050', 'complete'))
+        self.commit()
+        self.assertEqual('storage_only=true', self.classify(base=baseline))
+        self.write('data/experiment_index.csv', HEADER + other.replace('third', 'changed') + row('EXP-050', 'complete'))
+        self.commit()
+        self.assertEqual('storage_only=false', self.classify('push', base=baseline))
+
+    def test_index_only_and_index_with_code_use_full_suite(self):
+        for mixed in (False, True):
+            with self.subTest(mixed=mixed):
+                self.git('reset', '--hard', self.base)
+                self.git('clean', '-fdq')
+                self.write('data/experiment_index.csv', HEADER + row('EXP-049', 'old') + row('EXP-050', 'complete'))
+                if mixed:
+                    self.storage()
+                    self.write('src/worker.py', 'mixed code')
+                self.commit()
+                self.assertEqual('storage_only=false', self.classify())
+                self.assertEqual('storage_only=false', self.classify('push'))
 
     def test_pr_merge_base_and_non_fast_forward_push(self):
         self.storage()
@@ -171,6 +239,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertEqual('python scripts/audit_new_experiment_storage.py audit', audit['run'])
         for name in ('Check classifier fail-closed behavior', 'Check experiment reservation and provenance'):
             self.assertNotIn('if', by_name[name])
+        reservation = by_name['Check experiment reservation and provenance']['run']
+        for test in ('test_experiment_number_reservation.py', 'test_experiment_provenance.py',
+                     'test_new_experiment_storage.py'):
+            self.assertIn(test, reservation)
         for name in ('Check current RF constraints, RF model, six settings and candidate sources',
                      'Verify current RF model and search contracts',
                      'Check runner and topology safety boundaries', 'Check shared search primitives'):

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Conservative CI optimization only; never substitutes for the storage audit."""
+import csv
+import io
 import json
 import os
 import re
@@ -13,10 +15,58 @@ RUN = re.compile(r"experiments/(?:chatgpt_topology_search|matching_limit)/runs/(
 MAX_DIFF_BYTES = 256_000
 MAX_PATHS = 1000
 MAX_TOTAL_BYTES = 10_000_000
+INDEX = 'data/experiment_index.csv'
+INDEX_HEADER = ('experiment_id', 'constraint_class', 'constraint_id',
+                'effective_constraint_sha256', 'objective', 'execution_status',
+                'numerical_validation', 'independent_validation', 'manifest', 'purpose')
 
 
 def git(*args):
     return subprocess.check_output(['git', *args], stderr=subprocess.PIPE, timeout=30)
+
+
+def index_rows(raw):
+    """Parse logical CSV records while retaining their exact original bytes."""
+    text = raw.decode('utf-8')
+    lines = list(io.StringIO(text, newline=''))
+    if not lines or not text.endswith('\n'):
+        raise ValueError('incomplete index')
+    reader = csv.reader(io.StringIO(text, newline=''), strict=True)
+    entries = []
+    start = 0
+    for values in reader:
+        end = reader.line_num
+        record = ''.join(lines[start:end])
+        start = end
+        if len(values) != len(INDEX_HEADER):
+            raise ValueError('invalid index record')
+        entries.append((values, record))
+    if start != len(lines) or not entries or tuple(entries[0][0]) != INDEX_HEADER:
+        raise ValueError('invalid index header')
+    ids = [values[0] for values, _ in entries[1:]]
+    if (any(not re.fullmatch(r'EXP-\d{3,}', ident) for ident in ids)
+            or len(ids) != len(set(ids))):
+        raise ValueError('invalid index identities')
+    return entries
+
+
+def index_change_is_target_only(before, after, exp):
+    old, new = index_rows(before), index_rows(after)
+    if old[0][1] != new[0][1]:
+        return False
+    old_ids = [row[0][0] for row in old[1:]]
+    new_ids = [row[0][0] for row in new[1:]]
+    if new_ids.count(exp) != 1 or old_ids.count(exp) > 1:
+        return False
+    if exp in old_ids:
+        if new_ids != old_ids:
+            return False
+    else:
+        # New entries must preserve all others and be in numerical EXP order.
+        if new_ids != sorted(new_ids, key=lambda ident: int(ident[4:])):
+            return False
+    return ([record for values, record in old[1:] if values[0] != exp]
+            == [record for values, record in new[1:] if values[0] != exp])
 
 
 def classify(event, base, head, base_ref):
@@ -42,23 +92,28 @@ def classify(event, base, head, base_ref):
     if fields.pop() != b'' or len(fields) % 2 or len(fields) // 2 > MAX_PATHS:
         return False
     paths = []
+    index_changed = False
     total_bytes = 0
     for status, raw in zip(fields[::2], fields[1::2]):
         if status not in (b'A', b'M'):
             return False
         name = raw.decode('utf-8')
         match = RUN.fullmatch(name)
-        if not match or int(match[1][4:]) < 50:
-            return False
-        # JSON A/B evidence only. Other formats, index edits and unusual names
-        # conservatively use the full suite, even if the audit would accept them.
-        parts = PurePosixPath(match[2]).parts
-        if (not parts or any(not re.fullmatch(r'[A-Za-z0-9_.-]+', p)
-                             or p in {'.', '..'} or p.startswith('.') for p in parts)
-                or not name.endswith('.json')):
-            return False
-        if status == b'M' and match[2] not in {'manifest.json', 'storage_record.json'}:
-            return False
+        if name == INDEX:
+            if status != b'M' or index_changed:
+                return False
+            index_changed = True
+        else:
+            if not match or int(match[1][4:]) < 50:
+                return False
+            # JSON A/B evidence only; other formats use the full suite.
+            parts = PurePosixPath(match[2]).parts
+            if (not parts or any(not re.fullmatch(r'[A-Za-z0-9_.-]+', p)
+                                 or p in {'.', '..'} or p.startswith('.') for p in parts)
+                    or not name.endswith('.json')):
+                return False
+            if status == b'M' and match[2] not in {'manifest.json', 'storage_record.json'}:
+                return False
         # Reject symlinks, executable files and huge diffs without reading blobs.
         for revision in ((head, base) if status == b'M' else (head,)):
             tree = git('ls-tree', '-l', '-z', revision, '--', name)
@@ -71,12 +126,16 @@ def classify(event, base, head, base_ref):
             total_bytes += int(metadata[3])
             if total_bytes > MAX_TOTAL_BYTES:
                 return False
-        paths.append((match[1], name))
+        if match:
+            paths.append((match[1], name))
     ids = {item[0] for item in paths}
     roots = {name.split('/runs/')[0] for _, name in paths}
     if len(ids) != 1 or len(roots) != 1:
         return False
     exp = next(iter(ids))
+    if index_changed and not index_change_is_target_only(
+            git('show', f'{base}:{INDEX}'), git('show', f'{head}:{INDEX}'), exp):
+        return False
     ledger = read_ledger(git('show', f'{base}:{PATH}').decode('utf-8'))
     if not any(row['experiment_id'] == exp and row['state'] in {'reserved', 'active'}
                for row in ledger):
@@ -93,7 +152,7 @@ def main():
     try:
         result = classify(os.getenv('CI_EVENT'), os.getenv('CI_BASE'), os.getenv('CI_HEAD'),
                           os.getenv('CI_BASE_REF'))
-    except (OSError, ValueError, UnicodeError, subprocess.SubprocessError, TypeError, AttributeError):
+    except (OSError, ValueError, UnicodeError, csv.Error, subprocess.SubprocessError, TypeError, AttributeError):
         result = False
     print('storage_only=' + str(result).lower())
     return 0

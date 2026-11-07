@@ -118,7 +118,7 @@ python scripts/audit_new_experiment_storage.py audit
 
 チェック項目：origin/mainの予約とRF条件、既存厳格manifest、選別計画、証拠のSHA/実ファイル、6設定checkpoint構造、試行件数、Git HEAD byte再取得、保存容量に加え、**未分類のGit追跡ファイル、重複証拠、force-addされた一時ファイル**を拒否する。新しいEXPディレクトリにGit追跡ファイルを置く場合は、manifest/storage_record自身以外の全ファイルをA/B証拠に分類する。テストfixture等の使い捨てファイルをGitへ入れない。
 
-**CIの軽量性（Issue #332、ユーザー承認済み）：** 保存専用と確実に分類できるPR／main pushでは一般RF・optimizer・runner回帰を省くが、同じ `smoke` jobで上記の全新規EXP保存監査と予約・provenance・保存監査テストを必ず実行する。分類はPRのmerge-base→head、pushのbefore→afterの全差分を対象とし、不明・混在・削除・rename等は通常回帰へ戻す。現実装はbaseで予約済みかつplanned/runningの単一EXP内JSONに限定し、index変更も通常回帰とする（監査の許可範囲より厳しい）。保存監査FAILは省略できない。G5のremote実byte再確認とcleanup可否判定は別途必要で、CI軽量化はこれを代替しない。既存の数値的な全歴史テストは引き続き必要時に実行する。**CI PASSは独立RF計算の再実行を意味しない。**
+**CIの軽量性（Issue #332、ユーザー承認済み）：** 保存専用と確実に分類できるPR／main pushでは一般RF・optimizer・runner回帰を省くが、同じ `smoke` jobで上記の全新規EXP保存監査と予約・provenance・保存監査テストを必ず実行する。分類はPRのmerge-base→head、pushのbefore→afterの全差分を対象とし、不明・混在・削除・rename等は通常回帰へ戻す。現実装はbaseで予約済みかつplanned/runningの単一EXP内JSONと、任意の `data/experiment_index.csv` の当該EXP行1件の追加・更新に限定する。他EXP行の原byte、ヘッダ、順序は不変とし、未知形式や他のdata変更は通常回帰へ戻す。indexとmanifestの整合は常時実行のprovenanceテストでも検査する（分類は保存監査の代用ではない）。保存監査FAILは省略できない。G5のremote実byte再確認とcleanup可否判定は別途必要で、CI軽量化はこれを代替しない。既存の数値的な全歴史テストは引き続き必要時に実行する。**CI PASSは独立RF計算の再実行を意味しない。**
 
 **G5 ローカルCの後片付け。** finalizeがPASSし、runの停止/再開が不要、A/Bへ昇格すべき元データがないことをrun担当者が確認した場合に限り、results/EXP-NNN/ 内のCを消去してよい。ほかのEXPや全resultsをまとめて削除しない。消去前後の「実験ID・finalize PASSのcommit SHA・残したA/B証拠・消去対象」の確認結果はPR本文または短い要約に記録する。finalize未達、preservation_incomplete、再開予定あり、依存不明の場合はそのCを保留し、保留理由と期限（または次のレビュー条件）を管理する。**既存Git原証拠の削除権限とは別のローカル一時作業領域だけの規則。**
 
