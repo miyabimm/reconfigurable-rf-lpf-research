@@ -176,5 +176,3 @@ def finalize_experiment(root, experiment_id):
         storage['limitations'] = LIMITATIONS + ['G3/G4 failed; retain raw: ' + str(exc)]
         atomic_write_json(run / 'storage_record.json', storage)
         raise
-
-
