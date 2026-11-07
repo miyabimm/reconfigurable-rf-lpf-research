@@ -56,10 +56,8 @@ class FixedStageTests(unittest.TestCase):
                 mode = 'matching_only' if cid == 'RF-T006' else 'full_lpf'
                 plan, d, p, x = self.setup_model(cid, mode)
                 e = self.evaluator(plan, d, p)
-                # New path must not use the old forward or score/rank functions.
-                with patch('lpf.phase2_models.api.NominalCircuit.forward_evaluator', side_effect=AssertionError('legacy')), \
-                     patch('lpf.search.evaluation.score', side_effect=AssertionError('legacy score')), \
-                     patch('lpf.search.validation.rank_key', side_effect=AssertionError('legacy rank')):
+                # The new path must not use the old circuit forward.
+                with patch('lpf.phase2_models.api.NominalCircuit.forward_evaluator', side_effect=AssertionError('legacy')):
                     result = e.evaluate(x)
                     ranked = rank_candidates([result])['ranked']
                 n = 28 if mode == 'matching_only' else 56

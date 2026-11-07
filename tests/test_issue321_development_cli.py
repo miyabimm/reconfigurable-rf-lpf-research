@@ -55,6 +55,15 @@ class DevelopmentCLITests(unittest.TestCase):
             code = cli.main(argv)
         return code, out.getvalue(), err.getvalue()
 
+    def test_retired_schema1_commands_rejected_without_output(self):
+        for command in ('preflight', 'run'):
+            with self.subTest(command=command):
+                completed = subprocess.run([sys.executable, str(ROOT/'scripts/run_rf_search.py'),
+                    command, '--config', 'unused.yaml'], capture_output=True, text=True, timeout=30)
+                self.assertEqual(completed.returncode, 2)
+                self.assertIn('invalid choice', completed.stderr)
+                self.assertFalse(completed.stdout)
+
     def test_actual_cli_two_steps_solver_rf_and_summary(self):
         args, argv = self.prepare()
         # The real schema2 CLI must run without importing retired facades,

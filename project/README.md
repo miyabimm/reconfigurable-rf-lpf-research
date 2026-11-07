@@ -22,7 +22,7 @@ git sparse-checkout set --cone project rf src scripts tests .github
 - [ロードマップ](roadmap.md)：mainの実装実績と未検証ゲート。
 - [診断・歴史資料索引](diagnostics/README.md)：旧Stageごとの説明、限定実証・レビュー証拠、整理候補。古い「未接続」「レビュー待ち」は当時の範囲であり現況の正本ではない。
 - 固定step Worker／逐次親Runnerの詳細は [#317](diagnostics/issue317_fixed_worker.md)／[#319](diagnostics/issue319_parent_runner.md)。
-- schema1の `preflight` はread-only、`run` はsynthetic fixture限定。本番runは `not_ready`。旧EXP変換・互換保証は提供しない（[#302](diagnostics/issue302_sequential_search.md)）。
+- 旧schema1の `preflight`／`run` は撤去済み。旧EXP変換・互換保証は提供しない（経緯は[#302](diagnostics/issue302_sequential_search.md)）。
 
 ### 開発用固定definition CLI
 

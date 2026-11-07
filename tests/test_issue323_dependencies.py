@@ -49,7 +49,7 @@ class DependenciesTests(unittest.TestCase):
         self.assertEqual(asdict(d)['inductor_tree']['edges'], d.inductor_tree.edges)
         self.assertTrue(CircuitDefinition.__module__.startswith('lpf.topology_management'))
 
-    def test_import_boundaries_and_explicit_legacy_exception(self):
+    def test_import_boundaries_and_legacy_callers(self):
         root = Path(__file__).resolve().parents[1] / 'src/lpf'
         def imports(path):
             result = []
@@ -72,8 +72,6 @@ class DependenciesTests(unittest.TestCase):
         paths = list((root/'search').glob('*.py')) + list((root/'rf_core').glob('*.py'))
         paths += [root.parents[1]/'scripts/run_rf_search.py']
         for path in paths:
-            if path.name == '_legacy_schema1.py':
-                continue
             self.assertFalse(any(retired.intersection(name.split('.')) for name in imports(path)), path)
 
     def test_exact_closed_bounds_including_all_40_coupling_neighbors(self):

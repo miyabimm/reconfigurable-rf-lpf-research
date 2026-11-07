@@ -1,42 +1,4 @@
-"""Common strict finite-grid ranking and explicit independent-validation boundary."""
-import numpy as np
-from lpf.phase2_models.independent_rf import evaluate_independent_sample
-
-
-def score(il, role, mandatory):
-    il, role = np.asarray(il, float), np.asarray(role)
-    if (il.ndim != 1 or il.shape != role.shape or not np.all(np.isfinite(il)) or
-            set(role.tolist()) != {0, 1, 2}):
-        raise ValueError('Finite IL and all pass/H2/H3 roles required')
-    f = float(max(il[role == 0]))
-    h2, h3 = (float(min(il[role == r])) for r in (1, 2))
-    deficits = [max(0., mandatory - h2), max(0., mandatory - h3)]
-    return {'worst_il_db': f, 'min_h2_db': h2, 'min_h3_db': h3,
-            'max_violation_db': max(deficits), 'sum_violation_db': sum(deficits),
-            'strict_feasible': max(deficits) == 0.}
-
-
-def rank_key(s):
-    return ((0, s['worst_il_db'], 0., 0.) if s['strict_feasible'] else
-            (1, s['max_violation_db'], s['sum_violation_db'], s['worst_il_db']))
-
-
-def select(evaluation, vectors, points, stage, *, on_assessed=None):
-    # Fixed best-1 rule: strict RF feasibility, Vmax, Vsum, F; SHA breaks ties.
-    from .storage import vector_sha
-    unique = {vector_sha(x): x for x in vectors}
-    assessed = []
-    for digest, x in sorted(unique.items()):
-        def completed(il):
-            s = score(il, evaluation.grid(points).role, evaluation.mandatory)
-            row = {'vector': list(x), 'vector_sha256': digest, 'score': s}
-            assessed.append(row)
-            if on_assessed is not None:
-                on_assessed(row)
-        evaluation.forward(x, points, stage, on_completed=completed)
-    return sorted(assessed, key=lambda row: (rank_key(row['score']), row['vector_sha256']))
-
-
+"""Strict finite-grid ranking for assessed schema2 candidates."""
 def rank_candidates(candidates):
     """Rank Stage-3 assessed candidates; return invalid/unrun separately.
 
@@ -79,24 +41,3 @@ def rank_candidates(candidates):
         comparable.append({**row, 'status': 'pass' if a['strict_feasible'] else 'fail',
                            'vector_sha256': digest, 'rank_key': key})
     return {'ranked': sorted(comparable, key=lambda row: row['rank_key']), 'excluded': excluded}
-
-
-def pending():
-    return {'dense1001': 'not_run', 'independent_mna': 'not_run',
-            'passivity': 'not_run', 'power_balance': 'not_run',
-            'candidate_promotion_blocked': True}
-
-
-def dense_candidate(evaluation, candidate):
-    """Explicit selected-candidate API; caller owns separate validation budget."""
-    if candidate is None or not candidate['score']['strict_feasible']:
-        return {'status': 'not_run', 'reason': 'no_strict_candidate'}
-    rows = select(evaluation, [candidate['vector']], 1001, 'dense1001')
-    return {**pending(), 'status': 'completed', 'dense1001': 'completed',
-            'candidate': rows[0]}
-
-
-def independent_sample(circuit, vector, frequency_hz, setting):
-    """Raw independent MNA/power evidence, NOT an aggregate acceptance gate."""
-    circuit.validate_components(vector)
-    return evaluate_independent_sample(circuit, vector, frequency_hz, setting)
