@@ -22,7 +22,7 @@
 | RF strict | #330の有限格子はFAIL。条件・参照面・格子・深度が異なる旧結果と混合しない |
 | 正式Campaign EXP | 実行していない。本物の中央予約・実運用G0/G1・GitHub実験証拠保存は未実証 |
 | 独立検証 | #330は1 spot/Jobのみ。dense・全帯域独立MNAの実施実績ではない |
-| source/import同一性 | 隔離Git fixtureのダミーsource bytesと実importは異なる。実運用同一性は未検証で、正式EXP前に確認が必要（修正は本Issue外） |
+| source/import同一性 | #336でG1/Workerにorigin・検索パス検査を追加し、非EXPの実import一致・別checkout/混入拒否を回帰検証。隔離Git fixture自体は同一性の証拠ではない。長寿命プロセス内コードや実運用全体は未実証（[境界](campaign_workflow.md#3-正式expg0g1を先に満たし明示g2を呼ぶ)） |
 | 科学的未検証 | 連続帯域、SRF、Q(f)、EM、公差、実測、物理成立、大域最適性を認定しない |
 
 正式EXP開始は[運用正本](instructions.md)の具体的Issue範囲＋ユーザー起動に従い、完全checkout・main事前予約G0・G1を満たす。
