@@ -164,10 +164,12 @@ def validate_summary(summary, experiment_id, checkpoint_count):
             "run summary identity mismatch")
     counts = summary.get("attempts")
     keys = {"planned", "attempted", "converged", "nonconverged", "failed", "not_started"}
-    require(isinstance(counts, dict) and set(counts) == keys and
+    # Campaign interruption can leave attempted outcomes unknown. Preserve that
+    # distinction rather than relabeling an interrupted Job as failed/unstarted.
+    require(isinstance(counts, dict) and set(counts) in (keys, keys | {'unknown'}) and
             all(type(n) is int and n >= 0 for n in counts.values()),
             "run summary requires nonnegative attempt counts")
-    require(counts["converged"] + counts["nonconverged"] + counts["failed"]
+    require(counts["converged"] + counts["nonconverged"] + counts["failed"] + counts.get('unknown', 0)
             == counts["attempted"], "attempt outcomes do not sum")
     require(counts["attempted"] + counts["not_started"] == counts["planned"],
             "planned/attempted/unstarted mismatch")
@@ -309,7 +311,11 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
                                 exception=exception is not None)
         require(evidence_in_manifest.get(name) == summary_ref["sha256"],
                 "run summary absent/mismatched in manifest evidence")
-        validate_summary(read_json(root / name), experiment_id, len(checkpoints))
+        summary_payload = read_json(root / name)
+        validate_summary(summary_payload, experiment_id, len(checkpoints))
+        if stage == 'complete':
+            require(not summary_payload['attempts'].get('unknown', 0),
+                    'unknown attempts forbid preservation completion')
 
     if mode == "finalize":
         require(stage == "complete", "preservation is not complete; do not delete raw data")

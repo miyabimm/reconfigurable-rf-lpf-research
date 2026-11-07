@@ -1,8 +1,8 @@
 """Sequential file-submission Campaign boundary with separate dev/formal entries.
 
 Formal G2 requires existing main-backed G0/G1; it never manufactures approval.
-G3-G5 and the full lifecycle entrance remain not_ready. No automatic advisor,
-reservation, commit, cleanup, parallel execution or retry is provided.
+G3-G5 are explicit operations in preservation.py, separate from RF execution.
+No automatic advisor, reservation, push, deletion, parallelism or retry is provided.
 """
 import copy
 import hashlib
@@ -343,5 +343,5 @@ def _submit_proposal(plan, proposal_path, output, *, root, solver_kind, formal_b
 
 
 def run_campaign(*args, **kwargs):
-    """Full lifecycle stays closed; explicit G2 submissions do not finalize EXPs."""
-    raise ValueError('not_ready: formal Campaign G0/G1 lifecycle requires G3-G5 integration')
+    """No autonomous loop; use explicit submission and preservation operations."""
+    raise ValueError('not_ready: use explicit begin/submit and curate/finalize/cleanup eligibility APIs')

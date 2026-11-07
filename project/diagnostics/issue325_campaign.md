@@ -3,12 +3,13 @@
 ## 状態とレビュー単位
 
 PR #326の開発API、#327のCampaign単位G0/G1 planned保存・read-only照合をmainへ反映済み。
-第3増分は、明示的な正式G2提出APIとJobSpec／既存科学Workerの接続。
-**Issue全体のDoDとG3〜G5は未完了**。G1の技術照合成功を、実験の着手指示や
-G3〜G5保存完了と混同しない。
+第3増分（#328）は、明示的な正式G2提出APIとJobSpec／既存科学Workerの接続。
+第4増分は `search.preservation` のG3成果変換、既存G3/G4保存監査接続、G5条件付きcleanup判定。
+Issue全体のDoDには同一HEADの通常/sparse CIと独立レビューも必要。
+G1技術照合・Git保存完了・実験着手指示・科学的合格は別の判定である。
 
 - 実EXPの予約、中央台帳・歴史証拠の変更、本番探索は行わない。
-- `campaign.run_campaign()` の全ライフサイクル入口は引き続き `not_ready`。G3〜G5未実装のため。
+- `campaign.run_campaign()` は自動loopを提供せず `not_ready`。G0〜G5は下記の明示APIを順に呼ぶ。
 - `begin_campaign()` / `submit_campaign_proposal()` の明示的G2 APIは、別の実験Issueとユーザー起動、
   完全checkout・main予約・planned bytes・G0/G1成立を必要とする。今回の実装Issueで実EXPは起動しない。
 - 全開発出力はcheckout外system tmp限定。`development_only` / `G0_G1=not_ready` /
@@ -167,10 +168,44 @@ snapshot = submit_campaign_proposal(plan, one_proposal_yaml, experiment_id,
   solverはfixture、RFは実core。途中source変更で次forwardゼロ、cap保持、親予約改変時forwardゼロ、
   raw再実行／symlink転送／開発入口誤用を検査する。本物のEXP・本番solver探索・歴史auditではない。
 
-## 残る実装（このDraftではPASSとしない）
+## 第4増分：G3/G4保存とG5判定（明示API・隔離fixture）
 
-1. 複数Jobのraw→run_summary/checkpoint/manifest/storage_recordへの選別、Git HEAD byte readback、
-   G4独立audit、G5削除可否を偽Git main/EXPの完全fixtureで通す第2段階。
-2. 全ゲート接続を含む同一HEADでの通常/sparse CIとfull checkout専用実Git監査。
+```python
+from lpf.search.preservation import (
+    curate_campaign, finalize_campaign, campaign_cleanup_eligibility,
+)
+# G2終了後。以降はRF計算を行わない。元rawを更新しない。
+summary = curate_campaign(experiment_id, root=full_checkout)
+# curated diffを人が確認した後、当該EXPとindex行だけを2段階commit。
+report = finalize_campaign(experiment_id, root=full_checkout)
+# 別途PR/CI/レビューを経てmainへ保存された後の読み取り専用判定。
+decision = campaign_cleanup_eligibility(experiment_id, root=full_checkout,
+    resume_needed=False, classification_complete=True)
+# decisionは対象Cの明示一覧を返すだけ。push・削除は実行しない。
+```
 
-本増分にG3/G4監査PASSやG5削除権限はない。正式EXPの着手は別の具体的実験Issueとユーザー起動が必要。
+- curate入口で凍結G0/G1と全親/Job/raw/提案bytes/費用を再照合。
+  G1選別規則の重要点を捨てない保守的上位集合として、bounded Jobの合法な全出力を保存する。
+  同じ構造SHA＋vector SHAのみ重複除外し、異なる格子の結果を再順位付けしない。
+  出力ゼロなら合法startを診断用に保存する。容量超過は例外を自動発行せずSTOP。
+- checkpointは全L/C/k、Q/series/端子、物理配置、6設定Cvと完全vectorを既存形式で保存。
+  `campaign_evidence.json` に提案原bytes（base64）、採否、完全start/spec/seed、全stepの
+  失敗・未収束・未開始／除外と観測・独立spot結果、raw bytes SHAを記録。
+  `run_summary` に投入済みJob単位の件数と未知結果、raw全ファイルinventoryを保存する。
+  未来の未提出提案はplanned Jobへ水増ししない。
+- unknown/欠落/不整合/未分類は `preservation_incomplete`、unknownは件数で別記し、
+  Git完了への昇格を拒否。予約とrawはそのまま保持する。curateの自動retry/既存成果上書きはない。
+- finalizeは既存 `finalize_experiment` を再利用。当該EXPとindex行の整合／他EXP行不変を確認し、
+  証拠commit→HEAD実バイト読戻し→storage完了record commit→既存finalize/auditを行う。
+  読戻し・監査・容量失敗では保存未完了を記録しrawを保持。solver/RF合格を認定しない。
+  manifestの数値/独立検証レベルは保守的に `not_run` のまま（実施spotの証拠はjournalへ保存）。
+- G5は完全checkout/最新remote main/clean状態、既存finalize＋全新規EXP audit、
+  main上A/B・manifest/storage/index実バイト一致、raw全inventory不変、
+  再開不要・分類完了の明示確認を毎回再計算。未保全/unknown/未分類/symlinkは拒否。
+  対象は当該 `results/EXP-NNN/` 内の記録済みファイルのみ。自動削除はない。
+- 隔離実Git＋bare originのF003/T008各3 Job→G3→2段階commit/HEAD読戻し→G4監査→
+  publish後G5可のE2Eを実施。publish前、再開あり、raw残余追加はG5不可。
+  unknown予約保持、raw欠落、Git読戻し失敗でも未完了・raw不変を検査。
+  これは歴史全EXPの監査や本番solver/正式EXPの運用実績ではない。
+
+正式EXPの着手は引き続き別の具体的実験Issueとユーザー起動が必要。

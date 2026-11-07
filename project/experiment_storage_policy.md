@@ -81,7 +81,9 @@ run_summary.json の最低構造は次のとおり。試行（start等）の件�
 }
 ~~~
 
-converged + nonconverged + failed = attempted、attempted + not_started = plannedを厳守。候補ゼロの場合は selected_candidate_count=0 に加え no_candidate_reason を記載する。
+converged + nonconverged + failed = attempted、attempted + not_started = plannedを厳守。Campaignで投入済みJobの結果が不明の場合に限り、`attempts.unknown` を追加し、前者を converged + nonconverged + failed + unknown = attempted とする。不明を失敗や未開始へ丸めず、unknown > 0 の保存完了は拒否する。候補ゼロの場合は selected_candidate_count=0 に加え no_candidate_reason を記載する。
+
+**Campaign（Issue #325）:** 1 EXPを1つの承認済みCampaignとし、未来の提案はplanned試行数へ算入しない。実際に採用・投入したJobを試行として集計し、各Job内の未開始step、拒否提案、未評価出力はCampaign証拠に別記する。G1の選別規則を弱めず、当面はbounded Jobの合法な全出力を保守的なA/B上位集合として保持する（同構造・同vectorのみ重複除外、未出力時のstartは診断用）。異なる格子の結果を再順位付けしない。`campaign_evidence.json` に提案原bytes、採否、完全start/JobSpec、各stepの終了・失敗・未開始とraw SHAを保存し、`run_summary.json` のraw全ファイルinventoryと合わせて未分類残余を検知する。G3/G4の明示Git保存に続き、G5はremote mainのA/B実バイト一致・再開不要・分類完了・raw inventory不変を再確認して当該EXPの一時Cのみ削除可能と判定する。API自体はpushも削除も行わない。
 
 ## 3. 運用ゲート（EXPを開始するたびに実施）
 
