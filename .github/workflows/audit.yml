@@ -195,9 +195,10 @@ jobs:
       - name: Guard unique RF and project sources with read-only legacy aliases
         if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
-      - name: Check documentation entrypoints and preserved evidence links
+      - name: Check current documentation entrypoints and links
         if: ${{ steps.changes.outputs.storage_only != 'true' }}
         run: |
+          set -euo pipefail
           python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
           python scripts/verify_phase2_cleanup_w1_links.py --active-only
       - name: Verify active RF registry and historical candidate audits

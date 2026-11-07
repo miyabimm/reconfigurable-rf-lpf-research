@@ -1,5 +1,6 @@
 """Current approval isolation and explicit archive-only provenance validation."""
 import csv
+import hashlib
 import json
 import shutil
 import tempfile
@@ -102,6 +103,20 @@ class ConstraintRegistryTests(unittest.TestCase):
 
 
 class ManifestTests(unittest.TestCase):
+    def test_w1_original_evidence_bytes(self):
+        # SHA-256 of the same bytes formerly compared to Git blobs at 055b222.
+        # No historical Git object is required in routine CI.
+        expected = {
+            'data/bands.csv': '1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe',
+            'rf/constraints/history/pre-issue-307/formal/RF-F003.json': '3ce92cda8ad20eeefe9058404ed9f4295ca7d4653393bb3117e617ceed3217ae',
+            'rf/constraints/history/pre-issue-307/trial/RF-T005.json': '3d7fc4410090b318c90be1767fadf9a5629040761013a2cb9216b7db57fb18f4',
+            'experiments/chatgpt_topology_search/runs/EXP-047/manifest.json': 'f9143f801a147b70b6363fb2552d1899aabe3e46fccf03293284865f7e5830ec',
+            'experiments/chatgpt_topology_search/runs/EXP-004/README.md': '4a37b78d8fc825234a944f83fe0ff73dd24b8214222ab1afa439a40664eb6663',
+        }
+        for path, digest in expected.items():
+            with self.subTest(path=path):
+                self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
+
     def historical(self):
         return json.loads((ROOT/RUNS/'EXP-015/manifest.json').read_text())
 
