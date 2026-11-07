@@ -11,7 +11,7 @@ on:
         type: boolean
         default: true
       integration:
-        description: 'Also run historical topology integration suite'
+        description: 'Also rerun current topology science checks'
         type: boolean
         default: false
 
