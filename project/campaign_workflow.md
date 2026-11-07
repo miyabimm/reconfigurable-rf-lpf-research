@@ -71,6 +71,7 @@ IssueがOpenなだけでは起動しない。追加の本人認証は不要だ�
    `selection`は保存ポリシー形式の事前選別規則・予測容量。将来の未提出Jobはplanned件数にしない。
 3. plannedをmainへ保存後、`campaign_preflight(plan, experiment_id, owner=..., request_id=..., root=...)`。
    main/HEAD/作業木の実bytes、予約、Plan、承認code/lock/env等を照合する。
+   ロード済み `lpf.*`／`scripts.*` のoriginとpackage検索パスも承認checkoutに照合し、不一致はforward前STOP。
    planned前のapproved sourceとplanned後のruntime source/HEADは別に扱う。
    `preflight_ready`はread-only技術照合のみ（`execution_allowed=False`）。
 4. 着手指示の範囲内で `begin_campaign(plan, experiment_id, owner=..., request_id=..., root=...)`、
@@ -79,9 +80,11 @@ IssueがOpenなだけでは起動しない。追加の本人認証は不要だ�
    Git ignoredな `results/EXP-NNN/` に正式kindの親/Job/rawを保存する。
    各提出・Worker入口・forward/独立spot直前にもG0/G1を再照合する。HEAD進行も自動rebindしない。
 
-**未検証境界：** 正式APIのテストは隔離Git/架空EXP中心であり、実運用source/import同一性の証明ではない。
-正式EXP前には実際にimportされるPython実装と承認ソースの同一性を確認する必要がある。
-本ガイド・既存CI PASSをその確認や正式実験の成功実績の代わりにしない。
+**検証境界：** G0/G3〜G5の隔離Git fixtureはダミーsourceと実importが異なり、import同一性の証拠ではない。
+別の非EXPテストは実Python originの一致、同一bytesの別checkout・検索パス混入の拒否を検査する。
+この検査はimport-hookやプロセス内改変を防ぐsecurity sandboxではなく、ロード後にcheckoutを切り替えた
+長寿命プロセスのメモリ上のコードや改変されたbytecodeまで証明しない。正式運用は承認checkoutの新規Python
+プロセスで行い、通常のG0/G1を再確認する。実環境全体や正式EXPの成功は未実証。
 
 ## 4. G2終了後：G3 → G4 → G5（削除しない）
 

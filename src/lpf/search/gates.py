@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
 
 from lpf.experiment_manifest import RUNS, new_manifest
 from scripts.audit_new_experiment_storage import (
@@ -22,9 +23,56 @@ def _git(root, *args):
     return subprocess.check_output(['git', '-C', str(root), *args], stderr=subprocess.PIPE)
 
 
+def _verify_import_origins(root):
+    """Bind loaded project modules and package search paths to tracked source.
+
+    This is an accidental checkout-mixup check, not an import-hook sandbox.
+    Dependencies remain covered by the existing environment binding.
+    """
+    root = Path(root).resolve()
+    bases = {'lpf': root/'src/lpf', 'scripts': root/'scripts'}
+    for base in bases.values():
+        if base.resolve() != base or not base.is_dir():
+            raise ValueError('Campaign G1 import root redirects or is missing: ' + str(base))
+    tracked = set(_git(root, 'ls-files', '-z', '--', 'src/lpf', 'scripts').decode().split('\0'))
+    files = source_identity(root)['files']
+    for name, module in tuple(sys.modules.items()):
+        top = name.split('.')[0]
+        if top not in bases:
+            continue
+        base = bases[top]
+        target = base.joinpath(*name.split('.')[1:])
+        spec = getattr(module, '__spec__', None)
+        if getattr(spec, 'name', None) != name:
+            raise ValueError('Campaign G1 import spec mismatch: ' + name)
+        origin = getattr(spec, 'origin', None)
+        file = getattr(module, '__file__', None)
+        paths = getattr(module, '__path__', None)
+        locations = getattr(spec, 'submodule_search_locations', None)
+        if paths is not None or locations is not None:
+            if paths is None or locations is None or not target.is_dir():
+                raise ValueError('Campaign G1 import package path missing: ' + name)
+            for entries in (paths, locations):
+                if not entries or any(Path(p).resolve() != target for p in entries):
+                    raise ValueError('Campaign G1 import package path mismatch: ' + name)
+        # A real namespace package has no source file, but its search paths
+        # must still resolve only to the expected package directory.
+        if origin is None and file is None and paths is not None and not (target/'__init__.py').exists():
+            continue
+        expected = target/'__init__.py' if paths is not None else target.with_suffix('.py')
+        if (not origin or not file or Path(origin).resolve() != expected or
+                Path(file).resolve() != expected or not expected.is_file()):
+            raise ValueError('Campaign G1 import origin mismatch: ' + name)
+        relative = expected.relative_to(root).as_posix()
+        if relative not in tracked or (top == 'lpf' and
+                files.get(relative) != hashlib.sha256(expected.read_bytes()).hexdigest()):
+            raise ValueError('Campaign G1 import source untracked or unknown: ' + name)
+
+
 def _base(plan, root, experiment_id, owner, request_id):
     from .campaign import _plan
     root = Path(root).resolve()
+    _verify_import_origins(root)
     _plan(plan, root)
     _complete_checkout(root)
     main = _fresh_main(root)

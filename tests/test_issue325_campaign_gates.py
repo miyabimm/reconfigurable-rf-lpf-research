@@ -1,4 +1,8 @@
-"""G0/G1 with an isolated real Git origin; no real reservation or RF run."""
+"""G0/G1 with isolated Git; fixture source is NOT the imported implementation.
+
+Only ImportOriginTests exercise real Python import identity. Fixture tests below
+explicitly replace that check to retain their G0/G3-G5 contract coverage.
+"""
 import copy
 import json
 from pathlib import Path
@@ -14,6 +18,9 @@ from lpf.search.plan import ROOT
 from lpf.search.storage import atomic
 from lpf.rf_core.model import RFEvaluator
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation
+
+
+verify_import_origins = gates._verify_import_origins
 
 
 class CampaignGateTests(unittest.TestCase):
@@ -32,6 +39,10 @@ class CampaignGateTests(unittest.TestCase):
         self.git('push', '-q', 'origin', 'HEAD:main')
 
     def fixture(self, cid='RF-F003', *, independent=False):
+        # Test-only: this fake Git repo contains src/fixture.py, not imported lpf.
+        bypass = patch.object(gates, '_verify_import_origins', new=lambda root: None)
+        bypass.start()
+        self.addCleanup(bypass.stop)
         plan, self.definition, _, _ = self.setup_campaign(cid=cid, independent=independent)
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -331,6 +342,27 @@ class CampaignGateTests(unittest.TestCase):
                 self.formal_submit(snapshot, name='next')
             forward.assert_not_called()
 
+    def test_worker_import_path_contamination_stops_before_forward_and_keeps_raw(self):
+        import lpf
+        from lpf.search import worker
+        output, snapshot = self.formal_start()
+        execute = worker.execute_campaign_job
+        def contaminated(spec, path, **kw):
+            # The parent already reserved the Job. Re-enable the production
+            # check and contaminate only at the Worker boundary.
+            with patch.object(gates, '_verify_import_origins', side_effect=lambda root: verify_import_origins(ROOT)), \
+                    patch.object(lpf, '__path__', [str(ROOT/'src/lpf'), str(self.repo/'src')]):
+                return execute(spec, path, **kw)
+        with patch.object(worker, 'execute_campaign_job', side_effect=contaminated), \
+                patch.object(RFEvaluator, 'evaluate') as forward:
+            snapshot = self.formal_submit(snapshot)
+            forward.assert_not_called()
+        self.assertEqual(snapshot['snapshot']['status'], 'unknown')
+        state = json.loads((output/'campaign.json').read_bytes())
+        self.assertGreater(state['reserved'], 0)
+        self.assertFalse((output/'job-000000.json').exists())
+        self.assertIn('Campaign G1 import package path mismatch', state['exit_reason'])
+
     def test_formal_parent_reservation_and_output_redirect_rejected_before_forward(self):
         from lpf.search import worker, campaign
         output, snapshot = self.formal_start()
@@ -484,3 +516,88 @@ class CampaignGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'already exists'):
             self.prepare()
         self.assertEqual(before, {p.name: p.read_bytes() for p in run.iterdir()})
+
+
+class ImportOriginTests(unittest.TestCase):
+    """Real imports in fresh processes, separate from the fake Git fixture."""
+
+    def run_python(self, code, *args):
+        import os
+        import sys
+        env = dict(os.environ, PYTHONPATH=str(ROOT/'src'))
+        subprocess.run([sys.executable, '-c', code, str(ROOT), *map(str, args)],
+                       cwd=ROOT, env=env, check=True, timeout=60)
+
+    def test_real_imports_match_and_untrusted_paths_or_origins_stop(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.run_python('''
+import sys, types
+from pathlib import Path
+from unittest.mock import patch
+from importlib.machinery import ModuleSpec
+import lpf, scripts
+from lpf.search import gates
+from lpf.rf_core.model import RFEvaluator
+root, outside = map(Path, sys.argv[1:])
+gates._verify_import_origins(root)  # actual lpf and namespace scripts
+with patch.object(RFEvaluator, 'evaluate') as forward:
+    for package in (lpf, scripts):
+        with patch.object(package, '__path__', list(package.__path__) + [str(outside)]):
+            try: gates._base(None, root, '', '', '')
+            except ValueError as e: assert 'package path mismatch' in str(e), e
+            else: raise AssertionError('foreign package path passed')
+    link = outside / 'redirect'
+    link.symlink_to(outside, target_is_directory=True)
+    with patch.object(lpf, '__path__', [str(link)]):
+        try: gates._base(None, root, '', '', '')
+        except ValueError as e: assert 'package path mismatch' in str(e), e
+        else: raise AssertionError('symlink escape passed')
+    for name, origin in [('lpf.unknown', None), ('scripts.unknown', str(outside/'x.py'))]:
+        module = types.ModuleType(name)
+        module.__spec__ = ModuleSpec(name, loader=None, origin=origin)
+        module.__file__ = origin
+        with patch.dict(sys.modules, {name: module}):
+            try: gates._base(None, root, '', '', '')
+            except ValueError as e: assert 'import origin mismatch' in str(e), e
+            else: raise AssertionError('unknown origin passed')
+    forward.assert_not_called()
+''', tmp)
+
+    def test_identical_bytes_other_checkout_rejected_by_formal_entries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            other = Path(tmp)/'other'
+            other.mkdir()
+            for name in ('src', 'scripts'):
+                shutil.copytree(ROOT/name, other/name, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+            for name in ('pyproject.toml', 'uv.lock'):
+                shutil.copy2(ROOT/name, other/name)
+            def git(*args):
+                subprocess.run(['git', '-C', str(other), *args], check=True, stdout=subprocess.DEVNULL)
+            git('init', '-q', '-b', 'main')
+            git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
+            git('add', '.')
+            git('commit', '-qm', 'copied source')
+            self.run_python('''
+import sys
+from pathlib import Path
+from unittest.mock import patch
+from lpf.search import gates, campaign
+from lpf.search._job_evaluation import source_identity
+from lpf.rf_core.model import RFEvaluator
+root, other = map(Path, sys.argv[1:])
+assert source_identity(root)['files'] == source_identity(other)['files']
+gates._verify_import_origins(root)
+with patch.object(RFEvaluator, 'evaluate') as forward:
+    entries = [
+        lambda: gates.prepare_campaign(None, 'EXP-999', owner='', request_id='', purpose='', selection={}, root=other),
+        lambda: gates.campaign_preflight(None, 'EXP-999', owner='', request_id='', root=other),
+        lambda: campaign.begin_campaign(None, 'EXP-999', owner='', request_id='', root=other),
+        lambda: campaign.submit_campaign_proposal(None, 'missing.yaml', 'EXP-999', owner='', request_id='', root=other),
+    ]
+    for entry in entries:
+        try: entry()
+        except ValueError as e: assert 'Campaign G1 import' in str(e), e
+        else: raise AssertionError('foreign checkout passed')
+    forward.assert_not_called()
+''', other)
