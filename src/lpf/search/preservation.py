@@ -139,6 +139,8 @@ def curate_campaign(experiment_id, *, root):
     manifest, storage = _read(run/'manifest.json'), _read(run/'storage_record.json')
     if (run/'run_summary.json').exists() or storage['stage'] != 'planned':
         raise ValueError('Existing curation; no automatic retry')
+    if run.resolve() != run or set(_inventory(run)) != {'manifest.json', 'storage_record.json'}:
+        raise ValueError('Unexpected planned EXP files or redirect; retain raw')
     inventory = _inventory(directory)
     errors = []
     try:
