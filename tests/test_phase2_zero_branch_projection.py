@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
 from lpf.phase2_models.vector_migration import project_zero_variable_branches
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models import exp055, exp058_area4l_gjm
 
 RUNS = ROOT / "experiments/chatgpt_topology_search/runs"

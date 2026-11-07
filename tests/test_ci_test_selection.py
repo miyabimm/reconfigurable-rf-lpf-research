@@ -150,7 +150,10 @@ class SelectionTests(unittest.TestCase):
         self.assertTrue(any('FixedWorkerTests' in name for name in selector.RF_RUN_BOUNDARY))
         self.assertEqual(selector.path_classes('project/instructions.md'), {'FULL'})
         self.assertEqual(selector.path_classes('project/specification.md'), {'RF'})
-        self.assertEqual(selector.path_classes('src/lpf/phase2_models/branch_mna.py'), {'RF'})
+        self.assertEqual(selector.path_classes('src/lpf/phase2_models/branch_mna.py'), {'FULL'})
+        self.assertEqual(selector.path_classes('src/lpf/rf_core/branch_mna.py'), {'FULL'})
+        self.assertEqual(selector.path_classes('src/lpf/search/checkout.py'), {'GATE', 'STORE'})
+        self.assertIn('FULL', selector.path_classes('src/lpf/experiment_preservation.py'))
         self.assertEqual(selector.path_classes('rf/unknown.txt'), {'FULL'})
         self.assertEqual(selector.path_classes('src/lpf/rf_core/new.py'), {'FULL'})
 

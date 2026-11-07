@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 def synthetic(policy_id, inductors):
     from lpf.constraint_versions import load_constraint
     from lpf.phase2_models.api import build_nominal_circuit
-    from lpf.phase2_models.circuit_layout import InductorTree
+    from lpf.topology_management.circuit_layout import InductorTree
     from lpf.phase2_models.topology_enumeration import TopologySpace, enumerate_topologies
     from lpf.phase2_models.problem_seed import vector_fingerprint
     from lpf.phase2_models.synthetic_plan import make_synthetic_plan
@@ -230,7 +230,7 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
     from lpf.constraint_versions import load_constraint
     from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-    from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+    from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
     from lpf.phase2_models.experiment_config import (_Loader, _check_continuation_reference,
         continuation_program_sha256, ContinuationPreparationError, prepare_continuation_starts,
         prepare_diagnostic_starts, stable_identity)

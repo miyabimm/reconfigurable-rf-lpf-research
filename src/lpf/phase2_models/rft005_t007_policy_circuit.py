@@ -17,7 +17,7 @@ from lpf.constraint_versions import (
     constraint_fingerprint, load_constraint, validate_variable_c_connections,
 )
 from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
-from .circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
 from lpf.rf_core.coupled_lc import (
     CircuitValues, CoupledLCTopology, ParameterVectorSchema,

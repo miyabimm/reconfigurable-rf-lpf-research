@@ -4,6 +4,7 @@ import copy
 from dataclasses import asdict, fields, replace
 from pathlib import Path
 import sys
+import subprocess
 import unittest
 from unittest.mock import patch
 import numpy as np
@@ -35,13 +36,10 @@ def make(cid):
 
 class DependenciesTests(unittest.TestCase):
     def test_topology_identity_and_fields(self):
-        # Remaining legacy re-exports must never create duplicate types.
-        from lpf.phase2_models import api, circuit_layout, role_audit
-        from lpf.topology_management import audit_variable_connection_roles
-        self.assertIs(api.CircuitDefinition, CircuitDefinition)
-        self.assertIs(circuit_layout.InductorTree, InductorTree)
-        self.assertIs(circuit_layout.CapacitorPlacement, CapacitorPlacement)
-        self.assertIs(role_audit.audit_variable_connection_roles, audit_variable_connection_roles)
+        # Structural types have one owner, without legacy re-export modules.
+        from importlib.util import find_spec
+        for name in ('circuit_layout', 'role_audit'):
+            self.assertIsNone(find_spec('lpf.phase2_models.' + name))
         self.assertEqual([f.name for f in fields(CircuitDefinition)], [
             'inductor_tree', 'inductor_types', 'physical_order', 'coupling_pairs',
             'capacitor_placement', 'fixed_c_types', 'variable_roles'])
@@ -87,7 +85,29 @@ class DependenciesTests(unittest.TestCase):
             self.assertIs(getattr(gates, name), getattr(checkout, name))
             self.assertIs(getattr(run_phase2_shared, name), getattr(checkout, name))
         for module in (gates, preservation):
-            self.assertNotIn('scripts.run_phase2_shared', Path(module.__file__).read_text())
+            source = Path(module.__file__).read_text()
+            self.assertNotIn('scripts.run_phase2_shared', source)
+            self.assertNotIn('scripts.run_phase2_one_start', source)
+
+    def test_campaign_preservation_imports_without_legacy_execution_closure(self):
+        # A fresh interpreter catches transitive script imports, including G3/G4,
+        # which the develop-only blocked-import regression cannot reach.
+        code = '''
+import importlib.abc
+import sys
+sys.path.insert(0, 'src')
+class BlockLegacy(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.startswith(('lpf.phase2_models', 'scripts.run_phase2_')):
+            raise AssertionError('Legacy execution dependency: ' + fullname)
+sys.meta_path.insert(0, BlockLegacy())
+from lpf.search import gates, preservation
+from lpf.experiment_preservation import finalize_experiment, aggregate_selected
+assert aggregate_selected([], {})['validation'] == {'numerical': 'not_run', 'independent': 'not_run'}
+assert not any(name.startswith('lpf.phase2_models') for name in sys.modules)
+'''
+        subprocess.run([sys.executable, '-c', code], check=True,
+                       cwd=Path(__file__).resolve().parents[1])
 
     def test_exact_closed_bounds_including_all_40_coupling_neighbors(self):
         coupling_rejections = 0

@@ -498,7 +498,7 @@ class CampaignGateTests(unittest.TestCase):
                         preservation.finalize_campaign(self.ident, root=self.repo)
                 else:
                     self.assertEqual(summary['preservation_errors'], [])
-                    with patch('scripts.run_phase2_one_start.tracked_file', side_effect=ValueError('readback mismatch')):
+                    with patch('lpf.experiment_preservation.tracked_file', side_effect=ValueError('readback mismatch')):
                         with self.assertRaisesRegex(ValueError, 'readback mismatch'):
                             preservation.finalize_campaign(self.ident, root=self.repo)
                 record = json.loads((find_run(self.repo, self.ident)/'storage_record.json').read_bytes())

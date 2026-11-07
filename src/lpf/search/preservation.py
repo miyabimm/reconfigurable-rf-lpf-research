@@ -219,7 +219,7 @@ def curate_campaign(experiment_id, *, root):
 
 def finalize_campaign(experiment_id, *, root):
     """Inspect curated diff first. Reuse existing commits/readback/storage audit."""
-    from scripts.run_phase2_one_start import finalize_experiment
+    from lpf.experiment_preservation import finalize_experiment
     root = Path(root).resolve()
     run = find_run(root, experiment_id)
     campaign_index_guard(root, run, _read(run/'manifest.json'), _read(run/'storage_record.json'),

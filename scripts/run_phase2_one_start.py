@@ -8,9 +8,7 @@ last atomic raw snapshot and require manual investigation, never automatic retry
 from copy import deepcopy
 from dataclasses import asdict
 from functools import partial
-import csv
 import hashlib
-import io
 import json
 from pathlib import Path
 import subprocess
@@ -29,7 +27,7 @@ from lpf.phase2_models.staged_optimization import run_c1_staged, scipy_slsqp_sta
 from lpf.phase2_models.synthetic_runner import checked_one_start_selection
 from scripts.run_phase2_shared import prepare_one_start
 from scripts.audit_new_experiment_storage import (
-    find_run, read_json, tracked_file, validate_checkpoint, validate_summary, validate_run, audit_all)
+    find_run, read_json, validate_checkpoint, validate_summary, validate_run)
 
 
 LIMITATIONS = [
@@ -285,130 +283,7 @@ def _package(root, run, circuit, state, manifest, storage):
     validate_run(root, state['experiment_id'], mode='audit')
 
 
-def _post_search_finalize_guard(root, run, manifest, storage, summary):
-    """Bind new opt-in post-search evidence and index before G3 Git commits."""
-    if 'campaign' in manifest['search_scope']:
-        from lpf.search.preservation import campaign_index_guard
-        return campaign_index_guard(root, run, manifest, storage, summary)
-    planned = manifest['search_scope'].get('post_search_validation')
-    post = summary.get('post_search')
-    if planned is None and post is None:
-        return None
-    if planned is None or not isinstance(post, dict) or post.get('execution_state') != 'complete':
-        raise ValueError('Planned post-search evidence is missing or incomplete')
-    if any(manifest['validation'][k] != post['validation'][k] for k in ('numerical', 'independent')):
-        raise ValueError('Post-search manifest and summary status mismatch')
-    receipt = read_json(root / 'results' / manifest['experiment_id'] / 'post-search' / 'packaging.json')
-    if (receipt.get('state') != 'packaged' or receipt.get('preservation') != 'awaiting_git_readback' or
-            receipt.get('selection_sha256') != post.get('selection_sha256')):
-        raise ValueError('Post-search packaging receipt missing or mismatched')
-    allowed = [{k: v for k, v in item.items() if k in ('path', 'sha256')}
-               for item in storage['validation_overlays']]
-    def checked_ref(ref):
-        if not isinstance(ref, dict) or ref not in allowed:
-            raise ValueError('Post-search evidence not in storage')
-        path = (root / ref['path']).resolve()
-        if not path.is_relative_to(run.resolve()) or hashlib.sha256(path.read_bytes()).hexdigest() != ref['sha256']:
-            raise ValueError('Post-search evidence path or SHA mismatch')
-        return read_json(path)
-    selection = checked_ref(post['selection'])
-    if canonical_config_hash(selection) != post['selection_sha256']:
-        raise ValueError('Post-search frozen selection evidence mismatch')
-    targets = [item['candidate_id'] for item in selection['targets']]
-    if len(targets) != len(set(targets)) or set(targets) != set(post['candidates']) or set(targets) != set(post['overlays']):
-        raise ValueError('Post-search candidate set mismatch')
-    for candidate_id in targets:
-        ref = post['overlays'][candidate_id]
-        overlay = checked_ref(ref)
-        if (overlay.get('candidate_id') != candidate_id or
-                overlay.get('selection_sha256') != post['selection_sha256'] or
-                overlay.get('execution_state') != 'completed' or
-                overlay.get('validation') != post['candidates'][candidate_id]):
-            raise ValueError('Post-search candidate overlay mismatch')
-    from lpf.phase2_models.post_search_journal import aggregate_selected
-    reports = {key: checked_ref(post['overlays'][key])['report'] for key in targets}
-    aggregated = aggregate_selected(targets, reports)
-    if aggregated['validation'] != post['validation'] or aggregated['candidates'] != post['candidates']:
-        raise ValueError('Post-search aggregate mismatch')
-    index = root / 'data/experiment_index.csv'
-    from lpf.experiment_manifest import INDEX_FIELDS
-    def rows(text):
-        reader = csv.DictReader(io.StringIO(text, newline=''))
-        if tuple(reader.fieldnames or ()) != INDEX_FIELDS:
-            raise ValueError('Experiment index schema mismatch')
-        return list(reader)
-    current = rows(index.read_text(encoding='utf-8'))
-    prior = rows(subprocess.check_output(['git', 'show', 'HEAD:data/experiment_index.csv'], cwd=root, text=True))
-    if len(current) != len(prior):
-        raise ValueError('Unrelated experiment index change')
-    found = 0
-    for now, old in zip(current, prior):
-        if now['experiment_id'] != manifest['experiment_id']:
-            if now != old:
-                raise ValueError('Unrelated experiment index change')
-            continue
-        found += 1
-        for key in ('execution_status', 'numerical_validation', 'independent_validation'):
-            old[key] = now[key]
-        if now != old or (now['execution_status'], now['numerical_validation'], now['independent_validation']) != (
-                manifest['execution']['status'], post['validation']['numerical'], post['validation']['independent']):
-            raise ValueError('Experiment index and post-search manifest mismatch')
-    if found != 1:
-        raise ValueError('Post-search experiment index row missing or duplicated')
-    return index
-
-
-def finalize_experiment(root, experiment_id):
-    """Shared single-EXP G3/G4 commits -> byte readback -> record commit -> audit.
-
-    Does not push, delete raw or certify RF. A failure leaves raw intact and a
-    preservation_incomplete record, including when a Git commit/readback fails.
-    Call after inspecting the curated diff; only this EXP directory is staged.
-    """
-    root = Path(root).resolve()
-    run = find_run(root, experiment_id)
-    storage = read_json(run / 'storage_record.json')
-    if storage['stage'] == 'complete':
-        # Rechecking already-preserved evidence must never rewrite it.
-        report = validate_run(root, experiment_id, mode='finalize')
-        audit_all(root, main_ref='origin/main')
-        return report
-    if storage['stage'] != 'preservation_incomplete' or storage['git_readback'] != 'not_run':
-        raise ValueError('Expected unfinalized preservation state')
-    try:
-        manifest = read_json(run / 'manifest.json')
-        summary = read_json(root / storage['summary']['path'])
-        if manifest['execution']['status'] in ('planned', 'running', 'not_run'):
-            raise ValueError('Unexecuted run cannot be finalized')
-        if summary.get('partial_staged_record') is not None:
-            raise ValueError('Unclassified partial evidence cannot be finalized')
-        # Never include unrelated staged changes in the evidence commits.
-        if subprocess.check_output(['git', 'diff', '--cached', '--name-only'], cwd=root).strip():
-            raise ValueError('Index must be empty before explicit preservation commits')
-        index = _post_search_finalize_guard(root, run, manifest, storage, summary)
-        validate_run(root, experiment_id, mode='audit')
-        def commit(message):
-            paths = [run.relative_to(root).as_posix()]
-            if index is not None:
-                paths.append(index.relative_to(root).as_posix())
-            subprocess.check_call(['git', 'add', '--', *paths], cwd=root)
-            subprocess.check_call(['git', 'commit', '-m', message], cwd=root)
-        commit(experiment_id + ': preserve experiment evidence')
-        for ref in manifest['evidence'] + [{'path': (run / name).relative_to(root).as_posix()}
-                for name in ('manifest.json', 'storage_record.json')] + (
-                [{'path': index.relative_to(root).as_posix()}] if index is not None else []):
-            tracked_file(root, ref['path'], committed=True)
-        storage.update(stage='complete', git_readback='passed')
-        atomic_write_json(run / 'storage_record.json', storage)
-        commit(experiment_id + ': confirm HEAD byte readback')
-        report = validate_run(root, experiment_id, mode='finalize')
-        audit_all(root, main_ref='origin/main')
-        return report
-    except (Exception, KeyboardInterrupt) as exc:
-        storage.update(stage='preservation_incomplete', git_readback='not_run')
-        storage['limitations'] = LIMITATIONS + ['G3/G4 failed; retain raw: ' + str(exc)]
-        atomic_write_json(run / 'storage_record.json', storage)
-        raise
+from lpf.experiment_preservation import _post_search_finalize_guard, finalize_experiment
 
 
 # Preserve the original public API; the implementation is EXP-, not start-count-specific.

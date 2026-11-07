@@ -15,7 +15,7 @@ import json
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
 from .api import CircuitDefinition, build_nominal_circuit
-from .circuit_layout import CapacitorPlacement, InductorTree, normalized_capacitor_edge
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree, normalized_capacitor_edge
 from .problem_seed import circuit_box
 
 

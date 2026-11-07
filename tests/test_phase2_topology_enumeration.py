@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import build_nominal_circuit
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.topology_management.enumeration import capacitor_choices, labelled_trees
 from lpf.phase2_models.topology_enumeration import (
     TopologySpace, enumerate_topologies, exact_candidate_key, nominal_area,

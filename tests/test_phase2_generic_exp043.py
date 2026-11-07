@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
-from lpf.phase2_models.circuit_layout import InductorTree
+from lpf.topology_management.circuit_layout import InductorTree
 from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
 from lpf.rf_core.coupled_lc import (
     CoupledLCTopology, ParameterVectorSchema

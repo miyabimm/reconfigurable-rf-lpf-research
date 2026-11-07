@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.constraint_versions import load_constraint, constraint_fingerprint, validate_registry
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
 from lpf.search.component_constraints import physical_bounds, validate_values, validate_search_box
 from lpf.search.performance import validate_performance, harmonic_limit_db, limit_db, additional_stopband
 from lpf.phase2_models.problem_seed import circuit_box

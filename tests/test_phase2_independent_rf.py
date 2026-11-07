@@ -8,7 +8,7 @@ from test_phase2_public_circuit_api import (definition, RUNS, SNAP, exp042,
                                             exp055, exp058_area4l_gjm)
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.independent_scan import scan_independent_rf
 from lpf.rf_core.coupled_lc import CoupledLCTopology
 from lpf.rf_core.independent_rf import evaluate_independent_sample
