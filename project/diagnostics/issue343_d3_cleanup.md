@@ -18,6 +18,10 @@ Issue全体はD4まで未完了、研究はPhase 2のまま。
 
 旧候補・seed・optimizer専用testを撤去。旧独立scanの科学的手法とEXP vector参照を
 持つ`test_phase2_independent_rf.py`はバイト不変の非実行資料として同索引に保存。
+加えて保存EXP入力SHAと旧評価・識別方法を結ぶ`test_phase2_problem_frozen.py`、
+`test_phase2_candidate_records_frozen.py`も、D3レビュー指摘に従い元mainから
+バイト不変で`archive/issue343/tests/`へ隔離した。EXP-042/055/058の凍結入力・
+旧seed/残差・candidate証拠深度の固有レシピを保持し、現役CIでは実行しない。
 旧候補順位一致・旧solver再実行・旧候補形式の再認証は提供しない。
 
 ```text
@@ -39,6 +43,7 @@ topology_management → 純構造型 / role / enumeration（上位層への依�
 |---|---|---|
 |候補auditの部品/role/Q/SPD・未検証をPASSにしない|`test_issue323_dependencies`, `test_issue307_constraints`, 新`test_issue343_d3_science`|旧audit返却dict・owner昇格判定は廃止。component PASSはRF認定でない。|
 |旧固定vectorのforward/MNA・電力|D1固定期待値5条件/56点と全6設定×28個別区間×2端点の`test_issue309_rf_core`、forward stamp/cascade禁止spy|D1は現役条件の別入力回帰。EXP-042/043/055/058のvector再実行と同一とは主張しない。歴史oracleはarchiveに保持。|
+|保存EXP固定testの入力SHA・旧seed/28/56点残差・candidate再計算/証拠深度|`test_phase2_problem_frozen.py`と`test_phase2_candidate_records_frozen.py`を元blob不変の非実行archiveとして保持|D1や現役保存testで同値置換したとはしない。`passed_limited`/`not_run`とsynthetic callbackの意味・旧条件の解釈は履歴索引参照。旧solver/歴史EXP再実行は未実施。|
 |非受動/非有限電力・残差過大を拒否|新`test_issue343_d3_science`が実独立sampleを改変し、負S2P損失/NaN/電力残差を拒否。既存`test_issue309_rf_core`も維持|forward値は合っていても電力検証が失敗することを確認。|
 |旧evidenceのSHA/回路/環境結合と再計算|`test_issue325_campaign_gates`のsource/input/environment/import-origin、`test_issue343_d2_preservation`の候補集合/overlay SHA/manifest-index/readback|旧形式の署名や互換読み戻しは提供しない。新testで異なるvector/偽policy SHAに対する独立照合失敗も確認。|
 |旧post-searchのfailed/not_run/未完了・候補ゼロ|`test_issue343_d2_preservation`, `test_issue325_campaign_gates`, `test_issue319_parent_runner`|17/84/denseの旧段階を現役G3/G4保存集計と同値扱いしない。|

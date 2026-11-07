@@ -63,3 +63,46 @@ git show 681dabee30a7804d63bacc3afa5932e320c1d11a:scripts/diagnose_phase2_scalin
 Python pathへ追加して実行しない。必要なら**元commitの環境全体**で再現する。
 完全研究証拠の監査、保存EXP vectorの再実行、区間内極値探索・denseの再実行は未実施。
 現役への置換範囲と未代替の差は[整理記録](../../project/diagnostics/issue343_d3_cleanup.md)を参照。
+
+### D3レビュー補足：保存EXP固定テストの検証レシピ
+
+以下2件も一般的な旧runnerテストではなく、凍結EXP入力と旧評価・識別手法を結ぶ
+固有の再現レシピとして隔離する。元mainは
+`a86f47b6bf6fe3b722195167c88a6fbb07e220d6`。内容バイト不変で、通常`tests/`や
+現役CIへは戻さない。D1固定期待値は現行RF条件・別vectorであり、同値代替ではない。
+
+|元パス|元blob|内容SHA-256|保存理由・対象|
+|---|---|---|---|
+|`tests/test_phase2_problem_frozen.py`|`d67fa28d48b4709135730ff4174746f6b4c19a00`|`b7cd38d123cc360d33817229004e4e8ad6498fc82e683b034bc2385ebf4ef2a6`|EXP-042/055/058の入力ファイルSHA・回路定義、旧`SampledEpigraph.seed`の完全vector・encode/decode・28/56点残差照合。全証拠checkoutを要するread-only opt-in手順。|
+|`tests/test_phase2_candidate_records_frozen.py`|`7ff0eebb11bc4f33f4f4cd71b9b1ed0038c96f52`|`040addffd6b5ae2dd59dfb9ed642cd23eb6dafd84458728cc4e2cbb6ff57a5f7`|同EXP入力SHA、旧candidate roundtrip/再計算、`passed_limited`と`not_run`、限定MNA・電力残差、証拠深度の異なる候補を混同しない検証。synthetic callbackは歴史solver収束ではない。|
+
+入力参照はEXP-042 `preliminary_js_5pt.json`、EXP-055
+`checkpoints/cv1_input_tip_best.json`、EXP-058のarea4p667 snapshot、
+problem testではarea3〜3p667 snapshotも含む。ファイル内の凍結入力SHAと
+`831e9e56754e81d69b583893181c350396acc8f5`への参照をそのまま保存した。
+これらの入力SHAはRF effective SHAではない。旧RF条件との関係は以下のとおり
+（#307移行表の旧effective SHA、現行の同名IDとは非同値）:
+
+|旧trial ID|#307移行前effective SHA|
+|---|---|
+|RF-T005|`59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c`|
+|RF-T007|`c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430`|
+|RF-T008|`7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`|
+
+保存したtest自体はRF effective SHAを固定せず、実行checkoutの`load_constraint`を
+使用する。元mainは#307移行後なので、そこからコードを復元するだけで歴史EXPと
+同じRF条件の再実行になるとは限らない。旧条件の正本・新旧SHA対応は
+`rf/constraints/history/issue307-migration.json`、実EXPの条件/source/環境は
+元manifestで照合する。現行条件でのPASSやsynthetic収束を過去EXPの認定に読み替えない。
+
+元コードの読み出し（Git objectが存在する場合）:
+
+```sh
+git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_problem_frozen.py
+git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_candidate_records_frozen.py
+```
+
+旧API依存も必要なので、再現する場合は元Git commitのcheckoutと全証拠・対応環境を
+揃える。archiveコピーを現役Python pathへ追加して直接実行しない。今回確認したのは
+元blob/内容SHAの一致と現役回帰のみ。旧solver・歴史EXP固定テストの実行、
+完全研究証拠監査は未実施であり、この保存を実EXP再現PASSとは扱わない。
