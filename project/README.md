@@ -14,7 +14,7 @@ git sparse-checkout set --cone project rf src scripts tests .github
   - #307 / #306 v1.0の承認済み例外として、現役F003/T005〜T008は同一IDでschema 2・閉区間へ移行（GJM01/PCB_L下限変更を含む）。旧版・旧registry・SHA・親子関係を`rf/constraints/history/pre-issue-307/`に先行保存。新旧SHA対応は`rf/constraints/history/issue307-migration.json`。旧EXPや凍結済み計画のSHAは書換えず、現役条件として再実行しない。
 - 不変の旧RF JSON内の `data/...` は**保存時の論理パス**であり、`src/lpf/constraint_versions.py` が新 `rf/` 実体へ解決する。履歴JSON内容・旧実効SHA・S2P SHAは維持する。現役JSONの#307移行後実効SHAは旧版と区別する。ファイル欠落やSHA不一致時は失敗させる。
 - 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
-- Piの最低限の作業ツリーテストは `.github/workflows/pi-sparse-rf.yml`、全履歴・保存監査は通常の完全CI／個別実行とする。CI PASSは新RF性能の科学的保証ではない。
+- CIは `.github/workflows/audit.yml` で通常の回帰テストと保存監査を実行する。CI PASSは新RF性能の科学的保証ではない。
 
 ## 現行フローと資料の入口
 
