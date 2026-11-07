@@ -7,12 +7,11 @@ from scripts import build_phase2_topology_search as w2
 class W2TopologyIndexTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.rows, cls.summary = w2.build()
+        cls.rows = w2.build()
         cls.by_id = {r["catalog_id"]: r for r in cls.rows}
 
     def test_all_24_are_represented_without_evidence_fabrication(self):
         self.assertEqual(24, len(self.rows))
-        self.assertEqual(14, self.summary["historical_14_unclassified"])
         self.assertEqual(24, len(self.by_id))
         originals = w2.read_rows(w2.ROOT, w2.BASE_CATALOG)
         self.assertEqual([r["catalog_id"] for r in originals],
@@ -55,28 +54,13 @@ class W2TopologyIndexTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Git source blob mismatch"):
             w2.source_bytes(w2.ROOT, target, "0" * 40)
 
-    def test_disposable_export_and_tracked_csv_check(self):
-        import sys
-        import tempfile
-        from pathlib import Path
-        from unittest.mock import patch
-        with patch.object(sys, 'argv', ['topology', '--check']):
-            w2.main()
-        with tempfile.TemporaryDirectory(prefix='issue352-topology-export-') as tmp:
-            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp]):
-                w2.main()
-            for rel, expected in w2.render().items():
-                self.assertEqual((Path(tmp) / rel).read_text(), expected)
-            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp, '--check']):
-                w2.main()
-            (Path(tmp) / w2.REPORT).write_text('stale')
-            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp, '--check']):
-                with self.assertRaisesRegex(SystemExit, 'stale derived data'):
-                    w2.main()
+    def test_tracked_csv_matches_verified_sources(self):
+        self.assertEqual((w2.ROOT / w2.OUT).read_text(encoding='utf-8'),
+                         w2.as_csv(self.rows))
 
     def test_current_physical_claim_remains_unverified(self):
-        self.assertFalse(self.summary["physical_realization_verified_by_this_index"])
-        self.assertFalse(self.summary["rf_simulations_newly_executed"])
+        self.assertEqual({"unknown"}, {r["physical_realization_verified"] for r in self.rows[:14]})
+        self.assertEqual({"false"}, {r["physical_realization_verified"] for r in self.rows[14:]})
         self.assertEqual("unknown", self.by_id["LPF-007"]["electrical_inductor_edges"])
 
 

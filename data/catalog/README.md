@@ -26,18 +26,7 @@ python scripts/build_phase2_topology_search.py --check
 
 集計JSON2件とMarkdown表2件は上記の不変入力・CSVから再生成できるため、通常treeでの二重保管を廃止しました。
 CSV2件は検索・比較コードの入力として残し、元入力3件・Pareto・EXPの保存ベクトルとSHA固定証拠は維持します。
-既定の生成／`--check` は追跡CSVだけを対象にします。全レポートが必要な場合は一時出力先を明示します：
-
-```bash
-out=$(mktemp -d /tmp/lpf-catalog-reports-XXXXXX)
-uv run --frozen python scripts/build_phase2_candidate_catalog.py --output-dir "$out"
-uv run --frozen python scripts/build_phase2_topology_search.py --output-dir "$out"
-uv run --frozen python scripts/build_phase2_candidate_catalog.py --output-dir "$out" --check
-uv run --frozen python scripts/build_phase2_topology_search.py --output-dir "$out" --check
-```
-
-出力は `$out/data/catalog/` と `$out/docs/results/`。相対リンクで指す原証拠は元リポジトリにあり、
-出力だけで自己完結した証拠checkoutにはなりません。
-整理前の逐語原文は `git show a86f47b:<元path>` で復元できます。
+生成／`--check` は追跡CSVだけを対象にします。削除レポート専用の集計・Markdownレンダラ・exportオプション・テストも撤去し、復元用機能は保守しません。
+整理前の逐語原文が必要ならGit履歴を参照してください。
 研究の説明は[保存結果の入口](../../project/results.md)、構造の証拠限界は本ページを使用します。
 Phase 2を継続し、Phase 3は未承認です。
