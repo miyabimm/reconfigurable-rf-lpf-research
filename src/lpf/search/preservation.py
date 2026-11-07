@@ -193,7 +193,8 @@ def curate_campaign(experiment_id, *, root):
                 **save(run/'checkpoints'/f'{cid}.json', payload)))
     journal = dict(parent={k: v for k, v in state.items() if k != 'jobs'}, jobs=jobs, proposals=[dict(event=e,
         original_base64=base64.b64encode((directory/e['input_path']).read_bytes()).decode()
-        if (directory/e['input_path']).is_file() else None) for e in state['events'] if 'input_path' in e])
+        if isinstance(e['input_path'], str) and e['input_path'] in inventory else None)
+        for e in state['events'] if 'input_path' in e])
     provenance = save(run/'campaign_evidence.json', journal)
     summary = dict(experiment_id=experiment_id, preservation_kind='campaign_v1', attempts=counts,
         unknown_job_ids=[j['job_id'] for j in state['jobs'] if j['status'] != 'completed'],

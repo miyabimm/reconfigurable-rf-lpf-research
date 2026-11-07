@@ -440,7 +440,7 @@ class CampaignGateTests(unittest.TestCase):
         from lpf.search import campaign, preservation, worker
         from lpf.experiment_manifest import INDEX_FIELDS
         from scripts.audit_new_experiment_storage import find_run
-        for failure in ('missing_raw', 'git_readback'):
+        for failure in ('missing_raw', 'proposal_escape', 'git_readback'):
             with self.subTest(failure=failure):
                 output, snapshot = self.formal_start()
                 (self.repo/'data/experiment_index.csv').write_text(','.join(INDEX_FIELDS)+'\n')
@@ -451,10 +451,17 @@ class CampaignGateTests(unittest.TestCase):
                     self.formal_submit(snapshot)
                 if failure == 'missing_raw':
                     (output/'job-000000.json').unlink()
+                elif failure == 'proposal_escape':
+                    durable = json.loads((output/'campaign.json').read_bytes())
+                    durable['events'][0]['input_path'] = '../../private-input.yaml'
+                    atomic(output/'campaign.json', durable)
                 before = {p.name: p.read_bytes() for p in output.iterdir()}
                 summary = preservation.curate_campaign(self.ident, root=self.repo)
-                if failure == 'missing_raw':
+                if failure in ('missing_raw', 'proposal_escape'):
                     self.assertTrue(summary['preservation_errors'])
+                    if failure == 'proposal_escape':
+                        journal = json.loads((find_run(self.repo, self.ident)/'campaign_evidence.json').read_bytes())
+                        self.assertIsNone(journal['proposals'][0]['original_base64'])
                     with self.assertRaises(ValueError):
                         preservation.finalize_campaign(self.ident, root=self.repo)
                 else:
