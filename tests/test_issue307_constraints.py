@@ -13,11 +13,11 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.constraint_versions import load_constraint, constraint_fingerprint, validate_registry
-from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
+from lpf.topology_management import CircuitDefinition
+from lpf.rf_core import build_rf_model
 from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
 from lpf.search.component_constraints import physical_bounds, validate_values, validate_search_box
 from lpf.search.performance import validate_performance, harmonic_limit_db, limit_db, additional_stopband
-from lpf.phase2_models.problem_seed import circuit_box
 
 
 def make(cid):
@@ -29,7 +29,7 @@ def make(cid):
         CapacitorPlacement(8, ((1, -1), (2, -1), (1, 3)), var,
                            var if cid == 'RF-T008' else ()),
         ('GJM01', 'PCB_PATTERN_C', 'PCB_PATTERN_C'), ('shunt_to_ground', 'bridge'))
-    circuit = build_nominal_circuit(policy, d)
+    circuit = build_rf_model(d, policy)
     bounds = physical_bounds(d, circuit.schema, policy)
     x = np.mean(bounds, axis=1)
     return policy, d, circuit, bounds, x
@@ -78,8 +78,7 @@ class Issue307Tests(unittest.TestCase):
     def test_every_coordinate_closed_endpoints_and_no_clipping(self):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             p, d, c, bounds, x = make(cid)
-            self.assertEqual(circuit_box(c).bounds[:-1], bounds)
-            self.assertEqual(circuit_box(c).open_lower, ())
+            validate_search_box(bounds, bounds)
             self.assertEqual(bounds[0], (.4, 27.))
             self.assertEqual(bounds[1], (.2, 56.))
             self.assertEqual(bounds[4], (.01, 2.))
@@ -90,7 +89,6 @@ class Issue307Tests(unittest.TestCase):
                     v = x.copy(); v[i] = endpoint
                     with self.subTest(cid=cid, index=i, endpoint=endpoint):
                         self.assertTrue(validate_values(d, c.schema, v, p)['component_policy_pass'])
-                        self.assertTrue(c.validate_components(v)['component_policy_pass'])
                 for outside in (np.nextafter(lo, -np.inf), np.nextafter(hi, np.inf)):
                     v = x.copy(); v[i] = outside
                     with self.subTest(cid=cid, index=i, outside=outside), self.assertRaises(ValueError):
@@ -99,7 +97,8 @@ class Issue307Tests(unittest.TestCase):
             validate_search_box(narrowed, bounds)
             narrowed[7] = (0., 10.)
             with self.assertRaises(ValueError): validate_search_box(narrowed, bounds)
-            with self.assertRaises(ValueError): circuit_box(c, gjm_search_max_pf=.09)
+            narrowed[7] = (.1, .09)
+            with self.assertRaises(ValueError): validate_search_box(narrowed, bounds)
             np.testing.assert_array_equal(x, np.mean(bounds, axis=1))
 
     def test_complete_schema_constants_invariance_and_structure(self):

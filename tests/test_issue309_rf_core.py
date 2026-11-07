@@ -2,6 +2,9 @@
 import copy
 from contextlib import ExitStack
 import csv
+from dataclasses import asdict
+import hashlib
+import json
 from dataclasses import replace
 from pathlib import Path
 import unittest
@@ -29,19 +32,30 @@ def grid(policy):
 
 
 class RFCoreTests(unittest.TestCase):
-    def test_all_models_public_shape_parity_and_independent_mna(self):
+    def test_all_models_frozen_baseline_and_independent_mna(self):
+        # Captured on main before D1. This is regression evidence, NOT an
+        # independent oracle: the independent check below uses branch currents.
+        baseline = json.loads((ROOT/'tests/fixtures/issue343_d1_rf_baseline.json').read_text())
+        self.assertEqual(baseline['baseline_commit'], '3df84132cb8f21ec97411a143d56f9272810faf4')
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             with self.subTest(cid=cid):
-                p, d, legacy, _, x = make(cid)
+                p, d, model, _, x = make(cid)
                 x[10], x[13] = .03, -.04  # nonzero signed chip/PCB mutuals
-                x[-6*legacy.schema.n_variable:] = np.linspace(.2, 2.8, 6*legacy.schema.n_variable)
+                x[-6*model.schema.n_variable:] = np.linspace(.2, 2.8, 6*model.schema.n_variable)
+                expected = baseline['cases'][cid]
+                self.assertEqual(json.loads(json.dumps(asdict(d))), expected['definition'])
+                np.testing.assert_array_equal(x, expected['vector'])
+                for name, digest in expected['input_sha256'].items():
+                    self.assertEqual(hashlib.sha256(rf_input_file(ROOT, name).read_bytes()).hexdigest(), digest)
                 model = build_rf_model(d, p)
                 g = grid(p)
                 evaluator = model.evaluator(g)
                 response = evaluator.evaluate(x)
-                self.assertEqual(model.schema, legacy.schema)
-                self.assertEqual(model.topology, legacy.topology)
-                self.assertEqual(response.policy_fingerprint, legacy.policy_fingerprint)
+                self.assertEqual(response.policy_fingerprint, expected['policy_fingerprint'])
+                for name in ('frequency_hz', 'setting', 'segment'):
+                    np.testing.assert_array_equal(getattr(g, name), expected['grid'][name])
+                np.testing.assert_allclose(response.s.real, expected['s_real'], atol=1e-9, rtol=0)
+                np.testing.assert_allclose(response.s.imag, expected['s_imag'], atol=1e-9, rtol=0)
                 self.assertEqual(response.s.shape, (56, 2, 2))
                 self.assertEqual(response.s.dtype, np.complex128)
                 for key in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
@@ -50,8 +64,9 @@ class RFCoreTests(unittest.TestCase):
                     self.assertEqual(a.dtype, np.float64)
                     self.assertTrue(np.all(np.isfinite(a)))
                     self.assertFalse(a.flags.writeable)
+                    np.testing.assert_allclose(a, expected[key], atol=1e-9, rtol=0)
                 self.assertFalse(response.independent_mna_checked)
-                np.testing.assert_allclose(response.il_db, legacy.forward_evaluator(2).il(x), atol=1e-9, rtol=0)
+                np.testing.assert_allclose(response.il_db, expected['legacy_abcd_il_db'], atol=1e-9, rtol=0)
                 with patch.object(CoupledLCTopology, 'node_admittance', side_effect=AssertionError('forward reused')), \
                      patch.object(CoupledLCTopology, 'matrices', side_effect=AssertionError('forward reused')), \
                      patch('lpf.rf_core.model._cascade', side_effect=AssertionError('forward reused')):
@@ -71,17 +86,18 @@ class RFCoreTests(unittest.TestCase):
                 self.assertNotEqual(model.resolved_policy['source_ohms']['real'], 999)
 
     def test_all_six_settings_on_each_separate_interval(self):
-        p, d, _, _, x = make('RF-T008')
-        x[-12:] = np.linspace(.2, 2.8, 12)  # distinct values for all six rows
-        x[10], x[13] = .03, -.04
-        model = build_rf_model(d, p)
-        canonical = grid(p)
-        g = EvaluationGrid(np.tile(canonical.frequency_hz, 6),
-            np.repeat(np.arange(6), 56), np.tile(canonical.segment, 6))
-        r = model.evaluator(g).evaluate(x)
-        self.assertEqual({(int(s), int(k)) for s, k in zip(g.segment, g.setting)},
-                         {(s, k) for s in range(28) for k in range(6)})
-        self.assertEqual(validate_response(model, x, r)['samples_checked'], 336)
+        for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
+            with self.subTest(cid=cid):
+                p, d, model, _, x = make(cid)
+                x[-12:] = np.linspace(.2, 2.8, 12)  # distinct values for all six rows
+                x[10], x[13] = .03, -.04
+                canonical = grid(p)
+                g = EvaluationGrid(np.tile(canonical.frequency_hz, 6),
+                    np.repeat(np.arange(6), 56), np.tile(canonical.segment, 6))
+                r = model.evaluator(g).evaluate(x)
+                self.assertEqual({(int(s), int(k)) for s, k in zip(g.segment, g.setting)},
+                                 {(s, k) for s in range(28) for k in range(6)})
+                self.assertEqual(validate_response(model, x, r)['samples_checked'], 336)
 
     def test_known_through_series_resistor_and_complex_power_references(self):
         # Analytic series R ABCD: [1,R;0,1]. Includes R=0 ideal through.

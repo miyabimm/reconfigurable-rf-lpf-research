@@ -37,9 +37,9 @@ def make(cid):
 class DependenciesTests(unittest.TestCase):
     def test_topology_identity_and_fields(self):
         # Structural types have one owner, without legacy re-export modules.
-        from importlib.util import find_spec
+        root = Path(__file__).resolve().parents[1] / 'src/lpf/phase2_models'
         for name in ('circuit_layout', 'role_audit'):
-            self.assertIsNone(find_spec('lpf.phase2_models.' + name))
+            self.assertFalse((root / (name + '.py')).exists())
         self.assertEqual([f.name for f in fields(CircuitDefinition)], [
             'inductor_tree', 'inductor_types', 'physical_order', 'coupling_pairs',
             'capacitor_placement', 'fixed_c_types', 'variable_roles'])
@@ -80,22 +80,22 @@ class DependenciesTests(unittest.TestCase):
 
     def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
         from lpf.search import checkout, gates, preservation
-        from scripts import run_phase2_shared
         for name in ('_complete_checkout', '_fresh_main'):
             self.assertIs(getattr(gates, name), getattr(checkout, name))
-            self.assertIs(getattr(run_phase2_shared, name), getattr(checkout, name))
         for module in (gates, preservation):
             source = Path(module.__file__).read_text()
             self.assertNotIn('scripts.run_phase2_shared', source)
             self.assertNotIn('scripts.run_phase2_one_start', source)
 
-    def test_campaign_preservation_imports_without_legacy_execution_closure(self):
-        # A fresh interpreter catches transitive script imports, including G3/G4,
-        # which the develop-only blocked-import regression cannot reach.
+    def test_science_and_preservation_without_legacy_execution_closure(self):
+        # Run actual scientific assertions in a fresh interpreter, rather than
+        # importing old modules merely to patch them. Covers transitive fixture
+        # dependencies as well as G3/G4, unlike develop-only blocked imports.
         code = '''
 import importlib.abc
 import sys
-sys.path.insert(0, 'src')
+import unittest
+sys.path[:0] = ['src', 'tests']
 class BlockLegacy(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname.startswith(('lpf.phase2_models', 'scripts.run_phase2_')):
@@ -104,7 +104,14 @@ sys.meta_path.insert(0, BlockLegacy())
 from lpf.search import gates, preservation
 from lpf.experiment_preservation import finalize_experiment, aggregate_selected
 assert aggregate_selected([], {})['validation'] == {'numerical': 'not_run', 'independent': 'not_run'}
-assert not any(name.startswith('lpf.phase2_models') for name in sys.modules)
+suite = unittest.defaultTestLoader.loadTestsFromNames([
+    'test_issue307_constraints', 'test_issue309_rf_core',
+    'test_issue311_performance', 'test_issue315_fixed_stage',
+    'test_issue323_dependencies.DependenciesTests.test_new_values_without_legacy_validation_or_forward',
+])
+result = unittest.TextTestRunner(verbosity=1).run(suite)
+assert result.wasSuccessful()
+assert not any(name.startswith(('lpf.phase2_models', 'scripts.run_phase2_')) for name in sys.modules)
 '''
         subprocess.run([sys.executable, '-c', code], check=True,
                        cwd=Path(__file__).resolve().parents[1])
@@ -129,11 +136,7 @@ assert not any(name.startswith('lpf.phase2_models') for name in sys.modules)
     def test_new_values_without_legacy_validation_or_forward(self):
         for cid in IDS:
             p, d, c, bounds, x = make(cid)
-            with (patch('lpf.phase2_models.api.build_nominal_circuit', side_effect=AssertionError('legacy')),
-                  patch('lpf.phase2_models.api.NominalCircuit.validate_components', side_effect=AssertionError('legacy')),
-                  patch('lpf.phase2_models.rft005_t007_policy_circuit.PolicyBoundRFT005T007Circuit.validate_candidate', side_effect=AssertionError('adapter')),
-                  patch('lpf.phase2_models.rft008_policy_circuit.PolicyBoundRFT008Circuit.validate_candidate', side_effect=AssertionError('adapter')),
-                  patch('lpf.rf_core.model.RFEvaluator.evaluate', side_effect=AssertionError('forward'))):
+            with patch('lpf.rf_core.model.RFEvaluator.evaluate', side_effect=AssertionError('forward')):
                 result = validate_values(d, c.schema, x, p)
                 self.assertEqual(result['constraint_fingerprint'], constraint_fingerprint(p))
                 self.assertEqual(result['checked_settings'], 6)
