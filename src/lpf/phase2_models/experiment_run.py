@@ -40,7 +40,8 @@ def _git(root, *args):
 
 def _gate(root, experiment_id, loaded, *, resuming):
     """G0/G1 remote byte readback, same source/environment, existing storage audit."""
-    from scripts.run_phase2_shared import _complete_checkout, _fresh_main, exp_preflight, ROOT
+    from lpf.search.checkout import _complete_checkout, _fresh_main
+    from scripts.run_phase2_shared import exp_preflight, ROOT
     from scripts.experiment_id_registry import is_reserved_on_main
     from scripts.audit_new_experiment_storage import find_run, validate_run
     _complete_checkout(root)

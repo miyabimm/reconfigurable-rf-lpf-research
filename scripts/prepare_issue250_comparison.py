@@ -29,7 +29,7 @@ from lpf.phase2_models.limited_candidate_evidence import recompute_limited_evide
 from lpf.phase2_models.multistart import generate_starts
 from lpf.phase2_models.problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from lpf.phase2_models.sampled_epigraph import SampledEpigraph
-from scripts.run_phase2_shared import _complete_checkout, _fresh_main
+from lpf.search.checkout import _complete_checkout, _fresh_main
 
 POLICY_SHA = '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4'
 REFERENCE = 'experiments/chatgpt_topology_search/runs/EXP-062/'

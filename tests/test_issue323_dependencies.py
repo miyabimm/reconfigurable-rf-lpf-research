@@ -66,7 +66,7 @@ class DependenciesTests(unittest.TestCase):
         legacy_arrows = {path.name for path in (root/'phase2_models').glob('*.py')
                          if any('search' in name.split('.') for name in imports(path))}
         # Isolated old callers, not part of the schema2 import/call graph.
-        self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py'})
+        self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py', 'experiment_run.py'})
         for path in (root/'rf_core').glob('*.py'):
             self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
                                  for name in imports(path)), path)
@@ -79,6 +79,15 @@ class DependenciesTests(unittest.TestCase):
         paths += [root.parents[1]/'scripts/run_rf_search.py']
         for path in paths:
             self.assertFalse(any(retired.intersection(name.split('.')) for name in imports(path)), path)
+
+    def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
+        from lpf.search import checkout, gates, preservation
+        from scripts import run_phase2_shared
+        for name in ('_complete_checkout', '_fresh_main'):
+            self.assertIs(getattr(gates, name), getattr(checkout, name))
+            self.assertIs(getattr(run_phase2_shared, name), getattr(checkout, name))
+        for module in (gates, preservation):
+            self.assertNotIn('scripts.run_phase2_shared', Path(module.__file__).read_text())
 
     def test_exact_closed_bounds_including_all_40_coupling_neighbors(self):
         coupling_rejections = 0

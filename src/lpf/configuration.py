@@ -5,7 +5,7 @@ import numpy as np
 
 from .constraint_versions import load_constraint, validate_variable_c_connections
 from .evaluate import CASES
-from .topology import validate_bridge_topology
+from .topology_management.bridge import validate_bridge_topology
 
 
 @lru_cache(maxsize=1)
