@@ -17,7 +17,7 @@ from lpf.constraint_versions import load_constraint
 from lpf.policy_schema import harmonic_limit_db, limit_db
 from .api import CircuitDefinition, build_nominal_circuit
 from .candidate_audit import audit_candidate
-from .circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from .limited_candidate_evidence import _identity, compare_recomputed_evidence
 from .problem_seed import definition_fingerprint, vector_fingerprint
 from .sampled_epigraph import SampledEpigraph

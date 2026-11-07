@@ -15,7 +15,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.candidate_records import CandidateRecord, record_candidate, recheck_record, pareto_report
 from lpf.phase2_models.problem_seed import definition_fingerprint, vector_fingerprint
 from lpf.phase2_models.sampled_epigraph import SampledEpigraph

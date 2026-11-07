@@ -5,7 +5,7 @@ forward evaluation. Only hot-hot absent devices without any IC-fixed-C
 or permanent shunt parasitic may be removed, subject to strict checks.
 """ 
 from dataclasses import dataclass
-from .circuit_layout import normalized_capacitor_edge
+from lpf.topology_management.circuit_layout import normalized_capacitor_edge
 from lpf.rf_core.coupled_lc import CircuitValues
 
 

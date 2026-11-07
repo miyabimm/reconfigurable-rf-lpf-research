@@ -180,7 +180,7 @@ class SharedEntryTests(unittest.TestCase):
             if enumerated:
                 from lpf.constraint_versions import load_constraint
                 from lpf.phase2_models.api import build_nominal_circuit
-                from lpf.phase2_models.circuit_layout import InductorTree
+                from lpf.topology_management.circuit_layout import InductorTree
                 from lpf.phase2_models.topology_enumeration import TopologySpace, enumerate_topologies
                 from lpf.phase2_models.sampled_epigraph import SampledEpigraph
                 space = TopologySpace(
@@ -347,7 +347,7 @@ class SharedEntryTests(unittest.TestCase):
                                 self.assertEqual(saved['termination']['type'], '_Stopped')
                                 self.assertEqual(len(saved['callback_returns']), 2)
                             if codes == (0, 0):
-                                with patch('scripts.run_phase2_one_start.tracked_file',
+                                with patch('lpf.experiment_preservation.tracked_file',
                                            side_effect=ValueError('fixture readback failure')):
                                     with self.assertRaisesRegex(ValueError, 'readback failure'):
                                         finalize_one_start(repo, ident)
@@ -1134,7 +1134,7 @@ class FrozenConfigTests(unittest.TestCase):
             # The isolated root contains only the EXP-116 manifest used as an
             # input fixture, not its complete history, so do not claim a global
             # evidence audit. The single EXP readback/finalize is real.
-            with patch('scripts.run_phase2_one_start.audit_all'):
+            with patch('lpf.experiment_preservation.audit_all'):
                 finalized = finalize_experiment(root, ident)
             self.assertEqual(finalized['stage'], 'complete')
             self.assertTrue(finalized['committed_readback'])

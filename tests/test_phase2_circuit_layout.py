@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from lpf.constraint_versions import load_constraint
-from lpf.phase2_models.circuit_layout import (
+from lpf.topology_management.circuit_layout import (
     CapacitorPlacement, InductorTree, incidence_matrix,
     normalized_capacitor_edge,
 )

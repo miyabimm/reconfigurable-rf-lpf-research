@@ -15,7 +15,7 @@ from lpf.constraint_versions import load_constraint, rf_input_file
 from lpf.experiment_manifest import file_sha256
 from lpf.rf_core._grid import ROOT
 from .api import CircuitDefinition, build_nominal_circuit
-from .circuit_layout import InductorTree, CapacitorPlacement
+from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
 from .problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from .synthetic_runner import _read, _unique
 

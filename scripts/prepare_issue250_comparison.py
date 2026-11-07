@@ -23,13 +23,13 @@ sys.path.insert(0, str(ROOT / 'src'))
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
 from lpf.constraint_versions import load_constraint
 from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-from lpf.phase2_models.circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.evaluation_cost import EvaluationCost
 from lpf.phase2_models.limited_candidate_evidence import recompute_limited_evidence
 from lpf.phase2_models.multistart import generate_starts
 from lpf.phase2_models.problem_seed import circuit_box, definition_fingerprint, vector_fingerprint
 from lpf.phase2_models.sampled_epigraph import SampledEpigraph
-from scripts.run_phase2_shared import _complete_checkout, _fresh_main
+from lpf.search.checkout import _complete_checkout, _fresh_main
 
 POLICY_SHA = '7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4'
 REFERENCE = 'experiments/chatgpt_topology_search/runs/EXP-062/'

@@ -7,7 +7,7 @@ or globally exhaustive circuit designs. Always pass an explicit RF policy.
 from itertools import combinations
 
 from .constraint_versions import validate_variable_c_connections
-from .topology import validate_bridge_topology
+from .topology_management.bridge import validate_bridge_topology
 
 
 def inductor_types(series_mode=None):

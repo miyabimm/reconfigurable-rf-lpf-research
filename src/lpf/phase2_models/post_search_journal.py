@@ -55,41 +55,7 @@ def candidate_binding(candidate_id, circuit, vector, *, optimization_record,
     return binding
 
 
-def _candidate_status(report):
-    """Only explicit check counterexamples are failures; exceptions are not_run."""
-    if not isinstance(report, dict) or report.get('schema') != 'post-search-validation-1':
-        return {'numerical': 'not_run', 'independent': 'not_run'}
-    component = report.get('component', {}).get('state')
-    grid17 = report.get('separate17', {}).get('state')
-    dense = report.get('dense1001', {}).get('state')
-    independent = report.get('independent84', {}).get('state')
-    numerical = ('failed' if 'fail' in (component, grid17, dense) else
-                 'passed' if (component, grid17, dense) == ('pass', 'pass', 'pass') else 'not_run')
-    # Independent can fail independently of numerical aggregation; a candidate
-    # not actually reaching MNA is not an independent FAIL.
-    mna = ('failed' if independent == 'fail' else
-           'passed' if independent == 'pass' and numerical == 'passed' else 'not_run')
-    return {'numerical': numerical, 'independent': mna}
-
-
-def aggregate_selected(candidate_ids, outcomes):
-    """Apply PR #268's fixed-set rule independently to both validation levels.
-
-    ``outcomes`` contains only completed journal records, not all search starts.
-    A missing or interrupted target is not_run; unexpected IDs are rejected.
-    These are validation summaries, not evidence authentication or RF approval.
-    """
-    if (not isinstance(candidate_ids, list) or len(candidate_ids) != len(set(candidate_ids)) or
-            any(not isinstance(c, str) or not c for c in candidate_ids) or not isinstance(outcomes, dict) or
-            set(outcomes) - set(candidate_ids)):
-        raise ValueError('Invalid frozen selection or unexpected outcome')
-    rows = {c: _candidate_status(outcomes.get(c)) for c in candidate_ids}
-    result = {}
-    for level in ('numerical', 'independent'):
-        states = [rows[c][level] for c in candidate_ids]
-        result[level] = ('failed' if 'failed' in states else
-                         'passed' if states and all(s == 'passed' for s in states) else 'not_run')
-    return {'validation': result, 'candidates': rows}
+from lpf.experiment_preservation import aggregate_selected
 
 
 class PostSearchJournal:

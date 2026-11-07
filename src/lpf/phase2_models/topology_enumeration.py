@@ -15,7 +15,7 @@ import json
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
 from .api import CircuitDefinition, build_nominal_circuit
-from .circuit_layout import CapacitorPlacement, InductorTree, normalized_capacitor_edge
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree, normalized_capacitor_edge
 from .problem_seed import circuit_box
 
 
@@ -38,65 +38,6 @@ def _approved(policy):
     if constraint_fingerprint(policy) != constraint_fingerprint(approved):
         raise ValueError("Resolved trial differs from approved registry")
     return approved
-
-
-def labelled_trees(n_inductors, *, limit, reverse_edges=False,
-                   source_node=0, load_node=2):
-    """First ``limit`` labelled trees in lexicographic edge/mask order.
-
-    3L/4L only, on n+1 hot nodes. Edge permutations are NOT enumerated.
-    Optional orientation masks retain electrical directions, never quotient
-    them out. The finite class has at most 210 edge sets x 16 masks.
-    """
-    if type(n_inductors) is not int or n_inductors not in (3, 4):
-        raise ValueError("Only 3L/4L enumeration is supported")
-    _positive_int(limit, "limit")
-    if type(reverse_edges) is not bool:
-        raise ValueError("reverse_edges must be boolean")
-    n = n_inductors + 1
-    # Validate ports even if a disconnected first edge set would be skipped.
-    InductorTree(n, tuple((0, i) for i in range(1, n)), source_node, load_node)
-    result = []
-    for edges in combinations(combinations(range(n), 2), n_inductors):
-        try:
-            tree = InductorTree(n, edges, source_node, load_node)
-        except ValueError:
-            continue  # disconnected n-1-edge set, not a tree
-        masks = product((False, True), repeat=n_inductors) if reverse_edges else [(False,)*n_inductors]
-        for mask in masks:
-            oriented = tuple((b, a) if flip else (a, b)
-                             for (a, b), flip in zip(tree.edges, mask))
-            result.append(InductorTree(n, oriented, source_node, load_node))
-            if len(result) == limit:
-                return tuple(result)
-    return tuple(result)
-
-
-def capacitor_choices(node_count, *, kind, max_branches, limit):
-    """Explicit prefix of distinct-edge ordered C layouts, including empty.
-
-    ``kind='fixed'`` labels each edge GJM01/PCB_PATTERN_C; ``'variable'``
-    labels ground shunts and hot-hot bridge/series alternatives. No C edge
-    permutations are generated. Policy/count/value gates still run downstream.
-    Empty layouts encode absence, never an installed zero-pF fixed capacitor.
-    """
-    _positive_int(limit, "limit")
-    if (type(node_count) is not int or node_count not in (4, 5)
-            or type(max_branches) is not int or not 0 <= max_branches <= 3
-            or kind not in ("fixed", "variable")):
-        raise ValueError("Expected 4/5 nodes, 0..3 C branches and fixed/variable kind")
-    edges = tuple((i, -1) for i in range(node_count)) + tuple(combinations(range(node_count), 2))
-    result = [()]
-    for count in range(1, max_branches+1):
-        for selected in combinations(edges, count):
-            labels = [("GJM01", "PCB_PATTERN_C") if kind == "fixed" else
-                      (("shunt_to_ground",) if -1 in edge else ("bridge", "series"))
-                      for edge in selected]
-            for kinds in product(*labels):
-                if len(result) == limit:
-                    return tuple(result)
-                result.append(tuple(zip(selected, kinds)))
-    return tuple(result)
 
 
 @dataclass(frozen=True)

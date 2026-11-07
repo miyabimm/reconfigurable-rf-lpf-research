@@ -219,7 +219,7 @@ def curate_campaign(experiment_id, *, root):
 
 def finalize_campaign(experiment_id, *, root):
     """Inspect curated diff first. Reuse existing commits/readback/storage audit."""
-    from scripts.run_phase2_one_start import finalize_experiment
+    from lpf.experiment_preservation import finalize_experiment
     root = Path(root).resolve()
     run = find_run(root, experiment_id)
     campaign_index_guard(root, run, _read(run/'manifest.json'), _read(run/'storage_record.json'),
@@ -233,7 +233,7 @@ def campaign_cleanup_eligibility(experiment_id, *, root, resume_needed, classifi
     Only exact raw bytes inventoried at curation can be eligible as temporary C.
     The caller explicitly confirms no resume or remaining A/B promotion is needed.
     """
-    from scripts.run_phase2_shared import _fresh_main, _complete_checkout
+    from .checkout import _fresh_main, _complete_checkout
     root = Path(root).resolve()
     _complete_checkout(root)
     if resume_needed is not False or classification_complete is not True:

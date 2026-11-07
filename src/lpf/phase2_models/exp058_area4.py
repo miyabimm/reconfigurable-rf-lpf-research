@@ -5,7 +5,7 @@ from lpf.trial_pcb_pattern_c import validate_trial_pcb_pattern_c_branches
 from lpf.rf_core._grid import ROOT
 from . import exp055 as old4
 from . import exp058_area3 as optim
-from .circuit_layout import CapacitorPlacement
+from lpf.topology_management.circuit_layout import CapacitorPlacement
 from lpf.rf_core.rft008_layout import RFT008CapacitorLayout
 
 CASES=old4.CASES

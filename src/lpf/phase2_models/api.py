@@ -14,7 +14,7 @@ from copy import deepcopy
 from lpf.topology_management import CircuitDefinition, InductorTree, CapacitorPlacement
 from .rft005_t007_policy_circuit import PolicyBoundRFT005T007Circuit
 from .rft008_policy_circuit import PolicyBoundRFT008Circuit
-from .role_audit import audit_variable_connection_roles
+from lpf.topology_management.role_audit import audit_variable_connection_roles
 
 
 @dataclass(frozen=True)

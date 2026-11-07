@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 def synthetic(policy_id, inductors):
     from lpf.constraint_versions import load_constraint
     from lpf.phase2_models.api import build_nominal_circuit
-    from lpf.phase2_models.circuit_layout import InductorTree
+    from lpf.topology_management.circuit_layout import InductorTree
     from lpf.phase2_models.topology_enumeration import TopologySpace, enumerate_topologies
     from lpf.phase2_models.problem_seed import vector_fingerprint
     from lpf.phase2_models.synthetic_plan import make_synthetic_plan
@@ -50,30 +50,7 @@ def synthetic(policy_id, inductors):
                                      optimize_stage=mock)
 
 
-def _complete_checkout(root):
-    root = Path(root)
-    for name in ('data/experiment_number_registry.csv', 'data/phase2_git_storage_budget.json',
-                 'experiments', 'rf/bands.csv'):
-        if not (root / name).exists():
-            raise ValueError('Full checkout required; missing ' + name)
-    sparse = subprocess.run(['git', 'config', '--bool', 'core.sparseCheckout'], cwd=root,
-                            capture_output=True, text=True)
-    if sparse.stdout.strip() == 'true':
-        raise ValueError('Full checkout required; sparse checkout is not sufficient')
-    tracked = subprocess.check_output(['git', 'ls-files', '-z', '--', 'data', 'experiments'], cwd=root)
-    for name in filter(None, tracked.split(b'\0')):
-        path = root / name.decode('utf-8')
-        if not path.exists():
-            raise ValueError('Full checkout required; missing tracked evidence: ' + name.decode('utf-8'))
-
-
-def _fresh_main(root):
-    local = subprocess.check_output(['git', 'rev-parse', 'refs/remotes/origin/main'], cwd=root, text=True).strip()
-    remote = subprocess.check_output(['git', 'ls-remote', '--exit-code', 'origin', 'refs/heads/main'],
-                                     cwd=root, text=True).split()
-    if len(remote) != 2 or remote[0] != local or remote[1] != 'refs/heads/main':
-        raise ValueError('origin/main is stale or unavailable; fetch and recheck')
-    return local
+from lpf.search.checkout import _complete_checkout, _fresh_main
 
 
 def exp_preflight(root, experiment_id, *, owner, request_id, policy_id, policy_sha256,
@@ -253,7 +230,7 @@ def prepare_continuation_plan(root, config_path, experiment_id):
     from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
     from lpf.constraint_versions import load_constraint
     from lpf.phase2_models.api import CircuitDefinition, build_nominal_circuit
-    from lpf.phase2_models.circuit_layout import InductorTree, CapacitorPlacement
+    from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
     from lpf.phase2_models.experiment_config import (_Loader, _check_continuation_reference,
         continuation_program_sha256, ContinuationPreparationError, prepare_continuation_starts,
         prepare_diagnostic_starts, stable_identity)

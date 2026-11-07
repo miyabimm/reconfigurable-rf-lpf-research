@@ -58,6 +58,8 @@ PATHS = {
     'project/experiment_storage_policy.md': 'STORE', 'project/campaign_workflow.md': 'GATE RUN STORE',
     'project/roadmap.md': 'DOC', 'project/README.md': 'DOC', 'README.md': 'DOC',
     'src/lpf/search/gates.py': 'GATE', 'src/lpf/search/preflight.py': 'GATE',
+    'src/lpf/search/checkout.py': 'GATE STORE',
+    'src/lpf/experiment_preservation.py': 'STORE FULL',
     'src/lpf/search/worker.py': 'RUN STORE', 'src/lpf/search/runner.py': 'RUN STORE',
     'src/lpf/search/_job_evaluation.py': 'RUN RF', 'src/lpf/search/evaluation.py': 'RUN RF',
     'src/lpf/search/campaign.py': 'RUN GATE STORE', 'src/lpf/search/controller.py': 'RUN GATE',
@@ -70,7 +72,10 @@ PATHS = {
     'scripts/reserve_experiment_number.py': 'STORE GATE', 'scripts/experiment_id_registry.py': 'STORE GATE',
     'scripts/verify_phase2_cleanup_w1_links.py': 'DOC',
 }
-for name in '''branch_mna independent_rf independent_scan circuit_layout coupled_lc rft008_layout rft008_policy_circuit rft005_t007_policy_circuit role_audit numerical_diagnostics _grid nominal_parts nominal_inductors'''.split():
+# Retained legacy scientific tests still have callers. Retired re-exports and
+# kernels now owned by rf_core must not have stale legacy ownership entries.
+# Shared/moved kernels and structural files stay unknown => conservative FULL.
+for name in '''independent_scan rft008_policy_circuit rft005_t007_policy_circuit _grid'''.split():
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'RF'
 for name in '''candidate_records problem_seed sampled_epigraph staged_optimization frequency_exchange frequency_exchange_c1 optimizer_comparison rf_pipeline_adapter scipy_de_preview generic_starts normalized_epigraph start_selection designed_starts multistart topology_enumeration'''.split():
     PATHS[f'src/lpf/phase2_models/{name}.py'] = 'OPT'

@@ -17,7 +17,7 @@ import numpy as np
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
 from lpf.rf_core.nominal_inductors import check_nominal_inductors
 from lpf.rf_core.nominal_parts import checked_inductor_metadata, checked_fixed_c_types
-from .circuit_layout import CapacitorPlacement, InductorTree
+from lpf.topology_management.circuit_layout import CapacitorPlacement, InductorTree
 from lpf.phase2_models.coupled_lc_evaluator import CoupledLCEvaluator
 from lpf.rf_core.coupled_lc import (
     CircuitValues, CoupledLCTopology, ParameterVectorSchema,
