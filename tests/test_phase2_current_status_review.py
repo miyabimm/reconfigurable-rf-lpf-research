@@ -26,6 +26,24 @@ class Phase2CurrentStatusTests(unittest.TestCase):
         self.assertIn("IL≤0.30dB", roadmap)
         self.assertNotIn("Phase 3", roadmap)
 
+    def test_campaign_guide_entrypoints_and_diagnostic_inventory(self):
+        """Keep one current entrypoint without orphaning Issue evidence."""
+        guide = ROOT / "project/campaign_workflow.md"
+        index = ROOT / "project/diagnostics/README.md"
+        self.assertTrue(guide.is_file())
+        self.assertIn("project/campaign_workflow.md", (ROOT / "README.md").read_text())
+        self.assertIn("(campaign_workflow.md)", (ROOT / "project/README.md").read_text())
+        inventory = index.read_text()
+        for path in (ROOT / "project/diagnostics").iterdir():
+            if path.is_file() and path.name != "README.md":
+                self.assertIn(f"({path.name})", inventory, path.name)
+        # Local Markdown targets in the new entrypoints must survive sparse checkout.
+        import re
+        for page in (guide, index):
+            for target in re.findall(r"\]\(([^)]+)\)", page.read_text()):
+                if "://" not in target:
+                    self.assertTrue((page.parent / target.split("#")[0]).exists(), target)
+
     def test_retired_docs_remain_git_recoverable(self):
         """Documentation history lives in Git and Issue #170, not more live docs."""
         pinned_commit = "0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53"
