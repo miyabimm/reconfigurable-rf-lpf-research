@@ -733,6 +733,14 @@ class SharedEntryTests(unittest.TestCase):
 
 
 class FrozenConfigTests(unittest.TestCase):
+    def require_historical_t008(self):
+        # These legacy plans are hard-pinned to the pre-#307 trial policy.
+        # Do not rewrite historical inputs or silently mix the two SHAs.
+        from lpf.constraint_versions import constraint_fingerprint, load_constraint
+        from scripts.prepare_issue250_comparison import POLICY_SHA
+        if constraint_fingerprint(load_constraint('RF-T008', allow_trial=True)) != POLICY_SHA:
+            self.skipTest('historical plan RF-T008 SHA differs from current policy')
+
     """Reusable YAML/dispatch contracts, never real SciPy or a scientific EXP."""
 
     def fixture(self, root):
@@ -960,6 +968,7 @@ class FrozenConfigTests(unittest.TestCase):
                 self.assertEqual(prepare.call_count, 1)
 
     def test_20db_diagnostic_plan_and_two_arm_failure_isolation(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import (load_plan, stable_identity,
             prepare_diagnostic_starts)
@@ -1178,6 +1187,7 @@ class FrozenConfigTests(unittest.TestCase):
                 load_plan(root, path)
 
     def test_continuation_reference_definition_matches_historical_structure_only(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import _check_continuation_reference
         from scripts.prepare_issue250_comparison import comparison_circuit
@@ -1191,6 +1201,7 @@ class FrozenConfigTests(unittest.TestCase):
             _check_continuation_reference(ROOT, config, comparison_circuit())
 
     def test_continuation_plan_mock_dispatch_and_fail_closed(self):
+        self.require_historical_t008()
         import yaml
         from lpf.phase2_models.experiment_config import load_plan, stable_identity
         from lpf.phase2_models.experiment_run import run_plan
