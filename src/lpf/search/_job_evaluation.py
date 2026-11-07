@@ -35,7 +35,8 @@ class FixedJobEvaluation(FixedStageEvaluation):
     """
     def __init__(self, plan, definition, policy, arm, path, spec, *, root):
         self.spec = spec
-        self.result = dict(kind='stage4c1_development_only', spec=plain(spec),
+        self.result = dict(kind=('campaign_formal_raw_v1' if spec.data['kind'] == 'campaign_formal_job_v1'
+                                 else 'stage4c1_development_only'), spec=plain(spec),
             status='not_started', exit_reason=None, steps=[],
             selection=dict(status='not_run', ranked=[], excluded=[]),
             terminal=dict(status='not_run', candidates=[]), dense=dict(status='not_run'),
@@ -56,8 +57,18 @@ class FixedJobEvaluation(FixedStageEvaluation):
             self.allocations[f'anytime:{i}'] = self.job['anytime_one_forward']
         self._checkpoint()
 
+    def _validate_checkpoint(self):
+        if self.spec.data['kind'] == 'campaign_formal_job_v1':
+            from .gates import verify_campaign_job
+            verify_campaign_job(self.spec, self.path, self.root)
+        else:
+            super()._validate_checkpoint()
+
     def _contract(self):
         super()._contract()
+        if self.spec.data['kind'] == 'campaign_formal_job_v1':
+            from .gates import verify_campaign_job
+            verify_campaign_job(self.spec, self.path, self.root)
         if source_identity(self.root) != self.spec.data['source']:
             raise ValueError('Development Job source identity changed')
         if sha(self.spec.data['source']) != self.spec.source_sha256:
@@ -85,7 +96,8 @@ class FixedJobEvaluation(FixedStageEvaluation):
             reservations=dict(inactive=reserved, other_jobs=self.other_jobs, dense=self.data['costs']['dense']),
             remaining=dict(job=self.job['max_requested_samples']-self.requested,
                 trial=self.data['costs']['max_trial_requested_samples']-self.requested),
-            batches=self.rows, gates=self.data['gates'], finite_grid_only=True,
+            batches=self.rows, gates=(dict(G0_G1='passed', G2='running', G3_G5='not_run')
+                if self.spec.data['kind'] == 'campaign_formal_job_v1' else self.data['gates']), finite_grid_only=True,
             continuous_band_proven=False, rf_compliance_certified=False,
             physical_q_srf_em_checked=False))
 

@@ -31,8 +31,8 @@ class CampaignGateTests(unittest.TestCase):
     def publish(self):
         self.git('push', '-q', 'origin', 'HEAD:main')
 
-    def fixture(self, cid='RF-F003'):
-        plan, _, _, _ = self.setup_campaign(cid=cid)
+    def fixture(self, cid='RF-F003', *, independent=False):
+        plan, self.definition, _, _ = self.setup_campaign(cid=cid, independent=independent)
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         base = Path(tmp.name)
@@ -49,6 +49,7 @@ class CampaignGateTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text('# isolated source bytes\n')
         (self.repo/'experiments').mkdir()
+        (self.repo/'.gitignore').write_text('/results/\n')
         rows = [dict(experiment_id=f'EXP-{n:03d}',
                      state='legacy_gap_retired' if n in (18, 19) else 'legacy_recorded',
                      owner='', request_id='', purpose='', constraint_id='', reserved_at_utc='', origin='fixture')
@@ -253,6 +254,107 @@ class CampaignGateTests(unittest.TestCase):
                 self.commit('fixture recorded exception'); self.publish()
                 self.assertEqual(self.verify()['status'], 'preflight_ready')
                 forward.assert_not_called()
+
+    def formal_start(self, cid='RF-F003', *, independent=False):
+        from lpf.search import campaign
+        self.fixture(cid, independent=independent)
+        self.prepare(); self.commit(); self.publish()
+        snapshot = campaign.begin_campaign(self.plan, self.ident, **self.kw)
+        return self.repo/'results'/self.ident, snapshot
+
+    def formal_submit(self, snapshot, definition=None, name='p1'):
+        import yaml
+        from lpf.search import campaign
+        proposal = campaign_tests.CampaignTests.proposal(self, definition or self.definition, snapshot, name)
+        path = Path(self.raw.name)/'formal-proposal.yaml'
+        path.write_text(yaml.safe_dump(proposal))
+        return campaign.submit_campaign_proposal(self.plan, path, self.ident,
+            solver_kind='fixture', **self.kw)
+
+    def test_formal_sequential_jobs_use_distinct_specs_and_existing_science(self):
+        from dataclasses import replace
+        from lpf.search import campaign, worker
+        from lpf.search.storage import sha
+        for cid in ('RF-F003', 'RF-T008'):
+            with self.subTest(cid=cid):
+                output, snapshot = self.formal_start(cid, independent=True)
+                changed = replace(self.definition, capacitor_placement=replace(
+                    self.definition.capacitor_placement, fixed_edges=((2, -1), (2, -1), (1, 3))))
+                with patch.object(worker, 'slsqp_minimize', side_effect=campaign_tests.worker_tests.FixedWorkerTests.fixture):
+                    for i, definition in enumerate((self.definition, changed, self.definition)):
+                        snapshot = self.formal_submit(snapshot, definition, f'p{i}')
+                        durable = json.loads((output/'campaign.json').read_bytes())
+                        self.assertEqual(len(durable['jobs']), i+1, durable['events'])
+                        self.assertEqual(snapshot['snapshot']['status'], 'ready', durable.get('exit_reason'))
+                state = json.loads((output/'campaign.json').read_bytes())
+                self.assertEqual(len(state['topologies']), 2)
+                self.assertEqual((state['requested'], state['completed'], state['reserved']), (1176, 1176, 0))
+                self.assertEqual((state['independent_requested'], state['independent_completed']), (3, 3))
+                for row in state['jobs']:
+                    spec = worker.JobSpec(**row['spec'])
+                    raw = json.loads((output/row['raw_path']).read_bytes())
+                    self.assertEqual(spec.data['kind'], 'campaign_formal_job_v1')
+                    self.assertEqual(spec.trial_id, self.ident)
+                    self.assertEqual(raw['kind'], 'campaign_formal_raw_v1')
+                    self.assertEqual(raw['gates']['G0_G1'], 'passed')
+                    self.assertEqual(raw['gates']['G3_G5'], 'not_run')
+                    self.assertEqual(sha(raw), row['raw_content_sha256'])
+                    with self.assertRaisesRegex(ValueError, 'rejects formal'):
+                        worker.execute_development_job(spec, output/'wrong.json', root=self.repo)
+                self.assertEqual(state['preservation_audit'], 'not_run')
+                with self.assertRaisesRegex(ValueError, 'system tmp outside checkout'):
+                    campaign.submit_development_proposal(self.plan, Path(self.raw.name)/'formal-proposal.yaml',
+                                                         output, root=self.repo)
+                with self.assertRaises(FileExistsError):
+                    campaign.begin_campaign(self.plan, self.ident, **self.kw)
+
+    def test_formal_rechecks_g1_before_every_forward_and_keeps_unknown_cap(self):
+        from lpf.search import worker
+        output, snapshot = self.formal_start()
+        actual_forward = RFEvaluator.evaluate
+        calls = []
+        def changed_after_forward(evaluator, vector):
+            calls.append(1)
+            result = actual_forward(evaluator, vector)
+            (self.repo/'src/fixture.py').write_text('# changed during Job\n')
+            return result
+        with patch.object(worker, 'slsqp_minimize', side_effect=campaign_tests.worker_tests.FixedWorkerTests.fixture), \
+                patch.object(RFEvaluator, 'evaluate', new=changed_after_forward):
+            snapshot = self.formal_submit(snapshot)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(snapshot['snapshot']['status'], 'unknown')
+        state = json.loads((output/'campaign.json').read_bytes())
+        self.assertEqual(state['requested']+state['reserved'], state['jobs'][0]['cap'])
+        self.assertGreater(state['reserved'], 0)
+        with patch.object(RFEvaluator, 'evaluate') as forward:
+            with self.assertRaisesRegex(ValueError, 'clean checkout'):
+                self.formal_submit(snapshot, name='next')
+            forward.assert_not_called()
+
+    def test_formal_parent_reservation_and_output_redirect_rejected_before_forward(self):
+        from lpf.search import worker, campaign
+        output, snapshot = self.formal_start()
+        execute = worker.execute_campaign_job
+        def corrupt(spec, path, **kw):
+            state = json.loads((output/'campaign.json').read_bytes())
+            state['jobs'][-1]['reserved'] -= 1
+            atomic(output/'campaign.json', state)
+            return execute(spec, path, **kw)
+        with patch.object(worker, 'execute_campaign_job', side_effect=corrupt), \
+                patch.object(RFEvaluator, 'evaluate') as forward:
+            snapshot = self.formal_submit(snapshot)
+            forward.assert_not_called()
+        self.assertEqual(snapshot['snapshot']['status'], 'unknown')
+        self.assertFalse((output/'job-000000.json').exists())
+        with patch.object(RFEvaluator, 'evaluate') as forward:
+            with self.assertRaisesRegex(ValueError, 'unknown/stopped'):
+                self.formal_submit(snapshot, name='next')
+            forward.assert_not_called()
+        # A symlink to any other EXP/raw directory cannot be used as this EXP.
+        output.rename(output.with_name('preserved-raw'))
+        output.symlink_to(output.with_name('preserved-raw'), target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, 'symlinks'):
+            campaign.begin_campaign(self.plan, self.ident, **self.kw)
 
     def test_existing_run_never_overwritten(self):
         self.fixture()

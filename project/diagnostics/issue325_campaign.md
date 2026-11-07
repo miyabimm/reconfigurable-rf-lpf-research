@@ -2,12 +2,15 @@
 
 ## 状態とレビュー単位
 
-PR #326で第1増分の開発APIをmainへ反映済み。次の増分は `search.gates` による
-Campaign単位のG0/G1 planned保存・read-only照合。**Issue全体のDoDと正式Runner接続は未完了**。
-G1の技術照合成功を、正式Workerへの実行権限やG3〜G5保存完了と混同しない。
+PR #326の開発API、#327のCampaign単位G0/G1 planned保存・read-only照合をmainへ反映済み。
+第3増分は、明示的な正式G2提出APIとJobSpec／既存科学Workerの接続。
+**Issue全体のDoDとG3〜G5は未完了**。G1の技術照合成功を、実験の着手指示や
+G3〜G5保存完了と混同しない。
 
 - 実EXPの予約、中央台帳・歴史証拠の変更、本番探索は行わない。
-- `campaign.run_campaign()` は常に `not_ready` で停止する。正式G0/G1の代替承認機構ではない。
+- `campaign.run_campaign()` の全ライフサイクル入口は引き続き `not_ready`。G3〜G5未実装のため。
+- `begin_campaign()` / `submit_campaign_proposal()` の明示的G2 APIは、別の実験Issueとユーザー起動、
+  完全checkout・main予約・planned bytes・G0/G1成立を必要とする。今回の実装Issueで実EXPは起動しない。
 - 全開発出力はcheckout外system tmp限定。`development_only` / `G0_G1=not_ready` /
   `G2_G5=not_ready` を保持し、正式runへ名前だけ転用しない。
 - 既存schema2 `develop`、旧fixture、optimizer、RF数値仕様は変更しない。
@@ -96,7 +99,7 @@ Jobごとの完全definitionは既存schema2の `definition` 欄へ同じdatacla
   独立MNA 1 spot。6設定×28不連続区間、既存複素S/IL/APL/RL・受動性/電力検査を再利用。
   solverはfixtureであり、収束・strict適合・物理実装性を認定しない。
 
-## G0/G1 planned保存・read-only照合（次の増分）
+## G0/G1 planned保存・read-only照合（#327）
 
 `search.gates.prepare_campaign(plan, experiment_id, owner=..., request_id=..., purpose=...,
 selection=..., root=...)` は以下を検査して**新しい当該EXPだけ**にplanned manifest/storageを作る。
@@ -123,7 +126,7 @@ planned状態・Plan/予約/目的/seed・既存manifest/storage監査が健全�
 **planned commit前のapproved_sourceと、commit後のruntime_sourceを別に返す**。自己参照SHAは要求しない。
 
 返値は常に `execution='not_run'`, `execution_allowed=False`, `G2_G5='not_ready'`。
-read-only技術照合であり、正式Runnerは依然fail-closed。開発rawを正式EXPへ遡及昇格させない。
+read-only技術照合であり、この返値自体ではRFを起動しない。開発rawを正式EXPへ遡及昇格させない。
 
 `tests/test_issue325_campaign_gates.py` はsystem tmpの隔離した実Git working tree＋bare originで検査する。
 架空EXP-050の予約台帳・RF入力コピーのみを使い、本物の中央台帳・歴史証拠に書き込まない。
@@ -131,12 +134,43 @@ F003/T008、planned commitによるHEAD変化、未予約/branchだけの予約�
 sparse/欠落/stale remote、remote bytes不一致、code/env/project入力/Plan改変、storage検査、既存EXP保護で
 RF forwardゼロを確認する。これは完全な歴史証拠auditや正式実行fixtureではない。
 
+## 第3増分：明示的な正式G2提出API（独立レビュー対象）
+
+```python
+from lpf.search.campaign import begin_campaign, submit_campaign_proposal
+
+# 実運用には別の具体的実験Issueとユーザー起動、既存G0/G1が必須。
+# この実装PRでは隔離された偽main/EXPのみで呼ぶ。
+snapshot = begin_campaign(plan, experiment_id, owner=owner, request_id=request_id, root=full_checkout)
+snapshot = submit_campaign_proposal(plan, one_proposal_yaml, experiment_id,
+    owner=owner, request_id=request_id, root=full_checkout)
+```
+
+- 出力はGit ignoredかつ未追跡の `results/<EXP>/` に固定。symlinkによる他EXPへの転送を拒否し、
+  既存ディレクトリは上書きしない。提出・拒否・採用・予約・unknown・照合処理は開発経路と共通。
+- `campaign_formal_v1` の親、`campaign_formal_job_v1` のJobSpec（trial_id=EXP）、
+  `campaign_formal_raw_v1` のrawを明示し、開発入口で正式Jobを拒否する。
+  共通の内部固定steps実装を再利用し、開発rawのkindを書き換えて昇格させない。
+- planned後のruntime source/HEADとapproved sourceを別々に保持。G1 report・envelopeと所有者/request出典を
+  Jobへ凍結し、各提出・Worker入口・主forward直前・独立MNA各spot直前に実G0/G1を再計算して照合する。
+  cached reportのみを実行権限として受け付けない。凍結後にmain/HEADが進んだ場合もSTOP（自動再bindなし）。
+- Job configはG1 envelopeに当該definitionのみを埋めたものと一致しなければならない。
+  independent要求・構造範囲も再照合する。各forward前に親のdurable active JobSpec/SHA、
+  当該cap予約・Campaign合計上限、採用proposal原bytes/SHA・出典を再確認する。
+- 正式rawのgateは `G0_G1=passed / G2=running / G3_G5=not_run`。
+  rawのG2表示は実行経路のラベルであり、保存完了やRF科学PASSではない。
+  ソース変更・予約不整合・不明／保存障害では予約保持・後続STOP、raw保持。retry/resumeはない。
+- 全量preflight再照合は安全性優先の逐次実装で、forwardごとのGit/manifest監査コストがある。
+  性能改善・並列化・自動AI・CLI productionの開放は今回の対象外。
+- 隔離実Git working tree＋bare originでF003/T008それぞれ3 Job、異なる2構造＋同一構造再Job、
+  合計1176 requested/completed、独立MNA 3 spots（1 Jobあたり392/392＋1 spot）を検査。
+  solverはfixture、RFは実core。途中source変更で次forwardゼロ、cap保持、親予約改変時forwardゼロ、
+  raw再実行／symlink転送／開発入口誤用を検査する。本物のEXP・本番solver探索・歴史auditではない。
+
 ## 残る実装（このDraftではPASSとしない）
 
-1. G1照合結果を正式Runner/JobSpec/Worker入口へ接続し、投入ごと/forward前の再照合を行う。
-   開発JobSpecをそのまま正式EXPとして流さない。
-3. 複数Jobのraw→run_summary/checkpoint/manifest/storage_recordへの選別、Git HEAD byte readback、
+1. 複数Jobのraw→run_summary/checkpoint/manifest/storage_recordへの選別、Git HEAD byte readback、
    G4独立audit、G5削除可否を偽Git main/EXPの完全fixtureで通す第2段階。
-4. 上記正式経路を実装した同一HEADでの通常/sparse CIとfull checkout専用実Git監査。
+2. 全ゲート接続を含む同一HEADでの通常/sparse CIとfull checkout専用実Git監査。
 
 本増分にG3/G4監査PASSやG5削除権限はない。正式EXPの着手は別の具体的実験Issueとユーザー起動が必要。
