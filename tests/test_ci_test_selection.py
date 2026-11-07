@@ -176,6 +176,7 @@ class SelectionTests(unittest.TestCase):
                     if test is None:
                         continue
                     with self.subTest(sparse=sparse), patch.object(Path, 'is_file', return_value=True), \
+                         patch.dict(os.environ, {'GITHUB_STEP_SUMMARY': ''}), \
                          patch('builtins.print'), patch.object(selector.subprocess, 'run') as run:
                         selector.execute(result, sparse)
                     commands = [call.args[0] for call in run.call_args_list]
