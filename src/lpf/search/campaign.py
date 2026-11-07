@@ -344,4 +344,4 @@ def _submit_proposal(plan, proposal_path, output, *, root, solver_kind, formal_b
 
 def run_campaign(*args, **kwargs):
     """No autonomous loop; use explicit submission and preservation operations."""
-    raise ValueError('not_ready: use explicit begin/submit and curate/finalize/cleanup eligibility APIs')
+    raise ValueError('not_ready: formal Campaign G0/G1 and G2-G5 use explicit begin/submit and curate/finalize/cleanup eligibility APIs')
