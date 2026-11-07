@@ -64,7 +64,7 @@ class DependenciesTests(unittest.TestCase):
         legacy_arrows = {path.name for path in (root/'phase2_models').glob('*.py')
                          if any('search' in name.split('.') for name in imports(path))}
         # Isolated old callers, not part of the schema2 import/call graph.
-        self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py', 'experiment_run.py'})
+        self.assertEqual(legacy_arrows, {'api.py', 'problem_seed.py'})
         for path in (root/'rf_core').glob('*.py'):
             self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
                                  for name in imports(path)), path)
@@ -77,6 +77,15 @@ class DependenciesTests(unittest.TestCase):
         paths += [root.parents[1]/'scripts/run_rf_search.py']
         for path in paths:
             self.assertFalse(any(retired.intersection(name.split('.')) for name in imports(path)), path)
+
+    def test_retired_experiment_entrypoints_absent(self):
+        root = Path(__file__).resolve().parents[1]
+        for path in ('scripts/run_phase2_shared.py', 'scripts/run_phase2_one_start.py',
+                     'scripts/prepare_issue250_comparison.py', 'scripts/diagnose_phase2_scaling.py',
+                     'src/lpf/phase2_models/experiment_config.py',
+                     'src/lpf/phase2_models/experiment_run.py',
+                     'src/lpf/phase2_models/experiment_post_search.py'):
+            self.assertFalse((root / path).exists(), path)
 
     def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
         from lpf.search import checkout, gates, preservation

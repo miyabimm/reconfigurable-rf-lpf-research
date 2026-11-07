@@ -76,23 +76,6 @@ class ComparisonTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 SampleBudgetCost(invalid)
 
-    def test_issue250_preparation_identity_excludes_elapsed_time(self):
-        from copy import deepcopy
-        from lpf.checkpoint_io import canonical_config_hash
-        from scripts.prepare_issue250_comparison import _stable_plan_identity
-        original = {'pools': [{'cost': {'wall_seconds': 1., 'cpu_seconds': 2.,
-                                        'frequency_samples_requested': 952},
-                               'generated': {'selection_report': {
-                                   'candidates': [{'vector_sha256': 'a',
-                                                   'cost': {'wall_seconds': 3.}}]}}}]}
-        rerun = deepcopy(original)
-        rerun['pools'][0]['cost']['wall_seconds'] = 80.
-        rerun['pools'][0]['cost']['cpu_seconds'] = 90.
-        rerun['pools'][0]['generated']['selection_report']['candidates'][0]['cost']['wall_seconds'] = 10.
-        fingerprint = lambda source: canonical_config_hash(_stable_plan_identity(source))
-        self.assertEqual(fingerprint(original), fingerprint(rerun))
-        rerun['pools'][0]['generated']['selection_report']['candidates'][0]['vector_sha256'] = 'b'
-        self.assertNotEqual(fingerprint(original), fingerprint(rerun))
 
     def test_strict_no_tolerance_and_lexicographic_order(self):
         role = np.array([0, 0, 1, 2])
