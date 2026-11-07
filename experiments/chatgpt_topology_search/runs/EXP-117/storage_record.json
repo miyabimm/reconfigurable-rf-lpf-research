@@ -3,7 +3,7 @@
   "policy": "phase2-git-only-v1",
   "experiment_id": "EXP-117",
   "phase": "Phase 2",
-  "stage": "planned",
+  "stage": "preservation_incomplete",
   "selection": {
     "top_k": 1,
     "retain": [
@@ -12,13 +12,40 @@
     "rule": "Retain every attempted start as a non-promoted last-valid physical diagnostic anchor; preserve all intermediate stage outcomes and terminal reasons.",
     "estimated_curated_bytes": 8000000
   },
-  "summary": null,
-  "checkpoints": [],
+  "summary": {
+    "path": "experiments/chatgpt_topology_search/runs/EXP-117/run_summary.json",
+    "sha256": "72033ad11b129fa1254ea6c052032a0df1558657cbf267e2f97450403140036f"
+  },
+  "checkpoints": [
+    {
+      "candidate_id": "Control100",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-117/checkpoints/Control100.json",
+      "selection_reason": "other",
+      "sha256": "f14bd18ba684ada86191e53960da37e30211b796f2f7ecabe61b15ea78dc2c86"
+    }
+  ],
   "validation_overlays": [],
-  "supporting_evidence": [],
+  "supporting_evidence": [
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-117/supporting/interrupted_snapshot.json",
+      "reason": "Byte-identical raw snapshot of completed Control100 and interrupted Limit10, including failing output, last legal vector, stage history, costs and in-progress marker.",
+      "role": "recovery_state",
+      "sha256": "b4eacf8facb43657f34bca994c9b90aa9d2d1eb994b48bf992a600511e7a77a1"
+    },
+    {
+      "path": "experiments/chatgpt_topology_search/runs/EXP-117/supporting/dispatcher_exception.txt",
+      "reason": "Original CLI traceback explaining global STOP; no retry.",
+      "role": "representative_failure",
+      "sha256": "547a9833cd2d968834162b366316fefaac0b3535ae07ac9f8388a6739f6b76b0"
+    }
+  ],
   "git_readback": "not_run",
   "size_exception": null,
   "limitations": [
-    "Planned only; no pilot or diagnostic scan performed."
+    "Diagnostic stop at 20 dB only; no 30 dB final RF certification or candidate promotion.",
+    "Finite grid only; dense1001, independent MNA/power/passivity, SRF/Q(f), EM and physical validation not_run.",
+    "Same 5 pF initial vector; not a faithful replay of EXP-116 at 50 pF.",
+    "Raw retained; local search does not prove cause, feasibility, or a global optimum.",
+    "Execution stopped after Limit10 all_10.0 illegal vector / dispatcher exception. The runner-generated run_summary is an earlier Control100-only snapshot: its not_started=1 does NOT describe the later Limit10 attempt. Limit10 has an in_progress marker; final outcome and preservation are incomplete. See interrupted snapshot and dispatcher exception. Do not retry."
   ]
 }

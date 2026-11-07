@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/user/src/issue276-exp117/scripts/run_phase2_shared.py", line 429, in <module>
+    main()
+  File "/home/user/src/issue276-exp117/scripts/run_phase2_shared.py", line 417, in main
+    result = run_plan(ROOT, args.config, args.experiment_id, args.phase)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/issue276-exp117/src/lpf/phase2_models/experiment_run.py", line 217, in run_plan
+    return _dispatch_loaded(root, config_path, experiment_id, phase, optimize_stage, loaded, gate, raw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/src/issue276-exp117/src/lpf/phase2_models/experiment_run.py", line 420, in _dispatch_loaded
+    raise RuntimeError('Explicit-arm stage exception; retain marker and STOP without retry')
+RuntimeError: Explicit-arm stage exception; retain marker and STOP without retry
