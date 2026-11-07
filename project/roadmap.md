@@ -13,7 +13,7 @@
 | [#325 Campaign](diagnostics/issue325_campaign.md) | PR #326〜#329：schema2 envelope、data-only逐次提案、2予算/予約/raw照合、明示G0/G1・G2・G3/G4・G5 eligibility。隔離Git fixtureで検査 | `run_campaign()` 自動loopは `not_ready`。正式EXP運用の実績なし、G5実削除なし |
 | [#330 実SciPy非EXP](diagnostics/issue330_real_scipy.md) / PR #331 | 開発＋隔離Git架空EXP各1 Job、実SciPy内RF callbackを限定確認。各616/616 samples、独立terminal 1 spot。配線・保存のソフトウェア検査PASS | 予算終了で **未収束**、全9 batchの **strict finite-grid FAIL**。SciPy success/statusはnull。正式EXPではない |
 | [#301](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/301) 実行基盤 | 固定順逐次実行と明示提出APIあり | Scheduler／parallel／retry／resumeは未完了。自動提案・自動ライフサイクルも未提供 |
-| 文書・保存CI | #333で現行操作と歴史資料を分離。#332保存専用CIは基準mainに未統合 | #170の広域docs/data棚卸しとは分担し、元証拠を変更しない |
+| 文書・保存CI | #333で現行操作と歴史資料を分離。[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334) の保存専用CI軽量化はmain統合済み | 保存専用と確実に分類された場合だけ一般回帰を省略。全新規EXP保存監査・予約/provenance検証は必須。不明・混在は通常回帰。#170の広域docs/data整理とは分担し、元証拠を変更しない |
 
 | 科学・運用判定 | 現時点の範囲 |
 |---|---|
