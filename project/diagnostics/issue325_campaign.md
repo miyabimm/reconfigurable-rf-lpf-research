@@ -108,6 +108,9 @@ selection=..., root=...)` は以下を検査して**新しい当該EXPだけ**�
 - 既存schema1 `new_manifest` / `validate_manifest` と `validate_run(mode='preflight')` を再利用。
   `search_scope.campaign` にschema2 Plan全体/SHA、承認code bytes/HEAD/lock/env/threads、予約出典を格納。
   未来のdefinition/start/Jobを予測しない。selectionは既存保存ポリシー形式の明示入力。
+  prepare/preflightとも見積容量をbudget JSONのEXP容量上限と照合する。prepareは例外を発行せず、
+  超過見込みならファイル作成前にSTOP。preflightでも記録済みsize exceptionなしの超過はSTOPし、
+  例外の必須フィールド検査は既存storage監査へ委ねる。
 - RF-F003と明示trial RF-T008を同じ入口で扱う。RF/格子/総2予算・構造/solver範囲は凍結Planで照合。
 
 plannedファイルをmainへcommit/pushした後、
@@ -115,7 +118,8 @@ plannedファイルをmainへcommit/pushした後、
 を呼ぶ。manifest/storageの **最新main・HEAD・working treeの実bytes** が全て一致し、
 planned状態・Plan/予約/目的/seed・既存manifest/storage監査が健全な場合だけ `preflight_ready` を返す。
 承認HEADと予約mainは現在mainの祖先であることを要求する。
-コードfiles/環境の一致と、承認HEAD以降のsrc/scripts/rf/project/pyproject/lockの無変更を検査し、
+コードfiles/環境の一致と、承認HEAD以降のsrc/scripts/rf/project/pyproject/lockおよび
+`data/phase2_git_storage_budget.json`の無変更を検査し（data全体は凍結しない）、
 **planned commit前のapproved_sourceと、commit後のruntime_sourceを別に返す**。自己参照SHAは要求しない。
 
 返値は常に `execution='not_run'`, `execution_allowed=False`, `G2_G5='not_ready'`。

@@ -204,6 +204,56 @@ class CampaignGateTests(unittest.TestCase):
                 self.verify()
             forward.assert_not_called()
 
+    def test_storage_budget_drift_after_planned_commit_stops_preflight(self):
+        self.fixture()
+        self.prepare(); self.commit(); self.publish()
+        self.assertEqual(self.verify()['status'], 'preflight_ready')
+        path = self.repo/'data/phase2_git_storage_budget.json'
+        budget = json.loads(path.read_bytes())
+        budget['thresholds']['new_experiment_curated_soft_bytes'] += 1
+        atomic(path, budget)
+        self.commit('change only storage capacity policy'); self.publish()
+        with patch.object(RFEvaluator, 'evaluate') as forward:
+            with self.assertRaisesRegex(ValueError, 'code/input bytes'):
+                self.verify()
+            forward.assert_not_called()
+
+    def test_storage_estimate_limit_at_prepare_and_preflight(self):
+        for cid in ('RF-F003', 'RF-T008'):
+            with self.subTest(cid=cid), patch.object(RFEvaluator, 'evaluate') as forward:
+                self.fixture(cid)
+                budget = json.loads((self.repo/'data/phase2_git_storage_budget.json').read_bytes())
+                limit = budget['thresholds']['new_experiment_curated_soft_bytes']
+                run = self.repo/'experiments/chatgpt_topology_search/runs'/self.ident
+                self.selection['estimated_curated_bytes'] = limit+1
+                with self.assertRaisesRegex(ValueError, 'estimate exceeds'):
+                    self.prepare()
+                self.assertFalse(run.exists())
+                # The closed boundary remains legal, including planned commit's HEAD change.
+                self.selection['estimated_curated_bytes'] = limit
+                self.prepare(); self.commit(); self.publish()
+                self.assertEqual(self.verify()['status'], 'preflight_ready')
+                path = run/'storage_record.json'
+                record = json.loads(path.read_bytes())
+                self.assertIsNone(record['size_exception'])
+                record['selection']['estimated_curated_bytes'] = limit+1
+                atomic(path, record)
+                self.commit('oversize estimate without exception'); self.publish()
+                with self.assertRaisesRegex(ValueError, 'estimate exceeds'):
+                    self.verify()
+                # Reuse the existing recorded-exception contract, not a new approval API.
+                record['size_exception'] = {}
+                atomic(path, record)
+                self.commit('invalid exception'); self.publish()
+                with self.assertRaisesRegex(ValueError, 'owner approval'):
+                    self.verify()
+                record['size_exception'] = dict(approved_by='fixture',
+                    approval_url='https://example.invalid/fixture', reason='Isolated test only')
+                atomic(path, record)
+                self.commit('fixture recorded exception'); self.publish()
+                self.assertEqual(self.verify()['status'], 'preflight_ready')
+                forward.assert_not_called()
+
     def test_existing_run_never_overwritten(self):
         self.fixture()
         self.prepare(); self.commit(); self.publish()

@@ -42,6 +42,14 @@ def _base(plan, root, experiment_id, owner, request_id):
     return root, main, row
 
 
+def _storage_estimate(root, selection, size_exception=None):
+    validate_selection(selection)
+    budget = json.loads((root/'data/phase2_git_storage_budget.json').read_bytes())
+    limit = budget['thresholds']['new_experiment_curated_soft_bytes']
+    if selection['estimated_curated_bytes'] > limit and size_exception is None:
+        raise ValueError('Campaign curated size estimate exceeds storage budget without size exception')
+
+
 def prepare_campaign(plan, experiment_id, *, owner, request_id, purpose, selection, root):
     """Create a new planned manifest/storage pair, without commit/push/reservation.
 
@@ -51,7 +59,7 @@ def prepare_campaign(plan, experiment_id, *, owner, request_id, purpose, selecti
     retried automatically. Only this new EXP directory is written.
     """
     root, main, reservation = _base(plan, root, experiment_id, owner, request_id)
-    validate_selection(selection)
+    _storage_estimate(root, selection)
     if purpose != reservation['purpose']:
         raise ValueError('Campaign purpose differs from main reservation')
     source = source_identity(root)
@@ -128,9 +136,12 @@ def campaign_preflight(plan, experiment_id, *, owner, request_id, root):
                           capture_output=True).returncode:
             raise ValueError('Campaign approved source/reservation not on main')
     if _git(root, 'diff', '--name-only', approved['head'], 'HEAD', '--',
-            'src', 'scripts', 'rf', 'project', 'pyproject.toml', 'uv.lock').strip():
+            'src', 'scripts', 'rf', 'project', 'pyproject.toml', 'uv.lock',
+            'data/phase2_git_storage_budget.json').strip():
         raise ValueError('Campaign approved code/input bytes changed')
     report = validate_run(root, experiment_id, mode='preflight')
+    # Existing storage validation checks any recorded exception's required fields.
+    _storage_estimate(root, record['selection'], record.get('size_exception'))
     return dict(status='preflight_ready', experiment_id=experiment_id, main_sha=main,
         plan_sha256=plan.sha256, approved_source=approved, runtime_source=current,
         planned_bytes_sha256=digests, storage=report, execution='not_run',
