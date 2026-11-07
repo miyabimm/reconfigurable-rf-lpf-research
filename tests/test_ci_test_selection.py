@@ -134,11 +134,19 @@ class SelectionTests(unittest.TestCase):
         self.assertNotIn('test_issue317_fixed_worker.py', selector.SUITES['GATE'])
         self.assertNotIn('test_issue325_campaign.py', selector.SUITES['GATE'])
         self.assertIn('test_issue325_campaign_gates.py', selector.SUITES['GATE'])
+        self.assertIn('test_issue325_campaign_gates.py', selector.SUITES['STORE'])
+        self.assertTrue(any('FixedWorkerTests' in name for name in selector.RF_RUN_BOUNDARY))
         self.assertEqual(selector.path_classes('project/instructions.md'), {'FULL'})
         self.assertEqual(selector.path_classes('project/specification.md'), {'RF'})
         self.assertEqual(selector.path_classes('src/lpf/phase2_models/branch_mna.py'), {'RF'})
         self.assertEqual(selector.path_classes('rf/unknown.txt'), {'FULL'})
         self.assertEqual(selector.path_classes('src/lpf/rf_core/new.py'), {'FULL'})
+
+    def test_strict_storage_fast_path_does_not_run_campaign(self):
+        selected = dict(classes=['STORE'], full=False, reasons=[], changed_tests=[], storage_only=True)
+        with patch.object(selector.subprocess, 'run') as run:
+            selector.execute(selected, False)
+        run.assert_not_called()
 
     def test_classifier_exception_selects_full(self):
         self.write('README.md', 'changed\n')

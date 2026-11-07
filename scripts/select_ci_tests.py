@@ -22,7 +22,7 @@ SUITES = {
     'OPT': '''test_phase2_candidate_records.py test_phase2_problem_seed.py test_phase2_sampled_epigraph.py test_phase2_staged_optimization.py test_phase2_frequency_exchange.py test_phase2_optimizer_comparison.py test_phase2_rf_pipeline_adapter.py test_rf_search.py test_hybrid_optimizer.py test_phase2_scipy_de_preview.py test_phase2_generic_starts.py test_phase2_normalized_epigraph.py test_phase2_post_search_validation.py test_phase2_real_scipy_smoke.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py test_phase2_rf_pipeline_adapter.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
-    'STORE': '''test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py''',
+    'STORE': '''test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue325_campaign_gates.py''',
     'CI': '''test_github_actions_yaml_keys.py test_storage_ci_classification.py test_ci_test_selection.py''',
 }
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
@@ -32,9 +32,13 @@ SPARSE = {
     'OPT': 'test_issue315_fixed_stage',
     'RUN': 'test_issue315_fixed_stage test_issue317_fixed_worker test_issue319_parent_runner test_issue321_development_cli test_issue325_campaign test_issue325_campaign_gates test_issue323_dependencies',
     'GATE': 'test_issue313_preflight test_issue325_campaign_gates test_issue323_dependencies',
-    'STORE': '', 'DOC': '', 'CI': 'test_github_actions_yaml_keys test_storage_ci_classification test_ci_test_selection',
+    'STORE': 'test_issue325_campaign_gates', 'DOC': '', 'CI': 'test_github_actions_yaml_keys test_storage_ci_classification test_ci_test_selection',
 }
 SPARSE = {k: tuple(v.split()) for k, v in SPARSE.items()}
+RF_RUN_BOUNDARY = (
+    'test_issue317_fixed_worker.FixedWorkerTests.test_frozen_independent_samples_in_worker',
+    'test_issue325_campaign.CampaignTests.test_real_rf_f003_and_explicit_trial_392_with_one_independent_spot',
+)
 BOUNDARY = '''test_phase2_shared_entry.SharedEntryTests.test_driver_unsupported_policies_never_preflight_or_dispatch
 test_phase2_shared_entry.SharedEntryTests.test_scipy_opt_in_provenance_not_synthetic
 test_phase2_shared_entry.FrozenConfigTests.test_yaml_read_only_hash_stability_and_invalid_inputs
@@ -161,13 +165,16 @@ def plan(event, base, head, ref, force=False):
 def execute(plan_data, sparse):
     groups = CLASSES if plan_data['full'] else plan_data['classes']
     modules = set()
+    # The existing strict storage-only fast path retains only the unconditional
+    # storage checks in normal CI; it must not expand to G3-G5 integration.
+    suite_groups = () if plan_data['storage_only'] else groups
     if sparse:
-        for group in groups:
+        for group in suite_groups:
             modules.update(SPARSE[group])
         # Sparse cannot run arbitrary evidence-dependent changed tests. Normal CI
         # executes them explicitly; never silently claim they ran here.
     else:
-        for group in groups:
+        for group in suite_groups:
             modules.update(SUITES[group])
         if plan_data['full']:
             modules.update(EXTRA_FULL)
@@ -177,7 +184,9 @@ def execute(plan_data, sparse):
     print('Test units:', ', '.join(sorted(modules)) or '(none)', flush=True)
     boundary = not sparse and (plan_data['full'] or bool(set(groups) & {'RF', 'OPT', 'RUN', 'GATE'}))
     links = not sparse and (plan_data['full'] or 'DOC' in groups)
-    extra = (BOUNDARY if boundary else []) + (['active-only local links'] if links else [])
+    rf_run = ('RF' in groups and 'RUN' not in groups and not plan_data['full']
+              and not plan_data['storage_only'])
+    extra = (BOUNDARY if boundary else []) + (list(RF_RUN_BOUNDARY) if rf_run else []) + (['active-only local links'] if links else [])
     print('Additional test units:', ', '.join(extra) or '(none)', flush=True)
     summary = os.getenv('GITHUB_STEP_SUMMARY')
     if summary:
@@ -205,6 +214,9 @@ def execute(plan_data, sparse):
     if boundary:
         print('Running boundary units:', ', '.join(BOUNDARY), flush=True)
         subprocess.run([sys.executable, '-m', 'unittest', '-v', *BOUNDARY], check=True, env=env)
+    if rf_run:
+        print('Running RF/Worker boundary units:', ', '.join(RF_RUN_BOUNDARY), flush=True)
+        subprocess.run([sys.executable, '-m', 'unittest', '-v', *RF_RUN_BOUNDARY], check=True, env=env)
     if links:
         print('Running active-only local links', flush=True)
         subprocess.run([sys.executable, 'scripts/verify_phase2_cleanup_w1_links.py', '--active-only'], check=True, env=env)
