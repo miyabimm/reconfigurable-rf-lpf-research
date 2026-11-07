@@ -359,6 +359,9 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--check", action="store_true",
                    help="fail when generated output differs; never change files")
+    p.add_argument('--output-dir', type=Path,
+                   help='export CSV, JSON and Markdown under this disposable directory; '
+                        'default maintains only the tracked CSV')
     args = p.parse_args()
     records, summary = build_catalog()
     outputs = {
@@ -367,7 +370,9 @@ def main():
         OUTPUT_MD: as_markdown(records, summary),
     }
     for path, content in outputs.items():
-        file = ROOT / path
+        if args.output_dir is None and path != OUTPUT_CSV:
+            continue
+        file = (args.output_dir or ROOT) / path
         if args.check:
             if not file.is_file() or file.read_text(encoding="utf-8") != content:
                 raise SystemExit("STALE derived catalog: " + path)

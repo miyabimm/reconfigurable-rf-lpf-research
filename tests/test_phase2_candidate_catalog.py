@@ -94,12 +94,24 @@ class UnifiedCatalogTests(unittest.TestCase):
         records, summary = catalog.build_catalog()
         self.assertEqual((catalog.ROOT / catalog.OUTPUT_CSV).read_text(encoding="utf-8"),
                          catalog.as_csv(records))
-        self.assertEqual(
-            (catalog.ROOT / catalog.OUTPUT_JSON).read_text(encoding="utf-8"),
-            __import__("json").dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        )
-        self.assertEqual((catalog.ROOT / catalog.OUTPUT_MD).read_text(encoding="utf-8"),
-                         catalog.as_markdown(records, summary))
+        # JSON/Markdown are disposable views, no longer tracked duplicates.
+        import json
+        import sys
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory(prefix='issue352-catalog-export-') as tmp:
+            with patch.object(sys, 'argv', ['catalog', '--output-dir', tmp]):
+                catalog.main()
+            self.assertEqual((Path(tmp) / catalog.OUTPUT_JSON).read_text(),
+                             json.dumps(summary, ensure_ascii=False, indent=2) + '\n')
+            self.assertEqual((Path(tmp) / catalog.OUTPUT_MD).read_text(),
+                             catalog.as_markdown(records, summary))
+            with patch.object(sys, 'argv', ['catalog', '--output-dir', tmp, '--check']):
+                catalog.main()
+            (Path(tmp) / catalog.OUTPUT_JSON).write_text('{}')
+            with patch.object(sys, 'argv', ['catalog', '--output-dir', tmp, '--check']):
+                with self.assertRaisesRegex(SystemExit, 'STALE derived catalog'):
+                    catalog.main()
 
     def test_opt_in_pareto_reports_24_with_old_default_unchanged(self):
         current_old, current_summary = pareto.make_report()

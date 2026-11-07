@@ -55,6 +55,25 @@ class W2TopologyIndexTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Git source blob mismatch"):
             w2.source_bytes(w2.ROOT, target, "0" * 40)
 
+    def test_disposable_export_and_tracked_csv_check(self):
+        import sys
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        with patch.object(sys, 'argv', ['topology', '--check']):
+            w2.main()
+        with tempfile.TemporaryDirectory(prefix='issue352-topology-export-') as tmp:
+            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp]):
+                w2.main()
+            for rel, expected in w2.render().items():
+                self.assertEqual((Path(tmp) / rel).read_text(), expected)
+            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp, '--check']):
+                w2.main()
+            (Path(tmp) / w2.REPORT).write_text('stale')
+            with patch.object(sys, 'argv', ['topology', '--output-dir', tmp, '--check']):
+                with self.assertRaisesRegex(SystemExit, 'stale derived data'):
+                    w2.main()
+
     def test_current_physical_claim_remains_unverified(self):
         self.assertFalse(self.summary["physical_realization_verified_by_this_index"])
         self.assertFalse(self.summary["rf_simulations_newly_executed"])

@@ -241,9 +241,14 @@ def render():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
+    parser.add_argument('--output-dir', type=Path,
+                        help='export CSV, JSON and Markdown under this disposable directory; '
+                             'default maintains only the tracked CSV')
     args = parser.parse_args()
     for rel, content in render().items():
-        p = ROOT / rel
+        if args.output_dir is None and rel != OUT:
+            continue
+        p = (args.output_dir or ROOT) / rel
         if args.check:
             if not p.is_file() or p.read_text(encoding="utf-8") != content:
                 raise SystemExit("W2 stale derived data: " + rel)

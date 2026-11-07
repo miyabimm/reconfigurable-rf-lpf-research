@@ -20,6 +20,9 @@ git sparse-checkout set --cone project rf src scripts tests .github
 
 - **[Campaign操作ガイド](campaign_workflow.md)**：研究側PlanとAIのdata-only構造提案、明示Controller→JobSpec→Worker、開発/正式EXP、G0〜G5の順序を一か所で確認する。
 - [ロードマップ](roadmap.md)：mainの実装実績と未検証ゲート。
+- [解析手法・理論](methods.md)：共通モデル、T/π磁気結合と零点の統合知識、BSF文献の出典。
+- [保存結果](results.md)：代表結果から条件・格子・検証深度を区別して元EXPへ戻る。
+- [データ保全の役割](../data/README.md)：完全treeでの台帳・validation・Pareto・復元証拠の入口（通常sparseでは非取得）。
 - [診断・歴史資料索引](diagnostics/README.md)：旧Stageごとの説明、限定実証・レビュー証拠、整理候補。古い「未接続」「レビュー待ち」は当時の範囲であり現況の正本ではない。
 - 固定step Worker／逐次親Runnerの詳細は [#317](diagnostics/issue317_fixed_worker.md)／[#319](diagnostics/issue319_parent_runner.md)。
 - 旧schema1の `preflight`／`run` は撤去済み。旧EXP変換・互換保証は提供しない（経緯は[#302](diagnostics/issue302_sequential_search.md)）。

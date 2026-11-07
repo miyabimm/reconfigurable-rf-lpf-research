@@ -10,6 +10,7 @@
 - **現行Campaignの操作:** [汎用フロー](project/campaign_workflow.md)（PlanとAI構造提案、開発/正式EXP、明示G0〜G5）／[限定診断・歴史資料索引](project/diagnostics/README.md)。
 - **現行RF入力:** [制約レジストリ](rf/constraints/registry.json)のactive正式JSON、[bands.csv](rf/bands.csv)、[固定S2P](rf/parasitics/)。必要な場合のみ[設計仕様](project/specification.md)を参照する。
 - **実装とテスト:** [src/lpf](src/lpf/)、[scripts](scripts/)、[tests](tests/)。
+- **解析手法・理論:** [共通モデルと磁気結合／伝送零点の統合ノート](project/methods.md)。理論ベンチを正式RF条件の実績と区別する。
 - **研究の現況・代表結果:** [ロードマップ](project/roadmap.md)／[保存結果](project/results.md)。正式activeはRF-F003（試験条件とは区別）。
 
 当面の開発はPi Codeのローカル実装・検証を中心に進めます。利用可能な探索機能は現行コードで確認し、未実装の実行器や未検証のRF性能を既成事実としません。
