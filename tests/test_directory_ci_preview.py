@@ -72,6 +72,7 @@ class DirectoryPreviewTests(unittest.TestCase):
             self.assertFalse(result['full'], result)
             self.assertEqual(result['classes'], ['INPUT', 'EXP', 'CODE'])
             self.assertEqual(result['changed_tests'], ['tests/test_new.py'])
+            self.assertEqual(result['comparison'], dict(base=self.base, head=self.git('rev-parse', 'HEAD')))
 
     def test_delete_and_cross_directory_rename(self):
         self.git('rm', 'rf/README.md')
@@ -243,6 +244,7 @@ class DirectoryPreviewTests(unittest.TestCase):
         head = self.commit()
         result = self.plan(head=head, base=base)
         self.assertEqual(result['classes'], ['INPUT'])
+        self.assertEqual(result['comparison'], dict(base=self.base, head=head))
         self.assertFalse(result['full'], result)
         self.assertTrue(self.plan(head=head, base=base, event='push')['full'])
 

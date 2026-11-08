@@ -362,6 +362,63 @@ class StoragePolicyGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "transient files committed"):
             inspect_new_git_files(self.root, "origin/main")
 
+    def test_rename_into_transient_path_is_rejected(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'test')
+        git('config', 'user.email', 'test@example.invalid')
+        (self.root/'safe.json').write_text('{"fixture":true}\n')
+        git('add', '.')
+        git('commit', '-qm', 'base')
+        base = git('rev-parse', 'HEAD')
+        (self.root/'results').mkdir()
+        git('mv', 'safe.json', 'results/moved.json')
+        git('commit', '-qm', 'rename into scratch')
+        head = git('rev-parse', 'HEAD')
+        with self.assertRaisesRegex(ValueError, 'transient files committed'):
+            inspect_new_git_files(self.root, 'origin/main', diff_base=base, expected_head=head)
+
+    def test_selected_audit_checks_entire_explicit_push_range(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'test')
+        git('config', 'user.email', 'test@example.invalid')
+        git('add', '.')
+        git('commit', '-qm', 'baseline')
+        base = git('rev-parse', 'HEAD')
+        scratch = self.root/'results/intermediate.json'
+        scratch.parent.mkdir(parents=True)
+        scratch.write_text('{"intermediate":true}\n')
+        git('add', '.')
+        git('commit', '-qm', 'unsafe first commit')
+        (self.root/'unrelated.txt').write_text('second commit\n')
+        git('add', '.')
+        git('commit', '-qm', 'second commit')
+        head = git('rev-parse', 'HEAD')
+        git('update-ref', 'refs/remotes/origin/main', head)
+        # Existing HEAD^ mode misses the first commit; explicit event base must not.
+        self.assertEqual(1, inspect_new_git_files(self.root, 'origin/main'))
+        with patch(SCRIPT + '.validate_run') as validate:
+            with self.assertRaisesRegex(ValueError, 'transient files committed'):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                               diff_base=base, expected_head=head)
+            validate.assert_not_called()
+            with self.assertRaisesRegex(ValueError, 'HEAD mismatch'):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                               diff_base=base, expected_head=base)
+            with self.assertRaises(ValueError):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                               diff_base='0'*40, expected_head=head)
+            with self.assertRaises(ValueError):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main', diff_base=base)
+            validate.assert_not_called()
+            parent = git('rev-parse', 'HEAD^')
+            audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                           diff_base=parent, expected_head=head)
+            validate.assert_called_once_with(self.root.resolve(), 'EXP-050', main_ref='origin/main')
+
     def test_summary_count_rule(self):
         summary = {
             "experiment_id": "EXP-050",

@@ -70,7 +70,8 @@ def ledger_delta(path, base, head):
 def preview(event, base, head, ref, *, force=False):
     result = dict(classes=[], full=False, reasons=[], changed_tests=[],
                   changed_tests_complete=False, changed_experiments=[],
-                  removed_ledger_experiments=[], experiment_scope_complete=False, changes=[])
+                  removed_ledger_experiments=[], experiment_scope_complete=False,
+                  comparison=None, changes=[])
     if force or event == 'workflow_dispatch':
         result.update(full=True, reasons=['manual FULL'])
         return result
@@ -161,6 +162,7 @@ def preview(event, base, head, ref, *, force=False):
         result['changed_experiments'] = sorted(experiment_ids)
         result['removed_ledger_experiments'] = sorted(removed_ids)
         result['experiment_scope_complete'] = experiment_scope_complete
+        result['comparison'] = dict(base=base, head=head)
         result['changes'] = records
     except (ValueError, UnicodeError, OSError, subprocess.SubprocessError) as exc:
         result.update(full=True, reasons=['comparison unavailable: ' + str(exc)])

@@ -79,22 +79,35 @@ def evidence_check(root, item, *, committed, max_file_bytes, exception):
     return len(raw)
 
 
-def inspect_new_git_files(root, main_ref):
+def inspect_new_git_files(root, main_ref, *, diff_base=None, expected_head=None):
     """Reject newly committed scratch/cache files, even when force-added past .gitignore.
 
-    This compares the merge base for PRs; for a push directly to main, inspect
-    the latest commit against its first parent. No historical paths are touched.
+    The optional explicit range must be supplied as full object IDs. Without
+    it the historical default uses the main merge base or HEAD^ on main; that
+    default does not cover an entire multi-commit push.
     """
     root = Path(root)
+    explicit = diff_base is not None or expected_head is not None
+    if explicit:
+        require(isinstance(diff_base, str) and re.fullmatch(r'[0-9a-f]{40}', diff_base)
+                and diff_base != '0'*40 and isinstance(expected_head, str)
+                and re.fullmatch(r'[0-9a-f]{40}', expected_head) and expected_head != '0'*40,
+                'explicit diff requires full nonzero base and HEAD object IDs')
     try:
-        main_head = git(root, "rev-parse", main_ref).decode().strip()
         local_head = git(root, "rev-parse", "HEAD").decode().strip()
-        if main_head == local_head:
-            baseline = "HEAD^"
+        if explicit:
+            require(local_head == expected_head, 'explicit diff HEAD mismatch')
+            git(root, 'merge-base', '--is-ancestor', diff_base, expected_head)
+            baseline = diff_base
         else:
-            baseline = git(root, "merge-base", main_ref, "HEAD").decode().strip()
-        newly_added = git(root, "diff", "--diff-filter=A", "--name-only", "-z",
-                          baseline, "HEAD").split(b"\0")
+            main_head = git(root, "rev-parse", main_ref).decode().strip()
+            if main_head == local_head:
+                baseline = "HEAD^"
+            else:
+                baseline = git(root, "merge-base", main_ref, "HEAD").decode().strip()
+        # A rename into a scratch path is an addition for this safety check.
+        newly_added = git(root, "diff", "--no-ext-diff", "--no-textconv", "--no-renames",
+                          "--diff-filter=A", "--name-only", "-z", baseline, "HEAD").split(b"\0")
     except subprocess.CalledProcessError as exc:
         raise ValueError("cannot inspect newly added Git paths; fetch main first") from exc
     rejected = []
@@ -363,7 +376,7 @@ def audit_all(root, *, main_ref):
     return results
 
 
-def audit_selected(root, experiment_ids, *, main_ref):
+def audit_selected(root, experiment_ids, *, main_ref, diff_base=None, expected_head=None):
     """Read-only audit of explicitly identified new EXPs; never imply G5.
 
     Historical EXPs do not have this storage schema and must be handled by
@@ -384,7 +397,10 @@ def audit_selected(root, experiment_ids, *, main_ref):
                 and sum(p.is_dir() and not p.is_symlink() for p in paths) == 1
                 and not any(p.is_symlink() for p in paths),
                 "selected EXP directory missing, ambiguous or symlinked: " + experiment_id)
-    inspect_new_git_files(root, main_ref)
+    if diff_base is None and expected_head is None:
+        inspect_new_git_files(root, main_ref)
+    else:
+        inspect_new_git_files(root, main_ref, diff_base=diff_base, expected_head=expected_head)
     return [validate_run(root, experiment_id, main_ref=main_ref)
             for experiment_id in sorted(experiment_ids)]
 
@@ -396,17 +412,27 @@ def main():
     parser.add_argument("--main-ref", default="origin/main")
     parser.add_argument("--selected-exp", action="append", default=[],
                         help="audit only this EXP ID; repeat for multiple IDs")
+    parser.add_argument("--diff-base", help="full event comparison base (with --expected-head)")
+    parser.add_argument("--expected-head", help="full checked-out event HEAD SHA")
     args = parser.parse_args()
+    explicit = args.diff_base is not None or args.expected_head is not None
+    require(not explicit or (args.mode == 'audit' and args.selected_exp),
+            "explicit diff range requires audit with --selected-exp")
     if args.mode == "audit":
         require(args.experiment_id is None, "audit does not take a positional experiment ID")
-        output = (audit_selected(ROOT, args.selected_exp, main_ref=args.main_ref)
+        output = (audit_selected(ROOT, args.selected_exp, main_ref=args.main_ref,
+                                 diff_base=args.diff_base, expected_head=args.expected_head)
                   if args.selected_exp else audit_all(ROOT, main_ref=args.main_ref))
     else:
         require(not args.selected_exp, "--selected-exp is only valid with audit")
         require(args.experiment_id is not None, "experiment ID is required")
         output = validate_run(ROOT, args.experiment_id, mode=args.mode,
                               main_ref=args.main_ref)
-    print(json.dumps({"policy": POLICY, "result": output}, ensure_ascii=False, indent=2))
+    report = {"policy": POLICY, "result": output}
+    if args.mode == 'audit' and args.selected_exp:
+        report['diff_scope'] = (dict(base=args.diff_base, head=args.expected_head) if explicit
+                                else 'legacy default; not the full multi-commit push range')
+    print(json.dumps(report, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
