@@ -16,13 +16,21 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 JobSpecにはPlan・定義・RF/bands/外部S2P・格子・source/environment・seed・完全初期vector/SHA・solver/予算・modeを凍結。Job開始・step切替・100 forward到達・意味ある状態境界・終了で実入力とsourceを再照合する。評価前に、最大100回の**RF response評価**と残予算に応じた末尾枠をatomic保存・fsync・byte/SHA読戻しする。各forwardの完全vector合法性・全L SPD・全格子評価・requirements・費用上限は維持し、通常forwardで保存・入力再読込はしない。固定S2Pの評価用配列はstep開始時に構築する。
 
-checkpointの `confirmed` は保存確定済みのforward/requested/completed、`uncertain_upper` と `window` はその後の実行可能枠の上限であり、optimizer iteration数ではない。枠内の未保存結果はcrashで失われ得る。異常時は最後に確定したpayloadをそのまま保持し、可能ならtermination理由を追記する。未確定のメモリ内結果を確定payloadへ入れず、上限を解放しない。保存・readback・入力照合失敗時も停止し、親はJob cap全体をunknown予約に残す。前回確定以降の実使用を0とはみなさない。元#361のunknownやrawは触らない。
+checkpointの `confirmed` は保存確定済みのforward/requested/completed、`uncertain_upper` と `window` はその後の実行可能枠の上限であり、optimizer iteration数ではない。`previous_confirmed` と `previous_uncertain_upper` は直前checkpointの確定値・予約上限を示し、最終readbackは新たな確定値がその範囲内であることも検査する。枠内の未保存結果はcrashで失われ得る。異常時は最後に確定したpayloadをそのまま保持し、可能ならtermination理由を追記する。未確定のメモリ内結果を確定payloadへ入れず、上限を解放しない。保存・readback・入力照合失敗時も停止し、親はJob cap全体をunknown予約に残す。前回確定以降の実使用を0とはみなさない。元#361のunknownやrawは触らない。
 
-検索中は軽量assessment・物理検査要約・各完全vectorとSHAを保存し、全複素波形は保存しない。Hybridでは各forwardの同じassessmentから、solverと同じ平方残差の `sum` または `max` 目的値scalarと検算用成分を保存する（非有限・無効な場合は `invalid`）。全 `mandatory_g` 配列は保存しないため、readbackの成分整合検査は元配列からの独立再計算ではない。`best_observed_by_stage` は厳密可行性・違反・ILの科学選抜順位、`best_hybrid_observed_by_stage` はHybrid目的値最小（同値は先着）で、いずれもsolver採用解・selection・terminal・独立検証済み候補とは別。selection/terminal/anytimeおよび指定独立spotに必要なresponseは保持する。これは過去の科学的選抜ルールや独立検証の範囲を変えるものではない。連続周波数、全帯域MNA、EM、SRF、Q(f)、公差、実測は未保証。
+通常モードでは全search-forward履歴を保存せず、配分別累積件数と、科学選抜順位による各stageの `best_observed_by_stage`（完全vector・SHA・性能・区間と物理検査証拠）を増分更新する。Hybrid各forward目的値とHybrid目的値bestは通常モードでは保存しない。solver採用解、科学順位best、selection/terminal/anytimeおよび指定spotの候補・応答・独立検証は区別する。`--debug-forward-history` はwindow100専用の明示opt-inでJobSpecに凍結され、境界で各forwardのcompact履歴を保存する。通常モードで捨てた過去履歴、途中Hybrid目的値、波形は復元できず、全forwardの事後独立再評価やbestの全履歴比較検証はできない。連続周波数、全帯域MNA、EM、SRF、Q(f)、公差、実測は未保証。
 
 `summary.json` の `io` は親raw・worker raw・summaryについての**論理atomic JSON payload書込みと直後の読戻しの回数・bytes**。それ以外の入力読込・metadata・OS内部syscall、未読戻しunknown workerの全量は含まず、`complete_worker_accounting` で明示する。各atomic更新はファイルfsync・replace・ディレクトリfsync後に実bytesを読戻す。
 
-## Mock比較（実RF 0回）
+## 保存仕様更新後の作業中 mock 計測（実RF 0回）
+
+以下は新仕様へのローカル作業中、HEAD `9fdc3a5b21b55c98609529fa382590d082a98f68`・dirty source（patch SHA `989ebcc7bfafcbc581607bc2dab8a4f3a0d3c03205fccd71c6268d73266fceec`）での1回測定であり、完成版の検証ではない。Python 3.12.15、NumPy 2.5.4、BLAS/OMP/MKL各1 thread。RF-F003 fixture、RFとrequirementsをmock、56 search samples、selection/terminal計2 mock forward追加、出力場所検査をpatchしsystem tempを使用。旧→新の5 search forwardはwall 2.721→1.333秒、CPU 1.798→1.003秒、atomic 30→18回、bytes 2,923,028→2,279,661。requested/completed=476、選抜SHA・terminal・solver statusは一致。別実行の新方式100 search forwardはwall 2.115秒、CPU 1.278秒、atomic 19回、2,415,062 bytes、requested/completed=5796。後続の実装差分はこの計測に含まれない。
+
+より厳格なinterval readback追加後、各格子で実requirementsから一度だけ作った合成assessmentを再利用する計測では、同条件・dirty patch SHA `9d2302e7105c863d627f47eed91e8b18aff9747acd996c27ad85a3d1394febc0`・source identity `d55e8956b6e5cd6ca3c8b38cba1a678d2feb161d8dc98dcd16130f218f5b45cf`。5 searchの旧→新はwall 4.580→1.805秒、CPU 3.929→1.419秒、contract 8→15回、source identity 10→17回、snapshot 48→14回、atomic 30→18回、7,150,593→3,501,685 bytes。費用・選抜・terminal・solver statusは一致。新100 searchはwall 2.125秒、CPU 1.688秒、contract 16、source identity 18、snapshot 15、atomic 19、3,678,262 bytes、requested/completed=5796。旧100との同条件比較は未実施。計測中の実RFは0。
+
+別のmeter単体mock（同一best、selection/terminalなし）で、100/200/300 search forwardのcheckpoint bytesは145,833/145,848/145,848、開始含むatomic 4回。fixtureとsource identityを含む値であり、一般のbest証拠サイズを保証しない。これらは実RF速度ではなく #368と直接比較できない。
+
+## 旧保存仕様のMock比較（実RF 0回、歴史的記録）
 
 2026-11-08、Linux WSL2 x86_64 / ext4 `/tmp`、Python 3.12.15、NumPy 2.5.4、BLAS/OMP/MKL各1 thread。比較は **RF-F003 fixture・6設定28区間×56 search samples**、同一完全vector、同一固定step・selection・terminal・fixture solver。RF responseもrequirementsも固定mockであり、性能やRF適合を意味しない。system tmp出力の場所制限だけをテスト時にpatchし、原本保存経路の永続性は計測していない。
 
@@ -48,9 +56,9 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 
 #368はRF-T008・70 samples・実RF 5 forward・異なる計測器／Job／ファイルサイズであり、この表と直接比較できない。#361の約18.9秒/forwardの原因もここでは確定しない。
 
-## PR #370レビュー後の修正・限定実RF比較
+## 旧保存仕様のPR #370レビュー後修正・限定実RF比較（歴史的記録）
 
-2026-11-08のblocking指摘に対し、Hybridの目的値を同じassessmentからsolverと同じ平方残差・集約順序で各観測へ保存し、科学順位のbestとは別の `best_hybrid_observed_by_stage` とreadbackの整合検査を追加した。異常終了時は**最後に確定したpayload**と予約上限を維持しtermination理由のみ追記する。3成功後の4回目失敗、checkpoint 100件、sum/max、同じ違反最大・違反和でも目的値が異なる例、改ざん、親unknownをmockで確認した。
+当時の旧仕様で2026-11-08のblocking指摘に対し、Hybridの目的値を同じassessmentからsolverと同じ平方残差・集約順序で各観測へ保存し、科学順位のbestとは別の `best_hybrid_observed_by_stage` とreadbackの整合検査を追加した。異常終了時は**最後に確定したpayload**と予約上限を維持しtermination理由のみ追記する。3成功後の4回目失敗、checkpoint 100件、sum/max、同じ違反最大・違反和でも目的値が異なる例、改ざん、親unknownをmockで確認した。
 
 別枠の実RF技術比較は事前上限 **2 forward × 70 samples＝140 requested/completed**。旧・新それぞれ同じベクトルで1回ずつ、solverを呼ばず、評価結果の複素S・IL/APL/入出力RLの全配列とassessmentは完全一致した。`max_violation_db=25.224754407591835`、`sum_violation_db=323.4272113345574`、`worst_il_db=24.999944738674145`、Hybrid sum目的値 `22511.121105913582`、strict feasible=false。新方式の保存用scalarと既存solverの残差集約値も一致。これは科学的選抜・収束やRF性能の承認ではない。
 

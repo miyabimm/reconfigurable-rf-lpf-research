@@ -6,6 +6,7 @@ from ._job_evaluation import FixedJobEvaluation
 from .component_constraints import validate_values
 from .performance import evaluate_requirements, grid_fingerprint
 from .storage import plain, vector_sha
+from .evaluation import raw_numbers
 
 
 def _hybrid_observation(a, aggregation):
@@ -54,6 +55,10 @@ class WindowJobEvaluation(FixedJobEvaluation):
             raise ValueError('Window raw is development-only and must be frozen in JobSpec')
         self.journal = None
         self.cached_evaluator = None
+        self.debug_history = spec.data['debug_forward_history']
+        self.evidence_rows = []
+        self.progress = {}
+        self.scientific_best = {}
         super().__init__(plan, definition, policy, arm, path, spec, root=root)
         self.result['kind'] = 'development_window_raw_v1'
         chosen = next(a for a in self.data['config']['arms'] if a['name'] == arm)
@@ -72,7 +77,25 @@ class WindowJobEvaluation(FixedJobEvaluation):
             trial_remaining=self.data['costs']['max_trial_requested_samples']-self.requested,
             job_reserved=inactive, trial_reserved=inactive+self.other_jobs)
 
+    def used(self, allocation):
+        return self.progress.get(allocation, {}).get('requested', 0)
+
+    @property
+    def search_requested(self):
+        return sum(v['requested'] for k, v in self.progress.items() if k.startswith(self.arm+'/'))
+
     def snapshot(self):
+        if not self.debug_history:
+            original = self.rows
+            self.rows = self.evidence_rows
+            try:
+                snapshot = super().snapshot()
+            finally:
+                self.rows = original
+            snapshot['progress_by_allocation'] = plain(self.progress)
+            snapshot['best_observed_by_stage'] = raw_numbers(self.scientific_best)
+            snapshot['unsaved_window_results_may_be_lost'] = True
+            return snapshot
         # Avoid serializing the complex RF responses for search observations.
         # Independent audits and all selection/terminal/anytime responses remain.
         original = self.rows
@@ -178,13 +201,20 @@ class WindowJobEvaluation(FixedJobEvaluation):
         except BaseException as exc:
             self.status, self.reason = 'stopped', f'{type(exc).__name__}: {exc}'
             row['reason'] = self.reason
+            row['batch_index'] = len(self.rows)
             self.rows.append(row)
+            self.evidence_rows.append(row)
             if not self.journal.failed:
                 self._checkpoint()
             raise
         self.requested += n
-        row.update(requested=n, status='unknown', phase='forward')
+        progress = self.progress.setdefault(self.active, dict(forwards=0, requested=0, completed=0))
+        progress['requested'] += n
+        progress['forwards'] += 1
+        row.update(requested=n, status='unknown', phase='forward', batch_index=len(self.rows))
         self.rows.append(row)
+        if not self.stage.startswith(self.arm+'/') or self.spec.data['spot_checks'].get(self.stage):
+            self.evidence_rows.append(row)
         try:
             response = self.cached_evaluator.evaluate(x)
             if not self.stage.startswith(self.arm+'/') or self.spec.data['spot_checks'].get(self.stage):
@@ -194,11 +224,23 @@ class WindowJobEvaluation(FixedJobEvaluation):
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             row['assessment'] = (_compact_assessment(assessment) if self.stage.startswith(self.arm+'/')
                                  else plain(assessment))
-            if self.stage in self.hybrid_stages:
+            if self.debug_history and self.stage in self.hybrid_stages:
                 row['assessment']['hybrid_objective'] = _hybrid_observation(
                     assessment, self.hybrid_stages[self.stage])
             row.update(status='completed', completed=n, phase='completed', reason='forward_and_requirements_completed')
             self.completed += n
+            progress['completed'] += n
+            if self.stage.startswith(self.arm+'/') and not self.debug_history:
+                a = assessment
+                key = ((0, a['worst_il_db'], row['vector_sha256']) if a['strict_feasible'] else
+                       (1, a['max_violation_db'], a['sum_violation_db'], a['worst_il_db'], row['vector_sha256']))
+                previous = self.scientific_best.get(self.stage)
+                if previous is None or key < previous['_key']:
+                    full = plain(a)
+                    full['nominal_pass'] = _compact_assessment(a)['nominal_pass']
+                    self.scientific_best[self.stage] = dict(_key=key, batch_index=row['batch_index'],
+                        vector=row['vector'], vector_sha256=row['vector_sha256'], assessment=full,
+                        physical_checks=physical, grid_sha256=row['grid_sha256'])
             self.journal.complete_forward()
         except BaseException as exc:
             self.reason = f'{type(exc).__name__}: {exc}'

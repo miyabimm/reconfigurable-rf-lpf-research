@@ -68,11 +68,15 @@ def main():
                     n = len(evaluator.grid.frequency_hz)
                     return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
                         np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+                assessments = {}
+                assess = evaluation.evaluate_requirements
                 def fake_assessment(response, req, *, requested_grid):
-                    return dict(status='evaluated', policy_id=req.policy_id, policy_fingerprint=req.policy_fingerprint,
-                        mode=req.mode, requirements_fingerprint=req.fingerprint,
-                        grid_fingerprint=grid_fingerprint(requested_grid), strict_feasible=False,
-                        worst_il_db=1., max_violation_db=2., sum_violation_db=3., mandatory_g=[-2.], rows=[])
+                    # Reuse one structurally complete synthetic assessment per grid;
+                    # readback still checks best interval identities and aggregates.
+                    key = grid_fingerprint(requested_grid)
+                    if key not in assessments:
+                        assessments[key] = assess(response, req, requested_grid=requested_grid)
+                    return assessments[key]
                 def solver(callback, vector, bounds, **options):
                     for _ in range(count):
                         callback(vector)

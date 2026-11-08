@@ -21,6 +21,8 @@ def main(argv=None):
     parser.add_argument('--spot-checks', help='JSON stage→sample-index list')
     parser.add_argument('--storage-mode', choices=('legacy', 'window100'), default='legacy',
                         help='window100 is opt-in development-only; requires a persistent Git-external output')
+    parser.add_argument('--debug-forward-history', action='store_true',
+                        help='window100 only: persist compact search history at checkpoints')
     args = parser.parse_args(argv)
     try:
         if args.mode == 'production':
@@ -42,7 +44,7 @@ def main(argv=None):
         starts = load_explicit(args.starts)
         spots = json.loads(args.spot_checks) if args.spot_checks else None
         state = run_development(plan, definition, policy, starts, args.output, spot_checks=spots,
-                                storage_mode=args.storage_mode)
+                                storage_mode=args.storage_mode, debug_forward_history=args.debug_forward_history)
         summary = finalize_development(state, args.output)
         print(canonical(summary))
         return summary['exit_code']

@@ -129,7 +129,7 @@ class ParentRunnerTests(unittest.TestCase):
             self.assertEqual(raw['kind'], 'development_forward_window_v1')
             self.assertIsNone(raw['window'])
             self.assertEqual(raw['confirmed']['forwards'], 4)
-            self.assertNotIn('response', raw['payload']['batches'][0])
+            self.assertEqual([b['stage'] for b in raw['payload']['batches']], ['selection', 'terminal'])
             self.assertIn('response', raw['payload']['batches'][-1])
             summary = runner.finalize_development(state, output)
             self.assertEqual(summary['exit_code'], 4)
@@ -154,6 +154,16 @@ class ParentRunnerTests(unittest.TestCase):
         corruptions = [
             lambda r: r.update(identity={}),
             lambda r: r['confirmed'].update(requested=0),
+            lambda r: r['previous_confirmed'].update(forwards=9999),
+            lambda r: r['previous_uncertain_upper'].update(requested=0),
+            lambda r: r['payload']['progress_by_allocation']['demo/coarse'].update(forwards=1),
+            lambda r: r['payload']['progress_by_allocation']['demo/coarse'].update(completed=0),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment'].update(nominal_pass='yes'),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['physical_checks'].update(checked_settings=5),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment']['rows'].pop(),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment']['rows'][0].update(violation_db=1234),
+            lambda r: r['payload']['batches'][-1]['independent'].update(power_balance='fail'),
+            lambda r: r['payload']['batches'][-1]['independent']['samples'][0].update(il_db=100.),
             lambda r: r.update(window={'reserved_samples': 70}),
             lambda r: r['payload']['batches'][0]['assessment'].update(policy_id='wrong'),
             lambda r: r['payload']['batches'][-1].pop('response'),
@@ -171,6 +181,33 @@ class ParentRunnerTests(unittest.TestCase):
         atomic(path, raw)
         with self.assertRaises((ValueError, KeyError)):
             runner._development_readback(path, raw, spec)
+
+    def test_window_anytime_candidate_binding_mock(self):
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.worker import JobSpec
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[56]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-anytime'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward), \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=worker_tests.FixedWorkerTests.fixture):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        path = output/state['jobs'][0]['raw_path']
+        raw = json.loads(path.read_bytes())
+        scan = raw['payload']['anytime'][0]
+        self.assertEqual(scan['observation_vector_sha256'], vector_sha(x))
+        scan['observation_vector_sha256'] = '0'*64
+        atomic(path, raw)
+        with self.assertRaises(ValueError):
+            runner._window_development_readback(path, raw, JobSpec(**state['jobs'][0]['spec']))
 
     def test_window_hybrid_scores_checkpoint_and_readback(self):
         # Fixed mock assessments have the same max/sum violation but different
@@ -212,7 +249,8 @@ class ParentRunnerTests(unittest.TestCase):
              patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward), \
              patch('lpf.search._window_evaluation.evaluate_requirements', side_effect=fake_assessment), \
              patch('lpf.search.worker.hybrid_minimize', side_effect=solver):
-            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100',
+                                           debug_forward_history=True)
         self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
         self.assertEqual(seen, [14., 12.])
         raw_path = output/state['jobs'][0]['raw_path']

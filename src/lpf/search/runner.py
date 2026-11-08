@@ -46,6 +46,11 @@ def _window_development_readback(path, returned, spec):
             io['read_bytes'] != io['written_bytes']):
         raise ValueError('Window I/O count mismatch')
     result = envelope['payload']
+    if d.get('debug_forward_history') is False:
+        from ._window_readback import readback_summaries
+        return readback_summaries(raw, envelope, spec)
+    if d.get('debug_forward_history') is not True:
+        raise ValueError('Missing frozen window history mode')
     confirmed = envelope['confirmed']
     for value in confirmed.values(): nonnegative(value)
     if (set(confirmed) != {'forwards', 'requested', 'completed'} or
@@ -188,7 +193,7 @@ def _window_development_readback(path, returned, spec):
     return imported
 
 
-def _validate_development_result(raw, result, spec, *, compact, content=None):
+def _validate_development_result(raw, result, spec, *, compact, content=None, summary_progress=False):
     import numpy as np
     from .preflight import nonnegative
     d = spec.data
@@ -278,6 +283,32 @@ def _validate_development_result(raw, result, spec, *, compact, content=None):
             if audit['status'] != 'pass' or ar != ac:
                 uncertain = True
             audit_requested += ar; audit_completed += ac
+    if summary_progress:
+        progress = result['progress_by_allocation']
+        if not isinstance(progress, dict) or not set(progress) <= set(caps):
+            raise ValueError('Unknown progress allocation')
+        observed = allocations
+        allocations = {}
+        total_requested = total_completed = search = 0
+        for key, value in progress.items():
+            if set(value) != {'forwards', 'requested', 'completed'}:
+                raise ValueError('Invalid progress fields')
+            for n in value.values(): nonnegative(n)
+            stage = key if '/' in key else key.split(':')[0]
+            n = plan['grids'][stage]['requested_samples_per_forward']
+            if (value['requested'] != value['forwards'] * n or
+                    value['completed'] > value['requested'] or value['completed'] % n or
+                    value['requested'] > caps[key] or observed.get(key, 0) > value['requested']):
+                raise ValueError('Progress allocation/cap mismatch')
+            if value['requested'] != value['completed']:
+                uncertain = True
+            if (not key.startswith(d['arm']+'/') or d['spot_checks'].get(stage)) and observed.get(key, 0) != value['requested']:
+                raise ValueError('Missing candidate or spot evidence')
+            allocations[key] = value['requested']
+            total_requested += value['requested']; total_completed += value['completed']
+            if key.startswith(d['arm']+'/'): search += value['requested']
+        if set(observed) - set(progress):
+            raise ValueError('Evidence without progress')
     if (requested, completed, result['search_requested']) != (total_requested, total_completed, search):
         raise ValueError('Raw batch sums/job totals mismatch')
     if result['remaining'] != dict(job=cap-requested,
@@ -358,7 +389,7 @@ def _validate_development_output(output, root, storage_mode):
 
 
 def run_development(plan, definition, policy, starts, output, *, root=None,
-                    spot_checks=None, solver_kind='scipy', storage_mode='legacy'):
+                    spot_checks=None, solver_kind='scipy', storage_mode='legacy', debug_forward_history=False):
     """Schema-2 same-process fixed seed×arm execution, system tmp only.
 
     starts maps *every* frozen integer seed to {vector, vector_sha256}; no start
@@ -371,6 +402,8 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
     root = Path(root or ROOT).resolve()
     output = Path(output).resolve()
     _validate_development_output(output, root, storage_mode)
+    if type(debug_forward_history) is not bool or (debug_forward_history and storage_mode != 'window100'):
+        raise ValueError('Debug forward history requires window100')
     if output.exists():
         raise ValueError('Existing parent/raw path: no automatic resume or retry')
     config = plan.data['config']
@@ -385,7 +418,7 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
         if set(start) != {'vector', 'vector_sha256'} or vector_sha(start['vector']) != start['vector_sha256']:
             raise ValueError('Explicit start vector/SHA mismatch')
         arm = config['arms'][action.arm_index]
-        options = {'storage_mode': storage_mode} if storage_mode != 'legacy' else {}
+        options = {'storage_mode': storage_mode, 'debug_forward_history': debug_forward_history} if storage_mode != 'legacy' else {}
         spec = freeze_development_job(plan, definition, policy, arm['name'], action.seed,
             start['vector'], root=root, spot_checks=spot_checks, **options)
         if (spec.job_id in identities or spec.job_id != f"development-{arm['name']}-{action.seed}" or

@@ -93,8 +93,12 @@ class ForwardJournal:
         upper = dict(forwards=self.forward_count + (window.forward_count if window else 0),
                      requested=self.requested + (window.reserved_samples if window else 0),
                      completed=self.completed + (window.reserved_samples if window else 0))
+        previous = (self.last_record['confirmed'] if self.last_record is not None else
+                    dict(forwards=0, requested=0, completed=0))
         record = dict(kind='development_forward_window_v1', identity=self.identity,
                       checkpoint_number=self.checkpoint_number + 1, confirmed=lower,
+                      previous_confirmed=previous,
+                      previous_uncertain_upper=(self.last_record['uncertain_upper'] if self.last_record is not None else previous),
                       uncertain_upper=upper, window=None if window is None else dict(
                           first_forward=window.first_forward, end_forward=window.end_forward,
                           samples_per_forward=window.samples_per_forward,

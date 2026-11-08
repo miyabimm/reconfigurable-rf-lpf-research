@@ -105,6 +105,9 @@ class FixedWorkerTests(unittest.TestCase):
         from lpf.search._window_evaluation import WindowJobEvaluation
         spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
         spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        self.assertIs(spec.data['debug_forward_history'], False)
+        with self.assertRaisesRegex(ValueError, 'requires'):
+            freeze_development_job(plan, d, p, 'demo', 23, x, debug_forward_history=True)
         with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
             meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
         meter.activate('demo/coarse', 'demo/coarse')
@@ -130,7 +133,8 @@ class FixedWorkerTests(unittest.TestCase):
         saved = json.loads(path.read_bytes())
         self.assertEqual(saved['confirmed']['requested'], 2*n)
         self.assertIsNone(saved['window'])
-        self.assertNotIn('response', saved['payload']['batches'][0])
+        self.assertEqual(saved['payload']['batches'], [])
+        self.assertNotIn('best_hybrid_observed_by_stage', saved['payload'])
         self.assertEqual(saved['payload']['best_observed_by_stage']['demo/coarse']['vector_sha256'], vector_sha(x))
 
     def test_window_meter_99_100_101_with_mock_rf(self):
@@ -171,6 +175,67 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual((saved['confirmed']['forwards'], saved['confirmed']['requested']), (101, 101*n))
         self.assertIsNone(saved['window'])
 
+    def test_window_mock_step_transition_preserves_bests_and_counts(self):
+        from lpf.rf_core.model import RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        def fake(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake):
+            meter.activate('demo/coarse', 'demo/coarse')
+            meter.evaluate(x)
+            meter.finish()
+            first = json.loads(path.read_bytes())
+            meter.activate('demo/fine', 'demo/fine')
+            boundary = json.loads(path.read_bytes())
+            self.assertEqual(boundary['confirmed'], first['confirmed'])
+            self.assertEqual(boundary['window']['first_forward'], 1)
+            meter.evaluate(x)
+            meter.finish()
+        payload = json.loads(path.read_bytes())['payload']
+        self.assertEqual(set(payload['best_observed_by_stage']), {'demo/coarse', 'demo/fine'})
+        self.assertEqual(payload['progress_by_allocation']['demo/coarse']['forwards'], 1)
+        self.assertEqual(payload['progress_by_allocation']['demo/fine']['forwards'], 1)
+        self.assertEqual(payload['batches'], [])
+
+    def test_window_normal_300_mock_forwards_bounded_payload(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 302*56
+            c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 20000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint,
+            grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'], strict_feasible=False,
+            worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        sizes = []
+        with patch.object(RFEvaluator, 'evaluate', return_value=response), \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment):
+            for i in range(300):
+                meter.evaluate(x)
+                if (i+1) % 100 == 0:
+                    raw = json.loads(path.read_bytes())
+                    sizes.append(path.stat().st_size)
+                    self.assertEqual(raw['confirmed']['forwards'], i+1)
+                    self.assertEqual(raw['payload']['batches'], [])
+        self.assertEqual(meter.journal.write_calls, 4)
+        self.assertLess(max(sizes)-min(sizes), 128)
+
     def test_hybrid_checkpoint_100_records_objective_and_distinct_best(self):
         from types import SimpleNamespace
         from lpf.search._window_evaluation import WindowJobEvaluation
@@ -181,7 +246,8 @@ class FixedWorkerTests(unittest.TestCase):
                         options=dict(maxiter=2, max_restarts=0, max_evaluations=102, restart_sigma=0.1))
             c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 9000
         _, path, plan, d, p, x = self.job(configure)
-        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100', debug_forward_history=True)
+        self.assertIs(spec.data['debug_forward_history'], True)
         with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
             meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
         meter.activate('demo/coarse', 'demo/coarse')
