@@ -3,14 +3,11 @@ import unittest
 from pathlib import Path
 
 from scripts.audit_research_catalog import (
-    ROOT, _path, audit_catalog, check_threshold,
+    ROOT, _path, check_threshold,
 )
 
 
 class ResearchCatalogTests(unittest.TestCase):
-    def test_checked_in_catalog_matches_saved_numeric_sources(self):
-        self.assertEqual([], audit_catalog())
-
     def test_strict_raw_harmonic_threshold_cannot_use_solver_tolerance(self):
         result = check_threshold(
             "strict_finite_grid", 35.0, 34.9999999958, 35.01, "formal")

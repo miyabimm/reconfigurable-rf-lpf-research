@@ -1,19 +1,12 @@
 # Pi Codeの通常作業範囲
 
-Piの通常作業は `project/`・`rf/`・`src/`・`scripts/`・`tests/`・`.github/` とリポジトリ直下ファイルで行う。
-`docs/`・`data/`・`experiments/` は通常ローカルに取得しない。過去のEXP再検証・全研究証拠の監査は、これらを明示的に取得した**別の完全検証環境**で行う。
-
-```bash
-git clone --filter=blob:none --depth=1 --sparse https://github.com/miyabimm/reconfigurable-rf-lpf-research.git
-cd reconfigurable-rf-lpf-research
-git sparse-checkout set --cone project rf src scripts tests .github
-```
+Piの通常作業は必要なファイルを取得した完全checkoutで行う。過去EXPの監査や新規EXPの予約では、対象の原本・台帳と必要なGit履歴が実際に揃っていることを確認する。追加checkoutが必要な場合は作成前に承認を得る。
 
 - 現行の正式・試験RF入力は `rf/constraints/`、全28区間は `rf/bands.csv`、固定S2Pは `rf/parasitics/`。
 - `rf/constraints/registry.json` の `active_formal_id` が現行正式版。原則として承認済みJSONは**上書きしない**。新正式条件は所有者承認後に新IDとして追加し、active指定を変更する。trialは自動昇格させない。
   - #307 / #306 v1.0の承認済み例外として、現役F003/T005〜T008は同一IDでschema 2・閉区間へ移行（GJM01/PCB_L下限変更を含む）。旧版・旧registry・SHA・親子関係を`rf/constraints/history/pre-issue-307/`に先行保存。新旧SHA対応は`rf/constraints/history/issue307-migration.json`。旧EXPや凍結済み計画のSHAは書換えず、現役条件として再実行しない。
 - 不変の旧RF JSON内の `data/...` は**保存時の論理パス**であり、`src/lpf/constraint_versions.py` が新 `rf/` 実体へ解決する。履歴JSON内容・旧実効SHA・S2P SHAは維持する。現役JSONの#307移行後実効SHAは旧版と区別する。ファイル欠落やSHA不一致時は失敗させる。
-- 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。通常のPi sparse環境で新EXPの番号予約・保存監査が可能とはみなさない。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
+- 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。番号予約・保存監査の前にcheckoutの完全性を確認する。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
 - CIは `.github/workflows/audit.yml` で通常の回帰テストと保存監査を実行する。CI PASSは新RF性能の科学的保証ではない。
 
 ## 現行フローと資料の入口
@@ -125,7 +118,7 @@ syntheticと実SLSQPの比較群は混在しない。診断候補の理由・値
 保存済み数値を渡す。同一条件以外は拒否し、歴史的1001点値は常時**外部参照**として表示するだけで粗格子と順位付けしない。
 完全checkoutでは `data/pareto_snapshots/rf_t008_exp062_exp063_exp064_cross_pr_20261020.json` の
 `observed_nondominated` を出典SHA・manifest条件/格子/深度とともに使えるが、snapshot中の過去のDraft状態は
-当時の記録であり現在の状態へ書き換えない。Pi sparse環境では履歴取得なしに比較PASSを主張しない。
+当時の記録であり現在の状態へ書き換えない。必要な履歴を確認せず比較PASSを主張しない。
 
 `intermediate_scan(circuit, vector)` は既存forward evaluatorによる6設定/28個別区間×17点のread-only診断。
 構成/値/入力/ソースSHAを保持し、CandidateRecordの1/2/3点制約は変更しない。

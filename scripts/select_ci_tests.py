@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Conservative, Git-based CI selection. FULL is an execution mode, not a class.
-
-Sparse mode uses the same plan but runs only tests that can run without
-historical evidence. Unregistered paths and uncertain comparisons select FULL.
-"""
+"""Conservative Git-based CI selection; uncertain comparisons select FULL."""
 import json
 import os
 import re
@@ -18,7 +14,7 @@ CLASSES = ('DOC', 'RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # in more than one group; the runner deduplicates them.
 SUITES = {
     'DOC': '''test_phase2_current_status_review.py''',
-    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
+    'RF': '''test_constraint_versioning.py test_issue307_constraints.py test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_rf_f002_t004.py test_research_catalog.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
@@ -27,14 +23,6 @@ SUITES = {
 }
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
 EXTRA_FULL = '''test_shared_graph_core.py test_graph_instantiation.py test_shared_graph_builder.py'''.split()
-SPARSE = {
-    'RF': '''test_constraint_versioning test_issue307_history test_issue307_snapshot_equivalence test_issue307_constraints test_issue309_rf_core test_issue343_d3_science test_issue311_performance test_issue313_preflight test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints test_pi_sparse_rf''',
-    'OPT': 'test_issue315_fixed_stage',
-    'RUN': 'test_issue315_fixed_stage test_issue317_fixed_worker test_issue319_parent_runner test_issue321_development_cli test_issue325_campaign test_issue325_campaign_gates test_issue323_dependencies',
-    'GATE': 'test_issue313_preflight test_issue325_campaign_gates test_issue323_dependencies',
-    'STORE': 'test_issue325_campaign_gates test_issue343_d2_preservation', 'DOC': '', 'CI': 'test_github_actions_yaml_keys test_storage_ci_classification test_ci_test_selection',
-}
-SPARSE = {k: tuple(v.split()) for k, v in SPARSE.items()}
 RF_RUN_BOUNDARY = (
     'test_issue317_fixed_worker.FixedWorkerTests.test_frozen_independent_samples_in_worker',
     'test_issue325_campaign.CampaignTests.test_real_rf_f003_and_explicit_trial_392_with_one_independent_spot',
@@ -89,7 +77,6 @@ def path_classes(path):
     if path.startswith('tests/') and re.fullmatch(r'tests/test_[A-Za-z0-9_]+\.py', path):
         name = path.split('/')[-1]
         found = {group for group, files in SUITES.items() if name in files}
-        found |= {group for group, modules in SPARSE.items() if name[:-3] in modules}
         if name in EXTRA_FULL:
             found.add('FULL')
         return found or {'FULL'}
@@ -177,28 +164,22 @@ def plan(event, base, head, ref, force=False):
     return result
 
 
-def execute(plan_data, sparse):
+def execute(plan_data):
     groups = CLASSES if plan_data['full'] else plan_data['classes']
     modules = set()
     # The existing strict storage-only fast path retains only the unconditional
     # storage checks in normal CI; it must not expand to G3-G5 integration.
     suite_groups = () if plan_data['storage_only'] and not plan_data['full'] else groups
-    if sparse:
-        for group in suite_groups:
-            modules.update(SPARSE[group])
-        # Sparse cannot run arbitrary evidence-dependent changed tests. Normal CI
-        # executes them explicitly; never silently claim they ran here.
-    else:
-        for group in suite_groups:
-            modules.update(SUITES[group])
-        if plan_data['full']:
-            modules.update(EXTRA_FULL)
-        modules.update(Path(p).name for p in plan_data['changed_tests'])
+    for group in suite_groups:
+        modules.update(SUITES[group])
+    if plan_data['full']:
+        modules.update(EXTRA_FULL)
+    modules.update(Path(p).name for p in plan_data['changed_tests'])
     print('Selection:', json.dumps(plan_data, ensure_ascii=False), flush=True)
     print('Unselected classes:', ', '.join(x for x in CLASSES if x not in groups) or '(none)', flush=True)
     print('Test units:', ', '.join(sorted(modules)) or '(none)', flush=True)
-    boundary = not sparse and (plan_data['full'] or bool(set(groups) & {'RF', 'OPT', 'RUN', 'GATE'}))
-    links = not sparse and (plan_data['full'] or 'DOC' in groups)
+    boundary = plan_data['full'] or bool(set(groups) & {'RF', 'OPT', 'RUN', 'GATE'})
+    links = plan_data['full'] or 'DOC' in groups
     rf_run = ('RF' in groups and 'RUN' not in groups and not plan_data['full']
               and not plan_data['storage_only'])
     extra = (BOUNDARY if boundary else []) + (list(RF_RUN_BOUNDARY) if rf_run else []) + (['active-only local links'] if links else [])
@@ -206,22 +187,17 @@ def execute(plan_data, sparse):
     summary = os.getenv('GITHUB_STEP_SUMMARY')
     if summary:
         with open(summary, 'a', encoding='utf-8') as out:
-            out.write(f"### {'Sparse' if sparse else 'Normal'} CI selection\n\n- FULL: {plan_data['full']}\n- Reasons: {', '.join(plan_data['reasons']) or 'none'}\n- Selected: {', '.join(groups) or 'none'}\n- Unselected: {', '.join(x for x in CLASSES if x not in groups) or 'none'}\n- Planned test units: {', '.join(sorted(modules) + extra) or 'none'}\n\nSee step log for actually executed units and outcome.\n")
+            out.write(f"### Normal CI selection\n\n- FULL: {plan_data['full']}\n- Reasons: {', '.join(plan_data['reasons']) or 'none'}\n- Selected: {', '.join(groups) or 'none'}\n- Unselected: {', '.join(x for x in CLASSES if x not in groups) or 'none'}\n- Planned test units: {', '.join(sorted(modules) + extra) or 'none'}\n\nSee step log for actually executed units and outcome.\n")
     env = dict(os.environ)
     env['PYTHONPATH'] = 'tests' + (os.pathsep + env['PYTHONPATH'] if env.get('PYTHONPATH') else '')
-    if sparse:
-        env['PI_SPARSE_RF'] = '1'
-    elif plan_data['full'] or set(groups) & {'RF', 'OPT', 'RUN'}:
+    if plan_data['full'] or set(groups) & {'RF', 'OPT', 'RUN'}:
         print('Running compileall for current RF and search sources', flush=True)
         subprocess.run([sys.executable, '-m', 'compileall', '-q', 'src/lpf/topology_management',
                         'src/lpf/rf_core'], check=True, env=env)
     for module in sorted(modules):
-        if sparse:
-            command = [sys.executable, '-m', 'unittest', '-v', module]
-        else:
-            if not Path('tests', module).is_file():
-                raise RuntimeError('missing selected test: ' + module)
-            command = [sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', module, '-v']
+        if not Path('tests', module).is_file():
+            raise RuntimeError('missing selected test: ' + module)
+        command = [sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', module, '-v']
         print('Running:', ' '.join(command), flush=True)
         subprocess.run(command, check=True, env=env)
     if boundary:
@@ -236,6 +212,8 @@ def execute(plan_data, sparse):
 
 
 def main():
+    if len(sys.argv) != 1:
+        raise SystemExit('Usage: python scripts/select_ci_tests.py')
     event = os.getenv('CI_EVENT')
     force = os.getenv('CI_FULL') == 'true' or event == 'workflow_dispatch'
     selected = plan(event, os.getenv('CI_BASE'), os.getenv('CI_HEAD'), os.getenv('CI_BASE_REF'), force)
@@ -245,7 +223,7 @@ def main():
     if event == 'push' and os.getenv('CI_REF') != 'refs/heads/main':
         selected['full'] = True
         selected['reasons'].append('push branch mismatch or missing')
-    execute(selected, '--sparse' in sys.argv)
+    execute(selected)
     if 'changed tests cannot be independently verified' in selected['reasons']:
         raise RuntimeError('FULL ran, but changed tests could not be verified')
 

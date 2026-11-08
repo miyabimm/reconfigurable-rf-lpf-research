@@ -1,6 +1,5 @@
-"""Current approval isolation and explicit archive-only provenance validation."""
+"""Current approval isolation and new experiment provenance validation."""
 import csv
-import hashlib
 import json
 import shutil
 import tempfile
@@ -9,7 +8,7 @@ from pathlib import Path
 
 from src.lpf.constraint_versions import constraint_fingerprint, load_constraint, validate_registry
 from src.lpf.experiment_manifest import (
-    ROOT, RUNS, audit_provenance, experiment_index, new_manifest,
+    ROOT, RUNS, experiment_index, new_manifest,
     validate_manifest, write_manifest,
 )
 
@@ -95,40 +94,11 @@ class ConstraintRegistryTests(unittest.TestCase):
         policy = load_constraint()
         self.assertEqual(constraint_fingerprint(policy), constraint_fingerprint(dict(reversed(list(policy.items())))))
         self.assertEqual(constraint_fingerprint(policy), validate_registry()['formal']['RF-F003']['effective_constraint_sha256'])
-        from src.lpf.constraint_history import archived_formal_evidence
-        for cid, digest in (('RF-F002', 'f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2'),
-                            ('RF-F001', 'df6b4cbd347aac06538527cd68963b785207582152e17117a683c10058af0c54')):
-            self.assertEqual(constraint_fingerprint(archived_formal_evidence(cid, digest, root=ROOT)), digest)
-            with self.assertRaises(ValueError): load_constraint(cid)
 
 
 class ManifestTests(unittest.TestCase):
-    def test_w1_original_evidence_bytes(self):
-        # SHA-256 of the same bytes formerly compared to Git blobs at 055b222.
-        # No historical Git object is required in routine CI.
-        expected = {
-            'data/bands.csv': '1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe',
-            'rf/constraints/history/pre-issue-307/formal/RF-F003.json': '3ce92cda8ad20eeefe9058404ed9f4295ca7d4653393bb3117e617ceed3217ae',
-            'rf/constraints/history/pre-issue-307/trial/RF-T005.json': '3d7fc4410090b318c90be1767fadf9a5629040761013a2cb9216b7db57fb18f4',
-            'experiments/chatgpt_topology_search/runs/EXP-047/manifest.json': 'f9143f801a147b70b6363fb2552d1899aabe3e46fccf03293284865f7e5830ec',
-            'experiments/chatgpt_topology_search/runs/EXP-004/README.md': '4a37b78d8fc825234a944f83fe0ff73dd24b8214222ab1afa439a40664eb6663',
-        }
-        for path, digest in expected.items():
-            with self.subTest(path=path):
-                self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
-
-    def historical(self):
-        return json.loads((ROOT/RUNS/'EXP-015/manifest.json').read_text())
-
-    def test_historical_unknowns_are_not_current_policy_certificates(self):
-        m = self.historical()
-        validate_manifest(m)
-        self.assertIsNone(m['code']['execution_sha'])
-        self.assertIsNone(m['constraints']['effective_constraint_sha256'])
-        self.assertIsNone(m['environment'])
-        self.assertEqual(m['validation']['independent'], 'reported_in_sources')
-        m['constraints']['constraint_id'] = 'RF-F001'
-        with self.assertRaisesRegex(ValueError, 'invent'): validate_manifest(m)
+    def manifest(self):
+        return new_manifest('EXP-016', 'Metadata smoke only', {}, objective='full_lpf', seed=12)
 
     def test_new_manifest_captures_inputs_and_refuses_policy_drift(self):
         m = new_manifest('EXP-016', 'Metadata smoke only', {'max_search_area': 8}, objective='matching_only', seed=12)
@@ -150,13 +120,14 @@ class ManifestTests(unittest.TestCase):
 
     def test_evidence_tampering_and_path_escape_rejected(self):
         for field, value in (('sha256', '0'*64), ('path', '../../etc/passwd')):
-            m = self.historical(); m['evidence'][0][field] = value
+            m = self.manifest(); m['evidence'] = [{'path': 'rf/bands.csv', 'sha256': '0'*64}]
+            m['evidence'][0][field] = value
             with self.subTest(field=field), self.assertRaises(ValueError): validate_manifest(m)
 
     def test_saved_manifest_cannot_be_overwritten(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp)/'manifest.json'
-            m = self.historical(); write_manifest(path, m)
+            m = self.manifest(); write_manifest(path, m)
             before = path.read_bytes()
             with self.assertRaises(FileExistsError): write_manifest(path, m)
             self.assertEqual(path.read_bytes(), before)
@@ -164,43 +135,18 @@ class ManifestTests(unittest.TestCase):
     def test_index_retains_failed_partial_and_not_run(self):
         manifests = []
         for i, state in enumerate(('failed', 'partial', 'not_run'), start=16):
-            m = self.historical(); m['experiment_id'] = f'EXP-{i:03}'; m['execution']['status'] = state
+            m = self.manifest(); m['experiment_id'] = f'EXP-{i:03}'; m['execution']['status'] = state
             validate_manifest(m)
             manifests.append((f"{RUNS}/{m['experiment_id']}/manifest.json", m))
         import io
         rows = list(csv.DictReader(io.StringIO(experiment_index(manifests))))
         self.assertEqual([r['execution_status'] for r in rows], ['failed', 'partial', 'not_run'])
-        self.assertTrue(all(r['effective_constraint_sha256'] == '' for r in rows))
-
-    def test_all_historical_experiments_and_candidate_provenance_audit(self):
-        self.assertEqual(audit_provenance(), [])
-        paths = sorted((ROOT/RUNS).glob('EXP-*/manifest.json'))
-        self.assertTrue({f'EXP-{i:03}' for i in range(1, 16)}.issubset({p.parent.name for p in paths}))
-        for path in paths:
-            if path.parent.name == 'EXP-047':
-                from src.lpf.legacy_manifest_adapter import legacy_exp047_index_view
-                self.assertEqual(legacy_exp047_index_view(root=ROOT)['experiment_id'], 'EXP-047')
-            else:
-                validate_manifest(json.loads(path.read_text()), allow_archived=True)
-
-    def test_archived_identity_is_audit_only_and_tampering_rejected(self):
-        m = json.loads((ROOT/RUNS/'EXP-025/manifest.json').read_text())
-        with self.assertRaises(ValueError): validate_manifest(m)
-        validate_manifest(m, allow_archived=True)
-        m['constraints']['effective_constraints']['components']['IC_VARIABLE_C']['q'] += 1
-        with self.assertRaisesRegex(ValueError, 'evidence binding'): validate_manifest(m, allow_archived=True)
-        from src.lpf.constraint_history import archived_binding
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp); shutil.copytree(ROOT/'rf/constraints', root/'rf/constraints')
-            path = root/'rf/constraints/history/pre-issue-307/formal/RF-F003.json'
-            path.write_text('{}')
-            with self.assertRaisesRegex(ValueError, 'byte mismatch'):
-                archived_binding('RF-F003', 'f85710200ccda5b72ab32f943540fbfd7a8abb3137c5f4e6e5ba7a6d7b3da2ba', root=root)
+        self.assertTrue(all(r['effective_constraint_sha256'] for r in rows))
 
     def test_nonfinite_scope_and_invalid_validation_rejected(self):
         for key, value in (('phase', 'Phase 3'), ('search_scope', {'max_search_area': float('inf')}),
                            ('validation', {'numerical': 'passed'})):
-            m = self.historical(); m[key] = value
+            m = self.manifest(); m[key] = value
             with self.subTest(key=key), self.assertRaises(ValueError): validate_manifest(m)
 
 

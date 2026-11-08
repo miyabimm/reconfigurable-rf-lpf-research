@@ -27,28 +27,15 @@ git show HEAD:rf/bands.csv | sha256sum
 
 **重要:** `git show HEAD:data/bands.csv` は今後、CSV本文ではなくシンボリックリンクのターゲット文字列を返します。歴史manifestの `data/...` は改変せず、元コミットで `git show <元コミット>:<元パス>` と照合します。`git hash-object data/bands.csv` はチェックアウトされたシンボリックリンクの実体をたどるため、旧論理ファイルの**実際の内容**を検査できます（ただしGitインデックス内のsymlink blobとは異なる）。
 
-## 完全監査環境とPi sparse環境
+## 完全な検証環境
 
-```bash
-# 完全な検証環境（歴史データ・実験原本も展開）
-git clone https://github.com/miyabimm/reconfigurable-rf-lpf-research.git
-cd reconfigurable-rf-lpf-research
-uv sync --frozen
-uv run --frozen python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
-uv run --frozen python -m unittest discover -s tests -p test_audit.py -v
-python scripts/verify_phase2_cleanup_w1_links.py --active-only
-
-# Pi の通常環境：docs/data/experimentsは一切展開しない。
-# project/README.md のpartial clone + sparse-checkoutに従う。
-```
-
-履歴の全ファイルを対象とする監査は完全環境でのみ行います。Pi sparse環境で不在の原本や台帳を「検証PASS」と扱わないでください。
+通常は必要な原本・台帳とGit履歴を含む完全checkoutを使います。履歴全体の監査前に対象が揃っていることを確認し、不在の原本や台帳を「検証PASS」と扱わないでください。追加checkoutの作成には事前承認が必要です。
 
 ## W3・W4当時の差分監査（時点固定）
 
 以下の歴史的スクリプトは、当時の保護パスがHEADまで**変更されていない**ことを要求する差分判定を内蔵しています。
 
-- `scripts/verify_phase2_cleanup_w3.py`
+- `scripts/verify_phase2_cleanup_w3.py`（#355で現行treeから退役）
 - `scripts/audit_w4_exp042_artifact_checkpoint_crosswalk.py`
 - `scripts/audit_w4_exp042_missing_variants.py`
 - `scripts/audit_w4_exp046_exp047_sources.py`
@@ -69,8 +56,8 @@ python scripts/verify_phase2_cleanup_w3.py  # W3当時の作業ツリーを選�
 
 ## カットオーバー監査
 
-`tests/test_canonical_source_aliases.py` は旧RF入力（レジストリを除く）の**移行前の元blobとの内容一致**、旧リンクの存在と解決先、旧運用指示が移転案内のみであることを検証します。レジストリは将来承認後にactive IDが更新され得るため、元blobと同一であることを恒久要求しません。
+旧RF入力・文書リンクと移行前blobの固定検査は #355 で退役しました。現行RF入力は `rf/` を正本として検証します。
 
-現行監査 `scripts/audit_results.py` と新EXP予約 `scripts/reserve_experiment_number.py` は `rf/` の正本を参照します。予約・研究証拠の検証は完全環境専用であり、ローカルPi sparse環境では実行しません。
+現行監査 `scripts/audit_results.py` と新EXP予約 `scripts/reserve_experiment_number.py` は `rf/` の正本を参照します。予約・研究証拠の検証には対象データと履歴を備えた完全環境が必要です。
 
 本PRでは歴史EXPや固定監査報告の上書き、RF性能再計算、新規EXPは行っていません。実際のレビュー・CI結果は [Issue #185](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/185) ／ [PR #186](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/186) に記録します。
