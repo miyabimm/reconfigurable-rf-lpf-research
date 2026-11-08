@@ -1,0 +1,1 @@
+Frozen before Pilot: run Extension only if Pilot and Main complete without numerical STOP and fewer than two Pilot+Main seeds have physical/SPD-valid terminal strict RF H2/H3 >= 30 dB and terminal IL <= benchmark terminal 17 point IL + 0.05 dB. Otherwise do not run Extension. Solver convergence recorded separately; no rounding.
