@@ -99,6 +99,114 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(meter.spot_check(0, [0, 55])['status'], 'pass')
         self.assertEqual(meter.rows[0]['independent']['completed'], 2)
 
+    def test_window_meter_keeps_normal_mock_forwards_in_memory(self):
+        # RF evaluator/requirements are fixtures: no RF forward is executed.
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        before = path.read_bytes()
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
+             patch.object(meter, '_contract', side_effect=AssertionError('per-forward contract')), \
+             patch('builtins.open', side_effect=AssertionError('forward file open')), \
+             patch.object(Path, 'open', side_effect=AssertionError('forward Path.open')):
+            meter.evaluate(x)
+            meter.evaluate(x)
+        self.assertEqual(forward.call_count, 2)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual((meter.requested, meter.completed), (2*n, 2*n))
+        meter.finish()
+        saved = json.loads(path.read_bytes())
+        self.assertEqual(saved['confirmed']['requested'], 2*n)
+        self.assertIsNone(saved['window'])
+        self.assertNotIn('response', saved['payload']['batches'][0])
+        self.assertEqual(saved['payload']['best_observed_by_stage']['demo/coarse']['vector_sha256'], vector_sha(x))
+
+    def test_window_meter_99_100_101_with_mock_rf(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 102*56
+            c['arms'][0]['max_requested_samples'] = 9000
+            c['max_trial_requested_samples'] = 9000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
+             patch.object(meter.journal, 'validate_inputs', wraps=meter.journal.validate_inputs) as contract:
+            for _ in range(99): meter.evaluate(x)
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (1, 0))
+            self.assertEqual(json.loads(path.read_bytes())['confirmed']['forwards'], 0)
+            meter.evaluate(x)
+            boundary = json.loads(path.read_bytes())
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (2, 1))
+            self.assertEqual((boundary['confirmed']['forwards'], boundary['window']['end_forward']), (100, 102))
+            meter.evaluate(x)
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (2, 1))
+            self.assertEqual(forward.call_count, 101)
+        meter.finish()
+        saved = json.loads(path.read_bytes())
+        self.assertEqual((saved['confirmed']['forwards'], saved['confirmed']['requested']), (101, 101*n))
+        self.assertIsNone(saved['window'])
+
+    def test_frozen_model_validation_matches_legacy_and_rejects_bad_values(self):
+        from lpf.search.component_constraints import validate_values
+        from lpf.rf_core.model import build_rf_model
+        _, _, _, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        model = build_rf_model(d, p)
+        self.assertEqual(validate_values(d, model.schema, x, p),
+                         validate_values(d, model.schema, x, p, frozen_model=model))
+        bad = x.copy(); bad[0] = -1
+        with self.assertRaises(ValueError):
+            validate_values(d, model.schema, bad, p, frozen_model=model)
+        altered = copy.deepcopy(p); altered['source_ohms']['real'] += 1
+        with self.assertRaisesRegex(ValueError, 'Frozen model'):
+            validate_values(d, model.schema, x, altered, frozen_model=model)
+
+    def test_window_boundary_detects_source_and_rf_changes_without_release(self):
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        for changed in ('source', 'rf'):
+            with self.subTest(changed=changed):
+                _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+                spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+                with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+                    meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+                meter.activate('demo/coarse', 'demo/coarse')
+                before = path.read_bytes()
+                if changed == 'source':
+                    change = patch('lpf.search._job_evaluation.source_identity', return_value={})
+                else:
+                    wrong = plan.data
+                    wrong['rf_inputs']['bands']['sha256'] = '0'*64
+                    change = patch('lpf.search.evaluation.freeze', return_value=wrong)
+                with change, self.assertRaises(ValueError):
+                    meter.finish()
+                self.assertEqual(path.read_bytes(), before)
+                self.assertIsNotNone(json.loads(before)['window'])
+                self.assertEqual(meter.status, 'storage_failed')
+
     def test_frozen_independent_samples_in_worker(self):
         spec, path, plan, d, p, x = self.job()
         spec = freeze_development_job(plan, d, p, 'demo', 23, x,

@@ -18,7 +18,7 @@
 | 限定実証・レビュー証拠 | [#323](issue323_layer_dependencies.md)、[#325](issue325_campaign.md) | 現役依存境界、Campaign各増分と隔離G0〜G5検査。実験の実施指示ではない |
 | 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md)、[D2](issue343_d2.md)、[D3](issue343_d3_cleanup.md)、[D4](issue343_d4_cleanup.md)、[E1](issue343_e1_cleanup.md)、[E2](issue343_e2_cleanup.md) | 構造正本・保存ゲートの旧caller分離、科学回帰の現役API化、旧入口・候補・RF wrapper撤去と歴史資料の隔離。D4の残存matching旧layoutと未検証範囲に注意 |
 | 限定実証・レビュー証拠 | [#330報告](issue330_real_scipy.md)・[再現コード](issue330_real_scipy.py) | 実SciPy callback非EXP検証、旧実行との差、source/import制限。再現コードはRF計算を行うので文書確認時に起動しない |
-| 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md) | 中断・未照合費用・原本所在不明と別枠の時間診断。再実行の指示ではない |
+| 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md)、[#369開発用100-forward予約](issue369_forward_window.md) | 中断・未照合費用・原本所在不明、時間診断とmock限定の保存比較。Pilot再実行の指示ではない |
 | 限定実証・レビュー証拠 | [#254](issue254_curated_storage.md) | 旧共通curated保存と容量STOPの実測。現保存規則の代わりではない |
 | 歴史・旧仕様 | [#235報告](issue235_scaling.md)・[JSON](issue235_scaling.json)、[#239](issue239_optimizer_comparison.md) | 旧座標正規化・optimizer比較契約・診断。保存vector/SHAは原証拠 |
 | 歴史・旧仕様 | [#241](issue241_scipy_de_preview.md)、[#243](issue243_de_exploration_boundaries.md) | DE mock接続と評価境界。本番runnerの存在を意味しない |

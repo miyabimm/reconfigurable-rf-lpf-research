@@ -1,11 +1,14 @@
 """Issue 369 reservation arithmetic; no RF calls or persistent records."""
 import hashlib
+import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from lpf.search._forward_window import reserve_forward_window
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from lpf.search._forward_window import ForwardJournal, reserve_forward_window
 from lpf.search.storage import atomic_verified, canonical
 
 
@@ -42,6 +45,106 @@ class ForwardWindowTests(unittest.TestCase):
                        dict(job_reserved=-1)):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 self.reserve(**change)
+
+
+class ForwardJournalTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.path = Path(self.directory.name) / 'raw.json'
+        self.observations = []
+        self.checks = []
+        self.journal = ForwardJournal(self.path, identity={'job_sha256': 'a' * 64},
+            validate_inputs=lambda: self.checks.append('checked'),
+            snapshot=lambda: {'observations': list(self.observations)},
+            budget=lambda: dict(samples_per_forward=70,
+                step_remaining=203 * 70 - self.journal.requested,
+                job_remaining=203 * 70 - self.journal.requested,
+                trial_remaining=203 * 70 - self.journal.requested,
+                job_reserved=0, trial_reserved=0))
+
+    def record(self):
+        return json.loads(self.path.read_bytes())
+
+    def forward(self):
+        self.journal.begin_forward()
+        self.observations.append(len(self.observations))
+        self.journal.complete_forward()
+
+    def test_99_100_101_and_short_tail(self):
+        self.journal.start()
+        self.assertEqual(self.record()['uncertain_upper']['requested'], 7000)
+        for _ in range(99):
+            self.forward()
+        self.assertEqual((self.journal.write_calls, len(self.checks)), (1, 1))
+        self.assertEqual(self.record()['confirmed']['forwards'], 0)
+        self.forward()
+        saved = self.record()
+        self.assertEqual((saved['confirmed']['forwards'], saved['uncertain_upper']['forwards']), (100, 200))
+        self.assertEqual(len(saved['payload']['observations']), 100)
+        self.assertEqual((self.journal.write_calls, len(self.checks)), (2, 2))
+        self.forward()
+        self.assertEqual(self.journal.write_calls, 2)
+        for _ in range(99):
+            self.forward()
+        self.assertEqual(self.record()['window']['end_forward'], 203)
+        self.assertEqual(self.record()['window']['reserved_samples'], 210)
+        for _ in range(3):
+            self.forward()
+        self.assertIsNone(self.record()['window'])
+        self.assertEqual(self.record()['confirmed']['requested'], 203 * 70)
+        with self.assertRaisesRegex(RuntimeError, 'no persisted'):
+            self.journal.begin_forward()
+
+    def test_crash_and_exception_preserve_entire_durable_window(self):
+        self.journal.start()
+        saved = self.path.read_bytes()
+        for _ in range(3):
+            self.forward()
+        self.journal.begin_forward()
+        # A hard crash leaves the prior bytes and their full reservation intact.
+        self.assertEqual(self.path.read_bytes(), saved)
+        self.journal.abort('fixture exception')
+        self.assertEqual(self.record()['termination']['status'], 'unknown')
+        self.assertEqual(self.record()['confirmed']['requested'], 0)
+        self.assertEqual(self.record()['uncertain_upper']['requested'], 7000)
+        with self.assertRaisesRegex(RuntimeError, 'no retry'):
+            self.journal.boundary(reserve=False)
+        other = ForwardJournal(self.path, identity={}, validate_inputs=lambda: None,
+                               snapshot=lambda: {}, budget=lambda: {})
+        with self.assertRaises(FileExistsError):
+            other.start()
+
+    def test_step_boundary_confirms_and_replaces_window(self):
+        self.journal.start()
+        for _ in range(7):
+            self.forward()
+        self.journal.boundary(reserve=True)
+        self.assertEqual(self.record()['confirmed']['forwards'], 7)
+        self.assertEqual(self.record()['window']['first_forward'], 7)
+        self.forward()
+        self.journal.boundary(reserve=False)
+        self.assertEqual(self.record()['confirmed']['forwards'], 8)
+        self.assertIsNone(self.record()['window'])
+
+    def test_input_change_and_storage_error_stop_without_releasing(self):
+        for failure in ('input', 'save'):
+            with self.subTest(failure=failure):
+                self.setUp()
+                self.journal.start()
+                before = self.path.read_bytes()
+                self.forward()
+                if failure == 'input':
+                    self.journal.validate_inputs = lambda: (_ for _ in ()).throw(ValueError('changed'))
+                    with self.assertRaisesRegex(ValueError, 'changed'):
+                        self.journal.boundary(reserve=False)
+                else:
+                    with patch('lpf.search._forward_window.atomic_verified', side_effect=OSError('save failed')):
+                        with self.assertRaisesRegex(OSError, 'save failed'):
+                            self.journal.boundary(reserve=False)
+                self.assertEqual(self.path.read_bytes(), before)
+                with self.assertRaisesRegex(RuntimeError, 'no retry'):
+                    self.journal.begin_forward()
 
 
 class VerifiedStorageTests(unittest.TestCase):
