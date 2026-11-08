@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from ci import check_changed_ledger as ledger_check
 from ci import directory_preview as preview
 
 
@@ -145,6 +146,33 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertTrue(result['experiment_scope_complete'], result)
         self.assertEqual(result['changed_experiments'], ['EXP-042', 'EXP-050'])
         self.assertEqual(result['removed_ledger_experiments'], [])
+
+    def test_changed_ledger_check_validates_target_identity_and_reservation_only(self):
+        index, registry = self.seed_ledgers()
+        indexed = ('EXP-042,formal,RF-F003,sha,full_lpf,planned,not_run,not_run,'
+                   'experiments/chatgpt_topology_search/runs/EXP-042/manifest.json,purpose\n')
+        index = index.splitlines(keepends=True)[0] + indexed
+        registry += ('EXP-042,reserved,tester,key-042,purpose,RF-F003,2026-10-15T08:00:00Z,main\n'
+                     'EXP-043,reserved,tester,key-043,purpose,RF-F003,2026-10-15T08:00:00Z,main\n')
+        self.write('data/experiment_index.csv', index)
+        self.write('data/experiment_number_registry.csv', registry)
+        result = ledger_check.check(self.root, ['EXP-043', 'EXP-042'])
+        self.assertEqual([row['experiment_id'] for row in result], ['EXP-042', 'EXP-043'])
+        self.assertEqual([row['index_present'] for row in result], [True, False])
+        for ids in ([], ['EXP-042', 'EXP-042'], ['EXP-044'], ['../EXP-042']):
+            with self.subTest(ids=ids), self.assertRaises(ValueError):
+                ledger_check.check(self.root, ids)
+        for bad in (index.replace('RF-F003', 'RF-T008'),
+                    index.replace('EXP-042/manifest.json', 'EXP-043/manifest.json'),
+                    index + indexed):
+            with self.subTest(bad=bad[-100:]):
+                self.write('data/experiment_index.csv', bad)
+                with self.assertRaises(ValueError):
+                    ledger_check.check(self.root, ['EXP-042'])
+        self.write('data/experiment_index.csv', index)
+        self.write('data/experiment_number_registry.csv', registry + registry.splitlines(keepends=True)[-1])
+        with self.assertRaises(ValueError):
+            ledger_check.check(self.root, ['EXP-042'])
 
     def test_ledger_duplicate_bad_header_and_removed_row_fail_closed_or_report(self):
         index, _ = self.seed_ledgers()
