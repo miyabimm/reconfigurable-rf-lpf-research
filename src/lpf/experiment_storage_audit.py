@@ -383,6 +383,11 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main",
                     'unknown attempts forbid preservation completion')
             # Match the existing Campaign G4 guard without accessing temporary
             # raw evidence or claiming to have completed G3/G4 readback here.
+            scope = manifest.get('search_scope', {})
+            binding = scope.get('campaign') if isinstance(scope, dict) else None
+            if isinstance(binding, dict) and binding.get('kind') == 'campaign_v1':
+                require(summary_payload.get('preservation_kind') == 'campaign_v1',
+                        'Campaign summary identity mismatch')
             if summary_payload.get('preservation_kind') == 'campaign_v1':
                 require(not summary_payload.get('preservation_errors'),
                         'Campaign preservation errors forbid completion')

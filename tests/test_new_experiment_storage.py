@@ -386,6 +386,7 @@ class StoragePolicyGateTests(unittest.TestCase):
 
     def test_complete_campaign_cannot_hide_preservation_errors(self):
         self.complete()
+        self.manifest['search_scope'] = {'campaign': {'kind': 'campaign_v1'}}
         summary_path = self.root / self.record['summary']['path']
         summary = json.loads(summary_path.read_text(encoding='utf-8'))
         summary.update(preservation_kind='campaign_v1',
@@ -414,7 +415,15 @@ class StoragePolicyGateTests(unittest.TestCase):
         commit_summary()
         self.assertEqual('complete', self.validate('audit')['stage'])
         self.assertEqual('complete', selected()[0]['stage'])
+        del summary['preservation_kind']
+        commit_summary()
+        for mode in ('audit', 'finalize'):
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, 'Campaign summary identity'):
+                self.validate(mode)
+        with self.assertRaisesRegex(ValueError, 'Campaign summary identity'):
+            selected()
         # Incomplete evidence must remain auditable and must not be relabeled complete.
+        summary['preservation_kind'] = 'campaign_v1'
         summary['preservation_errors'] = ['synthetic incomplete G3']
         self.record['stage'] = 'preservation_incomplete'
         commit_summary()
