@@ -63,7 +63,7 @@ JobSpecにはdefinition、start、seed、Plan/proposal/state/source SHAを凍結
 
 具体的なChatGPT起票の実験IssueとユーザーのPi Code起動が着手指示。
 IssueがOpenなだけでは起動しない。追加の本人認証は不要だが、**完全checkout・main中央G0予約・G1は必須**。
-通常Pi sparse環境で予約や全履歴auditが可能とはみなさない。
+予約や全履歴auditの前に必要なデータと履歴が揃っていることを確認する。
 
 1. 最新mainの中央台帳でEXPを予約・照合する（番号の予測やbranch上だけの予約は不可）。
 2. `search.gates.prepare_campaign(plan, experiment_id, owner=..., request_id=..., purpose=..., selection=..., root=...)`

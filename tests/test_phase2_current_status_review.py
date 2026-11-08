@@ -53,7 +53,7 @@ class Phase2CurrentStatusTests(unittest.TestCase):
         for path in (ROOT / "project/diagnostics").iterdir():
             if path.is_file() and path.name != "README.md":
                 self.assertIn(f"({path.name})", inventory, path.name)
-        # Local Markdown targets in the new entrypoints must survive sparse checkout.
+        # Local Markdown targets in the current entrypoints must resolve.
         import re
         for page in (guide, index):
             for target in re.findall(r"\]\(([^)]+)\)", page.read_text()):

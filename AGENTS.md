@@ -45,15 +45,15 @@ For new scientific EXPs, follow `project/instructions.md`: **a concrete ChatGPT-
 
 Preserve reproducibility: constraint ID/SHA, bands/S2P fingerprints, commit/dirty patch, environment and seed, complete circuit and all six variable-C settings, search budget/grid, termination state, and independent-validation evidence. Distinguish planned, run, converged, nonconverged, failed, unverified, and preserved states. Never delete or migrate historical research evidence as routine cleanup.
 
-## Pi sparse workspace
+## Pi workspace
 
-Pi Code's normal working tree excludes `docs/`, `data/` and `experiments/`. Read `project/README.md` and use the `project/` and `rf/` inputs. Immutable RF snapshots contain historical logical `data/...` paths; the RF loader resolves them to the byte-identical `rf/` files and must fail rather than fall back to missing legacy files. Full historical EXP audits, source recovery and EXP-number reservation require a separately obtained complete evidence checkout; do not label an incomplete sparse audit as PASS. This repository migration remains Draft/unfinished until the owner-approved cutover.
+Pi Code normally uses a complete checkout containing the needed repository files. Read `project/README.md` and use the current `project/` and `rf/` inputs. Immutable RF snapshots contain historical logical `data/...` paths; the RF loader resolves them to the byte-identical `rf/` files and must fail rather than fall back to missing legacy files. Full historical EXP audits, source recovery and EXP-number reservation require verifying that the checkout has the necessary evidence and Git history; do not label an incomplete audit as PASS. This repository migration remains Draft/unfinished until the owner-approved cutover.
 
 ## Local workspace hygiene
 
 - Use the existing checkout by default. Do not create additional clones, backup directories, or persistent project directories outside it without the user's prior approval. A Git worktree may be created without separate approval when isolation is needed; report its path and purpose.
 - After a PR is merged, remove the linked worktree used for that PR once its merge and safe removal are verified. First inspect tracked, untracked and ignored files, recovery state, and research evidence; do not force removal or discard unpreserved data. If removal is unsafe or the current session is inside that worktree, switch to another checkout first or report the blocker and retained path.
-- When a complete evidence checkout is required, explain why, where it will be created, and the intended retention or cleanup before obtaining the user's approval. Do not claim a sparse or shallow checkout is a complete evidence audit.
+- When a separate complete evidence checkout is required, explain why, where it will be created, and the intended retention or cleanup before obtaining the user's approval. Do not claim an incomplete or shallow checkout is a complete evidence audit.
 - Use clearly named system temporary directories for disposable test files; report their paths when they persist beyond the task. Remove only disposable files after confirming they contain no research evidence, results, checkpoints, or user data. Never automatically delete evidence or an existing directory merely for workspace cleanup; follow the experiment storage policy and obtain owner approval where required.
 - At handoff, list any worktrees, extra checkouts, or temporary directories created for the task, their purpose, and whether they remain. Do not silently leave project directories behind.
 

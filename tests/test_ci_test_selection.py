@@ -155,21 +155,13 @@ class SelectionTests(unittest.TestCase):
         self.assertTrue(result['full'])
         self.assertIn('tests/test_new_contract.py', result['changed_tests'])
 
-    def test_sparse_history_comparison(self):
-        self.write('src/lpf/search/starts.py', 'changed\n')
-        self.commit()
-        self.git('sparse-checkout', 'init', '--cone')
-        self.git('sparse-checkout', 'set', 'src')
-        self.assertFalse((self.root / 'rf').exists())
-        result = self.plan()
-        self.assertEqual(result['classes'], ['OPT'])
-        self.assertFalse(result['full'])
-        self.git('sparse-checkout', 'disable')
-
     def test_suite_boundaries(self):
         self.assertIn('test_phase2_branch_mna.py', selector.SUITES['RF'])
         self.assertIn('test_issue343_d3_science.py', selector.SUITES['RF'])
-        self.assertIn('test_issue343_d3_science', selector.SPARSE['RF'])
+        self.assertIn('test_constraint_versioning.py', selector.SUITES['RF'])
+        self.assertIn('test_issue307_constraints.py', selector.SUITES['RF'])
+        self.assertEqual(selector.path_classes('tests/test_constraint_versioning.py'), {'RF'})
+        self.assertEqual(selector.path_classes('tests/test_issue307_constraints.py'), {'RF'})
         self.assertEqual(selector.path_classes('src/lpf/phase2_models/limited_candidate_evidence.py'), {'FULL'})
         self.assertIn('test_issue317_fixed_worker.py', selector.SUITES['RUN'])
         self.assertNotIn('test_issue317_fixed_worker.py', selector.SUITES['GATE'])
@@ -188,11 +180,10 @@ class SelectionTests(unittest.TestCase):
 
     def test_reviewed_source_changes_select_direct_regressions(self):
         examples = [
-            ('src/lpf/search/proposals.py', {'RUN', 'GATE'},
-             'test_issue325_campaign.py', 'test_issue325_campaign'),
-            ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py', 'test_issue313_preflight'),
+            ('src/lpf/search/proposals.py', {'RUN', 'GATE'}, 'test_issue325_campaign.py'),
+            ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py'),
         ]
-        for path, expected, normal_test, sparse_test in examples:
+        for path, expected, normal_test in examples:
             with self.subTest(path=path):
                 self.git('reset', '--hard', self.base)
                 self.write(path, 'changed\n')
@@ -200,21 +191,23 @@ class SelectionTests(unittest.TestCase):
                 result = self.plan()
                 self.assertFalse(result['full'], result)
                 self.assertEqual(set(result['classes']), expected)
-                for sparse, test in ((False, normal_test), (True, sparse_test)):
-                    if test is None:
-                        continue
-                    with self.subTest(sparse=sparse), patch.object(Path, 'is_file', return_value=True), \
-                         patch.dict(os.environ, {'GITHUB_STEP_SUMMARY': ''}), \
-                         patch('builtins.print'), patch.object(selector.subprocess, 'run') as run:
-                        selector.execute(result, sparse)
-                    commands = [call.args[0] for call in run.call_args_list]
-                    self.assertTrue(any(test in command for command in commands), commands)
+                with patch.object(Path, 'is_file', return_value=True), \
+                     patch.dict(os.environ, {'GITHUB_STEP_SUMMARY': ''}), \
+                     patch('builtins.print'), patch.object(selector.subprocess, 'run') as run:
+                    selector.execute(result)
+                commands = [call.args[0] for call in run.call_args_list]
+                self.assertTrue(any(normal_test in command for command in commands), commands)
 
     def test_strict_storage_fast_path_does_not_run_campaign(self):
         selected = dict(classes=['STORE'], full=False, reasons=[], changed_tests=[], storage_only=True)
         with patch.object(selector.subprocess, 'run') as run:
-            selector.execute(selected, False)
+            selector.execute(selected)
         run.assert_not_called()
+
+    def test_unknown_cli_argument_is_rejected(self):
+        with patch.object(sys, 'argv', ['select_ci_tests.py', '--unknown']):
+            with self.assertRaisesRegex(SystemExit, 'Usage:'):
+                selector.main()
 
     def test_classifier_exception_selects_full(self):
         self.write('README.md', 'changed\n')
@@ -242,7 +235,7 @@ class SelectionTests(unittest.TestCase):
             # without running the heavyweight suite in this fixture.
             with patch('builtins.print') as output, patch.object(selector.subprocess, 'run', side_effect=RuntimeError('stop')):
                 with self.assertRaisesRegex(RuntimeError, 'stop'):
-                    selector.execute(result, False)
+                    selector.execute(result)
             self.assertIn('test_unregistered.py', str(output.call_args_list))
         finally:
             os.chdir(old)
