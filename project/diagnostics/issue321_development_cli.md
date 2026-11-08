@@ -17,8 +17,12 @@ uv run --frozen python scripts/run_rf_search.py develop \
   --spot-checks '{"terminal":[0]}' --output /tmp/<未存在ディレクトリ>
 ```
 
+現役実装は `src/lpf/cli/run_rf_search.py`。上記の旧パスは互換入口として残し、
+`PYTHONPATH=src uv run --frozen python -m lpf.cli.run_rf_search` からも同じCLIを呼べる。
+source identityは互換入口と `src/` の実装双方を含む。
+
 YAMLは既存schema2のまま。`definition` にcheckout内の完全なCircuitDefinition JSONの
-path/source SHA/canonical SHAを必須指定する。`project/fixtures/issue313_preflight.yaml` は
+path/source SHA/canonical SHAを必須指定する。`rf/fixtures/issue313_preflight.yaml` は
 read-only用のnull definition・1 step例であり、そのまま実行する入力ではない。
 設定をコードが自動生成・書換えすることはない。
 

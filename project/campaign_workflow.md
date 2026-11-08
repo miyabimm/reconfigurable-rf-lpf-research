@@ -23,7 +23,7 @@ structureは節点数・固定/可変C数、許可L/C種類・role、coupling/IC
 RF部品上限を拡張する仕組みではない。`independent`は `not_run`かbounded terminal spotのみ。
 terminal検査では `max_candidates` をselectionの `top_k` と一致させ、sample indexを明示する。
 
-**入力例の出典：** schema2の基底フィールドは[静的fixture](fixtures/issue313_preflight.yaml)、
+**入力例の出典：** schema2の基底フィールドは[静的fixture](../rf/fixtures/issue313_preflight.yaml)、
 Campaign追加キーとproposal生成例は[Campaign契約テスト](../tests/test_issue325_campaign.py)の
 `setup_campaign()` / `proposal()`。これらは開発fixtureであり、承認済み研究予算ではない。
 構造は既存dataclass全フィールド（枝順・向き、physical_order、符号付き結合slot、IC-fixedを含む）を保つ。

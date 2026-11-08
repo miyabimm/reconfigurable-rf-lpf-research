@@ -25,7 +25,7 @@ from lpf.search.preflight import check_next_batch
 from lpf.search.storage import sha
 from test_issue311_performance import synthetic
 
-FIXTURE = ROOT / 'project/fixtures/issue313_preflight.yaml'
+FIXTURE = ROOT / 'rf/fixtures/issue313_preflight.yaml'
 
 
 class PreflightTests(unittest.TestCase):

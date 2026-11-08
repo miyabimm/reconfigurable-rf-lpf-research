@@ -28,7 +28,7 @@
 | 限定実証・レビュー証拠 | [#281](issue281_hybrid.md)、[#282](issue282_minimax.md)、[#283](issue283_pipeline.md)、[#291](issue291_generic_slsqp.md) | 汎用solver／合成関数の検証。RFの収束・適合とは別 |
 | 歴史・旧仕様 | [#284](issue284_rf_pipeline_adapter.md)、[#285](issue285_rf_comparison_plan.md) | 旧RF adapterの限定検証と未実行比較案。実行承認・凍結済みPlanではない |
 | 歴史・旧仕様 | [#302](issue302_sequential_search.md) | schema1 fixture runnerの実装時契約。現Campaignの正式G2とは別 |
-| 限定実証・レビュー証拠 | [静的schema2 fixture](../fixtures/issue313_preflight.yaml) | #313/#315等のテスト入力。`definition: null`の基底例であってCampaign研究計画ではない |
+| 限定実証・レビュー証拠 | [静的schema2 fixture](../../rf/fixtures/issue313_preflight.yaml) | #313/#315等のテスト入力。`definition: null`の基底例であってCampaign研究計画ではない |
 | 歴史・旧仕様 | [旧Stage候補記録](../stage4_candidate_records.md)・[有限列挙](../stage4_topology_enumeration.md)、[legacy Git replay](../legacy_git_replay.md) | 旧候補／履歴再取得の詳細。現ガイドの通常事前参照にはしない |
 | 歴史・旧仕様 | [旧共通CLI入力](../experiments/) | Issue限定YAML/starts/definitionとschema1 fixture。旧実験CLIは廃止済み（[project README](../README.md#廃止済み旧探索入口)）。未凍結templateを起動しない |
 | 未整理（本Issue外） | 広域 `docs/`・`data/`・旧EXP | [#170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)の棚卸し領域。ここでは完全な歴史証拠auditを実施したとはしない |
@@ -69,7 +69,7 @@ GitHub上のIssue/PR全リンクや全EXPの参照完結性までは監査して
 | #235/#248診断のmd/JSON/py | #239が#235 JSONのvector/SHAを参照。#248 mdがJSON・再現コードを参照。単なる一時ログではない | **削除候補から除外**。証拠分類・復元性の審査なく分離しない |
 | #259 dense JSON、#254容量診断 | 旧CLI注意書き／旧保存比較の根拠。dense値や容量実測はガイドに転記しない | **保持**。旧経路廃止後も科学的/保存レビュー証拠性を別途審査 |
 | #330 md/py | mdに実行ログ/raw SHA・旧失敗との区別、コード再現手順がある。tmpは永続保管ではない | **保持**。再現コードだけの削除も根拠喪失になる。rawの自動削除・移動はしない |
-| `project/fixtures/` | #313/#315テストと診断・CLI説明が直接参照 | **保持**。ファイル名だけで不要な一時資料にしない |
+| `rf/fixtures/` | #313/#315テストと診断・CLI説明が直接参照 | **保持**。ファイル名だけで不要な一時資料にしない |
 | #285未実行比較案 | 旧比較仮説・未承認予算を記録。汎用操作に不要 | 歴史参照へ分類済み。将来削除する場合もIssue/PRで参照とGit復元性を確認してから |
 
 #333は現役 `project/` の入口整理のみ。#170の広域inventory修復、元raw/旧EXPの保存方式変更や削除、

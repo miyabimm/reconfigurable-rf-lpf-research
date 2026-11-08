@@ -4,7 +4,7 @@
 
 ```python
 from lpf.search.plan import load_preflight
-plan = load_preflight('project/fixtures/issue313_preflight.yaml')
+plan = load_preflight('rf/fixtures/issue313_preflight.yaml')
 requested_grid = plan.requested_grid('terminal')
 # Stage 3側へ応答とは独立に渡す。ここではforwardを起動しない。
 # evaluate_requirements(response, requirements, requested_grid=requested_grid)
@@ -26,7 +26,7 @@ T006 fullでは通常28区間のほか3001点×6設定、matchingでは14区間�
 
 ## YAMLキー
 
-完全例は `project/fixtures/issue313_preflight.yaml`（開発fixture、実験計画ではない）。
+完全例は `rf/fixtures/issue313_preflight.yaml`（開発fixture、実験計画ではない）。
 未知・重複キーと省略は拒否する。
 
 - `rf: {constraint_id, allow_trial}`：正式IDも明示。trialはboolean trueが必要。

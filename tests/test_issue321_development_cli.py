@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -54,6 +55,18 @@ class DevelopmentCLITests(unittest.TestCase):
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
             code = cli.main(argv)
         return code, out.getvalue(), err.getvalue()
+
+    def test_module_and_compatibility_entry_have_same_help_and_rejection(self):
+        env = dict(os.environ, PYTHONPATH=str(ROOT/'src'))
+        for args in (['--help'], ['preflight', '--config', 'unused.yaml']):
+            results = [subprocess.run([sys.executable, *entry, *args], capture_output=True,
+                                      text=True, timeout=30, env=env)
+                       for entry in ([str(ROOT/'scripts/run_rf_search.py')],
+                                     ['-m', 'lpf.cli.run_rf_search'])]
+            self.assertEqual(results[0].returncode, results[1].returncode)
+            # argparse derives its usage program name from the entry point.
+            self.assertEqual(results[0].stdout, results[1].stdout)
+            self.assertEqual(results[0].stderr, results[1].stderr)
 
     def test_retired_schema1_commands_rejected_without_output(self):
         for command in ('preflight', 'run'):

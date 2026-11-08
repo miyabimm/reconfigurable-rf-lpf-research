@@ -26,7 +26,7 @@ class FixedStageTests(unittest.TestCase):
         self.addCleanup(self.sources.cleanup)
         self.raw = tempfile.TemporaryDirectory()
         self.addCleanup(self.raw.cleanup)
-        self.config = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        self.config = yaml.safe_load((ROOT/'rf/fixtures/issue313_preflight.yaml').read_text())
         self.counter = 0
 
     def setup_model(self, cid='RF-F003', mode='full_lpf', mutate=None):
