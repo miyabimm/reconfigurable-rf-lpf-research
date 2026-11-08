@@ -213,12 +213,13 @@ def compile_requirements(policy, bands, mode='full_lpf'):
 MAX_GRID_SAMPLES = 1_000_000
 
 
-def build_evaluation_grid(requirements, points_per_interval):
+def build_evaluation_grid(requirements, points_per_interval, stop_points_per_interval=None):
     """Freeze interval-major, ascending inclusive samples, without RF forwards.
 
     The complete Requirements fingerprint is checked before allocation. Overlap
     between distinct intervals is intentional and never deduplicated. Fixed-step
     additional intervals keep their JSON density regardless of ordinary points.
+    An optional separate count applies only to ordinary H2/H3 intervals.
     """
     from ..rf_core.model import EvaluationGrid
     from lpf.rf_core._grid import CASES
@@ -231,6 +232,10 @@ def build_evaluation_grid(requirements, points_per_interval):
         raise ValueError('Requirements fingerprint mismatch')
     if type(points_per_interval) is not int or not 2 <= points_per_interval <= MAX_GRID_SAMPLES:
         raise ValueError('points_per_interval must be an integer >=2 within allocation limit')
+    if (stop_points_per_interval is not None and
+            (type(stop_points_per_interval) is not int or
+             not 2 <= stop_points_per_interval <= MAX_GRID_SAMPLES)):
+        raise ValueError('stop_points_per_interval must be an integer >=2 within allocation limit')
     if req.mode not in ('full_lpf', 'matching_only'):
         raise ValueError('Unknown evaluation mode')
     ordinary = [i for i in req.intervals if i.csv_line is not None]
@@ -258,7 +263,8 @@ def build_evaluation_grid(requirements, points_per_interval):
             if (i.segment != i.csv_line-2 or not 0 <= i.segment < 28 or i.step_hz is not None or
                     i.type != ('pass' if i.region in ('UL', 'DL') else 'stop')):
                 raise ValueError('Invalid ordinary interval identity')
-            count = points_per_interval
+            count = (stop_points_per_interval if i.region in ('H2', 'H3') and
+                     stop_points_per_interval is not None else points_per_interval)
         else:
             if (req.mode != 'full_lpf' or i.region != 'additional' or i.segment < 28 or
                     type(i.step_hz) is not int or i.step_hz <= 0):
