@@ -16,8 +16,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL_RE = re.compile(r"!?\[[^\]\n]*\]\(([^)\n]+)\)")
-REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(\S+)")
+REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(<[^>\n]+>|\S+)")
 HTML_REF = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""")
 ACTIVE_ENTRYPOINTS = (
     "README.md",
@@ -43,6 +42,48 @@ def strip_markdown_literal(line):
     return re.sub(r"\x60[^\x60]*\x60", "", line)
 
 
+def markdown_destinations(line):
+    """Yield inline targets, including nested labels and balanced parentheses."""
+    stack = []
+    # Malformed, repeatedly unterminated links must not create quadratic work.
+    budget = max(1024, len(line) * 8)
+    i = 0
+    while i < len(line):
+        char = line[i]
+        if char == "\\":
+            i += 2
+            continue
+        if char == '[':
+            stack.append(i)
+        elif char == ']' and stack:
+            stack.pop()
+            if i + 1 < len(line) and line[i + 1] == '(':
+                start, depth, angle = i + 2, 1, False
+                j = start
+                while j < len(line):
+                    budget -= 1
+                    if budget < 0:
+                        raise ValueError('Markdown link parse complexity limit exceeded')
+                    char = line[j]
+                    if char == "\\":
+                        j += 2
+                        continue
+                    if char == '<' and j == start:
+                        angle = True
+                    elif char == '>' and angle:
+                        angle = False
+                    elif not angle and char == '(':
+                        depth += 1
+                    elif not angle and char == ')':
+                        depth -= 1
+                        if depth == 0:
+                            yield line[start:j]
+                            i = j
+                            break
+                    j += 1
+        i += 1
+
+
 def all_links(md, known):
     issues, stats = [], collections.Counter()
     for source in md:
@@ -59,7 +100,7 @@ def all_links(md, known):
                 fence = (mark.group(1)[0], len(mark.group(1)))
                 continue
             line = strip_markdown_literal(raw_line)
-            found = [m.group(1) for m in LOCAL_RE.finditer(line)]
+            found = list(markdown_destinations(line))
             ref = REF_DEF.match(line)
             if ref:
                 found.append(ref.group(1))
@@ -233,7 +274,7 @@ def main():
         "source_files_deleted_or_moved_by_test": 0,
         "limitations": ["No external web link reachability test",
                        "GitHub Markdown fragments are not fully validated",
-                       "Regex parser may miss nested destinations and dynamic links"],
+                       "Markdown parser may miss other CommonMark forms and dynamic links"],
         "issues": issues,
     }
     print(json.dumps(result, ensure_ascii=False))

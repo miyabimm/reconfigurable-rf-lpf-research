@@ -66,6 +66,41 @@ class Phase2CurrentStatusTests(unittest.TestCase):
             self.assertNotEqual(bad.returncode, 0)
             self.assertIn('target.md', bad.stderr)
 
+    def test_document_audit_checks_nested_destinations_and_angle_references(self):
+        with tempfile.TemporaryDirectory(prefix='issue371-nested-links-') as temp:
+            root = Path(temp)
+            (root/'ci').mkdir()
+            (root/'project').mkdir()
+            shutil.copyfile(ROOT/'ci/verify_phase2_cleanup_w1_links.py',
+                            root/'ci/verify_phase2_cleanup_w1_links.py')
+            note = root/'project/note.md'
+            note.write_text('[nested](file(one).md)\n[![icon](ok.png)](outer(two).md)\n')
+            (root/'project/file(one').write_text('misleading existing prefix')
+            (root/'project/ok.png').write_text('fixture')
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            command = [sys.executable, '-S', str(root/'ci/verify_phase2_cleanup_w1_links.py'),
+                       '--project-documents']
+            bad = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(bad.returncode, 0, bad.stdout)
+            self.assertIn('file(one).md', bad.stderr)
+            self.assertIn('outer(two).md', bad.stderr)
+            (root/'project/file(one).md').write_text('synthetic')
+            (root/'project/outer(two).md').write_text('synthetic')
+            (root/'project/space file.md').write_text('synthetic')
+            note.write_text(note.read_text() + '[ref]: <space file.md> "title"\n')
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            subprocess.run(command, cwd=root, capture_output=True, text=True, check=True)
+            subprocess.run(['git', '-C', str(root), 'mv', 'project/outer(two).md',
+                            'project/renamed.md'], check=True)
+            bad = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(bad.returncode, 0)
+            self.assertIn('outer(two).md', bad.stderr)
+            note.write_text('[x](' * 1000 + '\n')
+            complex_link = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(complex_link.returncode, 0)
+            self.assertIn('complexity limit', complex_link.stderr)
+
     def test_campaign_guide_entrypoints_and_diagnostic_inventory(self):
         """Keep one current entrypoint without orphaning Issue evidence."""
         guide = ROOT / "project/campaign_workflow.md"
