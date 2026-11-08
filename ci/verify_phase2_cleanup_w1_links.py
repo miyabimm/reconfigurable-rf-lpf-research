@@ -202,20 +202,25 @@ def verify_history():
 
 def main():
     args = sys.argv[1:]
-    if args not in ([], ["--active-only"]):
-        raise SystemExit("Usage: verify_phase2_cleanup_w1_links.py [--active-only]")
+    if args not in ([], ["--active-only"], ["--project-documents"]):
+        raise SystemExit("Usage: verify_phase2_cleanup_w1_links.py [--active-only|--project-documents]")
     known = tracked()
     md = sorted(p for p in known if p.endswith((".md", ".mdx", ".markdown")))
-    if args:
+    project_only = args == ["--project-documents"]
+    if project_only:
+        md = [p for p in md if p.startswith("project/")]
+    elif args:
         missing = sorted(set(ACTIVE_ENTRYPOINTS) - known)
         if missing:
             raise SystemExit("Missing active documentation: " + ", ".join(missing))
         md = list(ACTIVE_ENTRYPOINTS)
     issues, stats = all_links(md, known)
-    verified_pages = verify_status()
+    # DOC-only must not read the RF registry or audit historical EXPs.
+    verified_pages = 0 if project_only else verify_status()
     source_files = 0 if args else verify_history()
+    scope = "project documents" if project_only else ("active entrypoints" if args else "W1 current checked-out tracked files")
     result = {
-        "phase": "Phase 2", "scope": ("active entrypoints" if args else "W1 current checked-out tracked files"),
+        "phase": "Phase 2", "scope": scope,
         "tracked_files": len(known), "markdown_files": len(md),
         "markdown_links": stats["all_links"],
         "local_resolved": stats["local_resolved"],
@@ -223,7 +228,7 @@ def main():
         "anchor_unchecked": stats["anchor_unchecked"],
         "missing_or_invalid_local_links": len(issues),
         "current_status_pages_checked": verified_pages,
-        "historical_checks": "not run (--active-only)" if args else "run",
+        "historical_checks": "not run (document-only mode)" if project_only else ("not run (--active-only)" if args else "run"),
         "protected_source_blob_checks": source_files,
         "source_files_deleted_or_moved_by_test": 0,
         "limitations": ["No external web link reachability test",

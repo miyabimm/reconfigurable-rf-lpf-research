@@ -1,5 +1,8 @@
 """Current Phase 2 documentation entrypoint guardrails."""
+import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -41,6 +44,27 @@ class Phase2CurrentStatusTests(unittest.TestCase):
                 self.assertTrue(any(issue[0] == "project/roadmap.md" and
                                     issue[2] == "missing-campaign.md" and
                                     issue[3] == "missing" for issue in issues), issues)
+
+    def test_project_documents_mode_requires_no_rf_or_dependencies_and_catches_deleted_target(self):
+        with tempfile.TemporaryDirectory(prefix='issue371-doc-audit-') as temp:
+            root = Path(temp)
+            (root/'ci').mkdir()
+            (root/'project').mkdir()
+            shutil.copyfile(ROOT/'ci/verify_phase2_cleanup_w1_links.py',
+                            root/'ci/verify_phase2_cleanup_w1_links.py')
+            (root/'project/note.md').write_text('[target](target.md)\n')
+            (root/'project/target.md').write_text('target\n')
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            command = [sys.executable, '-S', str(root/'ci/verify_phase2_cleanup_w1_links.py'),
+                       '--project-documents']
+            good = subprocess.run(command, cwd=root, capture_output=True, text=True, check=True)
+            self.assertEqual(json.loads(good.stdout)['markdown_files'], 2)
+            subprocess.run(['git', '-C', str(root), 'mv', 'project/target.md',
+                            'project/renamed.md'], check=True)
+            bad = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(bad.returncode, 0)
+            self.assertIn('target.md', bad.stderr)
 
     def test_campaign_guide_entrypoints_and_diagnostic_inventory(self):
         """Keep one current entrypoint without orphaning Issue evidence."""
