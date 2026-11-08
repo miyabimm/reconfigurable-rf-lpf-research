@@ -132,8 +132,8 @@ def freeze(d, root):
         inputs[key] = {'path': spec['path'], 'sha256': actual}
     grids = {}
 
-    def grid(name, points):
-        g = build_evaluation_grid(req, points)
+    def grid(name, points, stop_points=None):
+        g = build_evaluation_grid(req, points, stop_points)
         n = len(g.frequency_hz)
         grids[name] = dict(points_per_interval=points, requested_samples_per_forward=n,
                            sha256=grid_fingerprint(g), frequency_hz=g.frequency_hz.tolist(),
@@ -143,6 +143,8 @@ def freeze(d, root):
                                                   samples=int(((g.segment == i.segment) &
                                                                (g.setting == i.setting)).sum()))
                                              for i in req.intervals])
+        if stop_points is not None:
+            grids[name]['stop_points_per_interval'] = stop_points
         return n
 
     selection = d['selection']
@@ -190,14 +192,19 @@ def freeze(d, root):
             raise ValueError('Nonempty fixed steps required')
         stage_names, stages = set(), {}
         for step in steps:
-            fields(step, 'name solver aggregation points_per_interval max_requested_samples options')
+            fields(step, 'name solver aggregation points_per_interval max_requested_samples options' +
+                   (' stop_points_per_interval' if isinstance(step, dict) and
+                    'stop_points_per_interval' in step else ''))
+            if 'stop_points_per_interval' in step and step['stop_points_per_interval'] is None:
+                raise ValueError('stop_points_per_interval must be an integer >=2')
             sname = step['name']
             if not isinstance(sname, str) or not sname.isidentifier() or sname in stage_names:
                 raise ValueError('Unique identifier step names required')
             stage_names.add(sname)
             _solver(step)
             positive(step['max_requested_samples'])
-            one = grid(f'{name}/{sname}', step['points_per_interval'])
+            one = grid(f'{name}/{sname}', step['points_per_interval'],
+                       step.get('stop_points_per_interval'))
             check_next_batch(one, step_remaining=step['max_requested_samples'],
                              job_remaining=arm['max_requested_samples'],
                              trial_remaining=d['max_trial_requested_samples'],

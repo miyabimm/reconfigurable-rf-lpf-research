@@ -30,6 +30,27 @@ Campaign追加キーとproposal生成例は[Campaign契約テスト](../tests/te
 未知/重複キー・不正型は拒否する。詳細は[入力契約](diagnostics/issue325_campaign.md#入力契約)と
 [preflight実装](../src/lpf/search/preflight.py)、[proposal loader](../src/lpf/search/proposals.py)。
 
+### 探索stepの阻止域点数（Issue #363）
+
+schema2の各 `arms[].steps[]` だけに、任意の整数 `stop_points_per_interval`（2以上）を
+指定できる。未指定なら従来どおり全通常区間が `points_per_interval` 点。指定時は通常の
+H2/H3区間のみその点数で、UL/DL・追加固定step帯域・S2P範囲は不変。例えば
+`points_per_interval: 2` と `stop_points_per_interval: 3` はRF-T008 full_lpfで
+UL/DL 28点、H2 21点、H3 21点、計70 samples/forward（旧設定は56点）。
+各区間は両端を含む等間隔で、3点指定なら両端＋中央。B13/B14は別区間のまま。
+selection・terminal・anytime・dense格子は変わらない。Planはstep格子の配列/SHAと実点数を
+凍結し、sample予約と実forwardの計数に使用する。段階ごとに固定する機能であり、optimizer内で
+動的に格子を切り替えない。将来のHybrid粗・広域→SLP密・局所へ接続可能だが、性能は未実証。
+
+Hybrid(sum)は残差成分の二乗和なので、H2/H3点数増加は目的中の高調波違反項の個数・重みを
+変える。重み正規化やhard制約変更は行わず、旧56点の目的値と直接比較しない。strict 30dBは
+同条件の共通評価格子で比較する。探索中のRF適合、密格子・連続帯域性能は保証されない。
+
+後続 #361 に適用する場合は、Planの探索stepに上記2/3を指定し、Pilot `max_evaluations: 3000`、
+Main/Extension `8000`、step予約案それぞれ220,000／575,000 samplesを設定してpreflightで
+selection・terminal・anytimeを含むJob/Trial上限を照合してから凍結する（詳細・権限は #361）。
+これらは計画案であり、本変更は#361の実行許可や科学的結果ではない。
+
 ## 2. 開発（非EXP）：1提案ずつ提出する
 
 以下は呼出側が `campaign_yaml`、`proposal_yaml`、未存在のcheckout外system tmpパス `output` を用意するAPI例。
