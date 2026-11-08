@@ -171,6 +171,64 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual((saved['confirmed']['forwards'], saved['confirmed']['requested']), (101, 101*n))
         self.assertIsNone(saved['window'])
 
+    def test_hybrid_checkpoint_100_records_objective_and_distinct_best(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            step = c['arms'][0]['steps'][0]
+            step.update(solver='hybrid', aggregation='sum', max_requested_samples=102*56,
+                        options=dict(maxiter=2, max_restarts=0, max_evaluations=102, restart_sigma=0.1))
+            c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 9000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=3., sum_violation_db=5., rows=[])
+        calls = []
+        def assess(*args, **kwargs):
+            calls.append(1)
+            return dict(assessment, mandatory_g=[-3., -2., 0.] if len(calls) == 1 else [-3., -1., -1.])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response), \
+             patch('lpf.search._window_evaluation.evaluate_requirements', side_effect=assess):
+            for _ in range(100): meter.evaluate(x)
+        raw = json.loads(path.read_bytes())
+        self.assertEqual(raw['confirmed']['forwards'], 100)
+        rows = raw['payload']['batches']
+        self.assertEqual((rows[0]['assessment']['hybrid_objective']['value'],
+                          rows[1]['assessment']['hybrid_objective']['value']), (14., 12.))
+        self.assertNotIn('mandatory_g', rows[0]['assessment'])
+        self.assertEqual(raw['payload']['best_observed_by_stage']['demo/coarse']['batch_index'], 0)
+        self.assertEqual(raw['payload']['best_hybrid_observed_by_stage']['demo/coarse']['batch_index'], 1)
+
+    def test_window_hybrid_objective_matches_solver_aggregation(self):
+        from lpf.search._window_evaluation import _hybrid_observation
+        # Equal max/sum violations, but different sum-of-squares objectives.
+        a = dict(worst_il_db=1., mandatory_g=[-3., -2., 0.])
+        b = dict(worst_il_db=1., mandatory_g=[-3., -1., -1.])
+        for aggregation in ('sum', 'max'):
+            scores = [_hybrid_observation(v, aggregation) for v in (a, b)]
+            for source, score in zip((a, b), scores):
+                residuals = np.r_[np.sqrt(source['worst_il_db']), np.maximum(0., -np.asarray(source['mandatory_g']))]
+                expected = float(np.sum(residuals * residuals) if aggregation == 'sum' else np.max(residuals * residuals))
+                self.assertEqual((score['status'], score['value']), ('evaluated', expected))
+            if aggregation == 'sum':
+                self.assertEqual([s['value'] for s in scores], [14., 12.])
+            else:
+                self.assertEqual([s['value'] for s in scores], [9., 9.])
+        for a in (dict(worst_il_db=-1., mandatory_g=[0.]),
+                  dict(worst_il_db=float('inf'), mandatory_g=[0.]),
+                  dict(worst_il_db=1., mandatory_g=[float('-inf')]),
+                  dict(worst_il_db=1., mandatory_g=[-1e300])):
+            self.assertEqual(_hybrid_observation(a, 'sum')['status'], 'invalid')
+
     def test_frozen_model_validation_matches_legacy_and_rejects_bad_values(self):
         from lpf.search.component_constraints import validate_values
         from lpf.rf_core.model import build_rf_model

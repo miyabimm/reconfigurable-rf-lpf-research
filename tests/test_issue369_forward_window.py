@@ -108,6 +108,8 @@ class ForwardJournalTests(unittest.TestCase):
         self.assertEqual(self.record()['termination']['status'], 'unknown')
         self.assertEqual(self.record()['confirmed']['requested'], 0)
         self.assertEqual(self.record()['uncertain_upper']['requested'], 7000)
+        self.assertEqual(self.record()['payload'], json.loads(saved)['payload'])
+        self.assertEqual(self.record()['payload']['observations'], [])
         with self.assertRaisesRegex(RuntimeError, 'no retry'):
             self.journal.boundary(reserve=False)
         other = ForwardJournal(self.path, identity={}, validate_inputs=lambda: None,

@@ -168,7 +168,7 @@ class ForwardJournal:
         record = dict(self.last_record, checkpoint_number=self.checkpoint_number+1,
             io_before=dict(write_calls=self.write_calls, written_bytes=self.written_bytes,
                            read_calls=self.read_calls, read_bytes=self.read_bytes),
-            payload=self.snapshot(), termination=dict(status='unknown', reason=reason))
+            termination=dict(status='unknown', reason=reason))
         measured = atomic_verified(self.path, record)
         self.write_calls += measured['write_calls']
         self.written_bytes += measured['written_bytes']

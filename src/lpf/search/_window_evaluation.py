@@ -8,10 +8,35 @@ from .performance import evaluate_requirements, grid_fingerprint
 from .storage import plain, vector_sha
 
 
+def _hybrid_observation(a, aggregation):
+    """Record the exact unweighted Hybrid scalar without retaining mandatory_g."""
+    from lpf.optimizers._objectives import aggregate, squared_terms
+    invalid = dict(aggregation=aggregation, status='invalid', value=None,
+                   il_term=None, violation_squared_sum=None, max_violation_squared=None)
+    il = a['worst_il_db']
+    if not np.isfinite(il) or il < 0:
+        return invalid
+    with np.errstate(over='ignore', invalid='ignore'):
+        residuals = np.r_[np.sqrt(il), np.maximum(0., -np.asarray(a['mandatory_g'], dtype=float))]
+        if not np.all(np.isfinite(residuals)):
+            return invalid
+        terms = squared_terms(residuals, None)
+        value = aggregate(terms, aggregation)
+        penalty = float(np.sum(terms[1:]))
+        maximum = float(np.max(terms[1:], initial=0.))
+    if not np.isfinite(value) or not np.isfinite(maximum):
+        return invalid
+    return dict(aggregation=aggregation, status='evaluated', value=value,
+                il_term=float(terms[0]), violation_squared_sum=penalty if np.isfinite(penalty) else None,
+                max_violation_squared=maximum)
+
+
 def _compact_assessment(a):
     fields = ('status', 'policy_id', 'policy_fingerprint', 'mode', 'requirements_fingerprint',
               'grid_fingerprint', 'strict_feasible', 'worst_il_db', 'max_violation_db', 'sum_violation_db')
     compact = {key: a[key] for key in fields}
+    if 'hybrid_objective' in a:
+        compact['hybrid_objective'] = a['hybrid_objective']
     if 'nominal_pass' in a:
         compact['nominal_pass'] = a['nominal_pass']
     else:
@@ -31,6 +56,9 @@ class WindowJobEvaluation(FixedJobEvaluation):
         self.cached_evaluator = None
         super().__init__(plan, definition, policy, arm, path, spec, root=root)
         self.result['kind'] = 'development_window_raw_v1'
+        chosen = next(a for a in self.data['config']['arms'] if a['name'] == arm)
+        self.hybrid_stages = {f"{arm}/{step['name']}": step['aggregation']
+                              for step in chosen['steps'] if step['solver'] == 'hybrid'}
 
     def _validate_checkpoint(self):
         from .runner import _validate_development_output
@@ -81,6 +109,19 @@ class WindowJobEvaluation(FixedJobEvaluation):
         snapshot['best_observed_by_stage'] = {stage: dict(batch_index=index,
             vector=snapshot['batches'][index]['vector'], vector_sha256=original[index]['vector_sha256'],
             assessment=snapshot['batches'][index]['assessment']) for stage, (_, index) in best.items()}
+        hybrid_best = {}
+        for index, row in enumerate(original):
+            if row['status'] != 'completed' or row['stage'] not in self.hybrid_stages:
+                continue
+            score = row['assessment']['hybrid_objective']
+            if score['status'] != 'evaluated':
+                continue
+            stage = row['stage']
+            if stage not in hybrid_best or score['value'] < hybrid_best[stage][0]:
+                hybrid_best[stage] = (score['value'], index)
+        snapshot['best_hybrid_observed_by_stage'] = {stage: dict(batch_index=index,
+            vector=snapshot['batches'][index]['vector'], vector_sha256=original[index]['vector_sha256'],
+            assessment=snapshot['batches'][index]['assessment']) for stage, (_, index) in hybrid_best.items()}
         snapshot['unsaved_window_results_may_be_lost'] = True
         return snapshot
 
@@ -153,6 +194,9 @@ class WindowJobEvaluation(FixedJobEvaluation):
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             row['assessment'] = (_compact_assessment(assessment) if self.stage.startswith(self.arm+'/')
                                  else plain(assessment))
+            if self.stage in self.hybrid_stages:
+                row['assessment']['hybrid_objective'] = _hybrid_observation(
+                    assessment, self.hybrid_stages[self.stage])
             row.update(status='completed', completed=n, phase='completed', reason='forward_and_requirements_completed')
             self.completed += n
             self.journal.complete_forward()

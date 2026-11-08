@@ -61,7 +61,11 @@ def _window_development_readback(path, returned, spec):
         if type(value) not in (int, float) or math.isnan(value):
             raise ValueError('Invalid best-observed metric')
         return value
-    best = {}
+    import math
+    chosen = next(a for a in d['plan']['config']['arms'] if a['name'] == d['arm'])
+    hybrid_stages = {f"{d['arm']}/{step['name']}": step['aggregation']
+                     for step in chosen['steps'] if step['solver'] == 'hybrid'}
+    best, hybrid_best = {}, {}
     for i, row in enumerate(result['batches']):
         if row['status'] != 'completed' or not row['stage'].startswith(d['arm']+'/'):
             continue
@@ -75,6 +79,41 @@ def _window_development_readback(path, returned, spec):
             raise ValueError('Compact batch physical or nominal evidence mismatch')
         if type(a['strict_feasible']) is not bool:
             raise ValueError('Invalid feasibility flag')
+        stage = row['stage']
+        if stage in hybrid_stages:
+            score = a['hybrid_objective']
+            fields = {'aggregation', 'status', 'value', 'il_term', 'violation_squared_sum', 'max_violation_squared'}
+            if set(score) != fields or score['aggregation'] != hybrid_stages[stage]:
+                raise ValueError('Hybrid objective identity mismatch')
+            if score['status'] == 'invalid':
+                if any(score[k] is not None for k in fields - {'aggregation', 'status'}):
+                    raise ValueError('Invalid Hybrid objective has a scalar')
+            elif score['status'] == 'evaluated':
+                values = (score['value'], score['il_term'], score['max_violation_squared'])
+                if any(type(v) not in (int, float) or not math.isfinite(v) or v < 0 for v in values):
+                    raise ValueError('Invalid Hybrid objective scalar')
+                penalty = score['violation_squared_sum']
+                if penalty is not None and (type(penalty) not in (int, float) or not math.isfinite(penalty) or penalty < 0):
+                    raise ValueError('Invalid Hybrid squared violation sum')
+                vmax = metric(a['max_violation_db'])
+                il = metric(a['worst_il_db'])
+                if (not math.isfinite(il) or il < 0 or not math.isfinite(vmax) or vmax < 0 or
+                        not math.isclose(score['il_term'], il, rel_tol=1e-12, abs_tol=1e-12) or
+                        not math.isclose(score['max_violation_squared'], vmax*vmax, rel_tol=1e-12, abs_tol=1e-12) or
+                        (penalty is not None and penalty + 1e-12 < score['max_violation_squared'])):
+                    raise ValueError('Hybrid objective component mismatch')
+                if score['aggregation'] == 'sum':
+                    expected_value = None if penalty is None else score['il_term'] + penalty
+                else:
+                    expected_value = max(score['il_term'], score['max_violation_squared'])
+                if expected_value is None or not math.isclose(score['value'], expected_value, rel_tol=1e-12, abs_tol=1e-12):
+                    raise ValueError('Hybrid objective value mismatch')
+                if stage not in hybrid_best or score['value'] < hybrid_best[stage][0]:
+                    hybrid_best[stage] = (score['value'], i)
+            else:
+                raise ValueError('Invalid Hybrid objective status')
+        elif 'hybrid_objective' in a:
+            raise ValueError('Unexpected Hybrid objective on non-Hybrid stage')
         key = ((0, metric(a['worst_il_db']), row['vector_sha256']) if a['strict_feasible'] else
                (1, metric(a['max_violation_db']), metric(a['sum_violation_db']), metric(a['worst_il_db']), row['vector_sha256']))
         stage = row['stage']
@@ -82,7 +121,12 @@ def _window_development_readback(path, returned, spec):
     expected_best = {stage: dict(batch_index=i, vector=result['batches'][i]['vector'],
         vector_sha256=result['batches'][i]['vector_sha256'], assessment=result['batches'][i]['assessment'])
         for stage, (_, i) in best.items()}
-    if result.get('best_observed_by_stage') != expected_best or result.get('unsaved_window_results_may_be_lost') is not True:
+    expected_hybrid_best = {stage: dict(batch_index=i, vector=result['batches'][i]['vector'],
+        vector_sha256=result['batches'][i]['vector_sha256'], assessment=result['batches'][i]['assessment'])
+        for stage, (_, i) in hybrid_best.items()}
+    if (result.get('best_observed_by_stage') != expected_best or
+            result.get('best_hybrid_observed_by_stage') != expected_hybrid_best or
+            result.get('unsaved_window_results_may_be_lost') is not True):
         raise ValueError('Window best-observed evidence mismatch')
     from .evaluation import raw_numbers
     ranked = result['selection']['ranked']

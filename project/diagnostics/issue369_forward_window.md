@@ -16,9 +16,9 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 JobSpecにはPlan・定義・RF/bands/外部S2P・格子・source/environment・seed・完全初期vector/SHA・solver/予算・modeを凍結。Job開始・step切替・100 forward到達・意味ある状態境界・終了で実入力とsourceを再照合する。評価前に、最大100回の**RF response評価**と残予算に応じた末尾枠をatomic保存・fsync・byte/SHA読戻しする。各forwardの完全vector合法性・全L SPD・全格子評価・requirements・費用上限は維持し、通常forwardで保存・入力再読込はしない。固定S2Pの評価用配列はstep開始時に構築する。
 
-checkpointの `confirmed` は保存確定済みのforward/requested/completed、`uncertain_upper` と `window` はその後の実行可能枠の上限であり、optimizer iteration数ではない。枠内の未保存結果はcrashで失われ得る。異常時に状態保存できても上限は解放しない。保存・readback・入力照合失敗時も停止し、親はJob cap全体をunknown予約に残す。前回確定以降の実使用を0とはみなさない。元#361のunknownやrawは触らない。
+checkpointの `confirmed` は保存確定済みのforward/requested/completed、`uncertain_upper` と `window` はその後の実行可能枠の上限であり、optimizer iteration数ではない。枠内の未保存結果はcrashで失われ得る。異常時は最後に確定したpayloadをそのまま保持し、可能ならtermination理由を追記する。未確定のメモリ内結果を確定payloadへ入れず、上限を解放しない。保存・readback・入力照合失敗時も停止し、親はJob cap全体をunknown予約に残す。前回確定以降の実使用を0とはみなさない。元#361のunknownやrawは触らない。
 
-検索中は軽量assessment・物理検査要約・各完全vectorとSHAを保存し、全複素波形は保存しない。stepごとの `best_observed_by_stage` は観測上の最良で、solver採用解・selection・terminal・独立検証済み候補とは別。selection/terminal/anytimeおよび指定独立spotに必要なresponseは保持する。これは過去の科学的選抜ルールや独立検証の範囲を変えるものではない。連続周波数、全帯域MNA、EM、SRF、Q(f)、公差、実測は未保証。
+検索中は軽量assessment・物理検査要約・各完全vectorとSHAを保存し、全複素波形は保存しない。Hybridでは各forwardの同じassessmentから、solverと同じ平方残差の `sum` または `max` 目的値scalarと検算用成分を保存する（非有限・無効な場合は `invalid`）。全 `mandatory_g` 配列は保存しないため、readbackの成分整合検査は元配列からの独立再計算ではない。`best_observed_by_stage` は厳密可行性・違反・ILの科学選抜順位、`best_hybrid_observed_by_stage` はHybrid目的値最小（同値は先着）で、いずれもsolver採用解・selection・terminal・独立検証済み候補とは別。selection/terminal/anytimeおよび指定独立spotに必要なresponseは保持する。これは過去の科学的選抜ルールや独立検証の範囲を変えるものではない。連続周波数、全帯域MNA、EM、SRF、Q(f)、公差、実測は未保証。
 
 `summary.json` の `io` は親raw・worker raw・summaryについての**論理atomic JSON payload書込みと直後の読戻しの回数・bytes**。それ以外の入力読込・metadata・OS内部syscall、未読戻しunknown workerの全量は含まず、`complete_worker_accounting` で明示する。各atomic更新はファイルfsync・replace・ディレクトリfsync後に実bytesを読戻す。
 
