@@ -2,6 +2,8 @@
 
 基点main `f5141a12f2600e6332cb6a9ba528dd2995879192`。現役の構造/RF/search/保存の数値実装・RF入力・過去EXP/historyは変更しない。
 
+後続の#362で隔離Pythonコピーは現行treeから削除。[履歴索引](../../archive/issue343/README.md)の元commit・元パスを `git show` で取得する。以下はE2当時の記録。
+
 ## 依存と処置
 
 現役 `run_rf_search.py develop → search → rf_core` と `topology_management` に旧2モジュールのcallerはない。`src/lpf/{variable_c_layouts,coupling_layout}.py` は現役APIから撤去し、旧bounded列挙と旧nominal/感度・物理隣接検査は現役と非同値のため[archive](../../archive/issue343/README.md)へ元blobのまま隔離した。旧検査を `rf_core` に移さない。

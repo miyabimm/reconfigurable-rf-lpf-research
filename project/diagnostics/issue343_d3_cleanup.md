@@ -6,6 +6,8 @@ D2 main `0698a87925b30ccaf11531a5197a5dc611d3f681` 以降の #350 は
 最終HEAD・同一HEADでのCI実ログ・検証結果はDraft PRを正本とする。
 Issue全体はD4まで未完了、研究はPhase 2のまま。
 
+後続の#362で隔離Pythonコピーは現行treeから削除。[履歴索引](../../archive/issue343/README.md)の元commit・元パスを `git show` で取得する。以下はD3当時の記録。
+
 ## 処置と現役依存
 
 |処置|対象（`src/lpf/phase2_models/`）|理由|

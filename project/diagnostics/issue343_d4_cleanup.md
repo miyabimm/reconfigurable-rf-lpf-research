@@ -2,6 +2,8 @@
 
 基点main `d3616b8b832c9f44fe7811d459d59664e3db8a0b`。履歴や実験原本、RF入力・kernelは変更しない。これはソフトウェア整理でありRF性能の認定ではない。
 
+後続の#362で隔離Pythonコピーは現行treeから削除。[履歴索引](../../archive/issue343/README.md)の元commit・元パスを `git show` で取得する。以下はD4当時の記録。
+
 ## 処置
 
 - `src/lpf/phase2_models/` の `api`、T005–T007/T008 policy wrapper、`vector_migration`、`__init__`を削除。旧zero-placeholder射影は現役schema2では使わず、互換shimを作らない。7件の旧`_grid`/ABCD evaluator/EXP固有モデルは非import対象の `archive/issue343/` にバイト不変隔離した。

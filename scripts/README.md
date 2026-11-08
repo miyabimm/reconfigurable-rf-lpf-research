@@ -15,7 +15,7 @@
 
 ## 共通実装と実験固有スクリプトの区別
 
-旧有限グラフ選別は[legacy_graph_search.py](../src/lpf/legacy_graph_search.py)、設定ハッシュと原子的JSON保存は[checkpoint_io.py](../src/lpf/checkpoint_io.py)にある。旧matchingの結合・可変C layout実装は現役APIから退役し、[歴史資料](../archive/issue343/README.md)に保存した。変更していない`experiments/matching_limit/`の旧facadeからは現checkoutでimportできず、再現には元commitの環境が必要。P4-A有限選別予算は正式RF制約ではない。
+旧有限グラフ選別は[legacy_graph_search.py](../src/lpf/legacy_graph_search.py)、設定ハッシュと原子的JSON保存は[checkpoint_io.py](../src/lpf/checkpoint_io.py)にある。旧matchingの結合・可変C layout実装は現役APIから退役し、現行treeにない。元commitと元パスは[履歴索引](../archive/issue343/README.md)を参照し、`git show <元commit>:<元パス>`で取得する。変更していない`experiments/matching_limit/`の旧facadeからは現checkoutでimportできず、再現には元commitの環境が必要。P4-A有限選別予算は正式RF制約ではない。
 
 `curate_exp062.py`～`curate_exp065.py`、`review_rft008_exp062_065.py`、`full_lpf_checkpoint_import.py`は**実験固有または過去データ再現用**であり、今後の汎用RF探索入口ではない。元データと計算時点の再現性・参照先を個別に確認するまで無差別に削除しない。新規Pi Code専用の実装はまだない。
 

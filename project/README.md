@@ -36,8 +36,9 @@ Piの通常作業は必要なファイルを取得した完全checkoutで行う�
 
 Issue #343 D2で `run_phase2_shared.py` / `run_phase2_one_start.py`、旧実験runner・
 旧prepare/診断入口を撤去した。過去の診断記録やEXP原本に残るコマンドは歴史的記述で、
-現行の実行手順ではない。旧schema計画とIssue #250準備の史料は
-[`archive/issue343/`](../archive/issue343/README.md) を参照。現役の実行・保存は
+現行の実行手順ではない。旧schema計画とIssue #250準備の元commit・元パスは
+[履歴索引](../archive/issue343/README.md)を参照し、`git show <元commit>:<元パス>`で取得する。
+旧Pythonコピーは現行treeにない。現役の実行・保存は
 [Campaign操作ガイド](campaign_workflow.md)を使用する。
 
 以下のIssue別API・探索案は当時の限定記録であり、旧探索実行入口は廃止済み。

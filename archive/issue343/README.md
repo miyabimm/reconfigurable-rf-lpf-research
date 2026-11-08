@@ -1,8 +1,11 @@
 # Issue #343 — 非現役の履歴資料
 
-これらは**実行可能な現役APIではない**。通常のPython import・CIは参照しない。
-元source・依存関係を含む実行環境が必要なら、元Git commitを隔離checkoutし、
-対応する実験記録・条件・環境を確認する。このコピーからの直接実行は保証しない。
+このREADMEは元パス・blob・検証上の注意を示す読み取り専用の履歴索引。
+Issue #362で旧Pythonコピー40件は現行treeから削除した。以下の「隔離」「保存」や
+「コピー」は当時の処置を記すもので、現行treeにPythonファイルがある意味ではない。
+各節の元commitと元パスを使い `git show <元commit>:<元パス>` で取得する。
+Git objectが必要であり、旧コードは**現役APIではない**。実行には対応する
+実験記録・条件・依存環境を確認する。履歴の取得だけでは再現PASSにならない。
 元EXP/historyおよび過去のsource fingerprintは変更しない。
 
 元main: `681dabee30a7804d63bacc3afa5932e320c1d11a`。
