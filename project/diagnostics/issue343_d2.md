@@ -4,6 +4,8 @@
 #336のG1 import-origin／Worker前STOP（#338）と#341のCI selector（#342）を保持。
 この変更はD2のみであり、D3/D4・Issue全体完了ではない。
 
+後続の#362で隔離Pythonコピーは現行treeから削除。[履歴索引](../../archive/issue343/README.md)の元commit・元パスを `git show` で取得する。以下はD2当時の記録。
+
 ## 削除・隔離と現役依存
 
 - 削除：`scripts/run_phase2_{shared,one_start}.py`、

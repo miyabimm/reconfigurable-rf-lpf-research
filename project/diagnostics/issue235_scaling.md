@@ -14,7 +14,7 @@ Issue #233 / merged PR #234の3構成・9保存初期値だけを使用した。
   全evidence checkoutが必要。sparse環境では履歴診断をPASS扱いしない。
 
 以下は当時の再現コマンド（最適化しない）。旧入口は現役mainから撤去済みのため、
-そのままでは実行できない。元sourceは[履歴資料](../../archive/issue343/README.md)に隔離し、
+そのままでは実行できない。元sourceは現行treeになく、[履歴索引](../../archive/issue343/README.md)の元commit・元パスから `git show` で取得できる。
 再現が必要な場合は元commit・依存関係・完全evidenceを隔離checkoutして確認する。
 現行RF条件やarchiveコピーの直接実行へ読み替えない。
 
