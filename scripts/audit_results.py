@@ -164,4 +164,5 @@ if __name__ == "__main__":
     errors = audit(detail=True)
     if errors:
         raise SystemExit("FAILED:\n- " + "\n- ".join(errors))
-    print("PASS: active policy, band definitions, baseline presence, candidate metadata and experiment provenance")
+    print("PASS: active policy, bands, candidates and scoped experiment provenance "
+          "(EXP-034..041 retired runtime evidence excluded; not a complete historical audit)")

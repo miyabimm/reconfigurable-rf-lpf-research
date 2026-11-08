@@ -1,6 +1,6 @@
 # Historical Phase 2 repository reviews
 
-Research source evidence and the original review decisions are immutable Git history, not active operational data. This directory continues to hold evidence recovery records which current manual verification scripts use.
+Research source evidence and the original review decisions are immutable Git history, not active operational data. This directory continues to hold original EXP-042 evidence and recovery records used by manual verification scripts. W3/W4/W5 fixed preservation inventories and gate summaries removed in #359 remain in the [pre-cleanup tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/repository_reviews); these lists are not independent RF validation.
 
 The original Step 4 static tree inventories were removed from today's checkout for lightweight maintenance; recover original bytes from commit [`cd129eabaebb`](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/tree/cd129eabaebb3a5581533d4cfcbd55cef4765117):
 

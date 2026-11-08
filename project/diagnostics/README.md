@@ -36,27 +36,23 @@
 以下は完全evidence checkout（`docs/`・`data/`・`experiments/`を含む）で必要時に明示実行する。
 
 ```bash
-uv run --frozen python tests/phase2_historical_status_audit.py -v
 uv run --frozen python scripts/verify_phase2_cleanup_w1_links.py
 ```
 
-前者はGit commit `0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53`・
-`26a5d4aff7d197754f17991123acc44e8b356b83`、後者は
-`055b222c79c73c7fbeacb19383f21c1da0625195` のobjectと対応するblobを要する。
+この手動監査はGit commit `055b222c79c73c7fbeacb19383f21c1da0625195` のobjectと対応するblobを要する。
 通常の全祖先fetchでも祖先外objectは保証されない。必要なobjectを取得可能な環境で確保し、
 取得不可・未実行なら監査不可／未実行と記録する（skipや通常CI PASSで代用しない）。
-後者の全追跡Markdown検査は歴史資料のリンクも対象とする。外部URL・fragmentの到達性は検証しない。
+全追跡Markdown検査は歴史資料のリンクも対象とする。外部URL・fragmentの到達性は検証しない。
 履歴監査結果は現行RF／EXP保存の合否とは別で、広域棚卸しは#170に残す。
 
 #339前後のCI保護の照合：`audit.yml` の `smoke` は保存専用と確定した場合だけ
 一般回帰を省略し、不明・混在はfail-closedで一般回帰を実行する。常時の保存audit、
 予約・provenance・storage・分類テストは不変。一般回帰のRF/optimizer/Runner/G0/G1、
-予算STOP、固定S2P・独立MNA等も不変。Pi sparseの `test_issue307_history`、
-`test_issue307_snapshot_equivalence` と6設定28区間・G0/G1等も不変。
+予算STOP、固定S2P・独立MNA等も不変。6設定28区間・G0/G1等の現役検査も不変。
 W1の固定commit依存だった原本保護は `test_experiment_provenance.py` の固定SHA-256で
 EXP-004 README、EXP-047 manifest、旧bandsおよび移行前F003/T005原byteを常時照合する
 （旧 `design_constraints.json` は同一F003原byte）。他のmanifest証拠SHA検査・新EXP保存audit、
-Pi sparseの移行archive全体照合も引き続き別途実行する。文書の歴史的復元性は上記手動監査の範囲。
+移行archiveの履歴照合は通常CIとは別。固定の旧文書存在・台帳件数だけを検査する旧手動テストは#359で退役した。
 
 ## 整理候補と残す理由
 

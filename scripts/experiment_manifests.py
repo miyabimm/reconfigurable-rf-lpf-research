@@ -30,7 +30,8 @@ def main():
         issues = audit_provenance(root=ROOT)
         if issues:
             raise SystemExit("FAILED:\n- " + "\n- ".join(issues))
-        print("PASS: constraint registry, manifests, evidence and indexes")
+        print("PASS: constraint registry, manifests, indexes and scoped evidence "
+              "(EXP-034..041 retired runtime evidence excluded; not a complete historical audit)")
     elif args.command == "index":
         manifests = []
         for path in sorted((ROOT / RUNS).glob("EXP-*/manifest.json")):
