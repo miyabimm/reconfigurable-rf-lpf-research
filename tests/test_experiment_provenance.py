@@ -1,7 +1,10 @@
 """Current approval isolation and new experiment provenance validation."""
 import csv
 import json
+import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -215,6 +218,46 @@ class ManifestTests(unittest.TestCase):
                            ('validation', {'numerical': 'passed'})):
             m = self.manifest(); m[key] = value
             with self.subTest(key=key), self.assertRaises(ValueError): validate_manifest(m)
+
+
+class ManifestCLITests(unittest.TestCase):
+    def test_module_and_compatibility_entry_match_help_and_rejections(self):
+        env = dict(os.environ, PYTHONPATH=str(ROOT/'src'))
+        script = [sys.executable, str(ROOT/'scripts/experiment_manifests.py')]
+        module = [sys.executable, '-m', 'lpf.cli.experiment_manifests']
+        for args in (['--help'], ['create', '--help'], ['unknown'], ['index', '--bad']):
+            with self.subTest(args=args):
+                a, b = (subprocess.run(entry + args, cwd=ROOT, env=env, capture_output=True,
+                                       text=True, timeout=30) for entry in (script, module))
+                self.assertEqual((a.returncode, a.stdout, a.stderr),
+                                 (b.returncode, b.stdout, b.stderr))
+
+    def test_manifest_cli_operations_are_confined_to_fixture(self):
+        from src.lpf.cli import experiment_manifests as cli
+        with tempfile.TemporaryDirectory(prefix='manifest-cli-fixture-') as temp:
+            root = Path(temp)
+            scope = root/'scope.json'
+            scope.write_text('{"synthetic":true}')
+            recorded = []
+            def save(path, payload, *, root):
+                recorded.append((path, payload, root))
+                path.write_text(json.dumps(payload))
+            with patch.object(cli, 'ROOT', root), patch.object(cli, 'new_manifest',
+                    return_value={'experiment_id': 'EXP-999'}) as create, patch.object(
+                    cli, 'write_manifest', side_effect=save), patch.object(
+                    sys, 'argv', ['experiment_manifests.py', 'create', 'EXP-999', '--purpose', 'fixture',
+                                  '--scope', str(scope), '--objective', 'full_lpf']):
+                cli.main()
+            self.assertEqual(recorded[0][0], root/cli.RUNS/'EXP-999/manifest.json')
+            self.assertEqual(recorded[0][2], root)
+            self.assertEqual(create.call_args.kwargs['root'], root)
+            (root/'data').mkdir()
+            with patch.object(cli, 'ROOT', root), patch.object(cli, 'validate_manifest',
+                    side_effect=lambda payload, **kw: payload), patch.object(
+                    cli, 'experiment_index', return_value='fixture index\n'), patch.object(
+                    sys, 'argv', ['experiment_manifests.py', 'index']):
+                cli.main()
+            self.assertEqual((root/'data/experiment_index.csv').read_text(), 'fixture index\n')
 
 
 if __name__ == '__main__': unittest.main()
