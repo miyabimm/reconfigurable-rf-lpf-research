@@ -1,10 +1,54 @@
 """Condition-isolated Pareto tests; historical storage-inventory tests retired."""
+import contextlib
+import io
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts.report_research_pareto import dominates, make_report
 
 
 class ParetoRegressions(unittest.TestCase):
+    def test_entrypoints_keep_import_cli_and_fixture_output_contract(self):
+        from scripts import report_research_pareto as legacy
+        from lpf.cli import report_research_pareto as implementation
+        for name in ('main', 'dominates', 'make_report', 'as_csv', 'as_markdown', '_rows'):
+            with self.subTest(name=name):
+                self.assertIs(getattr(legacy, name), getattr(implementation, name))
+        root = Path(__file__).resolve().parents[1]
+        self.assertEqual(legacy.ROOT, root)
+        env = dict(os.environ, PYTHONPATH=str(root/'src'))
+        script = [sys.executable, str(root/'scripts/report_research_pareto.py')]
+        module = [sys.executable, '-m', 'lpf.cli.report_research_pareto']
+        with tempfile.TemporaryDirectory(prefix='pareto-cli-fixture-') as temp:
+            for cwd in (root, temp):
+                for args in (['--help'], [], ['--unknown']):
+                    with self.subTest(cwd=cwd, args=args):
+                        a, b = (subprocess.run(entry + args, cwd=cwd, env=env,
+                                               capture_output=True, text=True, timeout=30)
+                                for entry in (script, module))
+                        self.assertEqual((a.returncode, a.stdout, a.stderr),
+                                         (b.returncode, b.stdout, b.stderr))
+            # Only synthetic reports are written into the disposable fixture.
+            out = Path(temp)
+            summary = dict(candidate_count=0, comparison_group_count=0, groups=[], catalog_path='fixture',
+                           formal_strict_rf_f002_il0p3_met=False, formal_strict_rf_f003_il0p3_met=False)
+            argv = ['report_research_pareto.py', '--csv', str(out/'report.csv'),
+                    '--summary', str(out/'summary.json'), '--markdown', str(out/'report.md')]
+            with patch.object(implementation, 'make_report', return_value=([], summary)) as report, patch.object(
+                    sys, 'argv', argv), contextlib.redirect_stdout(io.StringIO()) as output:
+                legacy.main()
+            report.assert_called_once_with(catalog_path='data/research_candidate_register.csv')
+            self.assertIn('source-restricted Pareto 0 candidates, 0 groups', output.getvalue())
+            self.assertEqual((out/'report.csv').read_text(), implementation.as_csv([]))
+            self.assertEqual(json.loads((out/'summary.json').read_text()), summary)
+            self.assertEqual((out/'report.md').read_text(), implementation.as_markdown(summary))
+
     def test_domination_requires_no_worse_area_and_il(self):
         a = {"chip_area_units": 6, "worst_il_db": 0.4}
         b = {"chip_area_units": 6, "worst_il_db": 0.5}
