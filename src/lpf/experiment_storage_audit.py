@@ -47,7 +47,7 @@ def git(root, *args):
     return subprocess.check_output(["git", *args], cwd=root, stderr=subprocess.PIPE)
 
 
-def tracked_file(root, name, *, committed):
+def tracked_file(root, name, *, committed, strict=False):
     """Reject absolute, traversing or symlink-escaping evidence references."""
     require(isinstance(name, str) and name and "\\" not in name, "invalid evidence path")
     pp = PurePosixPath(name)
@@ -56,6 +56,7 @@ def tracked_file(root, name, *, committed):
             "unsafe evidence path: " + name)
     root = Path(root).resolve()
     path = (root / name).resolve()
+    require(not strict or path == root / name, "symlinked evidence: " + name)
     require(path.is_relative_to(root) and path.is_file(), "missing/escaping file: " + name)
     raw = path.read_bytes()
     if committed:
@@ -67,11 +68,11 @@ def tracked_file(root, name, *, committed):
     return raw
 
 
-def evidence_check(root, item, *, committed, max_file_bytes, exception):
+def evidence_check(root, item, *, committed, max_file_bytes, exception, strict=False):
     require(isinstance(item, dict), "evidence entry must be an object")
     require(isinstance(item.get("path"), str) and SHA256.fullmatch(str(item.get("sha256", ""))),
             "evidence needs path and sha256")
-    raw = tracked_file(root, item["path"], committed=committed)
+    raw = tracked_file(root, item["path"], committed=committed, strict=strict)
     require(hashlib.sha256(raw).hexdigest() == item["sha256"],
             "evidence SHA-256 mismatch: " + item["path"])
     require(len(raw) <= max_file_bytes or exception,
@@ -127,9 +128,11 @@ def inspect_new_git_files(root, main_ref, *, diff_base=None, expected_head=None)
     return len(newly_added) - (1 if not newly_added[-1] else 0)
 
 
-def tracked_run_files(root, run):
+def tracked_run_files(root, run, *, committed=False):
     try:
-        result = git(root, "ls-files", "-z", "--", run.relative_to(root).as_posix())
+        args = (('ls-tree', '-r', '--name-only', '-z', 'HEAD') if committed
+                else ('ls-files', '-z'))
+        result = git(root, *args, '--', run.relative_to(root).as_posix())
     except subprocess.CalledProcessError as exc:
         raise ValueError("cannot inspect tracked EXP files") from exc
     return {name.decode("utf-8") for name in result.split(b"\0") if name}
@@ -216,13 +219,21 @@ def reservation_on_main(root, experiment_id, *, main_ref, starting):
     return found[0]
 
 
-def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
+def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main",
+                 require_committed=False):
     require(EXP.fullmatch(experiment_id) and int(experiment_id[4:]) >= MIN_NEW_EXP_NUMBER,
             "policy gate applies to EXP-050+; EXP-001..049 preserve original evidence")
     root = Path(root).resolve()
     run = find_run(root, experiment_id)
-    record = read_json(run / "storage_record.json")
-    manifest = read_json(run / "manifest.json")
+    if require_committed:
+        def head_json(path):
+            raw = tracked_file(root, path.relative_to(root).as_posix(), committed=True, strict=True)
+            return json.loads(raw, parse_constant=lambda v: (_ for _ in ()).throw(ValueError("non-finite " + v)))
+        record = head_json(run / "storage_record.json")
+        manifest = head_json(run / "manifest.json")
+    else:
+        record = read_json(run / "storage_record.json")
+        manifest = read_json(run / "manifest.json")
     require(record.get("schema_version") == 1 and record.get("policy") == POLICY
             and record.get("experiment_id") == experiment_id
             and record.get("phase") == "Phase 2", "storage record identity/policy mismatch")
@@ -230,6 +241,20 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
     # Only read-only evidence audit may bind original archived RF identities.
     # Execution preflight and finalization must validate against current RF.
     validate_manifest(manifest, root=root, allow_archived=mode == 'audit')
+    if require_committed:
+        # validate_manifest can accept archived logical data/constraints paths;
+        # bind the corresponding preserved bytes, not a missing legacy path.
+        from lpf.constraint_history import archived_evidence_file
+        archive = 'rf/constraints/history/pre-issue-307/'
+        for item in manifest['evidence']:
+            name = item['path']
+            archived = archived_evidence_file(name, item['sha256'], root=root)
+            if archived is not None:
+                tracked_file(root, archive + 'provenance.json', committed=True, strict=True)
+                name = archive + name.removeprefix('data/constraints/')
+            raw = tracked_file(root, name, committed=True, strict=True)
+            require(hashlib.sha256(raw).hexdigest() == item['sha256'],
+                    'manifest evidence SHA-256 mismatch: ' + name)
     row = reservation_on_main(root, experiment_id, main_ref=main_ref,
                               starting=mode == "preflight")
     require(manifest["constraints"]["constraint_id"] == row["constraint_id"],
@@ -248,7 +273,8 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         require(mode != "finalize", "run not finalized")
     require(isinstance(record.get("limitations"), list), "limitations field required")
 
-    budget = read_json(root / "data/phase2_git_storage_budget.json")["thresholds"]
+    budget_path = root / "data/phase2_git_storage_budget.json"
+    budget = (head_json(budget_path) if require_committed else read_json(budget_path))["thresholds"]
     exception = record.get("size_exception")
     if exception is not None:
         require(isinstance(exception, dict) and all(
@@ -256,6 +282,7 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
             for k in ("approved_by", "approval_url", "reason")),
             "size exception needs documented owner approval URL and reason")
     committed = stage == "complete" or mode == "finalize"
+    evidence_committed = committed or require_committed
     total, paths, selected = 0, set(), set()
     evidence_in_manifest = {e["path"]: e["sha256"] for e in manifest["evidence"]}
     checkpoints = record.get("checkpoints")
@@ -277,9 +304,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
                 "checkpoints must be under their EXP directory")
         require(name not in paths, "duplicate evidence path")
         paths.add(name)
-        total += evidence_check(root, item, committed=committed,
+        total += evidence_check(root, item, committed=evidence_committed,
                                 max_file_bytes=budget["individual_new_file_hard_bytes"],
-                                exception=exception is not None)
+                                exception=exception is not None, strict=require_committed)
         require(evidence_in_manifest.get(name) == item["sha256"],
                 "checkpoint absent/mismatched in manifest evidence")
         validate_checkpoint(json.loads((root / name).read_text(encoding="utf-8")), item["candidate_id"])
@@ -292,9 +319,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         name = item.get("path")
         require(name not in paths, "duplicate evidence path")
         paths.add(name)
-        total += evidence_check(root, item, committed=committed,
+        total += evidence_check(root, item, committed=evidence_committed,
                                 max_file_bytes=budget["individual_new_file_hard_bytes"],
-                                exception=exception is not None)
+                                exception=exception is not None, strict=require_committed)
         require(evidence_in_manifest.get(name) == item["sha256"],
                 "validation overlay absent/mismatched in manifest evidence")
 
@@ -306,9 +333,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         name = item.get("path")
         require(name not in paths, "duplicate evidence path")
         paths.add(name)
-        total += evidence_check(root, item, committed=committed,
+        total += evidence_check(root, item, committed=evidence_committed,
                                 max_file_bytes=budget["individual_new_file_hard_bytes"],
-                                exception=exception is not None)
+                                exception=exception is not None, strict=require_committed)
         require(evidence_in_manifest.get(name) == item["sha256"],
                 "supporting evidence absent/mismatched in manifest evidence")
 
@@ -319,9 +346,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         name = summary_ref.get("path")
         require(name not in paths, "summary also used as checkpoint/validation")
         paths.add(name)
-        total += evidence_check(root, summary_ref, committed=committed,
+        total += evidence_check(root, summary_ref, committed=evidence_committed,
                                 max_file_bytes=budget["individual_new_file_hard_bytes"],
-                                exception=exception is not None)
+                                exception=exception is not None, strict=require_committed)
         require(evidence_in_manifest.get(name) == summary_ref["sha256"],
                 "run summary absent/mismatched in manifest evidence")
         summary_payload = read_json(root / name)
@@ -338,7 +365,9 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main"):
         run_relative = run.relative_to(root).as_posix()
         allowed = paths | {run_relative + "/manifest.json",
                            run_relative + "/storage_record.json"}
-        leftovers = tracked_run_files(root, run) - allowed
+        tracked = (tracked_run_files(root, run, committed=True) if require_committed
+                   else tracked_run_files(root, run))
+        leftovers = tracked - allowed
         require(not leftovers, "unclassified tracked EXP files: " + ", ".join(sorted(leftovers)))
     if stage == "complete":
         require(set(evidence_in_manifest) == paths,
@@ -401,8 +430,15 @@ def audit_selected(root, experiment_ids, *, main_ref, diff_base=None, expected_h
         inspect_new_git_files(root, main_ref)
     else:
         inspect_new_git_files(root, main_ref, diff_base=diff_base, expected_head=expected_head)
-    return [validate_run(root, experiment_id, main_ref=main_ref)
-            for experiment_id in sorted(experiment_ids)]
+    options = {'main_ref': main_ref}
+    if expected_head is not None:
+        options['require_committed'] = True
+    results = [validate_run(root, experiment_id, **options)
+               for experiment_id in sorted(experiment_ids)]
+    if expected_head is not None:
+        require(git(root, 'rev-parse', 'HEAD').decode().strip() == expected_head,
+                'selected audit HEAD changed during validation')
+    return results
 
 
 def main():

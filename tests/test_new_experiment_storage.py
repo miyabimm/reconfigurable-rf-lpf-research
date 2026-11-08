@@ -142,6 +142,117 @@ class StoragePolicyGateTests(unittest.TestCase):
                 audit_selected(self.root, ['EXP-050'], main_ref='origin/main')
             validate.assert_not_called()
 
+    def test_explicit_selected_audit_binds_planned_metadata_and_evidence_to_head(self):
+        self.save()
+        def git(*args):
+            return subprocess.check_output(['git', '-C', str(self.root), *args], text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'fixture')
+        git('config', 'user.email', 'fixture@example.invalid')
+        git('add', '.')
+        git('commit', '-qm', 'planned')
+        head = git('rev-parse', 'HEAD')
+        with patch(SCRIPT + '.validate_manifest'), patch(
+                SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}):
+            def audit():
+                return audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                                      diff_base=head, expected_head=head)
+            self.assertFalse(audit()[0]['committed_readback'])  # Not a G3 readback claim.
+            budget = self.root/'data/phase2_git_storage_budget.json'
+            budget.write_text(budget.read_text() + '\n')
+            with self.assertRaisesRegex(ValueError, 'differs from committed evidence'):
+                audit()
+            git('restore', str(budget.relative_to(self.root)))
+            for name in ('storage_record.json', 'manifest.json'):
+                with self.subTest(name=name):
+                    file = self.run/name
+                    file.write_text(file.read_text() + '\n')
+                    with self.assertRaisesRegex(ValueError, 'differs from committed evidence'):
+                        audit()
+                    git('restore', str(file.relative_to(self.root)))
+            stray = self.base + '/unclassified.json'
+            dump(self.root/stray, {'fixture': 'unclassified'})
+            git('add', stray)
+            git('commit', '-qm', 'unclassified committed file')
+            head = git('rev-parse', 'HEAD')
+            git('rm', '--cached', '-q', stray)
+            with self.assertRaisesRegex(ValueError, 'unclassified tracked EXP files'):
+                audit()
+            git('restore', '--staged', stray)
+            git('rm', '-q', stray)
+            git('commit', '-qm', 'remove synthetic fixture file')
+            head = git('rev-parse', 'HEAD')
+            orphan = self.base + '/manifest-only.json'
+            orphan_sha = dump(self.root/orphan, {'fixture': 'untracked manifest evidence'})
+            self.manifest['evidence'] = [{'path': orphan, 'sha256': orphan_sha}]
+            self.save()
+            git('add', self.base+'/manifest.json')
+            git('commit', '-qm', 'manifest-only untracked evidence reference')
+            head = git('rev-parse', 'HEAD')
+            with self.assertRaisesRegex(ValueError, 'evidence not committed at HEAD'):
+                audit()
+            evidence_path = self.base + '/support.json'
+            digest = dump(self.root/evidence_path, {'fixture': 'not committed'})
+            self.manifest['evidence'] = [{'path': evidence_path, 'sha256': digest}]
+            self.record['supporting_evidence'] = [{'path': evidence_path, 'sha256': digest,
+                                                   'role': 'recovery_state', 'reason': 'fixture'}]
+            self.save()
+            git('add', self.base+'/manifest.json', self.base+'/storage_record.json')
+            git('commit', '-qm', 'reference untracked evidence')
+            head = git('rev-parse', 'HEAD')
+            with self.assertRaisesRegex(ValueError, 'evidence not committed at HEAD'):
+                audit()
+            git('add', evidence_path)
+            git('commit', '-qm', 'track evidence')
+            head = git('rev-parse', 'HEAD')
+            self.assertEqual(audit()[0]['supporting_records'], 1)
+            (self.root/evidence_path).write_text('dirty\n')
+            with self.assertRaises((ValueError, AssertionError)):
+                audit()
+            git('restore', evidence_path)
+            (self.root/evidence_path).unlink()
+            alias = self.run/'alias-target.json'
+            digest = dump(alias, {'fixture': 'symlink target'})
+            (self.root/evidence_path).symlink_to(alias.name)
+            self.manifest['evidence'][0]['sha256'] = digest
+            self.record['supporting_evidence'][0]['sha256'] = digest
+            self.save()
+            git('add', self.base)
+            git('commit', '-qm', 'symlinked evidence')
+            head = git('rev-parse', 'HEAD')
+            with self.assertRaisesRegex(ValueError, 'symlinked evidence'):
+                audit()
+
+    def test_explicit_selected_audit_binds_archived_logical_evidence(self):
+        archive = self.root/'rf/constraints/history/pre-issue-307'
+        snapshot = archive/'formal/RF-F003.json'
+        digest = dump(snapshot, {'fixture': 'historical snapshot'})
+        provenance = archive/'provenance.json'
+        dump(provenance, {'snapshot_file_sha256': {'formal/RF-F003.json': digest}})
+        self.manifest['evidence'] = [{'path': 'data/constraints/formal/RF-F003.json', 'sha256': digest}]
+        self.save()
+        def git(*args):
+            return subprocess.check_output(['git', '-C', str(self.root), *args], text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'fixture')
+        git('config', 'user.email', 'fixture@example.invalid')
+        git('add', '.')
+        git('commit', '-qm', 'archived evidence')
+        head = git('rev-parse', 'HEAD')
+        with patch(SCRIPT + '.validate_manifest'), patch(
+                SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}):
+            def audit():
+                return audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                                      diff_base=head, expected_head=head)
+            self.assertEqual(audit()[0]['stage'], 'planned')
+            provenance.write_text(provenance.read_text() + '\n')
+            with self.assertRaisesRegex(ValueError, 'differs from committed evidence'):
+                audit()
+            git('restore', str(provenance.relative_to(self.root)))
+            snapshot.write_text(snapshot.read_text() + '\n')
+            with self.assertRaisesRegex(ValueError, 'Historical RF snapshot evidence byte mismatch'):
+                audit()
+
     def test_exp_047_to_049_preflight_and_finalize_rejected(self):
         for legacy in ("EXP-047", "EXP-048", "EXP-049"):
             with self.subTest(legacy=legacy):
@@ -417,7 +528,8 @@ class StoragePolicyGateTests(unittest.TestCase):
             parent = git('rev-parse', 'HEAD^')
             audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
                            diff_base=parent, expected_head=head)
-            validate.assert_called_once_with(self.root.resolve(), 'EXP-050', main_ref='origin/main')
+            validate.assert_called_once_with(self.root.resolve(), 'EXP-050', main_ref='origin/main',
+                                             require_committed=True)
 
     def test_summary_count_rule(self):
         summary = {
