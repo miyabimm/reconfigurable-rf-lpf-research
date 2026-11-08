@@ -29,6 +29,22 @@ class ResearchCatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, 'FAILED research catalog:'):
                 legacy.main()
 
+    def test_results_audit_legacy_import_and_entrypoint_are_preserved(self):
+        from scripts import audit_results as legacy
+        from lpf.cli import audit_results as implementation
+        self.assertIs(legacy, implementation)
+        with tempfile.TemporaryDirectory(prefix='results-audit-fixture-') as temp:
+            with patch.object(legacy, 'ROOT', Path(temp)):
+                self.assertEqual(implementation.ROOT, Path(temp))
+        with patch.object(implementation, 'audit', return_value=[]) as audit, \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            legacy.main()
+            audit.assert_called_once_with(detail=True)
+            self.assertIn('PASS: active policy, bands, candidates', out.getvalue())
+        with patch.object(implementation, 'audit', return_value=['synthetic mismatch']):
+            with self.assertRaisesRegex(SystemExit, 'FAILED:'):
+                legacy.main()
+
     def test_strict_raw_harmonic_threshold_cannot_use_solver_tolerance(self):
         result = check_threshold(
             "strict_finite_grid", 35.0, 34.9999999958, 35.01, "formal")

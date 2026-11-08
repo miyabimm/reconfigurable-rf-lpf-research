@@ -58,6 +58,6 @@ python scripts/verify_phase2_cleanup_w3.py  # W3当時の作業ツリーを選�
 
 旧RF入力・文書リンクと移行前blobの固定検査は #355 で退役しました。現行RF入力は `rf/` を正本として検証します。
 
-現行監査 `scripts/audit_results.py` と新EXP予約 `scripts/reserve_experiment_number.py` は `rf/` の正本を参照します。予約・研究証拠の検証には対象データと履歴を備えた完全環境が必要です。
+現行監査 `scripts/audit_results.py`（互換入口、[共通CLI本体](../src/lpf/cli/audit_results.py)）と新EXP予約 `scripts/reserve_experiment_number.py` は `rf/` の正本を参照します。予約・研究証拠の検証には対象データと履歴を備えた完全環境が必要です。
 
 本PRでは歴史EXPや固定監査報告の上書き、RF性能再計算、新規EXPは行っていません。実際のレビュー・CI結果は [Issue #185](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/185) ／ [PR #186](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/186) に記録します。
