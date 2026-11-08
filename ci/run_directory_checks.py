@@ -20,6 +20,41 @@ def run(args, *, env=None):
     subprocess.run(args, cwd=ROOT, env=env, check=True)
 
 
+def original_evidence_review(plan):
+    """Do not silently approve overwrites/deletions of already saved evidence."""
+    comparison = plan['comparison']
+    if not comparison:
+        return []  # The incomplete-comparison gate handles this separately.
+    base = comparison['base']
+    reasons, stages = [], {}
+    for change in plan['changes']:
+        kind = change['status'][0]
+        path = change['paths'][0]
+        match = preview.EXPERIMENT.fullmatch(path)
+        if not match or kind == 'A':
+            continue
+        if kind != 'M':
+            reasons.append(path + ' (' + change['status'] + ')')
+            continue
+        prefix, _, relative = path.partition('/' + match.group(1) + '/')
+        if relative not in {'manifest.json', 'storage_record.json'}:
+            reasons.append(path + ' (existing evidence modified)')
+            continue
+        directory = prefix + '/' + match.group(1)
+        if directory not in stages:
+            try:
+                raw = subprocess.check_output(
+                    ['git', '-C', str(ROOT), 'show', f'{base}:{directory}/storage_record.json'],
+                    stderr=subprocess.PIPE, timeout=30)
+                record = json.loads(raw)
+                stages[directory] = record.get('stage') if isinstance(record, dict) else None
+            except (OSError, subprocess.SubprocessError, ValueError):
+                stages[directory] = None
+        if stages[directory] not in {'planned', 'running', 'preservation_incomplete'}:
+            reasons.append(path + ' (base preservation stage complete or unavailable)')
+    return reasons
+
+
 def execute(plan, *, manual=False):
     """Execute a locally computed preview; incomplete diff scopes never pass."""
     print('Directory preview:', json.dumps(plan, ensure_ascii=False), flush=True)
@@ -68,6 +103,9 @@ def execute(plan, *, manual=False):
     if plan['removed_ledger_experiments']:
         raise ValueError('removed ledger rows require separate review: ' +
                          ', '.join(plan['removed_ledger_experiments']))
+    review = original_evidence_review(plan)
+    if review:
+        raise ValueError('original evidence requires separate review: ' + ', '.join(review))
     if not manual and (not comparison or not plan['changed_tests_complete'] or
                        not plan['experiment_scope_complete']):
         raise ValueError('FULL executed where possible, but changed test/EXP scope is incomplete')

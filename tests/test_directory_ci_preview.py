@@ -411,6 +411,67 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertIn("'classes':['RF']", command[-1])
         self.assertIn("'full':False", command[-1])
 
+    def test_completed_original_modification_and_deletion_require_review(self):
+        base = 'experiments/chatgpt_topology_search/runs/EXP-050/'
+        self.write(base + 'storage_record.json', '{"stage":"complete"}')
+        self.write(base + 'manifest.json', '{"value":1}')
+        self.write(base + 'checkpoints/candidate.json', '{"value":1}')
+        self.base = self.commit()
+        for path, operation in ((base+'manifest.json', 'modify'),
+                                (base+'storage_record.json', 'modify'),
+                                (base+'checkpoints/candidate.json', 'modify'),
+                                (base+'checkpoints/candidate.json', 'delete')):
+            with self.subTest(path=path, operation=operation):
+                self.git('reset', '--hard', self.base)
+                if operation == 'delete':
+                    self.git('rm', path)
+                else:
+                    self.write(path, '{"value":2}')
+                self.commit()
+                plan = self.plan()
+                with patch.object(directory_checks, 'ROOT', self.root), patch.object(
+                        directory_checks, 'run'), patch.object(
+                        ledger_check, 'check', return_value=[dict(experiment_id='EXP-050', index_present=True)]), patch.object(
+                        ledger_check, 'check_index_manifests'):
+                    with self.assertRaisesRegex(ValueError, 'original evidence requires separate review'):
+                        directory_checks.execute(plan)
+
+    def test_incomplete_run_metadata_may_progress_but_saved_evidence_cannot_be_overwritten(self):
+        base = 'experiments/chatgpt_topology_search/runs/EXP-050/'
+        self.write(base + 'storage_record.json', '{"stage":"planned"}')
+        self.write(base + 'manifest.json', '{"status":"planned"}')
+        self.write(base + 'checkpoints/candidate.json', '{"value":1}')
+        self.base = self.commit()
+        self.write(base + 'manifest.json', '{"status":"running"}')
+        self.commit()
+        plan = self.plan()
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(
+                directory_checks, 'run'), patch.object(
+                ledger_check, 'check', return_value=[dict(experiment_id='EXP-050', index_present=True)]), patch.object(
+                ledger_check, 'check_index_manifests'):
+            directory_checks.execute(plan)
+        self.write(base + 'checkpoints/candidate.json', '{"value":2}')
+        self.commit()
+        plan = self.plan()
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(
+                directory_checks, 'run'), patch.object(
+                ledger_check, 'check', return_value=[dict(experiment_id='EXP-050', index_present=True)]), patch.object(
+                ledger_check, 'check_index_manifests'):
+            with self.assertRaisesRegex(ValueError, 'original evidence requires separate review'):
+                directory_checks.execute(plan)
+        self.git('reset', '--hard', self.base)
+        self.git('mv', base + 'checkpoints/candidate.json', base + 'checkpoints/renamed.json')
+        self.commit()
+        with patch.object(directory_checks, 'ROOT', self.root):
+            self.assertTrue(directory_checks.original_evidence_review(self.plan()))
+        self.git('reset', '--hard', self.base)
+        self.git('rm', base + 'storage_record.json')
+        self.base = self.commit()
+        self.write(base + 'manifest.json', '{"status":"running"}')
+        self.commit()
+        with patch.object(directory_checks, 'ROOT', self.root):
+            self.assertTrue(directory_checks.original_evidence_review(self.plan()))
+
     def test_execution_prototype_doc_root_and_manual_boundaries(self):
         self.write('README.md', 'changed')
         self.commit()
