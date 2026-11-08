@@ -72,9 +72,11 @@ def preview(event, base, head, ref, *, force=False):
                   changed_tests_complete=False, changed_experiments=[],
                   removed_ledger_experiments=[], experiment_scope_complete=False,
                   comparison=None, changes=[])
-    if force or event == 'workflow_dispatch':
-        result.update(full=True, reasons=['manual FULL'])
+    if event == 'workflow_dispatch':
+        result.update(full=True, reasons=['manual FULL (no event comparison)'])
         return result
+    if force:
+        result.update(full=True, reasons=['explicit FULL'])
     try:
         if event not in {'pull_request', 'push'} or ref != 'main' or any(
                 not OID.fullmatch(x or '') or x == '0'*40 for x in (base, head)):
@@ -176,15 +178,27 @@ def preview(event, base, head, ref, *, force=False):
         result['comparison'] = dict(base=base, head=head)
         result['changes'] = records
     except (ValueError, UnicodeError, OSError, subprocess.SubprocessError) as exc:
-        result.update(full=True, reasons=['comparison unavailable: ' + str(exc)])
+        result['full'] = True
+        result['reasons'].append('comparison unavailable: ' + str(exc))
+    return result
+
+
+def preview_environment(env):
+    event = env.get('CI_EVENT')
+    result = preview(event, env.get('CI_BASE'), env.get('CI_HEAD'),
+                     env.get('CI_BASE_REF'), force=env.get('CI_FULL') == 'true')
+    if event == 'pull_request' and (not env.get('CI_HEAD_REF') or
+                                    env.get('CI_HEAD_REF') != env.get('CI_EVENT_HEAD_REF')):
+        result['full'] = True
+        result['reasons'].append('PR head branch mismatch or missing')
+    if event == 'push' and env.get('CI_REF') != 'refs/heads/main':
+        result['full'] = True
+        result['reasons'].append('push branch mismatch or missing')
     return result
 
 
 def main():
-    event = os.getenv('CI_EVENT')
-    print(json.dumps(preview(event, os.getenv('CI_BASE'), os.getenv('CI_HEAD'),
-                             os.getenv('CI_BASE_REF'), force=os.getenv('CI_FULL') == 'true'),
-                     ensure_ascii=False))
+    print(json.dumps(preview_environment(os.environ), ensure_ascii=False))
 
 
 if __name__ == '__main__':
