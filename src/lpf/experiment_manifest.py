@@ -222,8 +222,54 @@ def experiment_index(manifests):
     return output.getvalue()
 
 
+# Issue #359: only these immutable historical manifests and their former
+# runtime-only files are eligible for a missing-file exception in the *index
+# audit*. Normal validate_manifest and new EXP storage remain fully strict.
+_RETIRED_RUNTIME = {
+    'EXP-034': ('5a8316cb09d2bed17103811422f3e0d21b0ada74eea4eabf8e4259f8f6854926', 'rf_f002_recovery_20261014/(?:manager-sigterm-residual|sigint-resume)'),
+    'EXP-035': ('488307692164d0b49125c3cb63918c5febd8d395432c979edd19fbe136e4817f', 'rf_f002_parallel_benchmark_20261014/[12]-worker'),
+    'EXP-036': ('f7e6253436f8fe5e5756551f85c31b17c7107ca32e5592e65c2986966463db7e', 'rf_f002_recovery_20261014/exp036-sigint-resume'),
+    'EXP-037': ('c2b2e62097672378ded31e3a7fc912df494806c1e07e3c7a0f7a4519ea2c2de2', 'rf_f002_warm_start_refinement_20261014/unremapped-import-diagnostic'),
+    'EXP-038': ('fdb69db72215abebb23e0c0429db04c8b41f5c1a9e6d9b046b8abb77a2e5408f', 'rf_f002_checkpoint_warmstarts_20261014/corrected-run'),
+    'EXP-039': ('e2a9d0a7fddcf28077cfe508e1e631bf397b193395cc284b2bf24483f26f0ee5', 'rf_f002_grid_refinement_20261014/run'),
+    'EXP-040': ('792fc494504fbb8ac19d7dffab571760b66d3b3c3271dec8be5c85adc2401891', 'rf_f002_solver_ablation_20261014/runs/(?:scaled-relaxed-ftol|scaled-tight|unscaled-tight)'),
+    'EXP-041': ('94476a496c28b5cfe4ad51caf7cc8130d60ee43e7771caa14c811a9b376bd96e', 'rf_f002_unscaled_followup_20261014/run'),
+}
+_RUNTIME_FILE = r'(?:\.manager\.lock|manager\.log|locks/[0-9a-f]{24}\.lock|logs/[0-9a-f]{24}\.attempt-[12]\.log)'
+_RECOVERY_TRACE = 'data/validation/rf_f002_recovery_20261014/sigint-resume/manager.log'
+
+
+def _retired_runtime_view(manifest_path, manifest, *, root):
+    """Omit only absent, retired runtime entries from a pinned manifest view.
+
+    The original is untouched. Existing files, the interrupt traceback and all
+    other evidence remain SHA-checked. Never use this view for new EXP gates.
+    """
+    if not isinstance(manifest, dict):
+        return manifest
+    spec = _RETIRED_RUNTIME.get(manifest.get('experiment_id'))
+    if (spec is None or file_sha256(manifest_path) != spec[0]
+            or _read(manifest_path) != manifest):
+        return manifest
+    pattern = re.compile('data/validation/' + spec[1] + '/' + _RUNTIME_FILE)
+    evidence = []
+    for item in manifest['evidence']:
+        name = item['path']
+        repository_file(root, name)  # reject escapes even for retired entries
+        path = Path(root) / name
+        retired = (name != _RECOVERY_TRACE and pattern.fullmatch(name)
+                   and not path.exists() and not path.is_symlink())
+        if not retired:
+            evidence.append(item)
+    return {**manifest, 'evidence': evidence}
+
+
 def audit_provenance(*, root=ROOT):
-    """Audit all manifests, their derived index and candidate constraint references."""
+    """Audit the index and evidence, except retired missing runtime artifacts.
+
+    This is not a complete historical evidence audit; see Issue #359. Future
+    storage and direct manifest validation do not use this exception.
+    """
     root = Path(root)
     issues, manifests = [], []
     try:
@@ -241,7 +287,9 @@ def audit_provenance(*, root=ROOT):
                 from .legacy_manifest_adapter import legacy_exp047_index_view
                 m = legacy_exp047_index_view(root=root)
             else:
-                m = validate_manifest(raw_manifest, root=root, allow_archived=True)
+                view = _retired_runtime_view(path, raw_manifest, root=root)
+                validate_manifest(view, root=root, allow_archived=True)
+                m = raw_manifest
             if m["experiment_id"] != directory.name:
                 raise ValueError("Manifest/directory identity mismatch")
             manifests.append((path.relative_to(root).as_posix(), m))

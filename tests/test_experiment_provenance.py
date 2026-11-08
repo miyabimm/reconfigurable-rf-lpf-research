@@ -5,11 +5,12 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from src.lpf.constraint_versions import constraint_fingerprint, load_constraint, validate_registry
 from src.lpf.experiment_manifest import (
-    ROOT, RUNS, experiment_index, new_manifest,
-    validate_manifest, write_manifest,
+    ROOT, RUNS, audit_provenance, experiment_index, new_manifest,
+    validate_manifest, write_manifest, _retired_runtime_view,
 )
 
 
@@ -123,6 +124,53 @@ class ManifestTests(unittest.TestCase):
             m = self.manifest(); m['evidence'] = [{'path': 'rf/bands.csv', 'sha256': '0'*64}]
             m['evidence'][0][field] = value
             with self.subTest(field=field), self.assertRaises(ValueError): validate_manifest(m)
+
+    def test_retired_runtime_scope_is_pinned_and_strict_for_remaining_evidence(self):
+        path = ROOT / RUNS / 'EXP-034/manifest.json'
+        original = json.loads(path.read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            view = _retired_runtime_view(path, original, root=root)
+            original_paths = {e['path'] for e in original['evidence']}
+            view_paths = {e['path'] for e in view['evidence']}
+            removed = original_paths - view_paths
+            self.assertTrue(removed)
+            self.assertTrue(all(p.endswith(('.lock', '.log')) for p in removed))
+            self.assertIn('data/validation/rf_f002_recovery_20261014/sigint-resume/manager.log', view_paths)
+            self.assertIn('data/validation/rf_f002_recovery_20261014/process_recovery_summary.json', view_paths)
+            # A restored file must again be checked, even if its bytes are wrong.
+            restored = root / next(iter(removed))
+            restored.parent.mkdir(parents=True, exist_ok=True)
+            restored.write_text('tampered')
+            self.assertIn(restored.relative_to(root).as_posix(),
+                          {e['path'] for e in _retired_runtime_view(path, original, root=root)['evidence']})
+            modified = root / 'manifest.json'
+            modified.write_text(path.read_text() + ' ')
+            self.assertEqual(_retired_runtime_view(modified, original, root=root), original)
+            other = dict(original, experiment_id='EXP-050')
+            self.assertEqual(_retired_runtime_view(path, other, root=root), other)
+            self.assertEqual(original, json.loads(path.read_text()))
+
+    def test_scoped_audit_still_checks_retained_and_new_evidence(self):
+        path = ROOT / RUNS / 'EXP-034/manifest.json'
+        original = json.loads(path.read_text())
+        view = _retired_runtime_view(path, original, root=ROOT)
+        validate_manifest(view, allow_archived=True)
+        with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
+            validate_manifest(original, allow_archived=True)
+        from src.lpf import experiment_manifest as module
+        retained = ROOT / 'data/validation/rf_f002_recovery_20261014/process_recovery_summary.json'
+        real_sha = module.file_sha256
+        self.assertEqual([], audit_provenance())
+        with patch.object(module, 'file_sha256', side_effect=lambda p: '0'*64 if Path(p) == retained else real_sha(p)):
+            with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
+                validate_manifest(view, allow_archived=True)
+            self.assertTrue(any('process_recovery_summary.json' in issue for issue in audit_provenance()))
+        new = self.manifest()
+        new['experiment_id'] = 'EXP-050'
+        new['evidence'] = [next(e for e in original['evidence'] if e not in view['evidence'])]
+        with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
+            validate_manifest(new, allow_archived=True)
 
     def test_saved_manifest_cannot_be_overwritten(self):
         with tempfile.TemporaryDirectory() as temp:
