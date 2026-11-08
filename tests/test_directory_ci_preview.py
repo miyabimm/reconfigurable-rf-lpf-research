@@ -1,6 +1,7 @@
 """Real-Git tests for the unwired, mixed-directory-safe CI preview."""
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -73,6 +74,64 @@ class DirectoryPreviewTests(unittest.TestCase):
             self.assertEqual(result['classes'], ['INPUT', 'EXP', 'CODE'])
             self.assertEqual(result['changed_tests'], ['tests/test_new.py'])
             self.assertEqual(result['comparison'], dict(base=self.base, head=self.git('rev-parse', 'HEAD')))
+
+    def test_nested_changed_tests_are_identified_and_unsafe_names_are_incomplete(self):
+        self.write('tests/nested/test_child.py',
+                   'import unittest\nclass Case(unittest.TestCase):\n def test_ok(self): pass\n')
+        self.write('tests/nested/worker_test.py', 'import unittest\n')
+        self.commit()
+        result = self.plan()
+        self.assertEqual(result['changed_tests'], ['tests/nested/test_child.py',
+                                                   'tests/nested/worker_test.py'])
+        self.assertTrue(result['changed_tests_complete'], result)
+        run = subprocess.run([os.sys.executable, '-m', 'unittest', 'discover',
+                              '-s', 'tests/nested', '-p', 'test_child.py'],
+                             cwd=self.root, capture_output=True, text=True, check=True)
+        self.assertIn('Ran 1 test', run.stderr)
+        self.write('tests/nested/test_unsafe-name.py', 'import unittest\n')
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'], result)
+        self.assertFalse(result['changed_tests_complete'], result)
+        self.assertTrue(any('unexecutable changed test' in reason for reason in result['reasons']))
+
+    def test_changed_test_runner_executes_nested_and_rejects_stale_or_empty(self):
+        source = Path(__file__).resolve().parents[1]/'ci/run_changed_tests.py'
+        shutil.copyfile(source, self.root/'ci/run_changed_tests.py')
+        self.write('tests/nested/test_child.py',
+                   'import unittest\nclass Case(unittest.TestCase):\n def test_ok(self): pass\n')
+        self.write('tests/nested/test_empty.py', 'import unittest\n')
+        head = self.commit()
+        runner = [os.sys.executable, str(self.root/'ci/run_changed_tests.py'), '--head', head]
+        good = subprocess.run(runner + ['tests/nested/test_child.py'], cwd=self.root,
+                              text=True, capture_output=True, check=True)
+        self.assertIn('Ran 1 test', good.stderr)
+        empty = subprocess.run(runner + ['tests/nested/test_empty.py'], cwd=self.root,
+                               text=True, capture_output=True)
+        self.assertNotEqual(empty.returncode, 0)
+        self.assertIn('no discoverable tests', empty.stderr)
+        bad_head = subprocess.run([*runner[:-1], '0'*40, 'tests/nested/test_child.py'],
+                                  cwd=self.root, text=True, capture_output=True)
+        self.assertNotEqual(bad_head.returncode, 0)
+        self.write('tests/nested/test_child.py', 'changed after commit\n')
+        dirty = subprocess.run(runner + ['tests/nested/test_child.py'], cwd=self.root,
+                               text=True, capture_output=True)
+        self.assertNotEqual(dirty.returncode, 0)
+        self.assertIn('differs from HEAD', dirty.stderr)
+        invalid = subprocess.run(runner + ['tests/../nested/test_child.py'], cwd=self.root,
+                                 text=True, capture_output=True)
+        self.assertNotEqual(invalid.returncode, 0)
+        self.git('restore', 'tests/nested/test_child.py')
+        (self.root/'tests/test_link.py').symlink_to('nested/test_child.py')
+        self.write('tests/test_executable.py', 'import unittest\n')
+        (self.root/'tests/test_executable.py').chmod(0o755)
+        head = self.commit()
+        runner = [os.sys.executable, str(self.root/'ci/run_changed_tests.py'), '--head', head]
+        for path in ('tests/test_link.py', 'tests/test_executable.py'):
+            with self.subTest(path=path):
+                denied = subprocess.run(runner + [path], cwd=self.root,
+                                        text=True, capture_output=True)
+                self.assertNotEqual(denied.returncode, 0)
 
     def test_delete_and_cross_directory_rename(self):
         self.git('rm', 'rf/README.md')

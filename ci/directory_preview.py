@@ -16,7 +16,7 @@ from ci.classify_storage_ci import index_rows
 from lpf.experiment_id_registry import read_ledger
 
 OID = re.compile(r'[0-9a-f]{40}\Z')
-TEST = re.compile(r'tests/test_[A-Za-z0-9_]+\.py\Z')
+MODULE_NAME = re.compile(r'[A-Za-z_][A-Za-z0-9_]*\Z')
 EXPERIMENT = re.compile(r'experiments/(?:chatgpt_topology_search|matching_limit)/runs/(EXP-\d{3,})/.+\Z')
 ROOT_NONE = {'README.md', 'AGENTS.md', 'LICENSE-STATUS.md', '.gitignore'}
 MAX_BYTES = 256_000
@@ -118,6 +118,7 @@ def preview(event, base, head, ref, *, force=False):
                 raise ValueError('too many changed paths')
         groups, experiment_ids, removed_ids = set(), set(), set()
         experiment_scope_complete = True
+        test_scope_complete = True
         for change in records:
             kind = change['status'][0]
             old_mode, new_mode = change['old_mode'], change['new_mode']
@@ -151,14 +152,24 @@ def preview(event, base, head, ref, *, force=False):
                     groups.add(group)
             if kind != 'D':
                 destination = change['paths'][-1]
-                if TEST.fullmatch(destination):
-                    result['changed_tests'].append(destination)
+                parts = destination.split('/')
+                name = parts[-1]
+                is_test = (parts[0] == 'tests' and name.endswith('.py') and
+                           (name.startswith('test') or name.endswith('_test.py')))
+                if is_test:
+                    components = parts[1:-1] + [name[:-3]]
+                    if all(MODULE_NAME.fullmatch(component) for component in components):
+                        result['changed_tests'].append(destination)
+                    else:
+                        result['full'] = True
+                        test_scope_complete = False
+                        result['reasons'].append('unexecutable changed test: ' + destination)
         if not experiment_scope_complete:
             result['full'] = True
             result['reasons'].append('experiment or ledger scope requires additional inspection')
         result['classes'] = [x for x in ('DOC', 'INPUT', 'EXP', 'CODE') if x in groups]
         result['changed_tests'] = sorted(set(result['changed_tests']))
-        result['changed_tests_complete'] = True
+        result['changed_tests_complete'] = test_scope_complete
         result['changed_experiments'] = sorted(experiment_ids)
         result['removed_ledger_experiments'] = sorted(removed_ids)
         result['experiment_scope_complete'] = experiment_scope_complete
