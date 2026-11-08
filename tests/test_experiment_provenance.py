@@ -161,11 +161,30 @@ class ManifestTests(unittest.TestCase):
         from src.lpf import experiment_manifest as module
         retained = ROOT / 'data/validation/rf_f002_recovery_20261014/process_recovery_summary.json'
         real_sha = module.file_sha256
-        self.assertEqual([], audit_provenance())
-        with patch.object(module, 'file_sha256', side_effect=lambda p: '0'*64 if Path(p) == retained else real_sha(p)):
-            with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
-                validate_manifest(view, allow_archived=True)
-            self.assertTrue(any('process_recovery_summary.json' in issue for issue in audit_provenance()))
+        # Isolate the audit traversal to one synthetic EXP directory. The
+        # immutable original is supplied read-only; only dummy fixture files
+        # are created in the temporary repository.
+        with tempfile.TemporaryDirectory(prefix='provenance-one-exp-') as temp:
+            root = Path(temp)
+            run = root / RUNS / 'EXP-034'
+            run.mkdir(parents=True)
+            (run/'manifest.json').write_text('{}')
+            index = root/'data/experiment_index.csv'
+            index.parent.mkdir(parents=True, exist_ok=True)
+            index.write_text(experiment_index([(f'{RUNS}/EXP-034/manifest.json', original)]))
+            (root/'data/candidate_index.csv').write_text('candidate_id,constraint_class\n')
+            def validate_in_source(m, **kwargs):
+                return validate_manifest(m, root=ROOT, allow_archived=kwargs['allow_archived'])
+            with patch.object(module, 'validate_registry', return_value={'historical': {}}), patch.object(
+                    module, '_read', return_value=original), patch.object(
+                    module, '_retired_runtime_view', return_value=view), patch.object(
+                    module, 'validate_manifest', side_effect=validate_in_source):
+                self.assertEqual([], audit_provenance(root=root))
+                with patch.object(module, 'file_sha256', side_effect=lambda p: '0'*64 if Path(p) == retained else real_sha(p)):
+                    with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
+                        validate_manifest(view, allow_archived=True)
+                    self.assertTrue(any('process_recovery_summary.json' in issue
+                                        for issue in audit_provenance(root=root)))
         new = self.manifest()
         new['experiment_id'] = 'EXP-050'
         new['evidence'] = [next(e for e in original['evidence'] if e not in view['evidence'])]

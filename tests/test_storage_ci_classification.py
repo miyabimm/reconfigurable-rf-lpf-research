@@ -234,6 +234,9 @@ class WorkflowContractTests(unittest.TestCase):
         workflow = yaml.safe_load((SCRIPT.parent.parent / '.github/workflows/audit.yml').read_text())
         steps = workflow['jobs']['smoke']['steps']
         by_name = {step.get('name'): step for step in steps}
+        legacy = by_name['Verify legacy full provenance until directory cutover']
+        self.assertNotIn('if', legacy)
+        self.assertIn('audit_provenance()', legacy['run'])
         audit = by_name['Verify future EXP storage policy (read only)']
         self.assertNotIn('if', audit)
         self.assertEqual('python scripts/audit_new_experiment_storage.py audit', audit['run'])

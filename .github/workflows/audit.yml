@@ -51,6 +51,11 @@ jobs:
       - run: echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
       - name: Verify future EXP storage policy (read only)
         run: python scripts/audit_new_experiment_storage.py audit
+      # Preserve the current full-provenance gate until directory-CI cutover.
+      # The new scoped prototype intentionally does not execute this workflow.
+      - name: Verify legacy full provenance until directory cutover
+        run: |
+          python -c 'from src.lpf.experiment_manifest import audit_provenance; issues = audit_provenance(); print("Legacy full provenance issues:", issues); raise SystemExit(bool(issues))'
       - name: Check classifier fail-closed behavior
         run: python -m unittest discover -s tests -p test_storage_ci_classification.py -v
       - name: Check experiment reservation and provenance
