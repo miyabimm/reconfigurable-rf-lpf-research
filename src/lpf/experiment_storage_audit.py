@@ -31,6 +31,9 @@ SUPPORT_ROLES = {"source_snapshot", "dirty_patch", "representative_failure",
 DISPOSABLE_DIRS = {"__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
                    ".tox", "htmlcov"}
 DISPOSABLE_SUFFIXES = {".tmp", ".part", ".swp", ".pyc", ".pyo", ".pstats", ".prof"}
+MAX_DIFF_COMMITS = 2000
+MAX_DIFF_HISTORY_BYTES = 10_000_000
+MAX_SCRATCH_CANDIDATES = 1000
 
 
 def require(condition, message):
@@ -80,6 +83,14 @@ def evidence_check(root, item, *, committed, max_file_bytes, exception, strict=F
     return len(raw)
 
 
+def disposable_path(name):
+    parts = PurePosixPath(name).parts
+    return (name.startswith(("results/", "artifacts/", "checkpoints/", "scratch/", "tmp/"))
+            or any(part in DISPOSABLE_DIRS for part in parts)
+            or PurePosixPath(name).suffix.lower() in DISPOSABLE_SUFFIXES
+            or PurePosixPath(name).name.startswith(".coverage"))
+
+
 def inspect_new_git_files(root, main_ref, *, diff_base=None, expected_head=None):
     """Reject newly committed scratch/cache files, even when force-added past .gitignore.
 
@@ -109,19 +120,33 @@ def inspect_new_git_files(root, main_ref, *, diff_base=None, expected_head=None)
         # A rename into a scratch path is an addition for this safety check.
         newly_added = git(root, "diff", "--no-ext-diff", "--no-textconv", "--no-renames",
                           "--diff-filter=A", "--name-only", "-z", baseline, "HEAD").split(b"\0")
+        history = []
+        if explicit:
+            # The endpoint diff misses scratch added and deleted inside a push.
+            # Scan each introduced commit, including merge-parent diffs, without
+            # rescanning any unchanged EXP files or historic evidence.
+            commit_range = baseline + '..' + expected_head
+            count = int(git(root, 'rev-list', '--count', commit_range).strip())
+            require(count <= MAX_DIFF_COMMITS, 'event history exceeds inspection limit')
+            raw_history = git(root, 'log', '--format=', '--name-only', '-z', '--diff-filter=A',
+                              '--no-renames', '--no-ext-diff', '--no-textconv', '-m', commit_range, '--')
+            require(len(raw_history) <= MAX_DIFF_HISTORY_BYTES and
+                    (not raw_history or raw_history.endswith(b'\0')),
+                    'event history exceeds inspection limit or is malformed')
+            history = [v for v in raw_history.split(b'\0') if v]
     except subprocess.CalledProcessError as exc:
         raise ValueError("cannot inspect newly added Git paths; fetch main first") from exc
-    rejected = []
-    for raw in newly_added:
-        if not raw:
-            continue
-        name = raw.decode("utf-8")
-        parts = PurePosixPath(name).parts
-        if (name.startswith(("results/", "artifacts/", "checkpoints/", "scratch/", "tmp/"))
-                or any(part in DISPOSABLE_DIRS for part in parts)
-                or PurePosixPath(name).suffix.lower() in DISPOSABLE_SUFFIXES
-                or PurePosixPath(name).name.startswith(".coverage")):
-            rejected.append(name)
+    rejected = {raw.decode('utf-8') for raw in newly_added if raw and disposable_path(raw.decode('utf-8'))}
+    suspects = {raw.decode('utf-8') for raw in history if disposable_path(raw.decode('utf-8'))} - rejected
+    require(len(suspects) <= MAX_SCRATCH_CANDIDATES, 'event history exceeds scratch inspection limit')
+    for name in suspects:
+        # A merge-parent diff can report files already present at the event
+        # baseline. Such paths are not newly introduced by this event.
+        present = subprocess.run(['git', '-C', str(root), 'cat-file', '-e', baseline + ':' + name],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                 timeout=30).returncode == 0
+        if not present:
+            rejected.add(name)
     require(not rejected,
             "transient files committed to Git (keep under ignored results/ instead): "
             + ", ".join(sorted(rejected)))

@@ -490,6 +490,73 @@ class StoragePolicyGateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'transient files committed'):
             inspect_new_git_files(self.root, 'origin/main', diff_base=base, expected_head=head)
 
+    def test_explicit_range_rejects_scratch_added_then_deleted_before_head(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'test')
+        git('config', 'user.email', 'test@example.invalid')
+        git('add', '.')
+        git('commit', '-qm', 'baseline')
+        base = git('rev-parse', 'HEAD')
+        scratch = self.root/'results/intermediate.json'
+        scratch.parent.mkdir(parents=True)
+        scratch.write_text('{"synthetic":true}\n')
+        git('add', '.')
+        git('commit', '-qm', 'add transient fixture')
+        git('rm', '-q', 'results/intermediate.json')
+        git('commit', '-qm', 'remove transient fixture')
+        head = git('rev-parse', 'HEAD')
+        self.assertEqual(git('diff', '--name-only', base, head), '')
+        with patch(SCRIPT + '.MAX_DIFF_COMMITS', 1):
+            with self.assertRaisesRegex(ValueError, 'event history exceeds inspection limit'):
+                inspect_new_git_files(self.root, 'origin/main', diff_base=base, expected_head=head)
+        with self.assertRaisesRegex(ValueError, 'transient files committed'):
+            inspect_new_git_files(self.root, 'origin/main', diff_base=base, expected_head=head)
+
+    def test_merge_history_checks_intermediate_scratch_without_rejecting_baseline_file(self):
+        def git(*args):
+            return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()
+        git('init', '-q', '-b', 'main')
+        git('config', 'user.name', 'test')
+        git('config', 'user.email', 'test@example.invalid')
+        old = self.root/'results/old.json'
+        old.parent.mkdir(parents=True)
+        old.write_text('baseline historical fixture\n')
+        git('add', '.')
+        git('commit', '-qm', 'baseline')
+        base = git('rev-parse', 'HEAD')
+        git('switch', '-qc', 'side')
+        git('rm', '-q', 'results/old.json')
+        git('commit', '-qm', 'side deletes baseline path')
+        git('switch', '-q', 'main')
+        old.write_text('baseline path changed on main\n')
+        git('add', 'results/old.json')
+        git('commit', '-qm', 'main modifies baseline path')
+        merge = subprocess.run(['git', 'merge', '--no-ff', 'side', '-m', 'merge'],
+                               cwd=self.root, capture_output=True, text=True)
+        self.assertNotEqual(merge.returncode, 0)  # synthetic modify/delete conflict
+        git('add', 'results/old.json')
+        git('commit', '-qm', 'merge preserving baseline path')
+        head = git('rev-parse', 'HEAD')
+        self.assertEqual(inspect_new_git_files(self.root, 'origin/main',
+                                              diff_base=base, expected_head=head), 0)
+        git('switch', '-qc', 'side-with-transient')
+        transient = self.root/'results/transient.json'
+        transient.write_text('synthetic\n')
+        git('add', 'results/transient.json')
+        git('commit', '-qm', 'side adds transient')
+        git('rm', '-q', 'results/transient.json')
+        git('commit', '-qm', 'side deletes transient')
+        git('switch', '-q', 'main')
+        (self.root/'other.txt').write_text('diverge\n')
+        git('add', 'other.txt')
+        git('commit', '-qm', 'main diverges')
+        git('merge', '--no-ff', '-qm', 'merge transient history', 'side-with-transient')
+        with self.assertRaisesRegex(ValueError, 'transient files committed'):
+            inspect_new_git_files(self.root, 'origin/main', diff_base=head,
+                                  expected_head=git('rev-parse', 'HEAD'))
+
     def test_selected_audit_checks_entire_explicit_push_range(self):
         def git(*args):
             return subprocess.check_output(['git', *args], cwd=self.root, text=True).strip()

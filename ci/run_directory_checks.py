@@ -92,7 +92,7 @@ def execute(plan, *, manual=False):
         from lpf.experiment_storage_audit import inspect_new_git_files
         inspected = inspect_new_git_files(ROOT, 'origin/main', diff_base=comparison['base'],
                                           expected_head=comparison['head'])
-        print('Newly added paths inspected for transient files:', inspected, flush=True)
+        print('Endpoint additions inspected; event commit history also checked:', inspected, flush=True)
     if ids:
         # Lazy import keeps DOC-only execution independent of installed packages.
         from ci.check_changed_ledger import check, check_index_manifests
