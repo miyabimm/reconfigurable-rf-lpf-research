@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ci.classify_storage_ci import index_rows
+from ci.classify_storage_ci import CANDIDATE_MANIFEST, candidate_rows, index_rows
 from lpf.experiment_id_registry import read_ledger
 
 OID = re.compile(r'[0-9a-f]{40}\Z')
@@ -24,6 +24,7 @@ MAX_PATHS = 1000
 MAX_LEDGER_BYTES = 10_000_000
 INDEX = 'data/experiment_index.csv'
 REGISTRY = 'data/experiment_number_registry.csv'
+CANDIDATES = 'data/candidate_index.csv'
 
 
 def git(*args):
@@ -67,10 +68,42 @@ def ledger_delta(path, base, head):
     return changed, set(old) - set(new)
 
 
+def candidate_delta(base, head):
+    """Find all changed candidate targets and flag existing-row modifications."""
+    old_raw, new_raw = (git('show', f'{rev}:{CANDIDATES}') for rev in (base, head))
+    if max(len(old_raw), len(new_raw)) > MAX_LEDGER_BYTES:
+        raise ValueError('candidate ledger exceeds inspection limit')
+    old_rows, new_rows = candidate_rows(old_raw), candidate_rows(new_raw)
+    if old_rows[0] != new_rows[0]:
+        raise ValueError('candidate header changed')
+    fields = old_rows[0][0]
+    id_col, manifest_col = fields.index('candidate_id'), fields.index('manifest')
+    before = [(values[id_col], (values, record)) for values, record in old_rows[1:]]
+    after = [(values[id_col], (values, record)) for values, record in new_rows[1:]]
+    old, new = dict(before), dict(after)
+    common = set(old) & set(new)
+    if ([ident for ident, _ in before if ident in common] !=
+            [ident for ident, _ in after if ident in common]):
+        raise ValueError('candidate rows reordered')
+    changed = {ident for ident in set(old) | set(new) if old.get(ident) != new.get(ident)}
+    if not changed and old_raw != new_raw:
+        raise ValueError('unattributed candidate ledger byte change')
+    experiments = set()
+    for ident in changed:
+        for rows in (old, new):
+            if ident in rows:
+                match = CANDIDATE_MANIFEST.fullmatch(rows[ident][0][manifest_col])
+                if not match:
+                    raise ValueError('candidate target unavailable: ' + ident)
+                experiments.add(match.group(1))
+    return experiments, changed & set(old)
+
+
 def preview(event, base, head, ref, *, force=False):
     result = dict(classes=[], full=False, reasons=[], changed_tests=[],
                   changed_tests_complete=False, changed_experiments=[],
-                  removed_ledger_experiments=[], experiment_scope_complete=False,
+                  removed_ledger_experiments=[], candidate_experiments=[],
+                  changed_existing_candidates=[], experiment_scope_complete=False,
                   comparison=None, changes=[])
     if event == 'workflow_dispatch':
         result.update(full=True, reasons=['manual FULL (no event comparison)'])
@@ -119,6 +152,7 @@ def preview(event, base, head, ref, *, force=False):
             if len(records) > MAX_PATHS:
                 raise ValueError('too many changed paths')
         groups, experiment_ids, removed_ids = set(), set(), set()
+        candidate_experiments, changed_existing_candidates = set(), set()
         experiment_scope_complete = True
         test_scope_complete = True
         for change in records:
@@ -144,6 +178,15 @@ def preview(event, base, head, ref, *, force=False):
                         except (ValueError, UnicodeError, csv.Error, OSError, subprocess.SubprocessError) as exc:
                             experiment_scope_complete = False
                             result['reasons'].append('ledger comparison unavailable: ' + str(exc))
+                    elif path == CANDIDATES and kind == 'M':
+                        try:
+                            targets, existing = candidate_delta(base, head)
+                            experiment_ids.update(targets)
+                            candidate_experiments.update(targets)
+                            changed_existing_candidates.update(existing)
+                        except (ValueError, UnicodeError, csv.Error, OSError, subprocess.SubprocessError) as exc:
+                            experiment_scope_complete = False
+                            result['reasons'].append('candidate comparison unavailable: ' + str(exc))
                     else:
                         experiment_scope_complete = False
                 group = classify(path)
@@ -174,6 +217,8 @@ def preview(event, base, head, ref, *, force=False):
         result['changed_tests_complete'] = test_scope_complete
         result['changed_experiments'] = sorted(experiment_ids)
         result['removed_ledger_experiments'] = sorted(removed_ids)
+        result['candidate_experiments'] = sorted(candidate_experiments)
+        result['changed_existing_candidates'] = sorted(changed_existing_candidates)
         result['experiment_scope_complete'] = experiment_scope_complete
         result['comparison'] = dict(base=base, head=head)
         result['changes'] = records

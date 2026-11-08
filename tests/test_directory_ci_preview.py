@@ -210,6 +210,101 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertEqual(result['changed_experiments'], ['EXP-042', 'EXP-050'])
         self.assertEqual(result['removed_ledger_experiments'], [])
 
+    def test_candidate_ledger_diff_extracts_targets_but_preserves_existing_rows(self):
+        header = ('candidate_id,spec_id,objective,constraint_class,constraint_id,'
+                  'effective_constraint_sha256,manifest\n')
+        def row(candidate, ident):
+            return (f'{candidate},RF-F003,full_lpf,formal,RF-F003,{"a"*64},'
+                    f'experiments/chatgpt_topology_search/runs/{ident}/manifest.json\n')
+        old = header + row('C-050', 'EXP-050')
+        self.write('data/candidate_index.csv', old)
+        self.base = self.commit()
+        self.write('data/candidate_index.csv', old + row('C-051', 'EXP-051'))
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'])  # data/ is still mixed
+        self.assertTrue(result['experiment_scope_complete'], result)
+        self.assertEqual(result['changed_experiments'], ['EXP-051'])
+        self.assertEqual(result['candidate_experiments'], ['EXP-051'])
+        self.assertEqual(result['changed_existing_candidates'], [])
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'), \
+                patch.object(ledger_check, 'check', return_value=[dict(experiment_id='EXP-051', index_present=False)]):
+            with self.assertRaisesRegex(ValueError, 'candidate target missing from experiment index'):
+                directory_checks.execute(result)
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'), \
+                patch.object(ledger_check, 'check', return_value=[dict(experiment_id='EXP-051', index_present=True)]), \
+                patch.object(ledger_check, 'check_index_manifests') as index_check:
+            directory_checks.execute(result)
+            index_check.assert_called_once_with(self.root, ['EXP-051'])
+        self.git('reset', '--hard', self.base)
+        self.write('data/candidate_index.csv', old.replace('EXP-050', 'EXP-051'))
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['experiment_scope_complete'], result)
+        self.assertEqual(result['changed_experiments'], ['EXP-050', 'EXP-051'])
+        self.assertEqual(result['changed_existing_candidates'], ['C-050'])
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'), \
+                patch.object(ledger_check, 'check', return_value=[dict(experiment_id=ident, index_present=True)
+                                                                for ident in result['changed_experiments']]), \
+                patch.object(ledger_check, 'check_index_manifests'):
+            with self.assertRaisesRegex(ValueError, 'existing candidate rows require separate review'):
+                directory_checks.execute(result)
+        self.git('reset', '--hard', self.base)
+        self.write('data/candidate_index.csv', header)
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['experiment_scope_complete'], result)
+        self.assertEqual(result['changed_existing_candidates'], ['C-050'])
+        for bad in (old + row('C-050', 'EXP-051'),
+                    old.replace('EXP-050/manifest.json', 'EXP-050/unknown.json'),
+                    old + 'new,RF-F003,full_lpf,formal,RF-F003,,\n',
+                    old.replace('candidate_id', 'wrong_header', 1),
+                    old + '"unterminated\n'):
+            with self.subTest(bad=bad[-70:]):
+                self.git('reset', '--hard', self.base)
+                self.write('data/candidate_index.csv', bad)
+                self.commit()
+                result = self.plan()
+                self.assertTrue(result['full'])
+                self.assertFalse(result['experiment_scope_complete'], result)
+        self.git('reset', '--hard', self.base)
+        self.write('data/candidate_index.csv', old + row('C-051', 'EXP-051'))
+        self.base = self.commit()
+        self.write('data/candidate_index.csv', header + row('C-051', 'EXP-051') + row('C-050', 'EXP-050'))
+        self.commit()
+        self.assertFalse(self.plan()['experiment_scope_complete'])
+
+    def test_candidate_addition_checks_real_target_ledger_and_manifest(self):
+        _, registry = self.seed_ledgers()
+        registry += 'EXP-042,reserved,tester,key-042,purpose,RF-F003,2026-10-15T08:00:00Z,main\n'
+        path = 'experiments/chatgpt_topology_search/runs/EXP-042/manifest.json'
+        manifest = dict(experiment_id='EXP-042', purpose='fixture', objective='full_lpf',
+                        constraints={'class': 'formal', 'constraint_id': 'RF-F003',
+                                     'effective_constraint_sha256': 'a'*64},
+                        execution={'status': 'planned'},
+                        validation={'numerical': 'not_run', 'independent': 'not_run'})
+        self.write(path, json.dumps(manifest))
+        self.write('data/experiment_index.csv', ledger_check.experiment_index([(path, manifest)]))
+        self.write('data/experiment_number_registry.csv', registry)
+        header = ('candidate_id,spec_id,objective,constraint_class,constraint_id,'
+                  'effective_constraint_sha256,manifest\n')
+        old = header + 'unrelated,unknown,unknown,historical,,,\n'
+        self.write('data/candidate_index.csv', old)
+        self.base = self.commit()
+        row = f'C-042,RF-F003,full_lpf,formal,RF-F003,{"a"*64},{path}\n'
+        self.write('data/candidate_index.csv', old + row)
+        self.commit()
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run') as run:
+            directory_checks.execute(self.plan())
+            self.assertTrue(any('scripts/audit_new_experiment_storage.py' in call.args[0]
+                                for call in run.call_args_list))
+        self.git('reset', '--hard', self.base)
+        self.write('data/candidate_index.csv', old + row.replace('a'*64, 'b'*64))
+        self.commit()
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'):
+            with self.assertRaisesRegex(ValueError, 'candidate/manifest provenance mismatch'):
+                directory_checks.execute(self.plan())
+
     def test_changed_ledger_check_validates_target_identity_and_reservation_only(self):
         index, registry = self.seed_ledgers()
         indexed = ('EXP-042,formal,RF-F003,sha,full_lpf,planned,not_run,not_run,'
@@ -287,7 +382,7 @@ class DirectoryPreviewTests(unittest.TestCase):
                 self.git('reset', '--hard', good_head)
                 self.write('data/candidate_index.csv', bad)
                 self.commit()
-                with self.assertRaisesRegex(ValueError, 'candidate.*provenance mismatch'):
+                with self.assertRaisesRegex(ValueError, 'candidate.*(provenance mismatch|identities)'):
                     ledger_check.check_index_manifests(self.root, ['EXP-042'])
         for bad in (candidate.replace('candidate_id', 'wrong_header', 1),
                     candidate + 'malformed,extra,fields,that,exceed,the,header,x\n',

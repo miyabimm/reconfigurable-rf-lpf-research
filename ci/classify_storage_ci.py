@@ -20,6 +20,10 @@ INDEX = 'data/experiment_index.csv'
 INDEX_HEADER = ('experiment_id', 'constraint_class', 'constraint_id',
                 'effective_constraint_sha256', 'objective', 'execution_status',
                 'numerical_validation', 'independent_validation', 'manifest', 'purpose')
+CANDIDATE_REQUIRED = {'candidate_id', 'spec_id', 'objective', 'constraint_class',
+                      'constraint_id', 'effective_constraint_sha256', 'manifest'}
+CANDIDATE_MANIFEST = re.compile(
+    r'experiments/(?:chatgpt_topology_search|matching_limit)/runs/(EXP-\d{3,})/manifest\.json\Z')
 
 
 def git(*args):
@@ -48,6 +52,32 @@ def index_rows(raw):
     if (any(not re.fullmatch(r'EXP-\d{3,}', ident) for ident in ids)
             or len(ids) != len(set(ids))):
         raise ValueError('invalid index identities')
+    return entries
+
+
+def candidate_rows(raw):
+    """Parse candidate records with exact bytes, without opening any manifest."""
+    text = raw.decode('utf-8')
+    lines = list(io.StringIO(text, newline=''))
+    if not lines or not text.endswith('\n'):
+        raise ValueError('incomplete candidate index')
+    reader = csv.reader(io.StringIO(text, newline=''), strict=True)
+    entries, start = [], 0
+    for values in reader:
+        end = reader.line_num
+        entries.append((values, ''.join(lines[start:end])))
+        start = end
+    if start != len(lines) or not entries:
+        raise ValueError('invalid candidate index')
+    fields = entries[0][0]
+    if len(fields) != len(set(fields)) or not CANDIDATE_REQUIRED.issubset(fields):
+        raise ValueError('invalid candidate index header')
+    if any(len(values) != len(fields) for values, _ in entries[1:]):
+        raise ValueError('malformed candidate index row')
+    id_col = fields.index('candidate_id')
+    ids = [values[id_col] for values, _ in entries[1:]]
+    if any(not ident for ident in ids) or len(ids) != len(set(ids)):
+        raise ValueError('invalid candidate index identities')
     return entries
 
 

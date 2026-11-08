@@ -2,7 +2,6 @@
 """Read-only targeted ledger consistency check; this does not authorize an EXP."""
 import argparse
 import csv
-import io
 import json
 import re
 import subprocess
@@ -11,12 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from ci.classify_storage_ci import INDEX_HEADER, index_rows
+from ci.classify_storage_ci import CANDIDATE_MANIFEST, INDEX_HEADER, candidate_rows, index_rows
 from lpf.experiment_id_registry import RESERVED, read_ledger
 from lpf.experiment_manifest import experiment_index
 
 ID = re.compile(r'EXP-\d{3,}\Z')
-MANIFEST = re.compile(r'experiments/(?:chatgpt_topology_search|matching_limit)/runs/(EXP-\d{3,})/manifest\.json\Z')
+MANIFEST = CANDIDATE_MANIFEST
 
 
 def committed_bytes(root, name):
@@ -90,16 +89,10 @@ def check_index_manifests(root, ids):
     # The candidate ledger is small and must be parsed to find references, but
     # only candidate rows referring to these target manifests are evaluated.
     # No unrelated manifest or evidence is opened.
-    raw = committed_bytes(root, 'data/candidate_index.csv').decode('utf-8')
-    reader = csv.DictReader(io.StringIO(raw, newline=''), strict=True)
-    fields = reader.fieldnames or []
-    required = {'candidate_id', 'spec_id', 'objective', 'constraint_class',
-                'constraint_id', 'effective_constraint_sha256', 'manifest'}
-    if len(fields) != len(set(fields)) or not required.issubset(fields):
-        raise ValueError('invalid candidate index header')
-    for row in reader:
-        if None in row or any(value is None for value in row.values()):
-            raise ValueError('malformed candidate index row')
+    entries = candidate_rows(committed_bytes(root, 'data/candidate_index.csv'))
+    fields = entries[0][0]
+    for values, _ in entries[1:]:
+        row = dict(zip(fields, values))
         manifest = manifests.get(row['manifest'])
         if manifest is None:
             continue

@@ -99,6 +99,10 @@ def execute(plan, *, manual=False):
         targets = check(ROOT, ids, require_committed=True)
         print('Changed ledger targets:', json.dumps(targets), flush=True)
         indexed_ids = [row['experiment_id'] for row in targets if row['index_present']]
+        missing_candidate_ids = set(plan.get('candidate_experiments', [])) - set(indexed_ids)
+        if missing_candidate_ids:
+            raise ValueError('candidate target missing from experiment index: ' +
+                             ', '.join(sorted(missing_candidate_ids)))
         if indexed_ids:
             check_index_manifests(ROOT, indexed_ids)
         file_ids = {match.group(1) for change in plan['changes'] for path in change['paths']
@@ -115,6 +119,9 @@ def execute(plan, *, manual=False):
     if plan['removed_ledger_experiments']:
         raise ValueError('removed ledger rows require separate review: ' +
                          ', '.join(plan['removed_ledger_experiments']))
+    if plan.get('changed_existing_candidates'):
+        raise ValueError('existing candidate rows require separate review: ' +
+                         ', '.join(plan['changed_existing_candidates']))
     review = original_evidence_review(plan)
     if review:
         raise ValueError('original evidence requires separate review: ' + ', '.join(review))
