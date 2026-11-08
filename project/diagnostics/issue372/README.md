@@ -1,4 +1,6 @@
-# Issue #372：事前照合と診断途中の停止（レビュー待ち）
+# Issue #372：事前照合と診断途中の停止（当時の記録）
+
+後続の修正版診断とPilot結果は [followup.md](followup.md) を参照。以下は最初の停止時点の記録。
 
 **STOP。window100の実RF比較・速度・checkpointゲートは未実施。Pilot 1001/1002、Main、Extension、正式EXPは未開始。** これはPilot結果ではない。後続を自動再試行・再開しない。診断用スクリプト `diagnose.py` は下記の既知の例外を含む実行時原本であり、そのまま再実行しない。
 
