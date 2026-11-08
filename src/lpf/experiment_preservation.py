@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 from lpf.checkpoint_io import atomic_write_json, canonical_config_hash
-from scripts.audit_new_experiment_storage import (
+from lpf.experiment_storage_audit import (
     find_run, read_json, tracked_file, validate_run, audit_all)
 
 LIMITATIONS = [

@@ -417,7 +417,7 @@ class CampaignGateTests(unittest.TestCase):
                     self.assertEqual(summary['preservation_errors'], [])
                     self.assertEqual(summary['attempts']['attempted'], 3)
                     self.assertEqual(summary['attempts']['nonconverged'], 3)
-                    from scripts.audit_new_experiment_storage import find_run
+                    from lpf.experiment_storage_audit import find_run
                     journal = json.loads((find_run(self.repo, self.ident)/'campaign_evidence.json').read_bytes())
                     self.assertEqual(journal['proposals'][-1]['event']['status'], 'rejected')
                     self.assertTrue(journal['proposals'][-1]['original_base64'])
@@ -471,7 +471,7 @@ class CampaignGateTests(unittest.TestCase):
     def test_campaign_missing_raw_and_git_readback_failure_remain_incomplete(self):
         from lpf.search import campaign, preservation, worker
         from lpf.experiment_manifest import INDEX_FIELDS
-        from scripts.audit_new_experiment_storage import find_run
+        from lpf.experiment_storage_audit import find_run
         for failure in ('missing_raw', 'proposal_escape', 'git_readback'):
             with self.subTest(failure=failure):
                 output, snapshot = self.formal_start()

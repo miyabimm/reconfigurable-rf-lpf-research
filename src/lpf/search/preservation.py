@@ -13,7 +13,7 @@ from pathlib import Path
 from lpf.experiment_manifest import INDEX_FIELDS, experiment_index
 from lpf.rf_core.model import build_rf_model
 from lpf.constraint_versions import load_constraint
-from scripts.audit_new_experiment_storage import find_run, validate_checkpoint, validate_run, audit_all
+from lpf.experiment_storage_audit import find_run, validate_checkpoint, validate_run, audit_all
 from .storage import atomic, sha
 from .gates import _git, campaign_raw_directory, verify_campaign_binding
 

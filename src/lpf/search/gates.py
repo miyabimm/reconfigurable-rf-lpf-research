@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 from lpf.experiment_manifest import RUNS, new_manifest
-from scripts.audit_new_experiment_storage import (
+from lpf.experiment_storage_audit import (
     find_run, reservation_on_main, validate_run, validate_selection,
 )
 from scripts.experiment_id_registry import is_reserved_on_main

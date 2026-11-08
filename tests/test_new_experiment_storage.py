@@ -2,18 +2,20 @@
 import hashlib
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.audit_new_experiment_storage import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from lpf.experiment_storage_audit import (
     CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, reservation_on_main,
     validate_checkpoint, validate_run, validate_selection, validate_summary,
 )
 from scripts.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
 
-SCRIPT = "scripts.audit_new_experiment_storage"
+SCRIPT = "lpf.experiment_storage_audit"
 
 
 def dump(path, data):
@@ -23,6 +25,17 @@ def dump(path, data):
 
 
 class StoragePolicyGateTests(unittest.TestCase):
+    def test_legacy_entry_uses_the_same_storage_gate(self):
+        from scripts import audit_new_experiment_storage as legacy
+        self.assertIs(legacy.validate_run, validate_run)
+        self.assertIs(legacy.audit_all, audit_all)
+        result = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] /
+                                                    'scripts/audit_new_experiment_storage.py'), '--help'],
+                                capture_output=True, text=True, check=True)
+        self.assertIn('preflight', result.stdout)
+        self.assertIn('finalize', result.stdout)
+        self.assertIn('audit', result.stdout)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
