@@ -381,6 +381,11 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main",
         if stage == 'complete':
             require(not summary_payload['attempts'].get('unknown', 0),
                     'unknown attempts forbid preservation completion')
+            # Match the existing Campaign G4 guard without accessing temporary
+            # raw evidence or claiming to have completed G3/G4 readback here.
+            if summary_payload.get('preservation_kind') == 'campaign_v1':
+                require(not summary_payload.get('preservation_errors'),
+                        'Campaign preservation errors forbid completion')
 
     if mode == "finalize":
         require(stage == "complete", "preservation is not complete; do not delete raw data")

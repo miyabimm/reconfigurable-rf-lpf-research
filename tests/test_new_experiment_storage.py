@@ -384,6 +384,42 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.assertTrue(report["committed_readback"])
         self.assertEqual("not_run", report["independent_validation"])
 
+    def test_complete_campaign_cannot_hide_preservation_errors(self):
+        self.complete()
+        summary_path = self.root / self.record['summary']['path']
+        summary = json.loads(summary_path.read_text(encoding='utf-8'))
+        summary.update(preservation_kind='campaign_v1',
+                       preservation_errors=['synthetic incomplete G3'])
+        def commit_summary():
+            digest = dump(summary_path, summary)
+            self.record['summary']['sha256'] = digest
+            for item in self.manifest['evidence']:
+                if item['path'] == self.record['summary']['path']:
+                    item['sha256'] = digest
+            self.save()
+            self.commit_changes()
+        def selected():
+            head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=self.root, text=True).strip()
+            with patch(SCRIPT + '.validate_manifest'), patch(
+                    SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}):
+                return audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                                      diff_base=head, expected_head=head)
+        commit_summary()
+        for mode in ('audit', 'finalize'):
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, 'Campaign preservation errors'):
+                self.validate(mode)
+        with self.assertRaisesRegex(ValueError, 'Campaign preservation errors'):
+            selected()
+        summary['preservation_errors'] = []
+        commit_summary()
+        self.assertEqual('complete', self.validate('audit')['stage'])
+        self.assertEqual('complete', selected()[0]['stage'])
+        # Incomplete evidence must remain auditable and must not be relabeled complete.
+        summary['preservation_errors'] = ['synthetic incomplete G3']
+        self.record['stage'] = 'preservation_incomplete'
+        commit_summary()
+        self.assertEqual('preservation_incomplete', self.validate('audit')['stage'])
+
     def test_exp_total_limit_is_configurable(self):
         self.complete()
         path = self.root / "data/phase2_git_storage_budget.json"
