@@ -21,7 +21,7 @@ ChatGPTに確認してほしい事項：
 | 16:12:16.834 | seed 1001 rawの最後の更新 |
 | 16:12:42.713 | 実行ツール結果 `Command aborted`。ユーザーの中断操作の可能性はあるが発生元・シグナルはログ未記録 |
 
-保存された全393 batchはいずれも70 samples requested/completedで、raw上は **27,510 / 27,510**。これは最後の保存時点の記録であり、親 `run.json` は `status=unknown`、campaign費用の確定値は0のまま、unknown費用上限250,000、予約500,000を保持している。Job rawも `status=unknown`、`evaluation_status=ready`、coarse stepは `unknown`、solver result未保存。最後の保存済batchは `completed`。**未照合費用を確定費用と扱わない**。
+消失前のrawについて、保存された全393 batchはいずれも70 samples requested/completedで、raw上は **27,510 / 27,510** と報告した。これは最後の保存時点の記録であり、親 `run.json` は `status=unknown`、campaign費用の確定値は0のまま、unknown費用上限250,000、予約500,000を保持していた。親の確定値0は未照合の保全上の状態であり、RF評価が0回だったという意味ではない。Job rawも `status=unknown`、`evaluation_status=ready`、coarse stepは `unknown`、solver result未保存。最後の保存済batchは `completed`。**未照合費用を確定費用と扱わない**。原本が所在不明のため、これらは現在GitHub上で独立readbackできない未検証の二次証拠である。
 
 | 対象 | 状態 |
 |---|---|
@@ -52,7 +52,7 @@ stdout、stderr、`/usr/bin/time` の出力は全て空。例外・数値エラ�
 
 - ソース: `experiments/chatgpt_topology_search/runs/EXP-062/checkpoints/a6_best.json`、byte SHA256 `4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b`。回路定義はEXP-115 manifest中の定義とEXP-062 checkpointの接続、素子、coupling順、完全vectorを照合。canonical definition SHA `bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068`。
 - RF-T008 trialを明示opt-in、**現行**effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`。bands SHA `1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe`。固定S2P input `ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945`、output `b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da`。
-- ベンチマークvectorを現行評価器・全6設定・28個別区間×17点で別途評価：最悪IL **0.827841148462847 dB**、最小H2 **30.004999999866506 dB**、最小H3 **30.00499999993071 dB**、strict PASS。component/role/SPD検査は通過。旧参考値をそのまま流用していない。別枠476 forward frequency samples。今回dense1001・独立MNA・電力・受動性は未実施。
+- Pi Codeの報告では、ベンチマークvectorを現行評価器・全6設定・28個別区間×17点で別途評価：最悪IL **0.827841148462847 dB**、最小H2 **30.004999999866506 dB**、最小H3 **30.00499999993071 dB**、strict PASS。component/role/SPD検査は通過。旧参考値をそのまま流用していない。別枠476 forward frequency samples。これは原本所在不明の報告に基づく限定有限格子評価であり、seed 1001中断結果、dense、連続帯域や科学的RF認定ではない。今回dense1001・独立MNA・電力・受動性は未実施。
 - Pilotの凍結探索格子はpass 14×2、H2 7×3、H3 7×3＝70 points/forward、SHA `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。selection 3点、terminal 17点は未実行。
 
 ## Planと再現情報
@@ -92,4 +92,4 @@ stdout、stderr、`/usr/bin/time` の出力は全て空。例外・数値エラ�
 | `pilot-output/development-hybrid-1001.json` | `fd6d4fc576c659b1b23c985b6b7528928818bb267537bd00f081f042ffdf25eb` |
 | `benchmark-preflight.json` | `08eb6e482916fb870b8a514df34bab51f3283460390596573749b1dabe12bb2d` |
 
-上記は過去にローカル実ファイルから計算したSHAであり、PR上でrawのGit readbackやremote照合を実施したことを意味しない。raw全体はPRに含まれず、GitHubで独立に再集計できない。PR内に原本消失前にコピーした小さな入力と最後の評価点の派生スナップショットは残るが、原本保全の代替ではない。**証拠保全は不完全**。連続帯域、Q(f)、SRF、EM、実測、公差、物理実装性および大域最適性は未検証。
+上記の過去SHAと派生観測値は、原本がない現在、独立照合できない**未検証の二次証拠**であり、PR上でrawのGit readbackやremote照合を実施したことを意味しない。raw全体はPRに含まれず、GitHubで独立に再集計できない。PR内に原本消失前にコピーした小さな入力と最後の評価点の派生スナップショットは残るが、原本保全の代替ではない。**証拠保全は不完全**。原本を回収できた場合は既存SHAを照合してから独立再集計し、元データを改変せずresumeもしない。計測・保全方針の独立レビュー前にPilotやMainを再開しない。連続帯域、Q(f)、SRF、EM、実測、公差、物理実装性および大域最適性は未検証。
