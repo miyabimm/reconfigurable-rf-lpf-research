@@ -45,7 +45,7 @@ BOUNDARY = ['test_issue343_d3_science']
 PATHS = {
     'project/specification.md': 'RF', 'project/slsqp_iteration_policy.md': 'OPT',
     'project/experiment_storage_policy.md': 'STORE', 'project/campaign_workflow.md': 'GATE RUN STORE',
-    'project/roadmap.md': 'DOC', 'project/README.md': 'DOC', 'README.md': 'DOC',
+    'project/instructions.md': 'FULL', 'README.md': 'DOC',
     'src/lpf/search/gates.py': 'GATE', 'src/lpf/search/preflight.py': 'GATE',
     'src/lpf/search/checkout.py': 'GATE STORE',
     'src/lpf/experiment_preservation.py': 'STORE FULL',
@@ -62,10 +62,18 @@ PATHS = {
     'scripts/verify_phase2_cleanup_w1_links.py': 'DOC',
 }
 # Shared kernels and structural files stay unknown => conservative FULL.
+
+
+def ordinary_document(path):
+    # Directory defaults apply only to prose; governing contracts above retain
+    # their RF/OPT/RUN/GATE/STORE ownership (and instructions remains FULL).
+    return path.startswith(('project/', 'docs/')) and path.endswith('.md') and path not in PATHS
+
+
 def path_classes(path):
     if path in PATHS:
         return set(PATHS[path].split())
-    if path.startswith('docs/') and path.endswith('.md'):
+    if ordinary_document(path):
         return {'DOC'}
     if path in {'rf/bands.csv', 'rf/constraints/registry.json',
                 'rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p',
@@ -153,7 +161,7 @@ def plan(event, base, head, ref, force=False):
             # New code/data needs explicit registration and review, even inside
             # an otherwise familiar directory. New documentation and tests are
             # safe to identify; changed tests are always executed in normal CI.
-            new_unknown = status == 'A' and not (path.startswith('docs/') and path.endswith('.md')) and not path.startswith('tests/')
+            new_unknown = status == 'A' and not ordinary_document(path) and not path.startswith('tests/')
             if 'FULL' in groups or new_unknown:
                 result['full'] = True
                 result['reasons'].append('unregistered, new or shared path: ' + path)

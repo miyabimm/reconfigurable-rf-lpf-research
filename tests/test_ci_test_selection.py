@@ -75,6 +75,35 @@ class SelectionTests(unittest.TestCase):
         self.commit()
         self.assertEqual(set(self.plan()['classes']), {'DOC', 'OPT'})
 
+    def test_document_directories_accept_new_markdown_but_not_code(self):
+        for path in ('project/methods.md', 'project/diagnostics/new-note.md',
+                     'docs/research/new-note.md'):
+            with self.subTest(path=path):
+                self.git('reset', '--hard', self.base)
+                self.git('clean', '-fdq')
+                self.write(path, 'new ordinary documentation\n')
+                self.commit()
+                result = self.plan()
+                self.assertFalse(result['full'], result)
+                self.assertEqual(result['classes'], ['DOC'])
+        for path in ('project/diagnostics/new.py', 'project/fixtures/new.yaml',
+                     'project/new.json', 'unknown/new.md', 'project/instructions.md'):
+            with self.subTest(path=path):
+                self.git('reset', '--hard', self.base)
+                self.git('clean', '-fdq')
+                self.write(path, 'new unknown or governing input\n')
+                self.commit()
+                self.assertTrue(self.plan()['full'])
+
+    def test_document_rules_keep_safety_ownership(self):
+        for path, expected in {
+            'project/specification.md': {'RF'},
+            'project/slsqp_iteration_policy.md': {'OPT'},
+            'project/experiment_storage_policy.md': {'STORE'},
+            'project/campaign_workflow.md': {'GATE', 'RUN', 'STORE'},
+        }.items():
+            self.assertEqual(selector.path_classes(path), expected)
+
     def test_test_changes_unknown_and_ci_fail_closed(self):
         for path, full in [('tests/test_issue309_rf_core.py', False),
                            ('tests/test_unregistered.py', True),

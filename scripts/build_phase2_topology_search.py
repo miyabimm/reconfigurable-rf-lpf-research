@@ -11,15 +11,12 @@ import io
 import json
 import math
 import re
-from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_CATALOG = "data/catalog/phase2_candidate_catalog_20261017.csv"
 SNAP = "data/pareto_snapshots/rf_t005_rf_f003_20261017.json"
 OUT = "data/catalog/phase2_topology_search_20261017.csv"
-SUMMARY = "data/catalog/phase2_topology_search_20261017_summary.json"
-REPORT = "docs/results/phase2_topology_search_20261017.md"
 FIELDS = ["catalog_id", "constraint_class", "constraint_id", "experiment_id",
           "num_inductors", "topology_family", "electrical_inductor_edges",
           "electrical_edges_provenance", "reported_physical_inductor_order",
@@ -180,76 +177,30 @@ def build(root=ROOT):
         caveats.append("Signed numerical k and reported order are NOT verified physical dot or EM realization.")
         row["caveat"] = " ".join(caveats)
         output.append(row)
-    summary = {
-        "phase": "Phase 2", "source_catalog": BASE_CATALOG,
-        "status": "read_only_derived_search_index",
-        "total_records": len(output),
-        "new_t005_records": 6, "new_f003_records": 4,
-        "historical_14_unclassified": 14,
-        "evidence_states": dict(sorted(Counter(x["structural_evidence_state"] for x in output).items())),
-        "source_sha_checks": 11,
-        "original_source_files_changed": False,
-        "rf_simulations_newly_executed": False,
-        "physical_realization_verified_by_this_index": False,
-        "notes": [
-            "Signed k derives only from original parameter vectors.",
-            "EXP-042 electrical edges use an explicitly marked related EXP-047 family reference.",
-            "Historical 14 source graphs are not normalized; blank metadata is not evidence of absence.",
-            "No independent graph equivalence, coil dot convention or physical EM verification is claimed.",
-        ],
-    }
-    return output, summary
+    return output
 
 
-def render():
-    rows, summary = build()
+def as_csv(rows):
     csv_io = io.StringIO(newline="")
     writer = csv.DictWriter(csv_io, fieldnames=FIELDS, lineterminator="\n")
     writer.writeheader()
     writer.writerows(rows)
-    md = [
-        "# Phase 2 W2: トポロジー・結合符号の検索索引（2026-10-17）", "",
-        "**既存24候補を出典SHAで参照する派生索引。新たなRF解析結果ではありません。**",
-        "正式RF-F003と試験RF-T005を分け、kの符号・コイル順を元の報告ラベルとして記録する。",
-        "結合の物理的同時実現性、EM、SRF、Q(f)、公差の検証ではない。", "",
-        "| ID | 制約 | 回路系列 | 接続の出典種別 | コイル順ラベル | k符号ペア |",
-        "|---|---|---|---|---|---|",
-    ]
-    for x in rows:
-        if x["structural_evidence_state"] == "historical_not_yet_normalized":
-            continue
-        md.append("| " + x["catalog_id"] + " | " + x["constraint_id"] + " | " +
-                  x["topology_family"] + " | " + x["electrical_edges_provenance"] + " | " +
-                  x["reported_physical_inductor_order"] + " | " + x["signed_coupling_pairs"] + " |")
-    md += [
-        "", "## 利用方法と限界", "",
-        "- [構造CSV](../../data/catalog/phase2_topology_search_20261017.csv)のcatalog_idを",
-        "  [元24候補性能CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)へ結合する。",
-        "- topology_family、electrical_inductor_edges、reported_physical_inductor_order、signed_coupling_pairsで検索できる。",
-        "- 旧14候補の値は未抽出であり、回路構造が存在しないという意味ではない。",
-        "- related_EXP047_only_not_independently_confirmedは別EXPの同一系列記述であり、",
-        "  個別checkpointsで接続が証明された意味ではない。",
-        "- kの符号は数値ベクトルの正負であり、実PCBでの磁気結合の向き・実現性を証明しない。",
-        "", "再生成: python scripts/build_phase2_topology_search.py [--check]", "",
-        "**研究Phase 2継続。Phase 3へは移行していません。**", "",
-    ]
-    return {OUT: csv_io.getvalue(),
-            SUMMARY: json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-            REPORT: "\n".join(md)}
+    return csv_io.getvalue()
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    for rel, content in render().items():
-        p = ROOT / rel
-        if args.check:
-            if not p.is_file() or p.read_text(encoding="utf-8") != content:
-                raise SystemExit("W2 stale derived data: " + rel)
-        else:
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(content, encoding="utf-8")
+    rows = build()
+    content = as_csv(rows)
+    p = ROOT / OUT
+    if args.check:
+        if not p.is_file() or p.read_text(encoding="utf-8") != content:
+            raise SystemExit("W2 stale derived data: " + OUT)
+    else:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
     print("W2 structure search index verified" if args.check else "W2 structure search index written")
 
 

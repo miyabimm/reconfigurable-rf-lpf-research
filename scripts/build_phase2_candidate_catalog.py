@@ -27,8 +27,6 @@ EXPERIMENT_INDEX_SNAPSHOT = "data/catalog/experiment_index_20261017.csv"
 EXPERIMENT_INDEX_BLOB_SHA1 = "4fb76382458436f0de1a1fd8083bd6d9d737d18d"
 SNAPSHOT = "data/pareto_snapshots/rf_t005_rf_f003_20261017.json"
 OUTPUT_CSV = "data/catalog/phase2_candidate_catalog_20261017.csv"
-OUTPUT_JSON = "data/catalog/phase2_candidate_catalog_20261017_summary.json"
-OUTPUT_MD = "docs/results/phase2_candidate_catalog_20261017.md"
 
 BASE_COLUMNS = (
     "catalog_id", "experiment_id", "constraint_class", "constraint_id",
@@ -254,34 +252,7 @@ def build_catalog(root=ROOT):
                 if ba <= aa and bl <= al and (ba < aa or bl < al):
                     raise ValueError("archived snapshot is not internally nondominated: " +
                                      a["catalog_id"])
-    summary = {
-        "phase": "Phase 2",
-        "status": "derived_read_only_catalog_from_original_sources",
-        "legacy_count": len(raw),
-        "snapshot_count": sum(found.values()),
-        "total_count": len(records),
-        "comparison_group_count": len(grouped),
-        "snapshot_id": snap["snapshot_id"],
-        "snapshot_source": SNAPSHOT,
-        "legacy_source": LEGACY,
-        "source_counts": dict(sorted(Counter(r["origin"] for r in records).items())),
-        "constraint_counts": dict(sorted(Counter(r["constraint_id"] or "historical"
-                                               for r in records).items())),
-        "snapshot_pareto_counts": dict(sorted(found.items())),
-        "verified_git_blob_sha_count": sum(found.values()) * 2,
-        "formal_rf_f003_il0p30_achieved": False,
-        "trial_rf_t005_il0p30_achieved": False,
-        "new_simulations_executed": False,
-        "source_original_files_modified": False,
-        "global_pareto_optimality_proven": False,
-        "physical_validation_proven": False,
-        "incomplete_evidence_note": (
-            "A source blob hash authenticates an archived source, not a new RF replay. "
-            "Historical catalog entries preserve their original verification status; "
-            "mesh point counts are not standardized across candidate sources."
-        ),
-    }
-    return records, summary
+    return records
 
 
 def as_csv(records: list[dict]) -> str:
@@ -292,88 +263,20 @@ def as_csv(records: list[dict]) -> str:
     return out.getvalue()
 
 
-def as_markdown(records: list[dict], summary: dict) -> str:
-    lines = [
-        "# Phase 2：研究候補統合ビュー（2026-10-17）",
-        "",
-        "**24件の参照用索引。新たなRF解析・最適化は未実施。**",
-        "旧候補台帳14件と保存済みパレートRF-T005 6件／RF-F003 4件を、"
-        "**元ファイルを変更せず**組み合わせたビュー。",
-        "",
-        "- [機械可読CSV](../../data/catalog/phase2_candidate_catalog_20261017.csv)",
-        " ／ [構成・検証状態のJSON概要](../../data/catalog/phase2_candidate_catalog_20261017_summary.json)",
-        "- [元RF-T005/RF-F003スナップショット](../../data/pareto_snapshots/rf_t005_rf_f003_20261017.json)",
-        " ／ [原説明](../pareto_rf_t005_rf_f003_20261017.md)",
-        "",
-        "## 最新保存済み非劣後候補（制約別）",
-        "",
-        "| 制約 | 候補 | EXP | L | GJM | PCB-C | Cv | chip面積 | 最悪IL[dB] | H2[dB] | H3[dB] | 格子点/区間 | 独立MNAプローブ点 |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
-    ]
-    for r in records:
-        if r["origin"] != "archived_pareto_20261017":
-            continue
-        lines.append("| " + " | ".join((
-            r["constraint_id"], r["catalog_id"], r["experiment_id"],
-            r["num_lqp02hv"], r["num_gjm01"], r["num_pcb_pattern_c"],
-            r["num_ic_variable_c"], f"{float(r['chip_area_units']):.6f}",
-            f"{float(r['worst_il_db']):.9f}", f"{float(r['min_h2_db']):.6f}",
-            f"{float(r['min_h3_db']):.6f}",
-            r["mesh_points_per_interval"], r["independent_mna_probe_points"],
-        )) + " |")
-    lines += [
-        "",
-        "## 証拠と比較条件",
-        "",
-        "- **条件を分離：** 比較キーは制約ID・実効条件SHA・目的・H2/H3要求・"
-        "成立区分と一対一。RF-T005（trial）とRF-F003（formal）の面積–IL Paretoを混ぜない。",
-        "- **ソース追跡：** CSVの `checkpoint_path` と `checkpoint_git_blob_sha1` が完全ベクトルの元出典、"
-        "`verification_path`と`verification_git_blob_sha1`が記録済み評価根拠。"
-        "実験内で候補が入れ子になっているときは `source_subcandidate_id`／元スナップショットも参照する。",
-        "- **検証範囲：** 記載の独立MNAは84点等、有限の指定点での照合。"
-        "縮約法の28×1001／28×7001格子と28×7001の独立MNA全点実行は同義ではない。",
-        "- **収束状態：** EXP-042の面積6はSLSQP未収束。H2/H3の有限格子PASSと収束を混同しない。",
-        "- **訂正記録：** RF-F003の4GJM候補は原検証JSONの面積が6と誤記。"
-        "部品数から6⅔とした訂正を `original_metadata_discrepancy` に記録。原JSONは改変しない。",
-        "- **旧14件：** RF-F002やRF-T004などを含み、制約・成立区分が異なる。"
-        "旧候補の部品別内訳や格子・実行状態について元台帳にない値は推定で埋めない。",
-        "- **目標未達：** 正式RF-F003・試験RF-T005ともIL≤0.30dB、公称35dBは未達。"
-        "Q(f)/SRF/EM・連続帯域極値・実測・物理面積を保証しない。",
-        "",
-        "## 再生成と照合",
-        "",
-        "```bash",
-        "python scripts/build_phase2_candidate_catalog.py --check",
-        "python scripts/report_research_pareto.py --catalog data/catalog/phase2_candidate_catalog_20261017.csv "
-        "--csv artifacts/pareto_step3.csv --summary artifacts/pareto_step3.json --markdown artifacts/pareto_step3.md",
-        "```",
-        "",
-        "Step 3は元の14件台帳と10件の不変スナップショットを保持する**派生統合**。"
-        "新EXPなし、原数値の上書きなし。Phase 2を継続しPhase 3は開始しない。",
-        "",
-    ]
-    return "\n".join(lines)
-
-
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--check", action="store_true",
                    help="fail when generated output differs; never change files")
     args = p.parse_args()
-    records, summary = build_catalog()
-    outputs = {
-        OUTPUT_CSV: as_csv(records),
-        OUTPUT_JSON: json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        OUTPUT_MD: as_markdown(records, summary),
-    }
-    for path, content in outputs.items():
-        file = ROOT / path
-        if args.check:
-            if not file.is_file() or file.read_text(encoding="utf-8") != content:
-                raise SystemExit("STALE derived catalog: " + path)
-        else:
-            file.parent.mkdir(parents=True, exist_ok=True)
-            file.write_text(content, encoding="utf-8")
+    records = build_catalog()
+    content = as_csv(records)
+    file = ROOT / OUTPUT_CSV
+    if args.check:
+        if not file.is_file() or file.read_text(encoding="utf-8") != content:
+            raise SystemExit("STALE derived catalog: " + OUTPUT_CSV)
+    else:
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(content, encoding="utf-8")
     print("PASS: unified catalog (14 legacy + 6 RF-T005 + 4 RF-F003), "
           "10 source vectors and 10 metric sources Git-blob verified; "
           + ("on-disk outputs match" if args.check else "outputs generated"))

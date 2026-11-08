@@ -101,7 +101,7 @@ class Phase2HistoricalStatusAudit(unittest.TestCase):
         self.assertEqual("NONCANONICAL_UNAPPROVED", older["candidate"]["constraint_status"])
 
     def test_trial_zip_not_misidentified_as_missing_formal_exp017(self):
-        notes = (ROOT / "docs/phase2_exp017_checkpoint_provenance_review_20261015.md").read_text(encoding="utf-8")
+        notes = (ROOT / "project/results.md").read_text(encoding="utf-8")
         self.assertIn("RF-T004-EXP017-bundle.zip", notes)
         self.assertIn("48175d3579d3814e5d3740858ee3959b88e9731b835cb2cd306ce6b0093ae640", notes)
         self.assertIn("0.2999624819232782", notes)

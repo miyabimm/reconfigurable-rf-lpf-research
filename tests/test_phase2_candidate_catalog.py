@@ -1,7 +1,5 @@
 """Step 3: validate derived data, trial/formal separation, and source evidence."""
-import copy
-import csv
-import io
+from collections import Counter
 import unittest
 from unittest.mock import patch
 
@@ -11,10 +9,10 @@ from scripts import report_research_pareto as pareto
 
 class UnifiedCatalogTests(unittest.TestCase):
     def test_legacy_fourteen_preserved_and_new_ten_separate(self):
-        records, summary = catalog.build_catalog()
+        records = catalog.build_catalog()
         self.assertEqual(24, len(records))
-        self.assertEqual(14, summary["legacy_count"])
-        self.assertEqual({"RF-F003": 4, "RF-T005": 6}, summary["snapshot_pareto_counts"])
+        self.assertEqual({"RF-F003": 4, "RF-T005": 6},
+                         dict(Counter(r["constraint_id"] for r in records[14:])))
         original = catalog.rows_from_csv(catalog.ROOT, catalog.LEGACY)
         self.assertEqual(original, [{k: row[k] for k in catalog.BASE_COLUMNS}
                                     for row in records[:14]])
@@ -29,7 +27,10 @@ class UnifiedCatalogTests(unittest.TestCase):
         )
 
     def test_all_new_metrics_reproduce_snapshot(self):
-        records, summary = catalog.build_catalog()
+        with patch.object(catalog, "evidence_blob_check",
+                          wraps=catalog.evidence_blob_check) as checked:
+            records = catalog.build_catalog()
+        self.assertEqual(20, checked.call_count)
         snap = catalog.read_json(catalog.ROOT, catalog.SNAPSHOT)
         by_id = {r["catalog_id"]: r for r in records}
         for condition in snap["conditions"]:
@@ -44,10 +45,9 @@ class UnifiedCatalogTests(unittest.TestCase):
                 self.assertEqual(r["original_metadata_discrepancy"],
                                  candidate.get("source_metadata_discrepancy", ""))
                 self.assertEqual(r["experiment_execution_status"], "partial")
-        self.assertEqual(20, summary["verified_git_blob_sha_count"])
 
     def test_area_correction_and_unconverged_state_visible(self):
-        records, _ = catalog.build_catalog()
+        records = catalog.build_catalog()
         by_id = {r["catalog_id"]: r for r in records}
         f = by_id["F003_4L_A6p667_EXP047"]
         self.assertAlmostEqual(6 + 2/3, float(f["chip_area_units"]))
@@ -91,15 +91,9 @@ class UnifiedCatalogTests(unittest.TestCase):
                 catalog.build_catalog()
 
     def test_generated_files_identical_to_source(self):
-        records, summary = catalog.build_catalog()
+        records = catalog.build_catalog()
         self.assertEqual((catalog.ROOT / catalog.OUTPUT_CSV).read_text(encoding="utf-8"),
                          catalog.as_csv(records))
-        self.assertEqual(
-            (catalog.ROOT / catalog.OUTPUT_JSON).read_text(encoding="utf-8"),
-            __import__("json").dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        )
-        self.assertEqual((catalog.ROOT / catalog.OUTPUT_MD).read_text(encoding="utf-8"),
-                         catalog.as_markdown(records, summary))
 
     def test_opt_in_pareto_reports_24_with_old_default_unchanged(self):
         current_old, current_summary = pareto.make_report()
