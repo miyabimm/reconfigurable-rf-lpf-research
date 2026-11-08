@@ -36,10 +36,9 @@ def vector_sha(x):
     return hashlib.sha256(a.tobytes()).hexdigest()
 
 
-def atomic(path, value):
+def _atomic_data(path, data):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = canonical(value).encode() + b'\n'
     fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name)
     try:
         with os.fdopen(fd, 'wb') as stream:
@@ -56,3 +55,23 @@ def atomic(path, value):
         if os.path.exists(name):
             os.unlink(name)
     return hashlib.sha256(data).hexdigest()
+
+
+def atomic(path, value):
+    return _atomic_data(path, canonical(value).encode() + b'\n')
+
+
+def atomic_verified(path, value):
+    """Write once, fsync, then verify exact bytes and SHA before returning.
+
+    The caller must treat any exception as STOP, retaining the preceding
+    durable unknown reservation. Counters cover this file's payload write and
+    readback, not filesystem metadata or parent-ledger writes.
+    """
+    data = canonical(value).encode() + b'\n'
+    digest = _atomic_data(path, data)
+    actual = Path(path).read_bytes()
+    if actual != data or hashlib.sha256(actual).hexdigest() != digest:
+        raise ValueError('Atomic checkpoint readback mismatch')
+    return dict(sha256=digest, write_calls=1, written_bytes=len(data),
+                read_calls=1, read_bytes=len(actual))
