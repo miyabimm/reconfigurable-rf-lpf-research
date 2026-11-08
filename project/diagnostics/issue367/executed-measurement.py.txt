@@ -1,0 +1,109 @@
+import hashlib, json, os, platform, resource, statistics, time
+from collections import Counter
+from dataclasses import asdict
+from pathlib import Path
+import numpy as np
+import scipy
+from lpf.search.plan import load_preflight
+from lpf.search.proposals import definition_from_data
+from lpf.search.storage import sha, vector_sha
+from lpf.search.worker import freeze_development_job
+from lpf.search._job_evaluation import FixedJobEvaluation
+from lpf.search import evaluation as ev, _job_evaluation as je, storage
+from lpf.rf_core.model import RFEvaluator
+from lpf.constraint_versions import load_constraint, constraint_fingerprint
+
+root = Path.cwd().resolve()
+out = Path('/tmp/issue367-timing-1794134932-9180')
+def filehash(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+plan = load_preflight(root/'project/diagnostics/issue361/pilot.yaml', root=root)
+assert plan.sha256 == '8e472fd5a223eaef4aab24cc48e9dbcae6796f3930355b7871b62d3c76ab9ac4'
+definition = definition_from_data(json.loads((root/'project/diagnostics/issue361/definition.json').read_text()))
+assert sha(asdict(definition)) == 'bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068'
+start = json.loads((root/'project/diagnostics/issue361/pilot-starts.json').read_text())['1001']
+x = start['vector']; assert vector_sha(x) == start['vector_sha256']
+policy = load_constraint('RF-T008', root=root, allow_trial=True)
+assert constraint_fingerprint(policy) == 'e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532'
+grid = plan.requested_grid('hybrid/coarse')
+assert len(grid.frequency_hz) == 70
+assert plan.data['grids']['hybrid/coarse']['sha256'] == '6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26'
+req = plan.data['requirements']; assert len(req['intervals']) == 28
+spec = freeze_development_job(plan, definition, policy, 'hybrid', 1001, x, root=root)
+source = spec.data['source']; assert je.source_identity(root) == source
+metadata = dict(head=source['head'], source_sha256=spec.source_sha256, source=source,
+    plan_sha256=plan.sha256, definition_sha256=sha(asdict(definition)), vector_sha256=vector_sha(x),
+    constraint_sha256=constraint_fingerprint(policy), grid_sha256=plan.data['grids']['hybrid/coarse']['sha256'],
+    rf_inputs=plan.data['rf_inputs'], frequency_samples=len(grid.frequency_hz),
+    settings=sorted(set(map(int,grid.setting))), intervals=len(req['intervals']),
+    input_file_sha256={str(p.relative_to(root)):filehash(p) for p in [root/'project/diagnostics/issue361/pilot.yaml',root/'project/diagnostics/issue361/pilot-starts.json',root/'.issue361-definition.json',root/'rf/constraints/registry.json',root/'rf/bands.csv',*sorted((root/'rf/parasitics').glob('*.s2p')),root/'uv.lock',root/'pyproject.toml']},
+    python=platform.python_version(), numpy=np.__version__, scipy=scipy.__version__, platform=platform.platform(),
+    script_sha256=filehash(__file__), cwd=str(root), output=str(out), synthetic_io='repeated measured completed row; synthetic, not recovered raw')
+(out/'metadata.json').write_text(json.dumps(metadata, indent=2)+'\n')
+
+# Wrappers observe the original implementation, leaving checks, budgets and storage order intact.
+events=[]
+def stamp():
+    r=resource.getrusage(resource.RUSAGE_CHILDREN)
+    return time.perf_counter(), time.process_time(), r.ru_utime+r.ru_stime
+def wrap(obj, name, label):
+    original=getattr(obj,name)
+    def measured(*args, **kwargs):
+        t=stamp()
+        try: return original(*args, **kwargs)
+        finally:
+            q=stamp(); events.append(dict(name=label,wall=q[0]-t[0],cpu=q[1]-t[1],child_cpu=q[2]-t[2]))
+    setattr(obj,name,measured)
+wrap(ev.FixedStageEvaluation,'_contract','contract_base')
+wrap(je,'source_identity','source_identity')
+wrap(ev,'validate_values','validate_values')
+wrap(RFEvaluator,'evaluate','rf_forward')
+wrap(ev,'evaluate_requirements','requirements')
+wrap(je.FixedJobEvaluation,'snapshot','snapshot')
+# Measure atomic's whole operation and nested canonical, file/directory fsync and replace.
+orig_atomic=storage.atomic
+
+def atomic_measured(path, value):
+    canonical, fsync, replace = storage.canonical, os.fsync, os.replace
+    def instrument(fn,label):
+        def f(*args,**kw):
+            t=stamp()
+            try: return fn(*args,**kw)
+            finally:
+                q=stamp(); events.append(dict(name=label,wall=q[0]-t[0],cpu=q[1]-t[1],child_cpu=q[2]-t[2]))
+        return f
+    storage.canonical=instrument(canonical,'atomic_canonical')
+    os.fsync=instrument(fsync,'atomic_fsync')
+    os.replace=instrument(replace,'atomic_replace')
+    t=stamp()
+    try: return orig_atomic(path,value)
+    finally:
+        q=stamp(); events.append(dict(name='atomic_total',wall=q[0]-t[0],cpu=q[1]-t[1],child_cpu=q[2]-t[2],bytes=Path(path).stat().st_size if Path(path).exists() else None))
+        storage.canonical,os.fsync,os.replace=canonical,fsync,replace
+ev.atomic=atomic_measured
+meter = FixedJobEvaluation(plan, definition, policy, 'hybrid', out/'diagnostic-raw.json', spec, root=root)
+meter.result.update(status='unknown', solver_execution_kind='not_run_diagnostic',rf_backend='rf_core')
+meter.result['steps']=[dict(name='coarse',settings=plan.data['config']['arms'][0]['steps'][0],status='unknown',candidates=[])]
+meter.activate('hybrid/coarse','hybrid/coarse')
+results=[]
+for i in range(5):
+    events.clear(); t=stamp()
+    result=meter.evaluate(x)
+    q=stamp()
+    assert meter.requested == (i+1)*70 and meter.completed == (i+1)*70
+    assert meter.rows[-1]['status']=='completed'
+    saved=json.loads((out/'diagnostic-raw.json').read_text())
+    assert saved['requested']==meter.requested and saved['completed']==meter.completed
+    results.append(dict(index=i+1,total=dict(wall=q[0]-t[0],cpu=q[1]-t[1],child_cpu=q[2]-t[2]), events=list(events),raw_bytes=(out/'diagnostic-raw.json').stat().st_size))
+    print('forward',i+1,'wall',q[0]-t[0],'cpu',q[1]-t[1],'requested/completed',meter.requested,meter.completed,flush=True)
+# Synthetic size test: repeat one measured row; never modify or inject rows into the real ledger.
+row=storage.plain(meter.rows[-1]); rowbytes=len(storage.canonical(row).encode())
+synthetic=[]
+for label, count in [('small',1),('large',max(1,round(27566355/rowbytes)))]:
+    payload={'kind':'synthetic_io_only_not_recovered_raw','batches':[row]*count}
+    for repetition in range(3):
+        events.clear(); t=stamp(); atomic_measured(out/f'synthetic-{label}.json',payload); q=stamp()
+        synthetic.append(dict(label=label,repetition=repetition+1,rows=count,total=dict(wall=q[0]-t[0],cpu=q[1]-t[1],child_cpu=q[2]-t[2]),events=list(events),bytes=(out/f'synthetic-{label}.json').stat().st_size))
+        print('synthetic',label,repetition+1,synthetic[-1]['bytes'],q[0]-t[0],flush=True)
+report=dict(metadata=metadata,forwards=results,synthetic_io=synthetic,final_requested=meter.requested,final_completed=meter.completed,raw_sha256=filehash(out/'diagnostic-raw.json'))
+(out/'timings.json').write_text(json.dumps(report,indent=2)+'\n')
+print('DONE',out/'timings.json',flush=True)

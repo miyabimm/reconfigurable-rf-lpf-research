@@ -1,0 +1,1077 @@
+{
+  "metadata": {
+    "head": "9a3f9caae2d2ade4f2fd050757615fe45046f978",
+    "source_sha256": "d8098073ffbee52c29365a947076e0757ee735366f3d1b81aaaf529608fc09a4",
+    "source": {
+      "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "scipy": "1.18.1",
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "files": {
+        "pyproject.toml": "c19ea7dc952b29a7ee9546e3fc28c16b5e826daa9627c382b9b1387b202700db",
+        "scripts/run_rf_search.py": "1d947062fab3e9e2f48f90a55a18a6d378e03c0587a7f7142a20c75e2212ab7b",
+        "src/lpf/__init__.py": "1256622e4cf3fdbccad23ce3588baf6fad550206c36f5bbb9893fb9ee46d8eae",
+        "src/lpf/checkpoint_io.py": "07fdb2c141bf699195ebe89a5b357e13fc29f0f3a037f39ff193828723b82804",
+        "src/lpf/circuit.py": "5819c1b39e29f0edf8f8f25996a15e16ef81a795c8280d97e927960de71f3162",
+        "src/lpf/configuration.py": "21248740d3c8ec2c5c42aac21aae516ee2e2d07429e9667f35824a7c3aa7feb9",
+        "src/lpf/constraint_history.py": "19101c8d111cb5bf510bb60d683a1dc82c51dac6b7633d852e5bd9631a9f3b6b",
+        "src/lpf/constraint_versions.py": "278f8ea32568d34b7659b49c638a784a12f161be819cc7a3aad01089243c84c4",
+        "src/lpf/constraints.py": "a7edd70fe3c37cc840361bb0ae1b9bed9d199f9462794f7cbdc6b752a1a86067",
+        "src/lpf/evaluate.py": "7b954b2a5c35c1791d3ce0ab555e87a490f41b6c3da3e79dcf7a4be7073975f2",
+        "src/lpf/experiment_manifest.py": "ad7fbe4dc77ebcf057bca1110a5d95e0be2af698eedd6c0f0103bcbbac097621",
+        "src/lpf/experiment_preservation.py": "ae57356f74f18539ed67d999537854c5d5691a2fe0bf0838c62fa7f839ec8060",
+        "src/lpf/independent.py": "cbd5523a89c79eee195e76c2841ddce537b5705fdfea3e49f2db64dfb8754ad7",
+        "src/lpf/legacy_graph_builder.py": "a08d0c27dfb689681c1c460eae7576979f2d335c2c485e37f9690f868773e9af",
+        "src/lpf/legacy_graph_search.py": "a4e37231c7c9eccb1de0c93dd9584fafe52d236b666dbc871a57fcae389cfd39",
+        "src/lpf/legacy_manifest_adapter.py": "aa257ccf129fa8a0cf5abb6a335394b704172739b3d3e81e381362a9dffa6fa9",
+        "src/lpf/lqp02_series.py": "4f23b931abc1883d4beab8d9b388d35d60256a5a5cf57ffd7e8658a005468dba",
+        "src/lpf/metrics.py": "18a40a2e0faf1fa21ac5d216ee8a90b69cd5b68dbda13e7a8bca3c41f2483f6e",
+        "src/lpf/optimizers/__init__.py": "c91788855441b7d80dc3b36c6afb3ebae5967c8d15e00e2953441b03e7d98e24",
+        "src/lpf/optimizers/_objectives.py": "f145af310fbe54362e3916eca2e92e3420d9436148e89e229be45d7808b251c2",
+        "src/lpf/optimizers/hybrid.py": "1ac6a119c3d88b18497301586e968c616251d188190fcac4713254bf11290ac0",
+        "src/lpf/optimizers/pipeline.py": "040dfbef72f7a6da2732a4e14dd9a2977d8407a0557182fe49a7c436255b49f3",
+        "src/lpf/optimizers/slp.py": "3fda5da498f5582e047a269bfbebb5f4df24e7ff46f8ee4bbb750b64d5bb1386",
+        "src/lpf/optimizers/slsqp.py": "39e3b78cf04b0eaaf697ac9c05c3d1e906aeb953725d74359406711779d4bbde",
+        "src/lpf/policy_schema.py": "dd0eda1e77afc1d4123099b4b547539166c32ce569f1f659f0c9dbcc8ec91dd7",
+        "src/lpf/rf_core/__init__.py": "1bb811c81530cc0126c8986d2bbfbcf5bf5989b555945dadef614dbe0ba548f1",
+        "src/lpf/rf_core/_grid.py": "06aa1ab299d9f95b6c45398f284196cdb3dd0ca694dd5e279704baea91f50a90",
+        "src/lpf/rf_core/branch_mna.py": "55997e961d2d737545d63ce43bd27f33e92d73c73632f070dfe0265736210bd6",
+        "src/lpf/rf_core/coupled_lc.py": "6a738f5d08e864d91427d40b52b3f82a55582b40cb5f99595773a3819ab2726e",
+        "src/lpf/rf_core/independent.py": "c6e9f8f55275f8e6452681af93ef4224acb7cee2a30656f7ab8d9dd661704142",
+        "src/lpf/rf_core/independent_rf.py": "460dc9b0c43ff30e8f7b6af243081725073f735de09acf0f3c96cd838fc51e5e",
+        "src/lpf/rf_core/model.py": "60fb67df8a47e9a738e68a9ede103058bf50b3113cc4ea47c8ed8f696c47e3d2",
+        "src/lpf/rf_core/nominal_inductors.py": "7173ce8885d80499553d7bcb5048002b099c7ffde4c599bdd589abafab82ff53",
+        "src/lpf/rf_core/nominal_parts.py": "ad0d3e3a665469de48c87cff43393c536c92c994c1157a95b3b082fad7f7e443",
+        "src/lpf/rf_core/numerical_diagnostics.py": "a9b584aa8ba794c486a0c405eb285d48dc4e99b05f1827dc213623f582322ef4",
+        "src/lpf/rf_core/port_parasitics.py": "fbcc2544ed8b1b70c9546a2c0c8fd1e911c087440af4f7b53952986193487490",
+        "src/lpf/rf_core/rft008_layout.py": "024299cda951fc656f9eb11c3aea554eea10d5224f6b117d0685282b057d8ef3",
+        "src/lpf/search/__init__.py": "aa60b2dd51760f9ff56b97316b9fb714db1de7bb5b9038b29b00fa3fb98aafdd",
+        "src/lpf/search/_job_evaluation.py": "9d79e0a1480b7dd31bb93425ff72942234e7bdfdfcaad98225e1889fae1d45e1",
+        "src/lpf/search/campaign.py": "240cd7f3d387221fde8cae1e960730929f15b76c394eeae606e2065674060f73",
+        "src/lpf/search/checkout.py": "af1edb2c9cbaddadfb4055642c4fa23dee479aaf12fee029126986f3fd08a8c4",
+        "src/lpf/search/component_constraints.py": "4bc24f045054a81e51bd4e7441cad93fa523aaa7fb07b7fefc0e89a74dc03f1e",
+        "src/lpf/search/controller.py": "a809576d2cbbe892ff121af540a7c33d563f0ce8a9991f13ec6a02d139308014",
+        "src/lpf/search/evaluation.py": "2c6bbf94d5e2ad23b41c4099770b5cc4d0704289121eea655e09be76ace52dec",
+        "src/lpf/search/gates.py": "2e98df94f2255225d9246119344c5f70e17eaba98e77d80aa40a360d7bc80ec9",
+        "src/lpf/search/performance.py": "00329d55371d46d9d8b36d1d9a2acea8ac8e620484abfdea9cafe4a11b7b2c9f",
+        "src/lpf/search/plan.py": "bed287e56cd31fc546f8c9453bbc165f7541f708839e7f7ef97dc0a68ed7cc69",
+        "src/lpf/search/preflight.py": "195afffea3eacb6a72f1202dd4087097e9967065bc3baaa5e1f4a39f674b51d6",
+        "src/lpf/search/preservation.py": "d498c1a0218d5f8ee0fd321d1a70c081eda0f6115410df8af967154ead411a55",
+        "src/lpf/search/problem.py": "959ec552972e2d08f3be945a24780fd047db741ccf063562ab31630a365a941c",
+        "src/lpf/search/proposals.py": "893c119a7ed3018879d2b4e9aa9eadf0fd3462f56aed19eb9be15e5b110e4f93",
+        "src/lpf/search/runner.py": "f990885a4fc575dbc5b44ce661cecd079e4204583ab30615afc62e40667780db",
+        "src/lpf/search/starts.py": "5c6882dc7393222843c6436e10a39dabacf3b84bb4cb1641c170aa47d7b26ef3",
+        "src/lpf/search/storage.py": "91afceb21bf357f0c6918fc3afc20f35b5a03df3d111d0ca735e4632b5a1a79f",
+        "src/lpf/search/validation.py": "82875c8b98a4f8ffa1412291eaf2aeea7e6e77ba4a524eef891656ceaafc94c1",
+        "src/lpf/search/worker.py": "b800c2b70a3327b9c263d98b8944983f42d3d392ddc95cd36d631e93edbbb5da",
+        "src/lpf/slsqp_budget.py": "6fcded16ecffff03d0215740c553704816df8f4a62bee1cfba9094bf4a6d8658",
+        "src/lpf/topology_management/__init__.py": "3970950b06ec8765f07db720bf6cd71f6f77af7f079b692158ab228cf10accbf",
+        "src/lpf/topology_management/bridge.py": "e112d2d6051f3e8e65683ed56ff4924bab74026c7c9235c0fdb93b34adfc67bd",
+        "src/lpf/topology_management/circuit_layout.py": "83528636c90e751e1f0a67392125a400b04ea16d94e6d97fb2728b15440db6bc",
+        "src/lpf/topology_management/definition.py": "a102e0e78094c96b8c0a3d6a7a1ab1c86a6559e5d28694d50c4d3538ef5a91dc",
+        "src/lpf/topology_management/enumeration.py": "b374aca94eb2e9793a824fbd9aa0be1315862ec1060ff73f25af54271b44b2a2",
+        "src/lpf/topology_management/role_audit.py": "4418806a23fb8e683dba06a863263f313dbf70a4cc706c33b06aa1262e5bdfc3",
+        "src/lpf/trial_ic_fixed_c.py": "156871b518d7307839f20346d115eace5657042aad4a0c3d708233d705898d78",
+        "src/lpf/trial_pcb_pattern_c.py": "7a9712d1124a918865a4e3a5bb070b7617ff41b7a390d59d935de32e756bbe7e",
+        "src/lpf/trial_shunt_dtc.py": "779a20fb83da1d585a9c6f69fa71bb94d2a3a8e9fd9b6e2361e25a849c9d6623",
+        "src/lpf/trial_stopband.py": "bb98b236dd2796255f927bb03f5051da6a3a2dd0e8775030ac1487f4df86275d",
+        "src/lpf/twoport_reduction.py": "b9231ecced1b9598870e99c267f2bbfa47cb0349f67d8a7521d5e64a0f28fffb",
+        "src/lpf/validate.py": "d64d51199a4a2cf19b2a3aac7c2a145a6c59585bb2486239bc8fda9e956f410b",
+        "src/lpf/validation.py": "1275abaa0acb96c2f3cb06581229830a20c196430c7dbb3b04392272721c8298",
+        "uv.lock": "52144cfd0dfc7249e78c24942bac69fddc8dc3ae088799d9cf31d0d90e824e0b"
+      },
+      "head": "9a3f9caae2d2ade4f2fd050757615fe45046f978"
+    },
+    "plan_sha256": "8e472fd5a223eaef4aab24cc48e9dbcae6796f3930355b7871b62d3c76ab9ac4",
+    "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+    "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+    "constraint_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+    "rf_inputs": {
+      "bands": {
+        "path": "data/bands.csv",
+        "sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe"
+      },
+      "input_parasitic": {
+        "path": "data/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
+        "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"
+      },
+      "output_parasitic": {
+        "path": "data/parasitics/circuit2_poc_through_0_6ghz.s2p",
+        "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      }
+    },
+    "frequency_samples": 70,
+    "settings": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "intervals": 28,
+    "input_file_sha256": {
+      "project/diagnostics/issue361/pilot.yaml": "27f5fc515403805a956cd799d638328a81a1fee7c1eb59913e1e30765a75166a",
+      "project/diagnostics/issue361/pilot-starts.json": "8fb74c3ceaa9627de6dcc2bf6a3bf538b265e07538a2205331335b05a23069f2",
+      ".issue361-definition.json": "e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6",
+      "rf/constraints/registry.json": "ca69c27d360e81cb19cdc59c1444efec2cb38c2e08b795cab6d00a148e788dde",
+      "rf/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+      "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+      "rf/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da",
+      "uv.lock": "52144cfd0dfc7249e78c24942bac69fddc8dc3ae088799d9cf31d0d90e824e0b",
+      "pyproject.toml": "c19ea7dc952b29a7ee9546e3fc28c16b5e826daa9627c382b9b1387b202700db"
+    },
+    "python": "3.12.15",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "script_sha256": "ecd6551aab13aefbec1a3acde30fe5006679e8e7122f049b5eebced2f4672a64",
+    "cwd": "/home/user/src/rf-lpf-issue367",
+    "output": "/tmp/issue367-timing-1794134932-9180",
+    "synthetic_io": "repeated measured completed row; synthetic, not recovered raw"
+  },
+  "forwards": [
+    {
+      "index": 1,
+      "total": {
+        "wall": 1.422365204000016,
+        "cpu": 1.2776989040000002,
+        "child_cpu": 0.0052739999999999974
+      },
+      "events": [
+        {
+          "name": "contract_base",
+          "wall": 0.13560609500018472,
+          "cpu": 0.12517701000000003,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "source_identity",
+          "wall": 0.012042437000218342,
+          "cpu": 0.004885247999999898,
+          "child_cpu": 0.0052739999999999974
+        },
+        {
+          "name": "validate_values",
+          "wall": 0.011493407000216393,
+          "cpu": 0.010609660999999937,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.19454534100032106,
+          "cpu": 0.17955541200000003,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.1902831409997816,
+          "cpu": 0.17559651699999979,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.20435618500005148,
+          "cpu": 0.18855349700000001,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.22448195800006943,
+          "cpu": 0.20714707399999988,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.03871120600024369,
+          "cpu": 0.03573778099999991,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.009190939999825787,
+          "cpu": 0.0007386839999998784,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00016380800025217468,
+          "cpu": 0.00015135799999965727,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.003191495000010036,
+          "cpu": 8.769700000010872e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.05394549500033463,
+          "cpu": 0.03919403800000021,
+          "child_cpu": 0.0,
+          "bytes": 1046746
+        },
+        {
+          "name": "rf_forward",
+          "wall": 0.001747713999975531,
+          "cpu": 0.0016162300000002183,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "requirements",
+          "wall": 0.002107531000092422,
+          "cpu": 0.0019486600000000465,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.20650924299980034,
+          "cpu": 0.19058203099999993,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.04188126600001851,
+          "cpu": 0.03864368299999965,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.012935695000123815,
+          "cpu": 0.0007533300000002185,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00025529599997753394,
+          "cpu": 0.00023547800000001118,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002613603000099829,
+          "cpu": 8.915899999983878e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.06074178700009725,
+          "cpu": 0.042537899000000046,
+          "child_cpu": 0.0,
+          "bytes": 1112079
+        }
+      ],
+      "raw_bytes": 1112079
+    },
+    {
+      "index": 2,
+      "total": {
+        "wall": 1.3947438489999513,
+        "cpu": 1.2586479070000003,
+        "child_cpu": 0.006317000000000007
+      },
+      "events": [
+        {
+          "name": "contract_base",
+          "wall": 0.1351741079997737,
+          "cpu": 0.12475417899999997,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "source_identity",
+          "wall": 0.012344222000137961,
+          "cpu": 0.005056653000000022,
+          "child_cpu": 0.006317000000000007
+        },
+        {
+          "name": "validate_values",
+          "wall": 0.011516167000081623,
+          "cpu": 0.010629466999999782,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.20687757099994997,
+          "cpu": 0.19085081100000023,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.20947768599990013,
+          "cpu": 0.19336780099999995,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.20848786999977165,
+          "cpu": 0.19245350199999978,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2089669510000931,
+          "cpu": 0.19281032900000028,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.04178474999980608,
+          "cpu": 0.03857336699999969,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.011597005000112404,
+          "cpu": 0.0007365499999991698,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00016439399996670545,
+          "cpu": 0.000151888000000433,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0024952720000328554,
+          "cpu": 5.785000000013696e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.058719555999687145,
+          "cpu": 0.04198761299999987,
+          "child_cpu": 0.0,
+          "bytes": 1114246
+        },
+        {
+          "name": "rf_forward",
+          "wall": 0.0016176609997273772,
+          "cpu": 0.0014941579999998567,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "requirements",
+          "wall": 0.0014379200001712888,
+          "cpu": 0.001331439000000323,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.22706987899982778,
+          "cpu": 0.2096026120000003,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.04314717599982032,
+          "cpu": 0.03983132100000031,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0093655900000158,
+          "cpu": 0.0008491419999998584,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.0001579469999342109,
+          "cpu": 0.00014595699999997436,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0023824019999665325,
+          "cpu": 6.35299999993677e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.057607122999797866,
+          "cpu": 0.043244041000000344,
+          "child_cpu": 0.0,
+          "bytes": 1179579
+        }
+      ],
+      "raw_bytes": 1179579
+    },
+    {
+      "index": 3,
+      "total": {
+        "wall": 1.5039292759997807,
+        "cpu": 1.356023145,
+        "child_cpu": 0.006478999999999999
+      },
+      "events": [
+        {
+          "name": "contract_base",
+          "wall": 0.12798023000004832,
+          "cpu": 0.11809331500000031,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "source_identity",
+          "wall": 0.012379034999867145,
+          "cpu": 0.005124893999999713,
+          "child_cpu": 0.006478999999999999
+        },
+        {
+          "name": "validate_values",
+          "wall": 0.010963984000227356,
+          "cpu": 0.010120431999999902,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2340232459996514,
+          "cpu": 0.21602411900000007,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2188262049999139,
+          "cpu": 0.2019484890000003,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.22984126500023194,
+          "cpu": 0.2120242939999999,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.22442980499999976,
+          "cpu": 0.2070368379999996,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.044533618000059505,
+          "cpu": 0.041066300000000666,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.009693159000107698,
+          "cpu": 0.0006964130000000068,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.000183562000074744,
+          "cpu": 0.00016982200000015268,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0024818100000629784,
+          "cpu": 6.096500000030147e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.05918150700017577,
+          "cpu": 0.044104969999999355,
+          "child_cpu": 0.0,
+          "bytes": 1181743
+        },
+        {
+          "name": "rf_forward",
+          "wall": 0.00119187200016313,
+          "cpu": 0.0011007810000007723,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "requirements",
+          "wall": 0.0011766659999921103,
+          "cpu": 0.0010881569999998675,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.24098791500000516,
+          "cpu": 0.22245219399999971,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.06824856499997622,
+          "cpu": 0.0630004839999998,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.01428918400006296,
+          "cpu": 0.0006877159999998383,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.000166174000241881,
+          "cpu": 0.00015354100000042337,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002786078999633901,
+          "cpu": 5.8751000000079046e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.08794267900020714,
+          "cpu": 0.06616306899999991,
+          "child_cpu": 0.0,
+          "bytes": 1247075
+        }
+      ],
+      "raw_bytes": 1247075
+    },
+    {
+      "index": 4,
+      "total": {
+        "wall": 1.5641679810000824,
+        "cpu": 1.4142954569999997,
+        "child_cpu": 0.0057929999999999995
+      },
+      "events": [
+        {
+          "name": "contract_base",
+          "wall": 0.12810718299988366,
+          "cpu": 0.11823026099999989,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "source_identity",
+          "wall": 0.011617924999882234,
+          "cpu": 0.005036244000000245,
+          "child_cpu": 0.0057929999999999995
+        },
+        {
+          "name": "validate_values",
+          "wall": 0.011840483000014501,
+          "cpu": 0.010929657000000148,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.24263835400006428,
+          "cpu": 0.22394171200000024,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2377637810000124,
+          "cpu": 0.21945998899999974,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.23676570999987234,
+          "cpu": 0.2184111609999997,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2374662540000827,
+          "cpu": 0.21919438699999994,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.05181888600009188,
+          "cpu": 0.04783472499999952,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.01096486400001595,
+          "cpu": 0.0007151990000000552,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.0001992779998545302,
+          "cpu": 0.00018404899999957536,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0026073140002154105,
+          "cpu": 7.222700000042437e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.06870899399973496,
+          "cpu": 0.05168272399999996,
+          "child_cpu": 0.0,
+          "bytes": 1249239
+        },
+        {
+          "name": "rf_forward",
+          "wall": 0.0011531889999787381,
+          "cpu": 0.0010657849999997637,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "requirements",
+          "wall": 0.0013021690001551178,
+          "cpu": 0.0012050390000002409,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2616792239996357,
+          "cpu": 0.24136976000000043,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.051213466999797674,
+          "cpu": 0.04725833300000026,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.011192353999831539,
+          "cpu": 0.0007100790000000856,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00017014600007314584,
+          "cpu": 0.00015718900000027958,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002292988000135665,
+          "cpu": 5.4793999999525056e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.06756607399984205,
+          "cpu": 0.05066762899999944,
+          "child_cpu": 0.0,
+          "bytes": 1314571
+        }
+      ],
+      "raw_bytes": 1314571
+    },
+    {
+      "index": 5,
+      "total": {
+        "wall": 1.6629432139998244,
+        "cpu": 1.5065582920000002,
+        "child_cpu": 0.006357999999999996
+      },
+      "events": [
+        {
+          "name": "contract_base",
+          "wall": 0.13082681099967886,
+          "cpu": 0.12059118300000016,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "source_identity",
+          "wall": 0.012397192000207724,
+          "cpu": 0.005135062999999995,
+          "child_cpu": 0.006357999999999996
+        },
+        {
+          "name": "validate_values",
+          "wall": 0.013202452999848902,
+          "cpu": 0.012153396999999622,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2825165829999605,
+          "cpu": 0.26078519,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2542367949999971,
+          "cpu": 0.2346732739999995,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.24919467000017903,
+          "cpu": 0.23001111900000026,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.25480696900012845,
+          "cpu": 0.23521064000000003,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.05086255499963954,
+          "cpu": 0.04693310300000064,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.010376089000146749,
+          "cpu": 0.000662768999999841,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00020786400000361027,
+          "cpu": 0.00019214499999975487,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002686331000404607,
+          "cpu": 7.106499999842697e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.06730100899994795,
+          "cpu": 0.05078047100000127,
+          "child_cpu": 0.0,
+          "bytes": 1316735
+        },
+        {
+          "name": "rf_forward",
+          "wall": 0.0010992880002049787,
+          "cpu": 0.0009914530000010302,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "requirements",
+          "wall": 0.0013068039997961023,
+          "cpu": 0.0012075530000004164,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "snapshot",
+          "wall": 0.2715774620000957,
+          "cpu": 0.25058989400000087,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_canonical",
+          "wall": 0.05248010300010719,
+          "cpu": 0.048446171999998455,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.00976623800033849,
+          "cpu": 0.0006800110000000359,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.0001695169999038626,
+          "cpu": 0.000156636999999904,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002361416999974608,
+          "cpu": 5.176699999864809e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.06800099500014767,
+          "cpu": 0.05230743499999946,
+          "child_cpu": 0.0,
+          "bytes": 1382067
+        }
+      ],
+      "raw_bytes": 1382067
+    }
+  ],
+  "synthetic_io": [
+    {
+      "label": "small",
+      "repetition": 1,
+      "rows": 1,
+      "total": {
+        "wall": 0.010626394999690092,
+        "cpu": 0.0039108989999991906,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 0.0026670749998629617,
+          "cpu": 0.002462396000000311,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.004052236000006815,
+          "cpu": 0.0006339639999985991,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 6.120600028225454e-05,
+          "cpu": 5.6546999999795844e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.003144975000395789,
+          "cpu": 7.028399999953194e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.010475524999947083,
+          "cpu": 0.0037278109999991926,
+          "child_cpu": 0.0,
+          "bytes": 67555
+        }
+      ],
+      "bytes": 67555
+    },
+    {
+      "label": "small",
+      "repetition": 2,
+      "rows": 1,
+      "total": {
+        "wall": 0.011261593999734032,
+        "cpu": 0.005056240000000045,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 0.0036867610001536377,
+          "cpu": 0.0034052270000000107,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.004437407000295934,
+          "cpu": 0.0007093979999996947,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00012524299972938024,
+          "cpu": 0.00011579999999966617,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0021917589997428877,
+          "cpu": 7.384100000074056e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.011140995000005205,
+          "cpu": 0.004946801999999195,
+          "child_cpu": 0.0,
+          "bytes": 67555
+        }
+      ],
+      "bytes": 67555
+    },
+    {
+      "label": "small",
+      "repetition": 3,
+      "rows": 1,
+      "total": {
+        "wall": 0.00923188900014793,
+        "cpu": 0.004266764000000478,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 0.0031618409998372954,
+          "cpu": 0.002921708000000578,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0032053439999799593,
+          "cpu": 0.0006574600000011088,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.00010045299995908863,
+          "cpu": 9.280600000138861e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0021869619999961287,
+          "cpu": 6.86499999993373e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 0.009142093999798817,
+          "cpu": 0.004184948999998994,
+          "child_cpu": 0.0,
+          "bytes": 67555
+        }
+      ],
+      "bytes": 67555
+    },
+    {
+      "label": "large",
+      "repetition": 1,
+      "rows": 408,
+      "total": {
+        "wall": 1.601454782000019,
+        "cpu": 1.3641325389999999,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 1.4180797619997065,
+          "cpu": 1.3085500879999987,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.1227397969996673,
+          "cpu": 0.001687945000000468,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 6.663200019829674e-05,
+          "cpu": 6.154699999960656e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002296130000104313,
+          "cpu": 4.907400000142559e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 1.6013450710001962,
+          "cpu": 1.3640346829999999,
+          "child_cpu": 0.0,
+          "bytes": 27538427
+        }
+      ],
+      "bytes": 27538427
+    },
+    {
+      "label": "large",
+      "repetition": 2,
+      "rows": 408,
+      "total": {
+        "wall": 1.7583261849999872,
+        "cpu": 1.5142483019999986,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 1.588903228000163,
+          "cpu": 1.4629446240000004,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.11376297600008911,
+          "cpu": 0.00242045799999957,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.0016004359999897133,
+          "cpu": 0.0014780070000011136,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.002758702000392077,
+          "cpu": 8.054200000096046e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 1.7582020160002685,
+          "cpu": 1.5141358369999995,
+          "child_cpu": 0.0,
+          "bytes": 27538427
+        }
+      ],
+      "bytes": 27538427
+    },
+    {
+      "label": "large",
+      "repetition": 3,
+      "rows": 408,
+      "total": {
+        "wall": 1.462181707000127,
+        "cpu": 1.3157521929999998,
+        "child_cpu": 0.0
+      },
+      "events": [
+        {
+          "name": "atomic_canonical",
+          "wall": 1.3687811250001687,
+          "cpu": 1.2631006660000015,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.035872668999672896,
+          "cpu": 0.0018559859999989214,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_replace",
+          "wall": 0.0013474090001182049,
+          "cpu": 0.0012452649999996623,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_fsync",
+          "wall": 0.0025731989999258076,
+          "cpu": 9.910900000065226e-05,
+          "child_cpu": 0.0
+        },
+        {
+          "name": "atomic_total",
+          "wall": 1.4620622159995946,
+          "cpu": 1.315644368000001,
+          "child_cpu": 0.0,
+          "bytes": 27538427
+        }
+      ],
+      "bytes": 27538427
+    }
+  ],
+  "final_requested": 350,
+  "final_completed": 350,
+  "raw_sha256": "2258477c8199e1ded8a11bc53183d2727beb5040f1e9535a78a919f8e9f6f65e"
+}
