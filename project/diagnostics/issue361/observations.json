@@ -1,0 +1,226 @@
+{
+  "source_raw_byte_sha256": "fd6d4fc576c659b1b23c985b6b7528928818bb267537bd00f081f042ffdf25eb",
+  "source_raw_path": "/tmp/issue361-dev-7RxpB4OQ/pilot-output/development-hybrid-1001.json",
+  "source_parent_byte_sha256": "3a31cde3ad522702f04291fba077cc2d7d2a852c3fa10a100f37a3eda94405ba",
+  "warning": "Derived partial observations only; raw unknown, not final solver candidates or terminal validation.",
+  "batch_count": 393,
+  "all_batches_completed": true,
+  "strict_feasible_batch_count": 0,
+  "first": {
+    "batch_index_1based": 1,
+    "vector": [
+      1.5707771157845856,
+      20.78666201326996,
+      15.695432519912721,
+      26.144858125410973,
+      18.61127917794511,
+      54.6949361790903,
+      0.1575678656809032,
+      0.8213384552113712,
+      0.032821678556501865,
+      -0.09385514426976443,
+      -0.03789173290133477,
+      1.5907210070639848,
+      0.5314290877431631,
+      0.0061416104435920715,
+      1.579316871240735,
+      2.5052460143342614,
+      0.9226843826472759,
+      0.7270395895466208,
+      0.18085417617112398,
+      1.422041941434145,
+      2.170035227201879,
+      2.830954184755683,
+      0.9693075260147452,
+      1.3944954313337803,
+      0.9081440940499306
+    ],
+    "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+    "strict_feasible": false,
+    "worst_il_db": 24.999944738674145,
+    "min_h2_db": 4.775245592408166,
+    "min_h3_db": 5.573160016047551,
+    "violated_samples": 42,
+    "mandatory_samples": 42,
+    "hybrid_sum": 22511.12110591358,
+    "physical_checks": {
+      "candidate_promotion_blocked": true,
+      "checked_settings": 6,
+      "component_policy_pass": true,
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "branches": [
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              0,
+              3
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          },
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              1,
+              2
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          }
+        ],
+        "physical_layout_checked": false,
+        "unsupported_role_indices": []
+      },
+      "connection_role_evidence_incomplete": false,
+      "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "constraint_id": "RF-T008",
+      "independent_mna_checked": false,
+      "installed_shunt_parasites": 0,
+      "installed_variable_c_branches": 2,
+      "min_L_eigenvalue_H": 1.56892805649937e-09,
+      "physical_q_srf_em_checked": false,
+      "promotion_blockers": [
+        "independent_mna_not_checked",
+        "dense_rf_not_checked"
+      ],
+      "rf_performance_checked": false
+    }
+  },
+  "last": {
+    "batch_index_1based": 393,
+    "vector": [
+      15.634644861423256,
+      24.225873267201802,
+      21.959998336011623,
+      11.988786701177037,
+      8.735566272695591,
+      79.74951363522105,
+      0.1,
+      0.9206409103381574,
+      -0.04063672981553906,
+      -0.09721090475897523,
+      -0.07220063667823715,
+      2.3703099701161205,
+      0.3400050431904739,
+      1.6618741186145094,
+      0.713986543914491,
+      2.778895581127574,
+      0.41644289591026806,
+      1.9840304294947366,
+      0.0868393813411496,
+      2.294751028744403,
+      0.9555715467041843,
+      2.9244688460200345,
+      0.43255584141328773,
+      2.282381181809427,
+      0.3935704436799454
+    ],
+    "vector_sha256": "b254dab9f5eca90d0af82e821e699c17631dc2007a68cfb35465e33fec99af29",
+    "strict_feasible": false,
+    "worst_il_db": 16.445166673327407,
+    "min_h2_db": 4.96213925210858,
+    "min_h3_db": 9.054281393681352,
+    "violated_samples": 41,
+    "mandatory_samples": 42,
+    "hybrid_sum": 11619.95613764788,
+    "physical_checks": {
+      "candidate_promotion_blocked": true,
+      "checked_settings": 6,
+      "component_policy_pass": true,
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "branches": [
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              0,
+              3
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          },
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              1,
+              2
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          }
+        ],
+        "physical_layout_checked": false,
+        "unsupported_role_indices": []
+      },
+      "connection_role_evidence_incomplete": false,
+      "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "constraint_id": "RF-T008",
+      "independent_mna_checked": false,
+      "installed_shunt_parasites": 0,
+      "installed_variable_c_branches": 2,
+      "min_L_eigenvalue_H": 1.163513215531642e-08,
+      "physical_q_srf_em_checked": false,
+      "promotion_blockers": [
+        "independent_mna_not_checked",
+        "dense_rf_not_checked"
+      ],
+      "rf_performance_checked": false
+    }
+  },
+  "benchmark_17": {
+    "H2": 30.004999999866506,
+    "H3": 30.00499999993071,
+    "worst_IL_db": 0.827841148462847
+  },
+  "benchmark_vector_sha256": "4131fa4e677afd364c8e448325d2971f05214284047c349bf2f794585668313c",
+  "benchmark_physical_checks": {
+    "component_policy_pass": true,
+    "constraint_id": "RF-T008",
+    "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "checked_settings": 6,
+    "installed_variable_c_branches": 2,
+    "installed_shunt_parasites": 0,
+    "min_L_eigenvalue_H": 2.3262911741104303e-09,
+    "connection_role_audit": {
+      "all_declared_roles_supported_by_l_tree": true,
+      "unsupported_role_indices": [],
+      "physical_layout_checked": false,
+      "branches": [
+        {
+          "edge": [
+            0,
+            3
+          ],
+          "declared_role": "bridge",
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals",
+          "declared_role_supported_by_l_tree": true
+        },
+        {
+          "edge": [
+            1,
+            2
+          ],
+          "declared_role": "bridge",
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals",
+          "declared_role_supported_by_l_tree": true
+        }
+      ]
+    },
+    "connection_role_evidence_incomplete": false,
+    "candidate_promotion_blocked": true,
+    "promotion_blockers": [
+      "independent_mna_not_checked",
+      "dense_rf_not_checked"
+    ],
+    "rf_performance_checked": false,
+    "independent_mna_checked": false,
+    "physical_q_srf_em_checked": false
+  }
+}
