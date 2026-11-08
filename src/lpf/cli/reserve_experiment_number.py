@@ -15,7 +15,7 @@ from pathlib import Path
 import subprocess
 import time
 
-from scripts.experiment_id_registry import (
+from lpf.experiment_id_registry import (
     PATH, as_csv, next_reservation, read_ledger, is_reserved_on_main,
 )
 

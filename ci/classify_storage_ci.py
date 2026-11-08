@@ -9,8 +9,8 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.experiment_id_registry import PATH, read_ledger
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from lpf.experiment_id_registry import PATH, read_ledger
 
 RUN = re.compile(r"experiments/(?:chatgpt_topology_search|matching_limit)/runs/(EXP-\d{3,})/(.+)\Z")
 MAX_DIFF_BYTES = 256_000

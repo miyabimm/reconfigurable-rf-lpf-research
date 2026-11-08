@@ -13,7 +13,7 @@ from lpf.experiment_storage_audit import (
     CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, reservation_on_main,
     validate_checkpoint, validate_run, validate_selection, validate_summary,
 )
-from scripts.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
+from lpf.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
 
 SCRIPT = "lpf.experiment_storage_audit"
 

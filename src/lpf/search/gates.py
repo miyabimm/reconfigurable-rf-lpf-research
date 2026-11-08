@@ -13,7 +13,7 @@ from lpf.experiment_manifest import RUNS, new_manifest
 from lpf.experiment_storage_audit import (
     find_run, reservation_on_main, validate_run, validate_selection,
 )
-from scripts.experiment_id_registry import is_reserved_on_main
+from lpf.experiment_id_registry import is_reserved_on_main
 from .checkout import _complete_checkout, _fresh_main
 from ._job_evaluation import source_identity
 from .storage import atomic, sha

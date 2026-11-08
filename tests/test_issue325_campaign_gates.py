@@ -17,7 +17,7 @@ from lpf.search import gates
 from lpf.search.plan import ROOT
 from lpf.search.storage import atomic
 from lpf.rf_core.model import RFEvaluator
-from scripts.experiment_id_registry import PATH, as_csv, next_reservation
+from lpf.experiment_id_registry import PATH, as_csv, next_reservation
 
 
 verify_import_origins = gates._verify_import_origins
@@ -170,7 +170,7 @@ class CampaignGateTests(unittest.TestCase):
             forward.assert_not_called()
 
     def test_unreserved_and_branch_only_reservations_rejected(self):
-        from scripts.experiment_id_registry import read_ledger
+        from lpf.experiment_id_registry import read_ledger
         self.fixture()
         with patch.object(RFEvaluator, 'evaluate') as forward:
             with self.assertRaises(ValueError):

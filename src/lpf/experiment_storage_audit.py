@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from scripts.experiment_id_registry import PATH as LEDGER_PATH, read_ledger  # noqa: E402
+from lpf.experiment_id_registry import PATH as LEDGER_PATH, read_ledger  # noqa: E402
 from lpf.experiment_manifest import validate_manifest  # noqa: E402
 
 POLICY = "phase2-git-only-v1"

@@ -13,7 +13,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.cli import reserve_experiment_number as writer
 
-from scripts.experiment_id_registry import (
+from lpf.experiment_id_registry import (
     PATH, as_csv, next_reservation, read_ledger, validate,
 )
 
@@ -139,8 +139,11 @@ class FastForwardPushRaceTests(unittest.TestCase):
 
     def test_entrypoints_match_without_reserving(self):
         env = dict(os.environ, PYTHONPATH=os.pathsep.join((str(ROOT/'src'), str(ROOT))))
-        for name in ('reserve_experiment_number', 'audit_experiment_number_registry'):
-            calls = ([str(ROOT/'scripts'/f'{name}.py')], ['-m', f'lpf.cli.{name}'])
+        modules = {'reserve_experiment_number': 'lpf.cli.reserve_experiment_number',
+                   'audit_experiment_number_registry': 'lpf.cli.audit_experiment_number_registry',
+                   'experiment_id_registry': 'lpf.experiment_id_registry'}
+        for name, module in modules.items():
+            calls = ([str(ROOT/'scripts'/f'{name}.py')], ['-m', module])
             outputs = [subprocess.run([sys.executable, *call, '--help'], env=env,
                                       capture_output=True, text=True, check=True)
                        for call in calls]

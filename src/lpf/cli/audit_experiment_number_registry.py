@@ -10,7 +10,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from scripts.experiment_id_registry import PATH, is_reserved_on_main, read_ledger
+from lpf.experiment_id_registry import PATH, is_reserved_on_main, read_ledger
 
 ROOT = Path(__file__).resolve().parents[3]
 NEW_EXPERIMENT_PATH = re.compile(
