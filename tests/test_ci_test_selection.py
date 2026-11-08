@@ -10,7 +10,7 @@ from unittest.mock import patch
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(ROOT / 'ci'))
 import select_ci_tests as selector
 
 
@@ -254,7 +254,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(checkout['with']['fetch-depth'], 0)
         self.assertNotIn('sparse-checkout', checkout['with'])
         step = next(x for x in steps if x.get('name', '').startswith('Classify complete'))
-        self.assertIn('scripts/select_ci_tests.py', step['run'])
+        self.assertIn('ci/select_ci_tests.py', step['run'])
         self.assertNotIn('if', step)
 
 

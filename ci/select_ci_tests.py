@@ -71,7 +71,7 @@ def path_classes(path):
         return {'RF'}
     if path in {f'src/lpf/optimizers/{name}.py' for name in ('_objectives', 'hybrid', 'pipeline', 'slp', 'slsqp')}:
         return {'OPT'}
-    if path.startswith('.github/') or path in {'scripts/select_ci_tests.py', 'scripts/classify_storage_ci.py'}:
+    if path.startswith(('.github/', 'ci/')):
         return {'CI', 'FULL'}
     if path.startswith('tests/') and re.fullmatch(r'tests/test_[A-Za-z0-9_]+\.py', path):
         name = path.split('/')[-1]
@@ -212,7 +212,7 @@ def execute(plan_data):
 
 def main():
     if len(sys.argv) != 1:
-        raise SystemExit('Usage: python scripts/select_ci_tests.py')
+        raise SystemExit('Usage: python ci/select_ci_tests.py')
     event = os.getenv('CI_EVENT')
     force = os.getenv('CI_FULL') == 'true' or event == 'workflow_dispatch'
     selected = plan(event, os.getenv('CI_BASE'), os.getenv('CI_HEAD'), os.getenv('CI_BASE_REF'), force)

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/classify_storage_ci.py'
+SCRIPT = Path(__file__).resolve().parents[1] / 'ci/classify_storage_ci.py'
 RUN = 'experiments/chatgpt_topology_search/runs/EXP-050'
 HEADER = ('experiment_id,constraint_class,constraint_id,effective_constraint_sha256,'
           'objective,execution_status,numerical_validation,independent_validation,manifest,purpose\n')
@@ -244,7 +244,7 @@ class WorkflowContractTests(unittest.TestCase):
                      'test_new_experiment_storage.py'):
             self.assertIn(test, reservation)
         classify = by_name['Classify complete event diff and run selected tests']
-        self.assertEqual('python scripts/select_ci_tests.py', classify['run'])
+        self.assertEqual('python ci/select_ci_tests.py', classify['run'])
         self.assertNotIn('if', classify)
         self.assertIn('github.event.pull_request.base.sha || github.event.before', classify['env']['CI_BASE'])
         self.assertIn('github.event.pull_request.head.sha || github.sha', classify['env']['CI_HEAD'])

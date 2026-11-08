@@ -183,7 +183,7 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 - candidate-bound限定監査は部品／電気役割を再検査し、小格子のforward/MNA/powerを再計算して初めてprior recordと比較する。definition/vector/source/dirty state、policy、bands/S2P、環境、sample座標・許容差を結ぶ。保存record単独は認証でも元EXP出自の証明でもなく、dense/physical/owner証拠を代替しない。限定成功後に`not_checked`の二重表示を除くことと、昇格条件の緩和は別である。
 - CI棚卸し#174の区別を維持する：凍結EXP対共通forward、公開API境界、独立MNA/外部電力は似たILを検査しても別の検出能力。非有限・SPD・符号・設定間固定値、S2P SHA/範囲/28区間欠落、ゼロ枝と寄生、出典/予約/保存整合性を保持する。人工的な特異行列・極深零点fixtureは失敗分類のテストで、物理的到達の証明ではない。裸solverの巨大有限入力を部品範囲外だけで契約外と断定しない。
 
-旧T01〜T13と退役assertionの細目・当時のCI値は[固定開発文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあり、現在のCI分類・モジュールは`scripts/select_ci_tests.py`とそのテストを正本とします。45/66 inventory不一致等の旧known FAILを、後日の文書整理で過去PASSにしません。
+旧T01〜T13と退役assertionの細目・当時のCI値は[固定開発文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあり、現在のCI分類・モジュールは`ci/select_ci_tests.py`とそのテストを正本とします。45/66 inventory不一致等の旧known FAILを、後日の文書整理で過去PASSにしません。
 
 ## BSF合成と有限Q損失からの設計仮説
 
