@@ -109,6 +109,11 @@ def _window_development_readback(path, returned, spec):
         rank_keys.append(key)
     if rank_keys != sorted(rank_keys) or len({r['vector_sha256'] for r in ranked}) != len(ranked):
         raise ValueError('Selection order or uniqueness mismatch')
+    if result['status'] in ('converged', 'not_converged'):
+        assessed = {i for i, b in enumerate(result['batches'])
+                    if b['stage'] == 'selection' and b['status'] == 'completed'}
+        if {r['batch_index'] for r in ranked} != assessed:
+            raise ValueError('Completed Job omitted an assessed selection candidate')
     terminal = result['terminal']
     candidates = terminal['candidates']
     if candidates and terminal['status'] != 'completed':

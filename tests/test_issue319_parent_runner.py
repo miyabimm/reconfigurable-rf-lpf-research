@@ -201,6 +201,53 @@ class ParentRunnerTests(unittest.TestCase):
         self.assertGreater(raw['uncertain_upper']['requested'], 0)
         self.assertIsNotNone(raw['window'])
 
+    def test_window_budget_exhaustion_reconciles_without_extra_forward(self):
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def config(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 112
+        plan, d, p, x = self.setup_model(mutate=config)
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-budget'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        def solver(callback, vector, bounds, **kwargs):
+            for _ in range(3): callback(vector)
+            raise AssertionError('Must stop before third mock forward')
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward) as forward, \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=solver):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(forward.call_count, 2)
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        row = state['jobs'][0]
+        self.assertEqual((row['worker_status'], row['requested'], row['completed']), ('budget_exhausted', 112, 112))
+        self.assertEqual(row['reserved'], 0)
+        self.assertTrue(row['safe_to_release'])
+
+    def test_window_initial_save_failure_keeps_parent_unknown(self):
+        from lpf.rf_core.model import RFEvaluator
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-save-failure'
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch('lpf.search._forward_window.atomic_verified', side_effect=OSError('fixture disk failure')) as save, \
+             patch.object(RFEvaluator, 'evaluate') as forward:
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(save.call_count, 1)
+        forward.assert_not_called()
+        self.assertEqual(state['status'], 'unknown')
+        self.assertEqual(state['jobs'][0]['reserved'], state['jobs'][0]['cap'])
+        self.assertEqual(state['jobs'][0]['released'], 0)
+        self.assertTrue((output/state['jobs'][0]['raw_path']).exists())
+
     def test_mock_two_seeds_are_separate_trials_and_fixed_order(self):
         args = self.setup_parent([23, 24])
         seen = []
