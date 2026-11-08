@@ -454,6 +454,61 @@ class DirectoryPreviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'transient files committed'):
                 directory_checks.execute(plan)
 
+    def test_tracked_rf_yaml_preflight_is_bounded_and_fails_closed(self):
+        from ci import check_rf_schema2 as schema
+        fixture = (Path(__file__).resolve().parents[1]/'rf/fixtures/issue313_preflight.yaml').read_text()
+        path = 'rf/fixtures/new.yaml'
+        self.write(path, fixture)
+        head = self.commit()
+        with patch.object(schema, 'load_preflight') as load:
+            load.return_value.sha256 = 'a'*64
+            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader)}
+            result = schema.check(self.root, head)
+        self.assertEqual([row['path'] for row in result], [path])
+        load.assert_called_once_with(self.root/path, root=self.root)
+        with patch.object(schema, 'load_preflight') as load:
+            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader)}
+            def mutate(input_path, root):
+                input_path.write_text(fixture + '\n# changed during preflight\n')
+                return load.return_value
+            load.side_effect = mutate
+            with self.assertRaisesRegex(ValueError, 'changed during preflight'):
+                schema.check(self.root, head)
+        self.git('restore', path)
+        for text in ('schema_version: 2\nschema_version: 2\n',
+                     'schema_version: 1\n', fixture.replace('points_per_interval: 3',
+                                                            'points_per_interval: 1000000', 1),
+                     fixture + '\nalias: &item [1,2]\nother: *item\n'):
+            with self.subTest(text=text[:60]):
+                self.write(path, text)
+                head = self.commit()
+                with self.assertRaises(ValueError):
+                    schema.check(self.root, head)
+        self.write(path, fixture)
+        head = self.commit()
+        self.write(path, fixture + '\n# dirty\n')
+        with self.assertRaisesRegex(ValueError, 'differs from HEAD'):
+            schema.check(self.root, head)
+        with self.assertRaisesRegex(ValueError, 'HEAD mismatch'):
+            schema.check(self.root, '0'*40)
+        self.git('restore', path)
+        config = schema.yaml.safe_load(fixture)
+        config['definition'] = dict(path='rf/fixtures/issue313_preflight.yaml',
+                                    source_sha256='0'*64, definition_sha256='0'*64)
+        self.write(path, schema.yaml.safe_dump(config))
+        head = self.commit()
+        real_preflight = schema.load_preflight
+        source_root = Path(__file__).resolve().parents[1]
+        with patch.object(schema, 'load_preflight',
+                          side_effect=lambda input_path, root: real_preflight(input_path, root=source_root)):
+            with self.assertRaisesRegex(ValueError, 'Definition source SHA mismatch'):
+                schema.check(self.root, head)
+        (self.root/path).unlink()
+        (self.root/path).symlink_to('../README.md')
+        head = self.commit()
+        with self.assertRaisesRegex(ValueError, 'unsafe RF YAML mode'):
+            schema.check(self.root, head)
+
     def test_execution_prototype_input_uses_rf_and_worker_boundaries_not_full(self):
         self.write('rf/README.md', 'changed')
         self.commit()
@@ -462,9 +517,11 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertFalse(plan['full'])
         with patch.object(directory_checks, 'run') as run:
             directory_checks.execute(plan)
-        self.assertEqual(len(run.call_args_list), 1)
-        command = run.call_args.args[0]
-        self.assertIn('-c', command)
+        self.assertEqual(len(run.call_args_list), 2)
+        commands = [call.args[0] for call in run.call_args_list]
+        schema = next(command for command in commands if 'ci/check_rf_schema2.py' in command)
+        self.assertEqual(schema[-1], self.git('rev-parse', 'HEAD'))
+        command = next(command for command in commands if '-c' in command)
         self.assertIn("'classes':['RF']", command[-1])
         self.assertIn("'full':False", command[-1])
 

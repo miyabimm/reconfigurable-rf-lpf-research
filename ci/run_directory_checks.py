@@ -63,6 +63,10 @@ def execute(plan, *, manual=False):
     comparison = plan['comparison']
     if 'DOC' in classes or full:
         run([sys.executable, '-S', 'ci/verify_phase2_cleanup_w1_links.py', '--project-documents'])
+    if (full or 'INPUT' in classes) and (comparison or manual):
+        head = comparison['head'] if comparison else subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, timeout=30).strip()
+        run([sys.executable, 'ci/check_rf_schema2.py', '--head', head])
     if full or 'CODE' in classes:
         # Conservative common suite until the legacy selector is retired. Its
         # FULL test runner does not invoke the historical EXP audit_all.
