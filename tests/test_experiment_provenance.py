@@ -225,12 +225,18 @@ class ManifestCLITests(unittest.TestCase):
         env = dict(os.environ, PYTHONPATH=str(ROOT/'src'))
         script = [sys.executable, str(ROOT/'scripts/experiment_manifests.py')]
         module = [sys.executable, '-m', 'lpf.cli.experiment_manifests']
-        for args in (['--help'], ['create', '--help'], ['unknown'], ['index', '--bad']):
-            with self.subTest(args=args):
-                a, b = (subprocess.run(entry + args, cwd=ROOT, env=env, capture_output=True,
-                                       text=True, timeout=30) for entry in (script, module))
-                self.assertEqual((a.returncode, a.stdout, a.stderr),
-                                 (b.returncode, b.stdout, b.stderr))
+        with tempfile.TemporaryDirectory(prefix='manifest-cli-cwd-') as temp:
+            for cwd in (ROOT, temp):
+                for args in (['--help'], ['create', '--help'], ['unknown'], ['index', '--bad']):
+                    with self.subTest(cwd=cwd, args=args):
+                        a, b = (subprocess.run(entry + args, cwd=cwd, env=env, capture_output=True,
+                                               text=True, timeout=30) for entry in (script, module))
+                        self.assertEqual((a.returncode, a.stdout, a.stderr),
+                                         (b.returncode, b.stdout, b.stderr))
+        from scripts import experiment_manifests as legacy
+        from lpf.cli import experiment_manifests as implementation
+        self.assertIs(legacy.main, implementation.main)
+        self.assertIs(legacy.write_manifest, implementation.write_manifest)
 
     def test_manifest_cli_operations_are_confined_to_fixture(self):
         from src.lpf.cli import experiment_manifests as cli
