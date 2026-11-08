@@ -59,7 +59,10 @@ def main():
     args = parser.parse_args()
     validate(args.head, args.paths)
     env = dict(os.environ)
-    env['PYTHONPATH'] = str(ROOT/'tests') + (os.pathsep + env['PYTHONPATH'] if env.get('PYTHONPATH') else '')
+    paths = [str(ROOT/'src'), str(ROOT/'tests'), str(ROOT)]
+    if env.get('PYTHONPATH'):
+        paths.append(env['PYTHONPATH'])
+    env['PYTHONPATH'] = os.pathsep.join(paths)
     for path in args.paths:
         parent, name = path.rsplit('/', 1)
         print('Running changed test:', path, flush=True)

@@ -106,11 +106,19 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.write('tests/nested/test_child.py',
                    'import unittest\nclass Case(unittest.TestCase):\n def test_ok(self): pass\n')
         self.write('tests/nested/test_empty.py', 'import unittest\n')
+        self.write('src/lpf/__init__.py', '')
+        self.write('src/lpf/example.py', 'VALUE = 42\n')
+        self.write('tests/nested/test_import_lpf.py',
+                   'import unittest\nfrom lpf.example import VALUE\n'
+                   'class Case(unittest.TestCase):\n def test_value(self): self.assertEqual(VALUE, 42)\n')
         head = self.commit()
         runner = [os.sys.executable, str(self.root/'ci/run_changed_tests.py'), '--head', head]
-        good = subprocess.run(runner + ['tests/nested/test_child.py'], cwd=self.root,
-                              text=True, capture_output=True, check=True)
-        self.assertIn('Ran 1 test', good.stderr)
+        env = dict(os.environ)
+        env.pop('PYTHONPATH', None)
+        good = subprocess.run(runner + ['tests/nested/test_child.py', 'tests/nested/test_import_lpf.py'],
+                              cwd=self.root, env=env, text=True, capture_output=True)
+        self.assertEqual(good.returncode, 0, good.stderr)
+        self.assertEqual(good.stderr.count('Ran 1 test'), 2)
         empty = subprocess.run(runner + ['tests/nested/test_empty.py'], cwd=self.root,
                                text=True, capture_output=True)
         self.assertNotEqual(empty.returncode, 0)
