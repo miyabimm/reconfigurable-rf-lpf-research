@@ -56,6 +56,12 @@ class DevelopmentCLITests(unittest.TestCase):
             code = cli.main(argv)
         return code, out.getvalue(), err.getvalue()
 
+    def test_source_identity_covers_cli_module_and_compatibility_entry(self):
+        from lpf.search._job_evaluation import source_identity
+        files = source_identity(ROOT)['files']
+        for path in ('scripts/run_rf_search.py', 'src/lpf/cli/run_rf_search.py'):
+            self.assertEqual(files[path], hashlib.sha256((ROOT/path).read_bytes()).hexdigest())
+
     def test_module_and_compatibility_entry_have_same_help_and_rejection(self):
         env = dict(os.environ, PYTHONPATH=str(ROOT/'src'))
         for args in (['--help'], ['preflight', '--config', 'unused.yaml']):
