@@ -47,3 +47,17 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 ```
 
 #368はRF-T008・70 samples・実RF 5 forward・異なる計測器／Job／ファイルサイズであり、この表と直接比較できない。#361の約18.9秒/forwardの原因もここでは確定しない。
+
+## PR #370レビュー後の修正・限定実RF比較
+
+2026-11-08のblocking指摘に対し、Hybridの目的値を同じassessmentからsolverと同じ平方残差・集約順序で各観測へ保存し、科学順位のbestとは別の `best_hybrid_observed_by_stage` とreadbackの整合検査を追加した。異常終了時は**最後に確定したpayload**と予約上限を維持しtermination理由のみ追記する。3成功後の4回目失敗、checkpoint 100件、sum/max、同じ違反最大・違反和でも目的値が異なる例、改ざん、親unknownをmockで確認した。
+
+別枠の実RF技術比較は事前上限 **2 forward × 70 samples＝140 requested/completed**。旧・新それぞれ同じベクトルで1回ずつ、solverを呼ばず、評価結果の複素S・IL/APL/入出力RLの全配列とassessmentは完全一致した。`max_violation_db=25.224754407591835`、`sum_violation_db=323.4272113345574`、`worst_il_db=24.999944738674145`、Hybrid sum目的値 `22511.121105913582`、strict feasible=false。新方式の保存用scalarと既存solverの残差集約値も一致。これは科学的選抜・収束やRF性能の承認ではない。
+
+- RF-T008 trial effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定28区間・格子SHA `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。
+- seed1001の凍結vector SHA `49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5`、definition SHA `bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068`、definition byte SHA `e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6`。#361のunknown Jobの再試行・継続ではない。
+- source HEAD `0321a983afba63fcdc7c2ed69cee6aa6328b34d7`、source identity SHA `4b18414b262e3de6bfa76e956ffc217c81ce56539836dc332690487c3cd3c86a`。Plan SHA `0abfb03063e41d7cc428a054663d1d0f7a1aa34801c45b7a9ac796e0055f4f2f` はdefinition pathをGit追跡済み `project/diagnostics/issue361/definition.json` に置き換えたため元Pilot Plan SHAとは異なる。実行出力の `definition_sha256=8743ebc4285c4b71996df8e5a338d37dc07ef01d8c4c1eadb6e2c806c1e762eb` はdefinition **参照オブジェクト**のSHAであり、上記のdefinition内容SHAではない。
+- bands SHA `1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe`、入力S2P `ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945`、出力S2P `b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da`。response SHA `81b07e412e4bac01a11db2e0fc9adb26582a60923fe78a9e3db240999169b7c6`、assessment SHA `f8f112b836479d17f2d35bba9cf445681edeb0c091fc50d11332b0085de803ae`。
+- 永続原本を伴う開発Jobではなく、保存処理をtest doubleに置換した一時的な数値比較で、rawは保存していない。保存耐久性や実運用速度は検証対象外。独立MNA・受動性/電力の独立検証はnot_run。
+
+手動テスト実行時、`-k hybrid` が意図せず既存のRF-F003回帰 `test_hybrid_slp_adapters_invalid_endpoint_and_top_k` にも一致し、上記の限定比較とは別に**9 forward・728 samples**の実RFが実行された（fixture solver、科学EXPではない）。今後の限定確認では個別テスト名を指定する。CIの既存回帰によるRF呼出し数は別途未集計。
