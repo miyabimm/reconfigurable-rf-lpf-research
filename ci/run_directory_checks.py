@@ -125,8 +125,8 @@ def execute(plan, *, manual=False):
     review = original_evidence_review(plan)
     if review:
         raise ValueError('original evidence requires separate review: ' + ', '.join(review))
-    if not manual and (not comparison or not plan['changed_tests_complete'] or
-                       not plan['experiment_scope_complete']):
+    if (not comparison or not plan['changed_tests_complete'] or
+            not plan['experiment_scope_complete']):
         raise ValueError('FULL executed where possible, but changed test/EXP scope is incomplete')
     print('G5 remote readback and cleanup are execution-time gates, not certified here.', flush=True)
 

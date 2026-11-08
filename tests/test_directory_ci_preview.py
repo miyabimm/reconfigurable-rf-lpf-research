@@ -457,6 +457,20 @@ class DirectoryPreviewTests(unittest.TestCase):
         with patch.object(preview, 'git', side_effect=subprocess.CalledProcessError(1, 'git')):
             self.assertTrue(self.plan()['full'])
         self.assertTrue(preview.preview('workflow_dispatch', None, None, None)['full'])
+        head = self.git('rev-parse', 'HEAD')
+        missing = preview.preview('workflow_dispatch', self.base, head, 'main')
+        self.assertIsNone(missing['comparison'])
+        self.git('update-ref', 'refs/remotes/origin/main', self.base)
+        manual = preview.preview('workflow_dispatch', self.base, head, 'main')
+        self.assertTrue(manual['full'])
+        self.assertEqual(manual['comparison'], dict(base=self.base, head=head))
+        self.assertTrue(manual['experiment_scope_complete'])
+        self.assertIsNone(preview.preview('workflow_dispatch', head, head, 'main')['comparison'])
+        self.git('update-ref', 'refs/remotes/origin/main', head)
+        unchanged = preview.preview('workflow_dispatch', head, head, 'main')
+        self.assertTrue(unchanged['full'])
+        self.assertEqual(unchanged['comparison'], dict(base=head, head=head))
+        self.assertTrue(unchanged['experiment_scope_complete'])
 
     def test_forced_full_preserves_comparison_and_changed_targets(self):
         self.write('tests/test_new.py', 'import unittest\n')
@@ -469,6 +483,12 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertEqual(result['changed_experiments'], ['EXP-050'])
         self.assertTrue(result['changed_tests_complete'])
         self.assertTrue(result['experiment_scope_complete'])
+        self.git('update-ref', 'refs/remotes/origin/main', self.base)
+        manual = preview.preview('workflow_dispatch', self.base, head, 'main')
+        self.assertTrue(manual['full'])
+        self.assertEqual(manual['comparison'], dict(base=self.base, head=head))
+        self.assertEqual(manual['changed_tests'], ['tests/test_new.py'])
+        self.assertEqual(manual['changed_experiments'], ['EXP-050'])
         unavailable = preview.preview('push', self.base, self.base, 'main', force=True)
         self.assertTrue(unavailable['full'])
         self.assertFalse(unavailable['changed_tests_complete'])
@@ -696,10 +716,17 @@ class DirectoryPreviewTests(unittest.TestCase):
             self.assertIn('-S', commands[0])
             self.assertIn('--project-documents', commands[0])
         with patch.object(directory_checks, 'run') as run:
-            directory_checks.execute(preview.preview('workflow_dispatch', None, None, None), manual=True)
+            with self.assertRaisesRegex(ValueError, 'scope is incomplete'):
+                directory_checks.execute(preview.preview('workflow_dispatch', None, None, None), manual=True)
             commands = [call.args[0] for call in run.call_args_list]
             self.assertTrue(any('ci/select_ci_tests.py' in cmd for cmd in commands))
             self.assertFalse(any('audit_new_experiment_storage.py' in ' '.join(cmd) for cmd in commands))
+        head = self.git('rev-parse', 'HEAD')
+        self.git('update-ref', 'refs/remotes/origin/main', head)
+        unchanged = preview.preview('workflow_dispatch', head, head, 'main')
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run') as run:
+            directory_checks.execute(unchanged, manual=True)
+            self.assertTrue(any('ci/select_ci_tests.py' in call.args[0] for call in run.call_args_list))
 
     def test_execution_prototype_real_root_and_future_doc_only_without_site_packages(self):
         source = Path(__file__).resolve().parents[1]

@@ -106,7 +106,24 @@ def preview(event, base, head, ref, *, force=False):
                   changed_existing_candidates=[], experiment_scope_complete=False,
                   comparison=None, changes=[])
     if event == 'workflow_dispatch':
-        result.update(full=True, reasons=['manual FULL (no event comparison)'])
+        # A manually requested FULL still needs a trustworthy main baseline to
+        # determine which EXP evidence and tests changed. Its caller must fetch
+        # main and supply its object ID rather than inventing an empty scope.
+        try:
+            if (ref != 'main' or any(not isinstance(x, str) or not OID.fullmatch(x) or
+                                     x == '0'*40 for x in (base, head)) or
+                    git('rev-parse', 'refs/remotes/origin/main').strip().decode('ascii') != base):
+                raise ValueError('manual main baseline missing or mismatched')
+            if base == head and git('rev-parse', 'HEAD').strip().decode('ascii') == head:
+                result.update(full=True, reasons=['manual FULL (unchanged baseline)'],
+                              changed_tests_complete=True, experiment_scope_complete=True,
+                              comparison=dict(base=base, head=head))
+                return result
+        except (ValueError, UnicodeError, OSError, subprocess.SubprocessError) as exc:
+            result.update(full=True, reasons=['manual FULL: ' + str(exc)])
+            return result
+        result = preview('pull_request', base, head, ref, force=True)
+        result['reasons'].insert(0, 'manual FULL')
         return result
     if force:
         result.update(full=True, reasons=['explicit FULL'])
