@@ -61,8 +61,10 @@ class DependenciesTests(unittest.TestCase):
             self.assertFalse(any(any(part in name.split('.') for part in
                                      ('search', 'rf_core', 'phase2_models')) for name in imports(path)))
         self.assertFalse(any('search' in name.split('.') for name in imports(root/'constraint_versions.py')))
-        # The retired package must not survive as an importable directory.
+        # Retired execution and matching wrappers are not live API.
         self.assertFalse((root/'phase2_models').exists())
+        for name in ('variable_c_layouts.py', 'coupling_layout.py'):
+            self.assertFalse((root / name).exists(), name)
         for path in (root/'rf_core').glob('*.py'):
             self.assertFalse(any('phase2_models' in name.split('.') or 'search' in name.split('.')
                                  for name in imports(path)), path)
@@ -70,7 +72,8 @@ class DependenciesTests(unittest.TestCase):
             self.assertFalse(any('phase2_models' in name.split('.') for name in imports(path)), path)
         # Independent branch-current MNA must not call the forward implementation.
         self.assertFalse(any(name.endswith('.model') for name in imports(root/'rf_core/branch_mna.py')))
-        retired = {'api', 'problem_seed', 'rft005_t007_policy_circuit', 'rft008_policy_circuit'}
+        retired = {'api', 'problem_seed', 'rft005_t007_policy_circuit', 'rft008_policy_circuit',
+                   'variable_c_layouts', 'coupling_layout'}
         paths = list((root/'search').glob('*.py')) + list((root/'rf_core').glob('*.py'))
         paths += [root.parents[1]/'scripts/run_rf_search.py']
         for path in paths:
@@ -119,7 +122,8 @@ import unittest
 sys.path[:0] = ['src', 'tests']
 class BlockLegacy(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
-        if fullname.startswith(('lpf.phase2_models', 'scripts.run_phase2_')):
+        if fullname.startswith(('lpf.phase2_models', 'scripts.run_phase2_',
+                                'lpf.variable_c_layouts', 'lpf.coupling_layout')):
             raise AssertionError('Legacy execution dependency: ' + fullname)
 sys.meta_path.insert(0, BlockLegacy())
 from lpf.search import gates, preservation
@@ -132,7 +136,8 @@ suite = unittest.defaultTestLoader.loadTestsFromNames([
 ])
 result = unittest.TextTestRunner(verbosity=1).run(suite)
 assert result.wasSuccessful()
-assert not any(name.startswith(('lpf.phase2_models', 'scripts.run_phase2_')) for name in sys.modules)
+assert not any(name.startswith(('lpf.phase2_models', 'scripts.run_phase2_',
+                                'lpf.variable_c_layouts', 'lpf.coupling_layout')) for name in sys.modules)
 '''
         subprocess.run([sys.executable, '-c', code], check=True,
                        cwd=Path(__file__).resolve().parents[1])

@@ -140,3 +140,38 @@ git show a86f47b6bf6fe3b722195167c88a6fbb07e220d6:tests/test_phase2_candidate_re
 現役検査への対応と残存旧layoutの理由は
 [`project/diagnostics/issue343_d4_cleanup.md`](../../project/diagnostics/issue343_d4_cleanup.md)。
 元EXPの再実行・旧ABCD固有エラー・旧格子hashの現役意味への同値変換は未実施。
+
+
+## E2：旧matching layoutと履歴検査
+
+元main `f5141a12f2600e6332cb6a9ba528dd2995879192`。以下は元パスと同じ
+相対パスのバイト不変資料であり、旧facade・依存環境を含む実行可能パッケージではない。
+`experiments/matching_limit/`の元sourceは変更していないが、現checkoutでは旧facadeの
+root importが解決しない。旧runner・検査の実行が必要なら当時の完全なcommit/条件/環境を
+取得する。単にarchiveをPython pathへ追加してはいけない。
+
+|元パス|元blob|内容SHA-256|保存理由|
+|---|---|---|---|
+|`src/lpf/variable_c_layouts.py`|`2c08695738c08477d8b4361a68d3952917cae399`|`3d2f3c1749a9a666a65ed1ab7e2d01b94afcf18ba57a4f0c378587c47aa3e541`|旧bounded二段階列挙とlegacy部品alphabet。現役構造列挙と非同値。|
+|`src/lpf/coupling_layout.py`|`611c3826f21c872868ef4759a4f37f6c1e1f0ff9`|`76be428de62feced1b8a0a6d0a4820762bad7265b6fdcaf7d9a280d508c75683`|旧物理隣接・nominal/感度結合とSPD検査。現役合法性と非同値。|
+|`tests/test_search_space_extensions.py`|`6017fdbd5c09591d14a813f127d07fb2be3e589e`|`17b949772a5e1cb583957b5f768ce5b8338fb875db08f5a3c1df2580982b75c2`|旧matching設定・3形式比較と現役bounds混在の元検査。|
+|`tests/test_grounded_enumeration.py`|`bb8fa98bd54cd227b2a9beb6f645149d19e9547f`|`8cc7aa8d039d9226865ce7f558dddec142f70a17291add264f84f6922e609f29`|旧ground graph列挙・budget検査とMNA混在。|
+|`tests/test_node_area_selection.py`|`4b26c4574c3c229f4c8904527b9dd2d74ab25cd3`|`cf74a8197ddb539c13c9b4e150376936f745b942cfe14968151fa88c1035bfdd`|旧samplerの15セル選別とinvalid budget。|
+|`tests/test_coverage_sampler.py`|`23fefd5a24714ab2b45d605dea8160338d009581`|`eb5fefd082ea887e8a9a5cb6ec1f40f2f7ab112bc78f8a448b3b3befeaaba19a`|旧samplerのseedと構造・coverage契約。|
+|`tests/test_p4_resume_integration.py`|`1bf3eab0e0350e7b325dd44d7ffbbdbb0bc5dead`|`7cb1effc4884cc4255e7b7ad15d88d5e7bc9e6599b6f91f3baeb0184c137c3c2`|旧P4-A中断・resumeとcheckpoint動作。現役Campaignとは別契約。|
+|`tests/test_full_lpf.py`|`e734a6b3b9ce13b29fdf1431056d73f283dbb2e4`|`1e40a83487cf298f7dc2cf3b1447da049558764de4f5a4a79842349b369b43b9`|旧RF-F002 full_lpf目的関数・最適化検査。|
+|`tests/test_full_lpf_checkpoint_import.py`|`d8ea8ecb91288b20a664de06b372ca45f3ceb438`|`8c62deefc869f9613bda47c3856c60ca12d498912d9a3b727fbd79936294fb30`|EXP-017/023旧checkpoint端子変換と固定数値の検証レシピ。|
+|`tests/test_rf_f002_search.py`|`f95d68bd7dbfca786bd96da905c59325e79edc9d`|`46704347a3fd52df92392db7e27805a01d28e6f6638aa0d779a69a4340799290`|旧RF-F002/T004設定構築・bounds。E1では既にloader拒否によりskip。|
+
+旧RF-F001/F002/T004のeffective SHAは、それぞれ
+`df6b4cbd347aac06538527cd68963b785207582152e17117a683c10058af0c54`、
+`f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2`、
+`c66302a281a1fdb88da355fc44dac1ef3b1c4e18e8ff297db9e842b219b5b0c4`
+（`rf/constraints/history/pre-issue-307/provenance.json`）。個々の試験・EXPは
+自身のmanifest・source・条件で照合し、同名IDや現行trialと混同しない。元mainは
+#307移行後なので、そのcheckoutだけで歴史条件の完全再現にはならない。
+
+例: `git show f5141a12f2600e6332cb6a9ba528dd2995879192:src/lpf/coupling_layout.py`。
+全10件のblob一致を確認したが、旧matching runner・旧EXP・denseは再実行していない。
+現役テストとの対応と非同値な喪失範囲は
+[`project/diagnostics/issue343_e2_cleanup.md`](../../project/diagnostics/issue343_e2_cleanup.md)を参照。
