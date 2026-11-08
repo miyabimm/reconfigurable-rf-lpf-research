@@ -1,5 +1,6 @@
 """Real-Git tests for the unwired, mixed-directory-safe CI preview."""
 import csv
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -26,6 +27,7 @@ class DirectoryPreviewTests(unittest.TestCase):
                      'tests/test_existing.py', 'data/README.md',
                      'experiments/chatgpt_topology_search/runs/EXP-050/README.md', 'ci/README.md'):
             self.write(path, 'original contents for ' + path + '\n')
+        self.write('rf/constraints/registry.json', '{"formal":{},"trial":{}}\n')
         self.git('add', '.')
         self.git('commit', '-qm', 'base')
         self.base = self.git('rev-parse', 'HEAD')
@@ -569,20 +571,115 @@ class DirectoryPreviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'transient files committed'):
                 directory_checks.execute(plan)
 
+    def test_rf_preflight_rejects_dirty_non_yaml_inputs(self):
+        from ci import check_rf_schema2 as schema
+        fixture = (Path(__file__).resolve().parents[1]/'rf/fixtures/issue313_preflight.yaml').read_text()
+        self.write('rf/fixtures/plan.yaml', fixture)
+        self.write('rf/bands.csv', 'synthetic bands\n')
+        self.write('rf/parasitics/input.s2p', 'synthetic s2p\n')
+        head = self.commit()
+        inputs = {'bands': {'path': 'data/bands.csv', 'sha256': hashlib.sha256(b'synthetic bands\n').hexdigest()},
+                  'input_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()},
+                  'output_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()}}
+        with patch.object(schema, 'load_preflight') as load:
+            load.return_value.sha256 = 'a'*64
+            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader), 'rf_inputs': inputs}
+            schema.check(self.root, head)
+            for name in ('rf/bands.csv', 'rf/parasitics/input.s2p'):
+                with self.subTest(name=name):
+                    self.write(name, 'modified after commit\n')
+                    with self.assertRaisesRegex(ValueError, 'RF input differs from HEAD'):
+                        schema.check(self.root, head)
+                    self.git('restore', name)
+            corrupt = json.loads(json.dumps(inputs))
+            corrupt['bands']['sha256'] = 'b'*64
+            load.return_value.data['rf_inputs'] = corrupt
+            with self.assertRaisesRegex(ValueError, 'frozen RF input absent or mismatched at HEAD'):
+                schema.check(self.root, head)
+            load.return_value.data['rf_inputs'] = inputs
+            def mutate(*args, **kwargs):
+                self.write('rf/bands.csv', 'changed during preflight\n')
+                return load.return_value
+            load.side_effect = mutate
+            with self.assertRaisesRegex(ValueError, 'RF input changed during preflight'):
+                schema.check(self.root, head)
+            self.git('restore', 'rf/bands.csv')
+        (self.root/'rf/parasitics/input.s2p').unlink()
+        (self.root/'rf/parasitics/input.s2p').symlink_to('../bands.csv')
+        head = self.commit()
+        with self.assertRaisesRegex(ValueError, 'unsafe RF input mode'):
+            schema.check(self.root, head)
+
+    def test_rf_preflight_registry_reference_cannot_use_untracked_snapshot(self):
+        from ci import check_rf_schema2 as schema
+        path = 'rf/constraints/formal/RF-F003.json'
+        self.write(path, '{"synthetic":true}\n')
+        registry = {'formal': {'RF-F003': {'file': 'data/constraints/formal/RF-F003.json'}}, 'trial': {}}
+        self.write('rf/constraints/registry.json', json.dumps(registry))
+        self.git('add', 'rf/constraints/registry.json')
+        self.git('commit', '-qm', 'registry referencing untracked snapshot')
+        head = self.git('rev-parse', 'HEAD')
+        with self.assertRaisesRegex(ValueError, 'registered RF input absent from HEAD'):
+            schema.check(self.root, head)
+        self.git('rm', 'rf/constraints/registry.json')
+        self.git('commit', '-qm', 'missing registry')
+        with self.assertRaisesRegex(ValueError, 'RF registry missing from HEAD'):
+            schema.check(self.root, self.git('rev-parse', 'HEAD'))
+
+    def test_rf_preflight_definition_reference_must_be_committed_at_head(self):
+        from ci import check_rf_schema2 as schema
+        fixture = (Path(__file__).resolve().parents[1]/'rf/fixtures/issue313_preflight.yaml').read_text()
+        config = schema.yaml.safe_load(fixture)
+        source = '{"synthetic":"definition"}\n'
+        digest = hashlib.sha256(source.encode()).hexdigest()
+        config['definition'] = dict(path='project/source.json', source_sha256=digest,
+                                    definition_sha256='0'*64)
+        self.write('project/source.json', source)
+        self.write('rf/fixtures/plan.yaml', schema.yaml.safe_dump(config))
+        self.write('rf/bands.csv', 'synthetic bands\n')
+        self.write('rf/parasitics/input.s2p', 'synthetic s2p\n')
+        self.git('add', 'rf')
+        self.git('commit', '-qm', 'plan without source')
+        head = self.git('rev-parse', 'HEAD')
+        inputs = {'bands': {'path': 'data/bands.csv', 'sha256': hashlib.sha256(b'synthetic bands\n').hexdigest()},
+                  'input_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()},
+                  'output_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()}}
+        with patch.object(schema, 'load_preflight') as load:
+            load.return_value.sha256 = 'a'*64
+            load.return_value.data = {'config': config, 'rf_inputs': inputs}
+            with self.assertRaisesRegex(ValueError, 'definition source.*HEAD'):
+                schema.check(self.root, head)
+            head = self.commit()
+            self.assertEqual(len(schema.check(self.root, head)), 1)
+            self.write('project/source.json', 'dirty\n')
+            with self.assertRaisesRegex(ValueError, 'definition source.*HEAD'):
+                schema.check(self.root, head)
+            self.git('restore', 'project/source.json')
+            (self.root/'project/source.json').unlink()
+            (self.root/'project/source.json').symlink_to('note.md')
+            head = self.commit()
+            with self.assertRaisesRegex(ValueError, 'unsafe definition source at HEAD'):
+                schema.check(self.root, head)
+
     def test_tracked_rf_yaml_preflight_is_bounded_and_fails_closed(self):
         from ci import check_rf_schema2 as schema
         fixture = (Path(__file__).resolve().parents[1]/'rf/fixtures/issue313_preflight.yaml').read_text()
         path = 'rf/fixtures/new.yaml'
         self.write(path, fixture)
+        self.write('rf/bands.csv', 'synthetic bands\n')
+        self.write('rf/parasitics/input.s2p', 'synthetic s2p\n')
+        inputs = {'bands': {'path': 'data/bands.csv', 'sha256': hashlib.sha256(b'synthetic bands\n').hexdigest()},
+                  'input_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()},
+                  'output_parasitic': {'path': 'data/parasitics/input.s2p', 'sha256': hashlib.sha256(b'synthetic s2p\n').hexdigest()}}
         head = self.commit()
         with patch.object(schema, 'load_preflight') as load:
             load.return_value.sha256 = 'a'*64
-            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader)}
+            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader), 'rf_inputs': inputs}
             result = schema.check(self.root, head)
         self.assertEqual([row['path'] for row in result], [path])
         load.assert_called_once_with(self.root/path, root=self.root)
         with patch.object(schema, 'load_preflight') as load:
-            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader)}
+            load.return_value.data = {'config': schema.yaml.load(fixture, Loader=schema.Loader), 'rf_inputs': inputs}
             def mutate(input_path, root):
                 input_path.write_text(fixture + '\n# changed during preflight\n')
                 return load.return_value
@@ -621,7 +718,7 @@ class DirectoryPreviewTests(unittest.TestCase):
         (self.root/path).unlink()
         (self.root/path).symlink_to('../README.md')
         head = self.commit()
-        with self.assertRaisesRegex(ValueError, 'unsafe RF YAML mode'):
+        with self.assertRaisesRegex(ValueError, 'unsafe RF input mode'):
             schema.check(self.root, head)
 
     def test_execution_prototype_input_uses_rf_and_worker_boundaries_not_full(self):
