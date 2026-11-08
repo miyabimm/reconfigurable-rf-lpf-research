@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts import verify_phase2_cleanup_w1_links as links
+from ci import verify_phase2_cleanup_w1_links as links
 
 ROOT = Path(__file__).resolve().parents[1]
 

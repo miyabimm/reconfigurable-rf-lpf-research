@@ -130,7 +130,7 @@ unknown・中断・source/Plan/raw不一致・保存/読戻し障害では**予�
 ```bash
 uv sync --frozen
 uv run --frozen python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
-uv run --frozen python scripts/verify_phase2_cleanup_w1_links.py --active-only
+uv run --frozen python ci/verify_phase2_cleanup_w1_links.py --active-only
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=tests \
   uv run --frozen python -m unittest -v test_issue325_campaign test_issue325_campaign_gates test_issue321_development_cli
 # 正式保存監査のみ。完全checkoutの証拠が必要。

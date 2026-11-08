@@ -39,7 +39,7 @@
 以下は完全evidence checkout（`docs/`・`data/`・`experiments/`を含む）で必要時に明示実行する。
 
 ```bash
-uv run --frozen python scripts/verify_phase2_cleanup_w1_links.py
+uv run --frozen python ci/verify_phase2_cleanup_w1_links.py
 ```
 
 この手動監査はGit commit `055b222c79c73c7fbeacb19383f21c1da0625195` のobjectと対応するblobを要する。

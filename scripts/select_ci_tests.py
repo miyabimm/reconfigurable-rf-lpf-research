@@ -47,7 +47,6 @@ PATHS = {
     'src/lpf/search/plan.py': 'GATE RUN',
     'scripts/run_rf_search.py': 'RUN', 'scripts/audit_new_experiment_storage.py': 'STORE',
     'scripts/reserve_experiment_number.py': 'STORE GATE', 'scripts/experiment_id_registry.py': 'STORE GATE',
-    'scripts/verify_phase2_cleanup_w1_links.py': 'DOC',
 }
 # Shared kernels and structural files stay unknown => conservative FULL.
 
@@ -208,7 +207,7 @@ def execute(plan_data):
         subprocess.run([sys.executable, '-m', 'unittest', '-v', *RF_RUN_BOUNDARY], check=True, env=env)
     if links:
         print('Running active-only local links', flush=True)
-        subprocess.run([sys.executable, 'scripts/verify_phase2_cleanup_w1_links.py', '--active-only'], check=True, env=env)
+        subprocess.run([sys.executable, 'ci/verify_phase2_cleanup_w1_links.py', '--active-only'], check=True, env=env)
 
 
 def main():
