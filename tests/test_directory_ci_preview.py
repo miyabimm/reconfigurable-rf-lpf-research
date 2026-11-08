@@ -19,7 +19,7 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.git('config', 'user.email', 'fixture@example.invalid')
         for path in ('README.md', 'project/note.md', 'rf/README.md', 'src/README.md',
                      'tests/test_existing.py', 'data/README.md',
-                     'experiments/EXP-050/README.md', 'ci/README.md'):
+                     'experiments/chatgpt_topology_search/runs/EXP-050/README.md', 'ci/README.md'):
             self.write(path, 'original contents for ' + path + '\n')
         self.git('add', '.')
         self.git('commit', '-qm', 'base')
@@ -48,7 +48,7 @@ class DirectoryPreviewTests(unittest.TestCase):
         for path, classes, full in (
                 ('README.md', [], False), ('rf/README.md', ['INPUT'], False),
                 ('src/README.md', ['CODE'], False), ('tests/test_existing.py', ['CODE'], False),
-                ('experiments/EXP-050/README.md', ['EXP'], False),
+                ('experiments/chatgpt_topology_search/runs/EXP-050/README.md', ['EXP'], False),
                 ('project/note.md', [], True), ('data/README.md', [], True),
                 ('ci/README.md', [], True), ('pyproject.toml', [], True),
                 ('unknown/README.md', [], True)):
@@ -63,7 +63,7 @@ class DirectoryPreviewTests(unittest.TestCase):
 
     def test_union_and_changed_test(self):
         self.write('rf/README.md', 'changed')
-        self.write('experiments/EXP-050/README.md', 'changed')
+        self.write('experiments/chatgpt_topology_search/runs/EXP-050/README.md', 'changed')
         self.write('tests/test_new.py', 'import unittest\n')
         self.commit()
         for event in ('pull_request', 'push'):
@@ -100,6 +100,39 @@ class DirectoryPreviewTests(unittest.TestCase):
         (self.root/'src/README.md').chmod(0o755)
         self.commit()
         self.assertTrue(self.plan()['full'])
+
+    def test_changed_experiment_ids_and_unresolved_ledger_scope(self):
+        exp = 'experiments/chatgpt_topology_search/runs/EXP-050/manifest.json'
+        other = 'experiments/matching_limit/runs/EXP-051/manifest.json'
+        self.write(exp, '{"state":"planned"}')
+        self.write(other, '{"state":"planned"}')
+        self.commit()
+        result = self.plan()
+        self.assertEqual(result['changed_experiments'], ['EXP-050', 'EXP-051'])
+        self.assertTrue(result['experiment_scope_complete'])
+        self.git('mv', exp, 'experiments/chatgpt_topology_search/runs/EXP-052.json')
+        self.commit()
+        result = self.plan()
+        self.assertEqual(result['changed_experiments'], ['EXP-051'])
+        self.assertFalse(result['experiment_scope_complete'])
+        self.write('data/experiment_index.csv', 'experiment_id\nEXP-050\n')
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'])
+        self.assertFalse(result['experiment_scope_complete'])
+
+    def test_experiment_rename_identifies_both_old_and_new_ids(self):
+        old = 'experiments/chatgpt_topology_search/runs/EXP-050/manifest.json'
+        new = 'experiments/chatgpt_topology_search/runs/EXP-051/manifest.json'
+        self.write(old, '{"state":"planned"}')
+        self.base = self.commit()
+        (self.root/new).parent.mkdir(parents=True)
+        self.git('mv', old, new)
+        self.commit()
+        result = self.plan()
+        self.assertEqual(result['changed_experiments'], ['EXP-050', 'EXP-051'])
+        self.assertTrue(result['experiment_scope_complete'])
+        self.assertEqual(result['classes'], ['EXP'])
 
     def test_copy_is_conservative_and_push_includes_all_commits(self):
         original = (self.root/'rf/README.md').read_text()

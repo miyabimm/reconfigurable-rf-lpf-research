@@ -10,6 +10,7 @@ import subprocess
 
 OID = re.compile(r'[0-9a-f]{40}\Z')
 TEST = re.compile(r'tests/test_[A-Za-z0-9_]+\.py\Z')
+EXPERIMENT = re.compile(r'experiments/(?:chatgpt_topology_search|matching_limit)/runs/(EXP-\d{3,})/.+\Z')
 ROOT_NONE = {'README.md', 'AGENTS.md', 'LICENSE-STATUS.md', '.gitignore'}
 MAX_BYTES = 256_000
 MAX_PATHS = 1000
@@ -31,7 +32,8 @@ def classify(path):
 
 def preview(event, base, head, ref, *, force=False):
     result = dict(classes=[], full=False, reasons=[], changed_tests=[],
-                  changed_tests_complete=False, changes=[])
+                  changed_tests_complete=False, changed_experiments=[],
+                  experiment_scope_complete=False, changes=[])
     if force or event == 'workflow_dispatch':
         result.update(full=True, reasons=['manual FULL'])
         return result
@@ -76,7 +78,8 @@ def preview(event, base, head, ref, *, force=False):
             records.append(dict(status=status, old_mode=old_mode, new_mode=new_mode, paths=paths))
             if len(records) > MAX_PATHS:
                 raise ValueError('too many changed paths')
-        groups = set()
+        groups, experiment_ids = set(), set()
+        experiment_scope_complete = True
         for change in records:
             kind = change['status'][0]
             old_mode, new_mode = change['old_mode'], change['new_mode']
@@ -85,6 +88,15 @@ def preview(event, base, head, ref, *, force=False):
                 result['full'] = True
                 result['reasons'].append('unsafe mode or copy: ' + ', '.join(change['paths']))
             for path in change['paths']:
+                if path.startswith('experiments/'):
+                    match = EXPERIMENT.fullmatch(path)
+                    if match:
+                        experiment_ids.add(match.group(1))
+                    else:
+                        experiment_scope_complete = False
+                elif path.startswith('data/'):
+                    # Ledger-only changes require a separate row-level diff.
+                    experiment_scope_complete = False
                 group = classify(path)
                 if group == 'FULL':
                     result['full'] = True
@@ -95,9 +107,14 @@ def preview(event, base, head, ref, *, force=False):
                 destination = change['paths'][-1]
                 if TEST.fullmatch(destination):
                     result['changed_tests'].append(destination)
+        if not experiment_scope_complete:
+            result['full'] = True
+            result['reasons'].append('experiment or ledger scope requires additional inspection')
         result['classes'] = [x for x in ('DOC', 'INPUT', 'EXP', 'CODE') if x in groups]
         result['changed_tests'] = sorted(set(result['changed_tests']))
         result['changed_tests_complete'] = True
+        result['changed_experiments'] = sorted(experiment_ids)
+        result['experiment_scope_complete'] = experiment_scope_complete
         result['changes'] = records
     except (ValueError, UnicodeError, OSError, subprocess.SubprocessError) as exc:
         result.update(full=True, reasons=['comparison unavailable: ' + str(exc)])
