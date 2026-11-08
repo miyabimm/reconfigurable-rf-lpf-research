@@ -403,11 +403,12 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.write('experiments/chatgpt_topology_search/runs/EXP-050/manifest.json', '{}')
         head = self.commit()
         plan = self.plan()
-        with patch.object(directory_checks, 'run') as run, patch.object(
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(
+                directory_checks, 'run') as run, patch.object(
                 ledger_check, 'check', return_value=[dict(experiment_id='EXP-050', index_present=True)]), patch.object(
                 ledger_check, 'check_index_manifests') as index_check:
             directory_checks.execute(plan)
-        index_check.assert_called_once_with(directory_checks.ROOT, ['EXP-050'])
+        index_check.assert_called_once_with(self.root, ['EXP-050'])
         commands = [call.args[0] for call in run.call_args_list]
         self.assertTrue(any('ci/select_ci_tests.py' in cmd for cmd in commands))
         self.assertTrue(any('test_issue369_forward_window.py' in cmd for cmd in commands))
@@ -425,10 +426,32 @@ class DirectoryPreviewTests(unittest.TestCase):
                 directory_checks.execute(preview.preview('push', self.base, self.base, 'main'))
             self.assertTrue(any('ci/select_ci_tests.py' in call.args[0] for call in run.call_args_list))
         plan['removed_ledger_experiments'] = ['EXP-050']
-        with patch.object(directory_checks, 'run'), patch.object(
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(
+                directory_checks, 'run'), patch.object(
                 ledger_check, 'check', return_value=[dict(experiment_id='EXP-050', index_present=True)]), patch.object(
                 ledger_check, 'check_index_manifests'):
             with self.assertRaisesRegex(ValueError, 'removed ledger rows'):
+                directory_checks.execute(plan)
+
+    def test_full_without_experiment_id_rejects_transient_files_across_push_and_rename(self):
+        self.write('results/EXP-050/raw.tmp', 'synthetic temporary data')
+        self.commit()
+        self.write('src/README.md', 'later commit')
+        self.commit()
+        plan = self.plan(event='push')
+        self.assertTrue(plan['full'])
+        self.assertEqual(plan['changed_experiments'], [])
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'):
+            with self.assertRaisesRegex(ValueError, 'transient files committed'):
+                directory_checks.execute(plan)
+        self.git('reset', '--hard', self.base)
+        (self.root/'results').mkdir(exist_ok=True)
+        self.git('mv', 'src/README.md', 'results/renamed.md')
+        self.commit()
+        plan = self.plan(event='push')
+        self.assertTrue(plan['full'])
+        with patch.object(directory_checks, 'ROOT', self.root), patch.object(directory_checks, 'run'):
+            with self.assertRaisesRegex(ValueError, 'transient files committed'):
                 directory_checks.execute(plan)
 
     def test_execution_prototype_input_uses_rf_and_worker_boundaries_not_full(self):

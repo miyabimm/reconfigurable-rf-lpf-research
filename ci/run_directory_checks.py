@@ -81,6 +81,14 @@ def execute(plan, *, manual=False):
         run([sys.executable, 'ci/run_changed_tests.py', '--head', comparison['head'],
              *plan['changed_tests']])
     ids = plan['changed_experiments']
+    if comparison and (full or 'EXP' in classes or ids):
+        # Keep the existing Git scratch/cache guard even if no EXP ID was
+        # identified (e.g. a force-added results/ path in an unknown FULL).
+        # This scans the event diff, not unchanged historical EXPs.
+        from lpf.experiment_storage_audit import inspect_new_git_files
+        inspected = inspect_new_git_files(ROOT, 'origin/main', diff_base=comparison['base'],
+                                          expected_head=comparison['head'])
+        print('Changed paths inspected for transient files:', inspected, flush=True)
     if ids:
         # Lazy import keeps DOC-only execution independent of installed packages.
         from ci.check_changed_ledger import check, check_index_manifests
