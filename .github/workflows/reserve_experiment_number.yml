@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       constraint_id:
-        description: "Approved RF ID (validated against data/constraints/registry.json, e.g. RF-F003 or RF-T008)"
+        description: "Approved RF ID (validated against rf/constraints/registry.json, e.g. RF-F003 or RF-T008)"
         required: true
         default: "RF-F003"
         type: string
@@ -43,12 +43,12 @@ jobs:
           WORKFLOW_REQUEST_ID: ${{ github.run_id }}
         run: |
           REQUEST_ID="${RESERVATION_REQUEST_KEY:-$WORKFLOW_REQUEST_ID}"
-          python scripts/reserve_experiment_number.py \
+          PYTHONPATH="$GITHUB_WORKSPACE/src:$GITHUB_WORKSPACE" python -m lpf.cli.reserve_experiment_number \
             --owner "$RESERVATION_ACTOR" \
             --purpose "$RESERVATION_PURPOSE" \
             --constraint-id "$RESERVATION_CONSTRAINT" \
             --request-id "$REQUEST_ID"
       - name: Verify committed main registry after push (GITHUB_TOKEN push does not trigger push CI)
         run: |
-          python scripts/audit_experiment_number_registry.py --main-ref origin/main
+          PYTHONPATH="$GITHUB_WORKSPACE/src:$GITHUB_WORKSPACE" python -m lpf.cli.audit_experiment_number_registry --main-ref origin/main
           git rev-parse --verify origin/main

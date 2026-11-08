@@ -2,10 +2,16 @@
 import csv
 import io
 import json
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from lpf.cli import reserve_experiment_number as writer
 
 from scripts.experiment_id_registry import (
     PATH, as_csv, next_reservation, read_ledger, validate,
@@ -101,6 +107,45 @@ class FastForwardPushRaceTests(unittest.TestCase):
         if check and run.returncode:
             raise AssertionError(run.stderr[-600:])
         return run
+
+    def test_writer_reserves_and_rechecks_only_local_fixture_remote(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            remote, work = root/'remote.git', root/'work'
+            self.git(root, 'init', '--bare', str(remote))
+            self.git(root, 'init', '-b', 'main', str(work))
+            self.git(work, 'config', 'user.name', 'Fixture')
+            self.git(work, 'config', 'user.email', 'fixture@example.invalid')
+            for name in (PATH, 'data/experiment_index.csv', 'rf/constraints/registry.json'):
+                target = work/name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((ROOT/name).read_bytes())
+            self.git(work, 'add', '.')
+            self.git(work, 'commit', '-m', 'seed')
+            self.git(work, 'remote', 'add', 'origin', str(remote))
+            self.git(work, 'push', '-u', 'origin', 'main')
+            env = dict(GITHUB_ACTIONS='true', GITHUB_REF='refs/heads/main',
+                       GITHUB_EVENT_NAME='workflow_dispatch', GITHUB_ACTOR='tester')
+            with patch.object(writer, 'ROOT', work), patch.dict(os.environ, env):
+                first = writer.run(owner='tester', purpose='fixture only',
+                                   constraint_id='RF-F003', request_id='fixture-001')
+                second = writer.run(owner='tester', purpose='fixture only',
+                                    constraint_id='RF-F003', request_id='fixture-001')
+            self.assertTrue(first[1])
+            self.assertFalse(second[1])
+            self.assertEqual(first[0], second[0])
+            self.assertEqual(first[2]['request_id'], 'fixture-001')
+            self.assertIn(first[0], self.git(work, 'show', f'origin/main:{PATH}').stdout)
+
+    def test_entrypoints_match_without_reserving(self):
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join((str(ROOT/'src'), str(ROOT))))
+        for name in ('reserve_experiment_number', 'audit_experiment_number_registry'):
+            calls = ([str(ROOT/'scripts'/f'{name}.py')], ['-m', f'lpf.cli.{name}'])
+            outputs = [subprocess.run([sys.executable, *call, '--help'], env=env,
+                                      capture_output=True, text=True, check=True)
+                       for call in calls]
+            self.assertEqual(outputs[0].stdout, outputs[1].stdout)
+            self.assertEqual(outputs[0].stderr, outputs[1].stderr)
 
     def test_one_push_wins_and_loser_gets_next_number(self):
         with tempfile.TemporaryDirectory() as td:

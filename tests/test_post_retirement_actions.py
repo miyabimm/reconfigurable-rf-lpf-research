@@ -20,7 +20,8 @@ class PostRetirementActionsTests(unittest.TestCase):
         self.assertIn('type: string', yaml)
         self.assertNotIn("type: choice", yaml)
         self.assertNotIn("      options:", yaml)
-        self.assertIn("scripts/reserve_experiment_number.py", yaml)
+        self.assertIn("python -m lpf.cli.reserve_experiment_number", yaml)
+        self.assertIn("python -m lpf.cli.audit_experiment_number_registry", yaml)
 
     def test_legacy_exp004_note_points_to_immutable_history_not_missing_action(self):
         note = ROOT / "actions/workflows/lpf-target040.yml"
