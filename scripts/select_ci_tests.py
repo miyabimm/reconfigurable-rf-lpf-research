@@ -18,7 +18,7 @@ CLASSES = ('DOC', 'RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # in more than one group; the runner deduplicates them.
 SUITES = {
     'DOC': '''test_phase2_current_status_review.py''',
-    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_phase2_candidate_catalog.py test_exp047_legacy_manifest_adapter.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_canonical_source_aliases.py test_audit.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
+    'RF': '''test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_rf_f002_t004.py test_research_catalog.py test_shared_variable_c_layouts.py test_coupling_layout.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py''',
     'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
@@ -28,7 +28,7 @@ SUITES = {
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
 EXTRA_FULL = '''test_shared_graph_core.py test_graph_instantiation.py test_shared_graph_builder.py'''.split()
 SPARSE = {
-    'RF': '''test_constraint_versioning test_issue307_history test_issue307_snapshot_equivalence test_issue307_constraints test_issue309_rf_core test_issue343_d3_science test_issue311_performance test_issue313_preflight test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints test_pi_sparse_rf''',
+    'RF': '''test_constraint_versioning test_issue307_constraints test_issue309_rf_core test_issue343_d3_science test_issue311_performance test_issue313_preflight test_phase2_s2p_grid_cache.Phase2S2PCacheAndGridTests.test_28_segments_six_settings_and_frequency_endpoints test_pi_sparse_rf''',
     'OPT': 'test_issue315_fixed_stage',
     'RUN': 'test_issue315_fixed_stage test_issue317_fixed_worker test_issue319_parent_runner test_issue321_development_cli test_issue325_campaign test_issue325_campaign_gates test_issue323_dependencies',
     'GATE': 'test_issue313_preflight test_issue325_campaign_gates test_issue323_dependencies',

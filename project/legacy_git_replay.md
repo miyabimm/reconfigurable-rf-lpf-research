@@ -34,8 +34,6 @@ git show HEAD:rf/bands.csv | sha256sum
 git clone https://github.com/miyabimm/reconfigurable-rf-lpf-research.git
 cd reconfigurable-rf-lpf-research
 uv sync --frozen
-uv run --frozen python -m unittest discover -s tests -p test_canonical_source_aliases.py -v
-uv run --frozen python -m unittest discover -s tests -p test_audit.py -v
 python scripts/verify_phase2_cleanup_w1_links.py --active-only
 
 # Pi の通常環境：docs/data/experimentsは一切展開しない。
@@ -48,7 +46,7 @@ python scripts/verify_phase2_cleanup_w1_links.py --active-only
 
 以下の歴史的スクリプトは、当時の保護パスがHEADまで**変更されていない**ことを要求する差分判定を内蔵しています。
 
-- `scripts/verify_phase2_cleanup_w3.py`
+- `scripts/verify_phase2_cleanup_w3.py`（#355で現行treeから退役）
 - `scripts/audit_w4_exp042_artifact_checkpoint_crosswalk.py`
 - `scripts/audit_w4_exp042_missing_variants.py`
 - `scripts/audit_w4_exp046_exp047_sources.py`
@@ -69,7 +67,7 @@ python scripts/verify_phase2_cleanup_w3.py  # W3当時の作業ツリーを選�
 
 ## カットオーバー監査
 
-`tests/test_canonical_source_aliases.py` は旧RF入力（レジストリを除く）の**移行前の元blobとの内容一致**、旧リンクの存在と解決先、旧運用指示が移転案内のみであることを検証します。レジストリは将来承認後にactive IDが更新され得るため、元blobと同一であることを恒久要求しません。
+旧RF入力・文書リンクと移行前blobの固定検査は #355 で退役しました。現行RF入力は `rf/` を正本として検証します。
 
 現行監査 `scripts/audit_results.py` と新EXP予約 `scripts/reserve_experiment_number.py` は `rf/` の正本を参照します。予約・研究証拠の検証は完全環境専用であり、ローカルPi sparse環境では実行しません。
 

@@ -70,6 +70,6 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 研究解釈は本ページと[methods](methods.md)、現役実装とゲートは[roadmap](roadmap.md)、運用は変更しない[instructions](../project/instructions.md)へ集約しました。W3/W4/W5の当時の監査完了・CI成功は、原研究の数値再実行、重要証拠の削除許可、研究Phase移行ではありません。225件、131件、46件の台帳は重複し得る別集合で、単純合算しません。旧39/31/3 workflow数や「未merge」は各報告時点の意味で、現役状態ではありません。
 
-[W3統合文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)は`verify_phase2_cleanup_w3.py`がD-001〜004の固定出典・承認を読むため残置。[元EXP・固定監査CSV/JSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/data/repository_reviews)は原blob・選別・終了状態・訂正の具体的根拠であり、重複した日付別説明とは区別します。削除した日付別文書の逐語内容と試行内訳は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)、元pathごとの処置・残置callerは[PR #353](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/353)に記録します。復元専用機能・新アーカイブは追加しません。
+[W3統合文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)は当時のD-001〜004の出典・承認を記録する。[元EXP・固定監査CSV/JSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/data/repository_reviews)は原blob・選別・終了状態・訂正の具体的根拠であり、重複した日付別説明とは区別します。削除した日付別文書の逐語内容と試行内訳は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)、元pathごとの処置・残置callerは[PR #353](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/353)に記録します。復元専用機能・新アーカイブは追加しません。
 
 Phase 2継続、Phase 3未承認。この整理で新しい科学的結論、RF条件、原EXPの実行／検証状態を変更しません。
