@@ -88,9 +88,21 @@ class Phase2CurrentStatusTests(unittest.TestCase):
             (root/'project/file(one).md').write_text('synthetic')
             (root/'project/outer(two).md').write_text('synthetic')
             (root/'project/space file.md').write_text('synthetic')
-            note.write_text(note.read_text() + '[ref]: <space file.md> "title"\n')
+            note.write_text(note.read_text() + '[ref]: <space file.md> "title"\n'
+                            + r'[escaped](file\(one\).md)' + '\n'
+                            + r'[escaped-ref]: <file\(one\).md>' + '\n')
             subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
             subprocess.run(command, cwd=root, capture_output=True, text=True, check=True)
+            note.write_text(note.read_text() + r'[missing](absent\(one\).md)' + '\n')
+            bad = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(bad.returncode, 0)
+            issues = json.loads(bad.stderr.split(': ', 1)[1])
+            self.assertIn(['project/note.md', 6, r'absent\(one\).md', 'missing'], issues)
+            original = note.read_text().replace(r'[missing](absent\(one\).md)' + '\n', '')
+            note.write_text(r'<a href="file\(one\).md">HTML</a>' + '\n')
+            html = subprocess.run(command, cwd=root, capture_output=True, text=True)
+            self.assertNotEqual(html.returncode, 0)  # HTML escapes differ from Markdown.
+            note.write_text(original)
             subprocess.run(['git', '-C', str(root), 'mv', 'project/outer(two).md',
                             'project/renamed.md'], check=True)
             bad = subprocess.run(command, cwd=root, capture_output=True, text=True)

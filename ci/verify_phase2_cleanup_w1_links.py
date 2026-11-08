@@ -18,6 +18,7 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 REF_DEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(<[^>\n]+>|\S+)")
 HTML_REF = re.compile(r"""(?:href|src)\s*=\s*["']([^"']+)["']""")
+MARKDOWN_ESCAPE = re.compile(r"\\([!\"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])")
 ACTIVE_ENTRYPOINTS = (
     "README.md",
     "project/README.md",
@@ -101,22 +102,24 @@ def all_links(md, known):
                 continue
             line = strip_markdown_literal(raw_line)
             try:
-                found = list(markdown_destinations(line))
+                found = [(target, True) for target in markdown_destinations(line)]
             except ValueError as exc:
                 stats['parse_error'] += 1
                 issues.append((source, i, '', str(exc)))
                 continue
             ref = REF_DEF.match(line)
             if ref:
-                found.append(ref.group(1))
-            found.extend(m.group(1) for m in HTML_REF.finditer(line))
-            for destination in found:
+                found.append((ref.group(1), True))
+            found.extend((m.group(1), False) for m in HTML_REF.finditer(line))
+            for destination, markdown in found:
                 stats["all_links"] += 1
                 raw = destination.strip()
                 if raw.startswith("<") and ">" in raw:
                     raw = raw[1:raw.find(">")]
                 else:
                     raw = raw.split(" ", 1)[0]
+                if markdown:
+                    raw = MARKDOWN_ESCAPE.sub(r"\1", raw)
                 if not raw:
                     stats["empty"] += 1
                     issues.append((source, i, destination, "empty"))
