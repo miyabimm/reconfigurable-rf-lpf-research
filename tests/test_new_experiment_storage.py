@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.experiment_storage_audit import (
-    CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, reservation_on_main,
+    CASES, MIN_NEW_EXP_NUMBER, audit_all, audit_selected, inspect_new_git_files, reservation_on_main,
     validate_checkpoint, validate_run, validate_selection, validate_summary,
 )
 from lpf.experiment_id_registry import PATH, as_csv, next_reservation, read_ledger
@@ -114,6 +114,33 @@ class StoragePolicyGateTests(unittest.TestCase):
         validate.assert_called_once_with(self.root, "EXP-050", main_ref="origin/main")
         self.assertFalse((legacy48 / "storage_record.json").exists())
         self.assertFalse((legacy49 / "storage_record.json").exists())
+
+    def test_selected_audit_only_checks_requested_exp_and_rejects_ambiguity(self):
+        other = self.run.parent / 'EXP-051'
+        other.mkdir()
+        with patch(SCRIPT + '.inspect_new_git_files') as inspect, patch(
+                SCRIPT + '.validate_run', side_effect=lambda root, ident, **kw: ident) as validate:
+            self.assertEqual(['EXP-050'], audit_selected(self.root, ['EXP-050'], main_ref='origin/main'))
+            validate.assert_called_once_with(self.root, 'EXP-050', main_ref='origin/main')
+            inspect.assert_called_once_with(self.root, 'origin/main')
+            validate.reset_mock()
+            self.assertEqual(['EXP-050', 'EXP-051'],
+                             audit_selected(self.root, ['EXP-051', 'EXP-050'], main_ref='origin/main'))
+            self.assertEqual(2, validate.call_count)
+            validate.reset_mock()
+            for ids in ([], ['EXP-049'], ['EXP-050', 'EXP-050'], ['EXP-052'], ['../EXP-050']):
+                with self.subTest(ids=ids), self.assertRaises(ValueError):
+                    audit_selected(self.root, ids, main_ref='origin/main')
+            duplicate = self.root/'experiments/matching_limit/runs/EXP-050'
+            duplicate.mkdir(parents=True)
+            with self.assertRaisesRegex(ValueError, 'ambiguous'):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main')
+            validate.assert_not_called()
+            duplicate.rmdir()
+            duplicate.symlink_to(self.run, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'symlinked'):
+                audit_selected(self.root, ['EXP-050'], main_ref='origin/main')
+            validate.assert_not_called()
 
     def test_exp_047_to_049_preflight_and_finalize_rejected(self):
         for legacy in ("EXP-047", "EXP-048", "EXP-049"):

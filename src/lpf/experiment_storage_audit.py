@@ -363,16 +363,46 @@ def audit_all(root, *, main_ref):
     return results
 
 
+def audit_selected(root, experiment_ids, *, main_ref):
+    """Read-only audit of explicitly identified new EXPs; never imply G5.
+
+    Historical EXPs do not have this storage schema and must be handled by
+    review instead of being silently accepted. Missing or ambiguous run paths
+    likewise fail closed.
+    """
+    require(isinstance(experiment_ids, (list, tuple)) and experiment_ids
+            and all(isinstance(x, str) for x in experiment_ids)
+            and len(experiment_ids) == len(set(experiment_ids)),
+            "selected EXP IDs must be nonempty and unique")
+    root = Path(root).resolve()
+    for experiment_id in experiment_ids:
+        require(isinstance(experiment_id, str) and EXP.fullmatch(experiment_id)
+                and int(experiment_id[4:]) >= MIN_NEW_EXP_NUMBER,
+                "selected audit requires EXP-050+; review historical originals separately")
+        paths = [root / base / experiment_id for base in RUNS]
+        require(all(p.resolve() == p for p in paths)
+                and sum(p.is_dir() and not p.is_symlink() for p in paths) == 1
+                and not any(p.is_symlink() for p in paths),
+                "selected EXP directory missing, ambiguous or symlinked: " + experiment_id)
+    inspect_new_git_files(root, main_ref)
+    return [validate_run(root, experiment_id, main_ref=main_ref)
+            for experiment_id in sorted(experiment_ids)]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("audit", "preflight", "finalize"))
     parser.add_argument("experiment_id", nargs="?")
     parser.add_argument("--main-ref", default="origin/main")
+    parser.add_argument("--selected-exp", action="append", default=[],
+                        help="audit only this EXP ID; repeat for multiple IDs")
     args = parser.parse_args()
     if args.mode == "audit":
-        require(args.experiment_id is None, "audit scans all new runs")
-        output = audit_all(ROOT, main_ref=args.main_ref)
+        require(args.experiment_id is None, "audit does not take a positional experiment ID")
+        output = (audit_selected(ROOT, args.selected_exp, main_ref=args.main_ref)
+                  if args.selected_exp else audit_all(ROOT, main_ref=args.main_ref))
     else:
+        require(not args.selected_exp, "--selected-exp is only valid with audit")
         require(args.experiment_id is not None, "experiment ID is required")
         output = validate_run(ROOT, args.experiment_id, mode=args.mode,
                               main_ref=args.main_ref)
