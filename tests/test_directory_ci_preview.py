@@ -397,6 +397,20 @@ class DirectoryPreviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'removed ledger rows'):
                 directory_checks.execute(plan)
 
+    def test_execution_prototype_input_uses_rf_and_worker_boundaries_not_full(self):
+        self.write('rf/README.md', 'changed')
+        self.commit()
+        plan = self.plan()
+        self.assertEqual(plan['classes'], ['INPUT'])
+        self.assertFalse(plan['full'])
+        with patch.object(directory_checks, 'run') as run:
+            directory_checks.execute(plan)
+        self.assertEqual(len(run.call_args_list), 1)
+        command = run.call_args.args[0]
+        self.assertIn('-c', command)
+        self.assertIn("'classes':['RF']", command[-1])
+        self.assertIn("'full':False", command[-1])
+
     def test_execution_prototype_doc_root_and_manual_boundaries(self):
         self.write('README.md', 'changed')
         self.commit()

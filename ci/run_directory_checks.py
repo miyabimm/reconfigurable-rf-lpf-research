@@ -28,13 +28,20 @@ def execute(plan, *, manual=False):
     comparison = plan['comparison']
     if 'DOC' in classes or full:
         run([sys.executable, '-S', 'ci/verify_phase2_cleanup_w1_links.py', '--project-documents'])
-    if full or classes & {'INPUT', 'CODE'}:
-        # Conservative until the new common/INPUT suites replace the legacy
-        # selector. Its FULL test runner does not invoke audit_all.
+    if full or 'CODE' in classes:
+        # Conservative common suite until the legacy selector is retired. Its
+        # FULL test runner does not invoke the historical EXP audit_all.
         env = dict(os.environ, CI_EVENT='workflow_dispatch', CI_FULL='true')
         run([sys.executable, 'ci/select_ci_tests.py'], env=env)
         for test in ('test_issue369_forward_window.py', 'test_issue372_diagnostic_io.py'):
             run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', test, '-v'])
+    elif 'INPUT' in classes:
+        # Reuse the existing RF and RF/Worker boundary regressions without
+        # inheriting the old path classification. Transitional, not final CI.
+        code = ("import sys; sys.path.insert(0, 'ci'); import select_ci_tests as s; "
+                "s.execute({'classes':['RF'], 'full':False, 'reasons':[], "
+                "'changed_tests':[], 'storage_only':False})")
+        run([sys.executable, '-c', code])
     if comparison and plan['changed_tests']:
         run([sys.executable, 'ci/run_changed_tests.py', '--head', comparison['head'],
              *plan['changed_tests']])
