@@ -2,6 +2,7 @@
 """Read-only targeted ledger consistency check; this does not authorize an EXP."""
 import argparse
 import csv
+import io
 import json
 import re
 import subprocess
@@ -69,6 +70,7 @@ def check_index_manifests(root, ids):
     root = Path(root).resolve()
     entries = index_rows(committed_bytes(root, 'data/experiment_index.csv'))
     index = {values[0]: values for values, _ in entries[1:]}
+    manifests = {}
     for ident in ids:
         if ident not in index:
             raise ValueError('target missing from index: ' + ident)
@@ -84,6 +86,32 @@ def check_index_manifests(root, ids):
             raise ValueError('invalid target manifest: ' + ident) from exc
         if index[ident] != expected:
             raise ValueError('target index differs from manifest: ' + ident)
+        manifests[path] = manifest
+    # The candidate ledger is small and must be parsed to find references, but
+    # only candidate rows referring to these target manifests are evaluated.
+    # No unrelated manifest or evidence is opened.
+    raw = committed_bytes(root, 'data/candidate_index.csv').decode('utf-8')
+    reader = csv.DictReader(io.StringIO(raw, newline=''), strict=True)
+    fields = reader.fieldnames or []
+    required = {'candidate_id', 'spec_id', 'objective', 'constraint_class',
+                'constraint_id', 'effective_constraint_sha256', 'manifest'}
+    if len(fields) != len(set(fields)) or not required.issubset(fields):
+        raise ValueError('invalid candidate index header')
+    for row in reader:
+        if None in row or any(value is None for value in row.values()):
+            raise ValueError('malformed candidate index row')
+        manifest = manifests.get(row['manifest'])
+        if manifest is None:
+            continue
+        constraints = manifest['constraints']
+        kind = constraints['class']
+        policy_id = constraints['constraint_id'] or ''
+        digest = constraints['effective_constraint_sha256'] or ''
+        if (not row['candidate_id'] or row['constraint_class'] != kind or
+                row['constraint_id'] != policy_id or row['effective_constraint_sha256'] != digest or
+                row['objective'] != manifest['objective'] or
+                (kind in {'formal', 'trial'} and row['spec_id'] != policy_id)):
+            raise ValueError('candidate/manifest provenance mismatch: ' + row['candidate_id'])
 
 
 def main():

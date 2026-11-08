@@ -1,4 +1,5 @@
 """Real-Git tests for the unwired, mixed-directory-safe CI preview."""
+import csv
 import json
 import os
 from pathlib import Path
@@ -241,7 +242,7 @@ class DirectoryPreviewTests(unittest.TestCase):
         registry += 'EXP-042,reserved,tester,key-042,purpose,RF-F003,2026-10-15T08:00:00Z,main\n'
         path = 'experiments/chatgpt_topology_search/runs/EXP-042/manifest.json'
         manifest = dict(experiment_id='EXP-042', purpose='synthetic fixture', objective='full_lpf',
-                        constraints=dict(class_='trial', constraint_id='RF-F003',
+                        constraints=dict(class_='formal', constraint_id='RF-F003',
                                          effective_constraint_sha256='a'*64),
                         execution=dict(status='planned'),
                         validation=dict(numerical='not_run', independent='not_run'))
@@ -250,6 +251,11 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.write(path, json.dumps(manifest))
         self.write('data/experiment_index.csv', index)
         self.write('data/experiment_number_registry.csv', registry)
+        candidate = ('candidate_id,spec_id,objective,constraint_class,constraint_id,'
+                     'effective_constraint_sha256,manifest\n'
+                     f'C-042,RF-F003,full_lpf,formal,RF-F003,{"a"*64},{path}\n'
+                     'other,invalid,unknown,historical,,,\n')  # Unrelated semantics.
+        self.write('data/candidate_index.csv', candidate)
         self.commit()
         self.assertTrue(ledger_check.check(self.root, ['EXP-042'], require_committed=True)[0]['index_present'])
         ledger_check.check_index_manifests(self.root, ['EXP-042'])
@@ -266,6 +272,34 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.write('data/experiment_index.csv', index)
         self.commit()
         self.write(path, json.dumps(dict(manifest, purpose='dirty modification')))
+        with self.assertRaisesRegex(ValueError, 'differs from HEAD'):
+            ledger_check.check_index_manifests(self.root, ['EXP-042'])
+        self.git('restore', path)
+        good_head = self.git('rev-parse', 'HEAD')
+        bad_rows = (candidate.replace('a'*64, 'b'*64),
+                    candidate.replace('C-042,RF-F003', 'C-042,RF-T008'),
+                    candidate.replace('full_lpf,formal', 'matching_only,formal'),
+                    candidate.replace('full_lpf,formal', 'full_lpf,trial'),
+                    candidate.replace('formal,RF-F003', 'formal,RF-T008'),
+                    candidate.replace('C-042,', ','))
+        for bad in bad_rows:
+            with self.subTest(candidate=bad.splitlines()[1]):
+                self.git('reset', '--hard', good_head)
+                self.write('data/candidate_index.csv', bad)
+                self.commit()
+                with self.assertRaisesRegex(ValueError, 'candidate.*provenance mismatch'):
+                    ledger_check.check_index_manifests(self.root, ['EXP-042'])
+        for bad in (candidate.replace('candidate_id', 'wrong_header', 1),
+                    candidate + 'malformed,extra,fields,that,exceed,the,header,x\n',
+                    candidate + '"unterminated\n'):
+            with self.subTest(malformed=bad[-40:]):
+                self.git('reset', '--hard', good_head)
+                self.write('data/candidate_index.csv', bad)
+                self.commit()
+                with self.assertRaises((ValueError, csv.Error)):
+                    ledger_check.check_index_manifests(self.root, ['EXP-042'])
+        self.git('reset', '--hard', good_head)
+        self.write('data/candidate_index.csv', candidate + '\n')
         with self.assertRaisesRegex(ValueError, 'differs from HEAD'):
             ledger_check.check_index_manifests(self.root, ['EXP-042'])
 
