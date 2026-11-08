@@ -837,21 +837,28 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.write('README.md', 'root-only change')
         head = self.commit()
         env = dict(os.environ, CI_EVENT='push', CI_BASE=self.base, CI_HEAD=head,
-                   CI_BASE_REF='main', CI_REF='refs/heads/main')
+                   CI_BASE_REF='main', CI_REF='refs/heads/main', CI_FULL='false')
+        env.pop('PYTHONPATH', None)
         result = subprocess.run([os.sys.executable, '-S', 'ci/run_directory_checks.py'],
                                 cwd=self.root, env=env, text=True, capture_output=True, check=True)
         self.assertNotIn('Running:', result.stdout)
         # DOC is deliberately injected: project/ remains conservatively FULL today.
-        doc = dict(self.plan(), classes=['DOC'])
-        with patch.object(directory_checks, 'ROOT', self.root), patch.object(
-                directory_checks, 'run', wraps=directory_checks.run) as run:
-            directory_checks.execute(doc)
-            self.assertEqual(len(run.call_args_list), 1)
-            self.assertIn('-S', run.call_args.args[0])
+        # Run classification and execution in a fresh -S interpreter too, not
+        # just the eventual link-check subprocess or an already-imported parent.
+        code = ("import os, sys; assert sys.flags.no_site; "
+                "from ci import directory_preview as p, run_directory_checks as r; "
+                "plan = p.preview_environment(os.environ); "
+                "assert not plan['full'] and plan['classes'] == []; "
+                "plan['classes'] = ['DOC']; r.execute(plan)")
+        command = [os.sys.executable, '-S', '-c', code]
+        result = subprocess.run(command, cwd=self.root, env=env, text=True,
+                                capture_output=True, check=True)
+        self.assertEqual(result.stdout.count('Running:'), 1)
+        self.assertIn('--project-documents', result.stdout)
         self.write('project/note.md', '[missing](missing-file.md)\n')
-        with patch.object(directory_checks, 'ROOT', self.root):
-            with self.assertRaises(subprocess.CalledProcessError):
-                directory_checks.execute(doc)
+        bad = subprocess.run(command, cwd=self.root, env=env, text=True, capture_output=True)
+        self.assertNotEqual(bad.returncode, 0)
+        self.assertIn('missing-file.md', bad.stderr)
 
     def test_pr_uses_merge_base_push_requires_ancestor(self):
         self.git('checkout', '-qb', 'other')
