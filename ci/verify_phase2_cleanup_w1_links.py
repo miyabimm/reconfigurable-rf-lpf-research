@@ -100,7 +100,12 @@ def all_links(md, known):
                 fence = (mark.group(1)[0], len(mark.group(1)))
                 continue
             line = strip_markdown_literal(raw_line)
-            found = list(markdown_destinations(line))
+            try:
+                found = list(markdown_destinations(line))
+            except ValueError as exc:
+                stats['parse_error'] += 1
+                issues.append((source, i, '', str(exc)))
+                continue
             ref = REF_DEF.match(line)
             if ref:
                 found.append(ref.group(1))
