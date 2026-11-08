@@ -3,10 +3,17 @@
 
 This does not run checks and is not a replacement for the current workflow.
 """
+import csv
 import json
 import os
 import re
 import subprocess
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from ci.classify_storage_ci import index_rows
+from lpf.experiment_id_registry import read_ledger
 
 OID = re.compile(r'[0-9a-f]{40}\Z')
 TEST = re.compile(r'tests/test_[A-Za-z0-9_]+\.py\Z')
@@ -14,6 +21,9 @@ EXPERIMENT = re.compile(r'experiments/(?:chatgpt_topology_search|matching_limit)
 ROOT_NONE = {'README.md', 'AGENTS.md', 'LICENSE-STATUS.md', '.gitignore'}
 MAX_BYTES = 256_000
 MAX_PATHS = 1000
+MAX_LEDGER_BYTES = 10_000_000
+INDEX = 'data/experiment_index.csv'
+REGISTRY = 'data/experiment_number_registry.csv'
 
 
 def git(*args):
@@ -30,10 +40,37 @@ def classify(path):
             'ci': 'FULL', '.github': 'FULL'}.get(directory, 'FULL')
 
 
+def ledger_delta(path, base, head):
+    """Identify changed rows, not G0/G4 approval; malformed data fails closed."""
+    old_raw, new_raw = (git('show', f'{rev}:{path}') for rev in (base, head))
+    if max(len(old_raw), len(new_raw)) > MAX_LEDGER_BYTES:
+        raise ValueError('ledger exceeds inspection limit')
+    if path == INDEX:
+        old_rows, new_rows = index_rows(old_raw), index_rows(new_raw)
+        if old_rows[0][1] != new_rows[0][1]:
+            raise ValueError('index header changed')
+        before = [(values[0], record) for values, record in old_rows[1:]]
+        after = [(values[0], record) for values, record in new_rows[1:]]
+    elif path == REGISTRY:
+        before = [(row['experiment_id'], row) for row in read_ledger(old_raw.decode('utf-8'))]
+        after = [(row['experiment_id'], row) for row in read_ledger(new_raw.decode('utf-8'))]
+    else:
+        raise ValueError('unknown ledger')
+    old, new = dict(before), dict(after)
+    common = set(old) & set(new)
+    if ([ident for ident, _ in before if ident in common] !=
+            [ident for ident, _ in after if ident in common]):
+        raise ValueError('ledger rows reordered')
+    changed = {ident for ident in set(old) | set(new) if old.get(ident) != new.get(ident)}
+    if not changed and old_raw != new_raw:
+        raise ValueError('unattributed ledger byte change')
+    return changed, set(old) - set(new)
+
+
 def preview(event, base, head, ref, *, force=False):
     result = dict(classes=[], full=False, reasons=[], changed_tests=[],
                   changed_tests_complete=False, changed_experiments=[],
-                  experiment_scope_complete=False, changes=[])
+                  removed_ledger_experiments=[], experiment_scope_complete=False, changes=[])
     if force or event == 'workflow_dispatch':
         result.update(full=True, reasons=['manual FULL'])
         return result
@@ -78,7 +115,7 @@ def preview(event, base, head, ref, *, force=False):
             records.append(dict(status=status, old_mode=old_mode, new_mode=new_mode, paths=paths))
             if len(records) > MAX_PATHS:
                 raise ValueError('too many changed paths')
-        groups, experiment_ids = set(), set()
+        groups, experiment_ids, removed_ids = set(), set(), set()
         experiment_scope_complete = True
         for change in records:
             kind = change['status'][0]
@@ -95,8 +132,16 @@ def preview(event, base, head, ref, *, force=False):
                     else:
                         experiment_scope_complete = False
                 elif path.startswith('data/'):
-                    # Ledger-only changes require a separate row-level diff.
-                    experiment_scope_complete = False
+                    if path in {INDEX, REGISTRY} and kind == 'M':
+                        try:
+                            changed, removed = ledger_delta(path, base, head)
+                            experiment_ids.update(changed)
+                            removed_ids.update(removed)
+                        except (ValueError, UnicodeError, csv.Error, OSError, subprocess.SubprocessError) as exc:
+                            experiment_scope_complete = False
+                            result['reasons'].append('ledger comparison unavailable: ' + str(exc))
+                    else:
+                        experiment_scope_complete = False
                 group = classify(path)
                 if group == 'FULL':
                     result['full'] = True
@@ -114,6 +159,7 @@ def preview(event, base, head, ref, *, force=False):
         result['changed_tests'] = sorted(set(result['changed_tests']))
         result['changed_tests_complete'] = True
         result['changed_experiments'] = sorted(experiment_ids)
+        result['removed_ledger_experiments'] = sorted(removed_ids)
         result['experiment_scope_complete'] = experiment_scope_complete
         result['changes'] = records
     except (ValueError, UnicodeError, OSError, subprocess.SubprocessError) as exc:

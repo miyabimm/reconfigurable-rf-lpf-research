@@ -121,6 +121,53 @@ class DirectoryPreviewTests(unittest.TestCase):
         self.assertTrue(result['full'])
         self.assertFalse(result['experiment_scope_complete'])
 
+    def seed_ledgers(self):
+        header = ('experiment_id,constraint_class,constraint_id,effective_constraint_sha256,'
+                  'objective,execution_status,numerical_validation,independent_validation,manifest,purpose\n')
+        index = header + 'EXP-050,trial,RF-F003,sha,full_lpf,planned,not_run,not_run,path,"quoted, note"\n'
+        rows = ['experiment_id,state,owner,request_id,purpose,constraint_id,reserved_at_utc,origin']
+        rows += [f'EXP-{i:03d},{"legacy_gap_retired" if i in (18, 19) else "legacy_recorded"},,,,,,'
+                 for i in range(1, 42)]
+        registry = '\n'.join(rows) + '\n'
+        self.write('data/experiment_index.csv', index)
+        self.write('data/experiment_number_registry.csv', registry)
+        self.base = self.commit()
+        return index, registry
+
+    def test_ledger_row_diff_extracts_ids_without_changing_full_policy(self):
+        index, registry = self.seed_ledgers()
+        self.write('data/experiment_index.csv', index.replace('planned', 'running'))
+        self.write('data/experiment_number_registry.csv', registry +
+                   'EXP-042,reserved,tester,key-042,purpose,RF-F003,2026-10-15T08:00:00Z,main\n')
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'])  # data/ still has RF compatibility inputs
+        self.assertTrue(result['experiment_scope_complete'], result)
+        self.assertEqual(result['changed_experiments'], ['EXP-042', 'EXP-050'])
+        self.assertEqual(result['removed_ledger_experiments'], [])
+
+    def test_ledger_duplicate_bad_header_and_removed_row_fail_closed_or_report(self):
+        index, _ = self.seed_ledgers()
+        row = index.splitlines(keepends=True)[1]
+        for bad in (index + row, index.replace('experiment_id', 'wrong_header', 1),
+                    index + '"broken\n'):
+            with self.subTest(bad=bad[-30:]):
+                self.git('reset', '--hard', self.base)
+                self.write('data/experiment_index.csv', bad)
+                self.commit()
+                result = self.plan()
+                self.assertTrue(result['full'])
+                self.assertFalse(result['experiment_scope_complete'], result)
+                self.assertTrue(any('ledger comparison unavailable' in r for r in result['reasons']))
+        self.git('reset', '--hard', self.base)
+        self.write('data/experiment_index.csv', index.splitlines(keepends=True)[0])
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'])
+        self.assertTrue(result['experiment_scope_complete'], result)
+        self.assertEqual(result['removed_ledger_experiments'], ['EXP-050'])
+        self.assertEqual(result['changed_experiments'], ['EXP-050'])
+
     def test_experiment_rename_identifies_both_old_and_new_ids(self):
         old = 'experiments/chatgpt_topology_search/runs/EXP-050/manifest.json'
         new = 'experiments/chatgpt_topology_search/runs/EXP-051/manifest.json'
