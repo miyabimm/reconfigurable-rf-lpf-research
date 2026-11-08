@@ -1,6 +1,10 @@
 """Curated research catalog regression tests (no RF solver execution)."""
+import contextlib
+import io
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.audit_research_catalog import (
     ROOT, _path, check_threshold,
@@ -8,6 +12,23 @@ from scripts.audit_research_catalog import (
 
 
 class ResearchCatalogTests(unittest.TestCase):
+    def test_legacy_imports_and_cli_failure_contract_are_preserved(self):
+        from scripts import audit_research_catalog as legacy
+        from lpf.cli import audit_research_catalog as implementation
+        for name in ('audit_catalog', 'check_threshold', '_json', '_csv', '_path', '_source_metrics', 'main'):
+            with self.subTest(name=name):
+                self.assertIs(getattr(legacy, name), getattr(implementation, name))
+        self.assertEqual(legacy.ROOT, ROOT)
+        with tempfile.TemporaryDirectory(prefix='catalog-audit-fixture-') as temp:
+            self.assertEqual(legacy.audit_catalog(Path(temp)), implementation.audit_catalog(Path(temp)))
+            self.assertIn('Cannot load catalog/registry:', legacy.audit_catalog(Path(temp))[0])
+        with patch.object(implementation, 'audit_catalog', return_value=[]), contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertIsNone(legacy.main())
+            self.assertIn('PASS: curated research checkpoint paths', out.getvalue())
+        with patch.object(implementation, 'audit_catalog', return_value=['fixture mismatch']):
+            with self.assertRaisesRegex(SystemExit, 'FAILED research catalog:'):
+                legacy.main()
+
     def test_strict_raw_harmonic_threshold_cannot_use_solver_tolerance(self):
         result = check_threshold(
             "strict_finite_grid", 35.0, 34.9999999958, 35.01, "formal")

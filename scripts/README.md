@@ -6,7 +6,7 @@
 
 | 系統 | スクリプト | 主な役割 |
 |---|---|---|
-| RF候補の台帳監査 | [audit_research_catalog.py](audit_research_catalog.py) | 登録候補・元証拠と条件IDの健全性を監査 |
+| RF候補の台帳監査 | [audit_research_catalog.py](audit_research_catalog.py)（互換入口）、[共通CLI本体](../src/lpf/cli/audit_research_catalog.py) | 登録候補・元証拠と条件IDの健全性をread-only監査 |
 | manifestと索引 | [experiment_manifests.py](experiment_manifests.py)（互換入口）、[共通CLI本体](../src/lpf/cli/experiment_manifests.py) | `audit`は読取り監査。`create`と`index`は書込みを伴うため、実行前に実験指示・重要研究データ変更の承認境界を確認 |
 | 候補・RF数値監査 | [audit_results.py](audit_results.py) | manifest／候補等を監査。EXP-047原manifestは非標準のまま保持し、[出典固定の索引専用アダプター](../src/lpf/legacy_manifest_adapter.py)で例外的に照合。新規runの厳格検証は維持 |
 | 条件別パレート報告 | [report_research_pareto.py](report_research_pareto.py) | 既定は現行の旧系統台帳。`--catalog data/catalog/phase2_candidate_catalog_20261017.csv`指定で2026-10-17固定**24候補・10条件群**を出力 |
