@@ -132,6 +132,9 @@ class FixedJobEvaluation(FixedStageEvaluation):
                 if scan['status'] == 'not_run' and self.search_requested >= scan['milestone']:
                     scan.update(status='unknown', reason='threshold_crossed',
                                 observation_batch=result['batch_index'])
+                    if self.spec.data.get('storage_mode') == 'window100' and not self.spec.data.get('debug_forward_history'):
+                        scan.update(observation_vector=plain(result['vector']),
+                                    observation_vector_sha256=result['vector_sha256'])
                     self.activate(f'anytime:{i}', 'anytime')
                     try:
                         observed = self._assess(result['vector'])

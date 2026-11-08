@@ -83,6 +83,20 @@ class FixedStageTests(unittest.TestCase):
                 self.assertEqual(saved['batches'][0]['reservations'], saved['reservations'])
                 self.assertFalse(saved['rf_compliance_certified'])
 
+    def test_frozen_rf_evaluator_does_not_read_external_inputs_during_forward(self):
+        # One RF-T008 forward, 56 samples. Construction preloads fixed S2Ps;
+        # evaluating must not re-open files or interpolate them from disk.
+        plan, d, p, x = self.setup_model('RF-T008')
+        e = self.evaluator(plan, d, p)
+        evaluator = e.model.evaluator(e.grid)
+        with patch('builtins.open', side_effect=AssertionError('unexpected open')), \
+             patch.object(Path, 'open', side_effect=AssertionError('unexpected Path.open')), \
+             patch('lpf.rf_core.model.get_two_port_s', side_effect=AssertionError('unexpected S2P read')):
+            response = evaluator.evaluate(x)
+        self.assertEqual(len(response.il_db), 56)
+        self.assertEqual(set(response.grid.setting), set(range(6)))
+        self.assertEqual(len(set(response.grid.segment)), 28)
+
     def test_contract_mismatches_before_forward(self):
         plan, d, p, x = self.setup_model()
         wrong_policy = copy.deepcopy(p); wrong_policy['source_ohms']['real'] += 1

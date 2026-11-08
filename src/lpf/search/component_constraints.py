@@ -43,7 +43,7 @@ def physical_bounds(definition, schema, policy):
     return tuple(bounds)
 
 
-def validate_values(definition, schema, x, policy):
+def validate_values(definition, schema, x, policy, *, frozen_model=None):
     """Check complete values, structural/Q/layout model, all-L SPD; not RF PASS."""
     from lpf.rf_core import build_rf_model
     from lpf.topology_management import audit_variable_connection_roles
@@ -58,7 +58,17 @@ def validate_values(definition, schema, x, policy):
         raise ValueError('Component value outside closed physical bounds')
     # Frozen common model owns counts/Q/layout/constants and policy approval.
     # Construction only: no evaluator or RF forward is invoked.
-    circuit = build_rf_model(definition, policy)
+    if frozen_model is None:
+        circuit = build_rf_model(definition, policy)
+    else:
+        # Explicit opt-in: the model was approved and frozen at the boundary.
+        # Candidate box, role, coupling and complete SPD checks still run below.
+        from lpf.rf_core.model import RFModel
+        from lpf.constraint_versions import constraint_fingerprint
+        circuit = frozen_model
+        if (not isinstance(circuit, RFModel) or circuit.definition != definition or
+                circuit.policy_fingerprint != constraint_fingerprint(policy)):
+            raise ValueError('Frozen model/definition/policy mismatch')
     if circuit.schema != schema:
         raise ValueError('Schema does not match physical model (including constants)')
     roles = audit_variable_connection_roles(

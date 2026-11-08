@@ -9,10 +9,13 @@ from .storage import canonical, plain, sha, vector_sha
 
 
 def freeze_development_job(plan, definition, policy, arm, seed, vector, *, root=None, spot_checks=None,
-                           campaign_context=None):
+                           campaign_context=None, storage_mode='legacy', debug_forward_history=False):
     """Freeze one schema-2 development Job; this is NOT a G1 JobSpec."""
+    if storage_mode not in ('legacy', 'window100'):
+        raise ValueError('Unknown development storage mode')
     return _freeze_fixed_job(plan, definition, policy, arm, seed, vector, root=root,
-        spot_checks=spot_checks, campaign_context=campaign_context)
+        spot_checks=spot_checks, campaign_context=campaign_context, storage_mode=storage_mode,
+        debug_forward_history=debug_forward_history)
 
 
 def freeze_campaign_job(plan, definition, policy, arm, seed, vector, *, root,
@@ -26,7 +29,10 @@ def freeze_campaign_job(plan, definition, policy, arm, seed, vector, *, root,
 
 
 def _freeze_fixed_job(plan, definition, policy, arm, seed, vector, *, root=None,
-                      spot_checks=None, campaign_context=None, formal_binding=None):
+                      spot_checks=None, campaign_context=None, formal_binding=None, storage_mode='legacy',
+                      debug_forward_history=False):
+    if type(debug_forward_history) is not bool or (debug_forward_history and storage_mode != 'window100'):
+        raise ValueError('Debug forward history requires development window100')
     from dataclasses import asdict
     from pathlib import Path
     from .plan import ROOT
@@ -65,6 +71,11 @@ def _freeze_fixed_job(plan, definition, policy, arm, seed, vector, *, root=None,
         arm=arm, seed=seed, start=dict(vector=plain(vector), vector_sha256=vector_sha(vector)),
         source=source, spot_checks=spot_checks, bounds=physical_bounds(definition, model.schema, policy),
         solver_options=[_development_options(s) for s in chosen['steps']])
+    if storage_mode != 'legacy':
+        if storage_mode != 'window100' or formal_binding is not None or campaign_context is not None:
+            raise ValueError('Window storage is for standalone development Jobs only')
+        frozen['storage_mode'] = storage_mode
+        frozen['debug_forward_history'] = debug_forward_history
     job_id = f'development-{arm}-{seed}'
     if campaign_context is not None:
         import re
@@ -165,10 +176,16 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
     expected = _freeze_fixed_job(plan, definition, policy, d['arm'], d['seed'], d['start']['vector'],
                                       root=root, spot_checks=d['spot_checks'],
                                       campaign_context=d.get('campaign_context'),
-                                      formal_binding=d.get('formal_binding') if formal else None)
+                                      formal_binding=d.get('formal_binding') if formal else None,
+                                      storage_mode=d.get('storage_mode', 'legacy'),
+                                      debug_forward_history=d.get('debug_forward_history', False))
     if expected != spec:
         raise ValueError('Fixed Job/input/source/options SHA mismatch')
-    meter = FixedJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
+    if d.get('storage_mode', 'legacy') == 'window100':
+        from ._window_evaluation import WindowJobEvaluation
+        meter = WindowJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
+    else:
+        meter = FixedJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
     result = meter.result
     result.update(status='unknown', solver_execution_kind=solver_kind, rf_backend='rf_core')
     arm = next(a for a in cfg['arms'] if a['name'] == d['arm'])
@@ -290,6 +307,9 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
         if meter.status == 'storage_failed':
             raise
     meter._checkpoint()
+    if d.get('storage_mode') == 'window100':
+        import json
+        return json.loads(meter.path.read_bytes())
     return meter.snapshot()
 
 

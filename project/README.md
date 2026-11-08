@@ -32,6 +32,14 @@ Piの通常作業は必要なファイルを取得した完全checkoutで行う�
 いずれも正式RF認定ではなく、G0–G5未承認・dense/全帯域独立MNA/保存監査は未実施。
 [契約・再現コマンド・限定証拠](diagnostics/issue321_development_cli.md)を参照。
 
+開発専用 `--storage-mode window100` は別形式の100 forward予約・チェックポイントを明示opt-inする。
+出力は既存ディレクトリの下の**未存在・Git管理外・永続**パスを指定し、system tmpやcheckoutは拒否する。
+中断時は未確定枠の結果が失われ得るため、親のunknown予約を保持し、自動再開しない。
+通常は全search履歴を保存せず、科学順位bestと候補・検証証拠を保存する。各forwardのcompact履歴は
+`--debug-forward-history` を併用した場合のみ保存し、JobSpecに凍結する。失われた履歴は復元できない。
+旧raw・formal Campaignとは互換ではなく、EXPやRF認定ではない。
+[保存・費用・readback契約と模擬計測](diagnostics/issue369_forward_window.md)を参照。
+
 ## 廃止済み旧探索入口
 
 Issue #343 D2で `run_phase2_shared.py` / `run_phase2_one_start.py`、旧実験runner・

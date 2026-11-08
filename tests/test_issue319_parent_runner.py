@@ -102,6 +102,289 @@ class ParentRunnerTests(unittest.TestCase):
             self.assertEqual(row['released'], row['cap']-row['requested'])
         self.assertEqual(json.loads((args[-1]/'run.json').read_text()), state)
 
+    def test_window_parent_worker_readback_with_mock_rf(self):
+        # No real RF forward: retain scientific grid/requirements accounting.
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-parent'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        def fake_independent(*args, **kwargs):
+            return dict(s=np.zeros((2, 2), complex), il_db=0., apl_db=0., in_rl_db=0., out_rl_db=0.)
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward) as forward, \
+             patch('lpf.rf_core.independent.evaluate_independent_response', side_effect=fake_independent), \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=worker_tests.FixedWorkerTests.fixture):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture',
+                                           storage_mode='window100', spot_checks={'terminal': [0]})
+            self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+            self.assertEqual(forward.call_count, 4)  # 2 search + selection + terminal
+            raw = json.loads((output/state['jobs'][0]['raw_path']).read_bytes())
+            self.assertEqual(raw['kind'], 'development_forward_window_v1')
+            self.assertIsNone(raw['window'])
+            self.assertEqual(raw['confirmed']['forwards'], 4)
+            self.assertEqual([b['stage'] for b in raw['payload']['batches']], ['selection', 'terminal'])
+            self.assertIn('response', raw['payload']['batches'][-1])
+            summary = runner.finalize_development(state, output)
+            self.assertEqual(summary['exit_code'], 4)
+            self.assertEqual(summary['campaign']['requested'], 308)
+            legacy_output = Path(self.raw.name)/'legacy-comparison'
+            legacy = runner.run_development(plan, d, p, starts, legacy_output, solver_kind='fixture',
+                                            spot_checks={'terminal': [0]})
+            self.assertEqual(legacy['status'], 'completed', legacy.get('exit_reason'))
+            legacy_raw = json.loads((legacy_output/legacy['jobs'][0]['raw_path']).read_bytes())
+            self.assertEqual(legacy_raw['requested'], raw['payload']['requested'])
+            self.assertEqual(legacy_raw['completed'], raw['payload']['completed'])
+            self.assertEqual(legacy_raw['selection'], raw['payload']['selection'])
+            self.assertEqual(legacy_raw['terminal'], raw['payload']['terminal'])
+            self.assertEqual(raw['payload']['batches'][-1]['independent']['status'], 'pass')
+            self.assertEqual(legacy_raw['batches'][-1]['independent'], raw['payload']['batches'][-1]['independent'])
+            self.assertEqual(forward.call_count, 8)
+            self.assertEqual(summary['io']['worker']['atomic_writes'], raw['checkpoint_number'])
+            self.assertEqual(summary['io']['summary']['payload_bytes'], len((output/'summary.json').read_bytes()))
+        from lpf.search.worker import JobSpec
+        spec = JobSpec(**state['jobs'][0]['spec'])
+        path = output/state['jobs'][0]['raw_path']
+        corruptions = [
+            lambda r: r.update(identity={}),
+            lambda r: r['confirmed'].update(requested=0),
+            lambda r: r['previous_confirmed'].update(forwards=9999),
+            lambda r: r['previous_uncertain_upper'].update(requested=0),
+            lambda r: r['payload']['progress_by_allocation']['demo/coarse'].update(forwards=1),
+            lambda r: r['payload']['progress_by_allocation']['demo/coarse'].update(completed=0),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment'].update(nominal_pass='yes'),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['physical_checks'].update(checked_settings=5),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment']['rows'].pop(),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse']['assessment']['rows'][0].update(violation_db=1234),
+            lambda r: r['payload']['batches'][-1]['independent'].update(power_balance='fail'),
+            lambda r: r['payload']['batches'][-1]['independent']['samples'][0].update(il_db=100.),
+            lambda r: r.update(window={'reserved_samples': 70}),
+            lambda r: r['payload']['batches'][0]['assessment'].update(policy_id='wrong'),
+            lambda r: r['payload']['batches'][-1].pop('response'),
+            lambda r: r['payload']['best_observed_by_stage']['demo/coarse'].update(vector_sha256='0'*64),
+            lambda r: r['payload']['selection']['ranked'][0].update(batch_index=0),
+            lambda r: r['payload']['selection']['ranked'][0].update(rank_key=[0]),
+            lambda r: r['payload']['terminal']['candidates'][0].update(vector_sha256='0'*64),
+        ]
+        for mutate in corruptions:
+            broken = copy.deepcopy(raw)
+            mutate(broken)
+            atomic(path, broken)
+            with self.assertRaises((ValueError, KeyError)):
+                runner._window_development_readback(path, broken, spec)
+        atomic(path, raw)
+        with self.assertRaises((ValueError, KeyError)):
+            runner._development_readback(path, raw, spec)
+
+    def test_window_anytime_candidate_binding_mock(self):
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.worker import JobSpec
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[56]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-anytime'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward), \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=worker_tests.FixedWorkerTests.fixture):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        path = output/state['jobs'][0]['raw_path']
+        raw = json.loads(path.read_bytes())
+        scan = raw['payload']['anytime'][0]
+        self.assertEqual(scan['observation_vector_sha256'], vector_sha(x))
+        scan['observation_vector_sha256'] = '0'*64
+        atomic(path, raw)
+        with self.assertRaises(ValueError):
+            runner._window_development_readback(path, raw, JobSpec(**state['jobs'][0]['spec']))
+
+    def test_window_hybrid_scores_checkpoint_and_readback(self):
+        # Fixed mock assessments have the same max/sum violation but different
+        # squared sums; science rank ties while the Hybrid objective does not.
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.performance import grid_fingerprint
+        from lpf.search.worker import JobSpec
+        def config(c):
+            c['anytime_samples'] = []
+            step = c['arms'][0]['steps'][0]
+            step.update(solver='hybrid', aggregation='sum',
+                options=dict(maxiter=2, max_restarts=0, max_evaluations=4, restart_sigma=0.1))
+        plan, d, p, x = self.setup_model(mutate=config)
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-hybrid'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        calls = []
+        def fake_assessment(response, req, *, requested_grid):
+            search = grid_fingerprint(requested_grid) == plan.data['grids']['demo/coarse']['sha256']
+            if search: calls.append(1)
+            g = [-3., -2., 0.] if not search or len(calls) == 1 else [-3., -1., -1.]
+            return dict(status='evaluated', policy_id=req.policy_id, policy_fingerprint=req.policy_fingerprint,
+                mode=req.mode, requirements_fingerprint=req.fingerprint, grid_fingerprint=grid_fingerprint(requested_grid),
+                strict_feasible=False, worst_il_db=1., max_violation_db=3., sum_violation_db=5.,
+                mandatory_g=g, rows=[])
+        seen = []
+        def solver(residuals, vector, bounds, **options):
+            for _ in range(2):
+                r = residuals(vector)
+                seen.append(float(np.sum(r*r)))
+            return worker_tests.FixtureHybrid([worker_tests.FixtureRun(list(vector))], list(vector))
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward), \
+             patch('lpf.search._window_evaluation.evaluate_requirements', side_effect=fake_assessment), \
+             patch('lpf.search.worker.hybrid_minimize', side_effect=solver):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100',
+                                           debug_forward_history=True)
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        self.assertEqual(seen, [14., 12.])
+        raw_path = output/state['jobs'][0]['raw_path']
+        raw = json.loads(raw_path.read_bytes())
+        payload = raw['payload']
+        self.assertEqual([r['assessment']['hybrid_objective']['value'] for r in payload['batches'][:2]], seen)
+        self.assertEqual(payload['best_observed_by_stage']['demo/coarse']['batch_index'], 0)
+        self.assertEqual(payload['best_hybrid_observed_by_stage']['demo/coarse']['batch_index'], 1)
+        spec = JobSpec(**state['jobs'][0]['spec'])
+        for mutate in (
+            lambda r: r['payload']['batches'][0]['assessment']['hybrid_objective'].update(value=20.),
+            lambda r: r['payload']['batches'][0]['assessment']['hybrid_objective'].update(aggregation='max'),
+            lambda r: r['payload']['best_hybrid_observed_by_stage']['demo/coarse'].update(batch_index=0),
+            lambda r: r['payload']['batches'][0]['assessment'].pop('hybrid_objective'),
+        ):
+            broken = copy.deepcopy(raw); mutate(broken); atomic(raw_path, broken)
+            with self.assertRaises((ValueError, KeyError)):
+                runner._window_development_readback(raw_path, broken, spec)
+
+    def test_window_output_rejects_tmp_checkout_and_other_git_checkout(self):
+        import tempfile
+        root = Path.cwd().resolve()
+        for output, source_root in ((Path(tempfile.gettempdir())/'window-output', root),
+                                    (root/'window-output', root),
+                                    (root/'window-output', Path('/nonexistent-other-root'))):
+            with self.subTest(output=output, source_root=source_root), self.assertRaises(ValueError):
+                runner._validate_development_output(output, source_root, 'window100')
+        runner._validate_development_output(Path('/var')/'issue369-test-output', root, 'window100')
+
+    def test_window_failure_keeps_parent_cap_and_prior_window(self):
+        from lpf.rf_core.model import RFEvaluator
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-failure'
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', side_effect=RuntimeError('fixture crash')), \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=worker_tests.FixedWorkerTests.fixture):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(state['status'], 'unknown')
+        row = state['jobs'][0]
+        self.assertEqual((row['requested'], row['reserved'], row['released']), (0, row['cap'], 0))
+        raw = json.loads((output/row['raw_path']).read_bytes())
+        self.assertEqual(raw['confirmed']['requested'], 0)
+        self.assertGreater(raw['uncertain_upper']['requested'], 0)
+        self.assertIsNotNone(raw['window'])
+
+    def test_window_failure_after_three_forwards_keeps_confirmed_payload(self):
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.worker import JobSpec
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-partial-failure'
+        calls = []
+        def fake_forward(evaluator, vector):
+            calls.append(1)
+            if len(calls) == 4:
+                raise RuntimeError('fourth mock forward failed')
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        def solver(callback, vector, bounds, **kwargs):
+            for _ in range(4): callback(vector)
+            raise AssertionError('fourth forward must fail')
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward), \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=solver):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(state['status'], 'unknown')
+        job = state['jobs'][0]
+        self.assertEqual((job['requested'], job['reserved'], job['released']), (0, job['cap'], 0))
+        path = output/job['raw_path']
+        raw = json.loads(path.read_bytes())
+        self.assertEqual(raw['termination']['status'], 'unknown')
+        self.assertIn('fourth mock forward failed', raw['termination']['reason'])
+        self.assertEqual(raw['confirmed'], dict(forwards=0, requested=0, completed=0))
+        self.assertEqual((raw['payload']['requested'], raw['payload']['completed']), (0, 0))
+        self.assertEqual(raw['payload']['batches'], [])
+        self.assertGreaterEqual(raw['uncertain_upper']['requested'], 4*56)
+        with self.assertRaisesRegex(ValueError, 'uncertain'):
+            runner._window_development_readback(path, raw, JobSpec(**job['spec']))
+
+    def test_window_budget_exhaustion_reconciles_without_extra_forward(self):
+        import numpy as np
+        from lpf.rf_core.model import RFEvaluator, RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def config(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 112
+        plan, d, p, x = self.setup_model(mutate=config)
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-budget'
+        def fake_forward(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        def solver(callback, vector, bounds, **kwargs):
+            for _ in range(3): callback(vector)
+            raise AssertionError('Must stop before third mock forward')
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake_forward) as forward, \
+             patch('lpf.search.worker.slsqp_minimize', side_effect=solver):
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(forward.call_count, 2)
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        row = state['jobs'][0]
+        self.assertEqual((row['worker_status'], row['requested'], row['completed']), ('budget_exhausted', 112, 112))
+        self.assertEqual(row['reserved'], 0)
+        self.assertTrue(row['safe_to_release'])
+
+    def test_window_initial_save_failure_keeps_parent_unknown(self):
+        from lpf.rf_core.model import RFEvaluator
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        plan, d, p, x = self.setup_model(mutate=lambda c: c.update(anytime_samples=[]))
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        output = Path(self.raw.name)/'window-save-failure'
+        with patch.object(runner, '_validate_development_output'), \
+             patch.object(WindowJobEvaluation, '_validate_checkpoint'), \
+             patch('lpf.search._forward_window.atomic_verified', side_effect=OSError('fixture disk failure')) as save, \
+             patch.object(RFEvaluator, 'evaluate') as forward:
+            state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
+        self.assertEqual(save.call_count, 1)
+        forward.assert_not_called()
+        self.assertEqual(state['status'], 'unknown')
+        self.assertEqual(state['jobs'][0]['reserved'], state['jobs'][0]['cap'])
+        self.assertEqual(state['jobs'][0]['released'], 0)
+        self.assertTrue((output/state['jobs'][0]['raw_path']).exists())
+
     def test_mock_two_seeds_are_separate_trials_and_fixed_order(self):
         args = self.setup_parent([23, 24])
         seen = []

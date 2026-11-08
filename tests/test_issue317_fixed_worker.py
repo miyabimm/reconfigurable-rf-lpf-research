@@ -99,6 +99,238 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(meter.spot_check(0, [0, 55])['status'], 'pass')
         self.assertEqual(meter.rows[0]['independent']['completed'], 2)
 
+    def test_window_meter_keeps_normal_mock_forwards_in_memory(self):
+        # RF evaluator/requirements are fixtures: no RF forward is executed.
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        self.assertIs(spec.data['debug_forward_history'], False)
+        with self.assertRaisesRegex(ValueError, 'requires'):
+            freeze_development_job(plan, d, p, 'demo', 23, x, debug_forward_history=True)
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        before = path.read_bytes()
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
+             patch.object(meter, '_contract', side_effect=AssertionError('per-forward contract')), \
+             patch('builtins.open', side_effect=AssertionError('forward file open')), \
+             patch.object(Path, 'open', side_effect=AssertionError('forward Path.open')):
+            meter.evaluate(x)
+            meter.evaluate(x)
+        self.assertEqual(forward.call_count, 2)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual((meter.requested, meter.completed), (2*n, 2*n))
+        meter.finish()
+        saved = json.loads(path.read_bytes())
+        self.assertEqual(saved['confirmed']['requested'], 2*n)
+        self.assertIsNone(saved['window'])
+        self.assertEqual(saved['payload']['batches'], [])
+        self.assertNotIn('best_hybrid_observed_by_stage', saved['payload'])
+        self.assertEqual(saved['payload']['best_observed_by_stage']['demo/coarse']['vector_sha256'], vector_sha(x))
+
+    def test_window_meter_99_100_101_with_mock_rf(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 102*56
+            c['arms'][0]['max_requested_samples'] = 9000
+            c['max_trial_requested_samples'] = 9000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
+             patch.object(meter.journal, 'validate_inputs', wraps=meter.journal.validate_inputs) as contract:
+            for _ in range(99): meter.evaluate(x)
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (1, 0))
+            self.assertEqual(json.loads(path.read_bytes())['confirmed']['forwards'], 0)
+            meter.evaluate(x)
+            boundary = json.loads(path.read_bytes())
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (2, 1))
+            self.assertEqual((boundary['confirmed']['forwards'], boundary['window']['end_forward']), (100, 102))
+            meter.evaluate(x)
+            self.assertEqual((meter.journal.write_calls, contract.call_count), (2, 1))
+            self.assertEqual(forward.call_count, 101)
+        meter.finish()
+        saved = json.loads(path.read_bytes())
+        self.assertEqual((saved['confirmed']['forwards'], saved['confirmed']['requested']), (101, 101*n))
+        self.assertIsNone(saved['window'])
+
+    def test_window_mock_step_transition_preserves_bests_and_counts(self):
+        from lpf.rf_core.model import RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        def fake(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+        with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake):
+            meter.activate('demo/coarse', 'demo/coarse')
+            meter.evaluate(x)
+            meter.finish()
+            first = json.loads(path.read_bytes())
+            meter.activate('demo/fine', 'demo/fine')
+            boundary = json.loads(path.read_bytes())
+            self.assertEqual(boundary['confirmed'], first['confirmed'])
+            self.assertEqual(boundary['window']['first_forward'], 1)
+            meter.evaluate(x)
+            meter.finish()
+        payload = json.loads(path.read_bytes())['payload']
+        self.assertEqual(set(payload['best_observed_by_stage']), {'demo/coarse', 'demo/fine'})
+        self.assertEqual(payload['progress_by_allocation']['demo/coarse']['forwards'], 1)
+        self.assertEqual(payload['progress_by_allocation']['demo/fine']['forwards'], 1)
+        self.assertEqual(payload['batches'], [])
+
+    def test_window_normal_300_mock_forwards_bounded_payload(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            c['arms'][0]['steps'][0]['max_requested_samples'] = 302*56
+            c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 20000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint,
+            grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'], strict_feasible=False,
+            worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+        sizes = []
+        with patch.object(RFEvaluator, 'evaluate', return_value=response), \
+             patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment):
+            for i in range(300):
+                meter.evaluate(x)
+                if (i+1) % 100 == 0:
+                    raw = json.loads(path.read_bytes())
+                    sizes.append(path.stat().st_size)
+                    self.assertEqual(raw['confirmed']['forwards'], i+1)
+                    self.assertEqual(raw['payload']['batches'], [])
+        self.assertEqual(meter.journal.write_calls, 4)
+        self.assertLess(max(sizes)-min(sizes), 128)
+
+    def test_hybrid_checkpoint_100_records_objective_and_distinct_best(self):
+        from types import SimpleNamespace
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        def configure(c):
+            c['anytime_samples'] = []
+            step = c['arms'][0]['steps'][0]
+            step.update(solver='hybrid', aggregation='sum', max_requested_samples=102*56,
+                        options=dict(maxiter=2, max_restarts=0, max_evaluations=102, restart_sigma=0.1))
+            c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 9000
+        _, path, plan, d, p, x = self.job(configure)
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100', debug_forward_history=True)
+        self.assertIs(spec.data['debug_forward_history'], True)
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        response = SimpleNamespace(s=np.zeros((n, 2, 2), complex),
+            il_db=np.zeros(n), apl_db=np.zeros(n), in_rl_db=np.zeros(n), out_rl_db=np.zeros(n))
+        assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
+            policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
+            requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
+            strict_feasible=False, worst_il_db=1., max_violation_db=3., sum_violation_db=5., rows=[])
+        calls = []
+        def assess(*args, **kwargs):
+            calls.append(1)
+            return dict(assessment, mandatory_g=[-3., -2., 0.] if len(calls) == 1 else [-3., -1., -1.])
+        with patch.object(RFEvaluator, 'evaluate', return_value=response), \
+             patch('lpf.search._window_evaluation.evaluate_requirements', side_effect=assess):
+            for _ in range(100): meter.evaluate(x)
+        raw = json.loads(path.read_bytes())
+        self.assertEqual(raw['confirmed']['forwards'], 100)
+        rows = raw['payload']['batches']
+        self.assertEqual((rows[0]['assessment']['hybrid_objective']['value'],
+                          rows[1]['assessment']['hybrid_objective']['value']), (14., 12.))
+        self.assertNotIn('mandatory_g', rows[0]['assessment'])
+        self.assertEqual(raw['payload']['best_observed_by_stage']['demo/coarse']['batch_index'], 0)
+        self.assertEqual(raw['payload']['best_hybrid_observed_by_stage']['demo/coarse']['batch_index'], 1)
+
+    def test_window_hybrid_objective_matches_solver_aggregation(self):
+        from lpf.search._window_evaluation import _hybrid_observation
+        # Equal max/sum violations, but different sum-of-squares objectives.
+        a = dict(worst_il_db=1., mandatory_g=[-3., -2., 0.])
+        b = dict(worst_il_db=1., mandatory_g=[-3., -1., -1.])
+        for aggregation in ('sum', 'max'):
+            scores = [_hybrid_observation(v, aggregation) for v in (a, b)]
+            for source, score in zip((a, b), scores):
+                residuals = np.r_[np.sqrt(source['worst_il_db']), np.maximum(0., -np.asarray(source['mandatory_g']))]
+                expected = float(np.sum(residuals * residuals) if aggregation == 'sum' else np.max(residuals * residuals))
+                self.assertEqual((score['status'], score['value']), ('evaluated', expected))
+            if aggregation == 'sum':
+                self.assertEqual([s['value'] for s in scores], [14., 12.])
+            else:
+                self.assertEqual([s['value'] for s in scores], [9., 9.])
+        for a in (dict(worst_il_db=-1., mandatory_g=[0.]),
+                  dict(worst_il_db=float('inf'), mandatory_g=[0.]),
+                  dict(worst_il_db=1., mandatory_g=[float('-inf')]),
+                  dict(worst_il_db=1., mandatory_g=[-1e300])):
+            self.assertEqual(_hybrid_observation(a, 'sum')['status'], 'invalid')
+
+    def test_frozen_model_validation_matches_legacy_and_rejects_bad_values(self):
+        from lpf.search.component_constraints import validate_values
+        from lpf.rf_core.model import build_rf_model
+        _, _, _, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        model = build_rf_model(d, p)
+        self.assertEqual(validate_values(d, model.schema, x, p),
+                         validate_values(d, model.schema, x, p, frozen_model=model))
+        bad = x.copy(); bad[0] = -1
+        with self.assertRaises(ValueError):
+            validate_values(d, model.schema, bad, p, frozen_model=model)
+        altered = copy.deepcopy(p); altered['source_ohms']['real'] += 1
+        with self.assertRaisesRegex(ValueError, 'Frozen model'):
+            validate_values(d, model.schema, x, altered, frozen_model=model)
+
+    def test_window_boundary_detects_source_and_rf_changes_without_release(self):
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        for changed in ('source', 'rf'):
+            with self.subTest(changed=changed):
+                _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+                spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+                with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+                    meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+                meter.activate('demo/coarse', 'demo/coarse')
+                before = path.read_bytes()
+                if changed == 'source':
+                    change = patch('lpf.search._job_evaluation.source_identity', return_value={})
+                else:
+                    wrong = plan.data
+                    wrong['rf_inputs']['bands']['sha256'] = '0'*64
+                    change = patch('lpf.search.evaluation.freeze', return_value=wrong)
+                with change, self.assertRaises(ValueError):
+                    meter.finish()
+                self.assertEqual(path.read_bytes(), before)
+                self.assertIsNotNone(json.loads(before)['window'])
+                self.assertEqual(meter.status, 'storage_failed')
+
     def test_frozen_independent_samples_in_worker(self):
         spec, path, plan, d, p, x = self.job()
         spec = freeze_development_job(plan, d, p, 'demo', 23, x,
