@@ -384,9 +384,35 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.assertTrue(report["committed_readback"])
         self.assertEqual("not_run", report["independent_validation"])
 
+    def test_planned_campaign_plan_sha_matches_frozen_plan(self):
+        from lpf.search.storage import sha
+        plan = {'config': {'seeds': [23], 'objective': 'full_lpf'}}
+        self.manifest['search_scope'] = {'campaign': {
+            'kind': 'campaign_v1', 'plan': plan, 'plan_sha256': sha(plan)}}
+        self.save()
+        subprocess.run(['git', 'init', '-q', '-b', 'main'], cwd=self.root, check=True)
+        subprocess.run(['git', 'add', '.'], cwd=self.root, check=True)
+        subprocess.run(['git', '-c', 'user.name=test', '-c', 'user.email=test@example.invalid',
+                        'commit', '-qm', 'planned Campaign'], cwd=self.root, check=True)
+        def selected():
+            head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=self.root, text=True).strip()
+            with patch(SCRIPT + '.validate_manifest'), patch(
+                    SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}):
+                return audit_selected(self.root, ['EXP-050'], main_ref='origin/main',
+                                      diff_base=head, expected_head=head)
+        self.assertEqual('planned', selected()[0]['stage'])
+        plan['config']['seeds'] = [24]  # Deliberately keep the old frozen Plan SHA.
+        self.save()
+        self.commit_changes()
+        with self.assertRaisesRegex(ValueError, 'Campaign Plan SHA mismatch'):
+            selected()
+
     def test_complete_campaign_cannot_hide_preservation_errors(self):
+        from lpf.search.storage import sha
         self.complete()
-        self.manifest['search_scope'] = {'campaign': {'kind': 'campaign_v1'}}
+        plan = {'config': {'seeds': [23], 'objective': 'full_lpf'}}
+        self.manifest['search_scope'] = {'campaign': {
+            'kind': 'campaign_v1', 'plan': plan, 'plan_sha256': sha(plan)}}
         summary_path = self.root / self.record['summary']['path']
         summary = json.loads(summary_path.read_text(encoding='utf-8'))
         summary.update(preservation_kind='campaign_v1',

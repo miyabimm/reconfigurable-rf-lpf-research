@@ -284,6 +284,14 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main",
                               starting=mode == "preflight")
     require(manifest["constraints"]["constraint_id"] == row["constraint_id"],
             "main reservation and manifest RF conditions disagree")
+    scope = manifest.get('search_scope', {})
+    binding = scope.get('campaign') if isinstance(scope, dict) else None
+    if isinstance(binding, dict) and binding.get('kind') == 'campaign_v1':
+        plan, fingerprint = binding.get('plan'), binding.get('plan_sha256')
+        require(isinstance(plan, dict) and isinstance(fingerprint, str)
+                and SHA256.fullmatch(fingerprint), 'Campaign Plan SHA mismatch')
+        from lpf.search.storage import sha
+        require(sha(plan) == fingerprint, 'Campaign Plan SHA mismatch')
     stage = record.get("stage")
     require(stage in STAGES, "invalid preservation stage")
     validate_selection(record.get("selection"))
@@ -383,8 +391,6 @@ def validate_run(root, experiment_id, *, mode="audit", main_ref="origin/main",
                     'unknown attempts forbid preservation completion')
             # Match the existing Campaign G4 guard without accessing temporary
             # raw evidence or claiming to have completed G3/G4 readback here.
-            scope = manifest.get('search_scope', {})
-            binding = scope.get('campaign') if isinstance(scope, dict) else None
             if isinstance(binding, dict) and binding.get('kind') == 'campaign_v1':
                 require(summary_payload.get('preservation_kind') == 'campaign_v1',
                         'Campaign summary identity mismatch')
