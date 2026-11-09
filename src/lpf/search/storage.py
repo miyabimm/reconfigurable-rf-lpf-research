@@ -10,6 +10,10 @@ import numpy as np
 
 
 def plain(value):
+    # JSON scalar leaves are already plain. Exact types preserve the existing
+    # dataclass/NumPy/subclass handling for everything else.
+    if type(value) in (str, int, float, bool, type(None)):
+        return value
     if is_dataclass(value):
         return plain(asdict(value))
     if isinstance(value, dict):
