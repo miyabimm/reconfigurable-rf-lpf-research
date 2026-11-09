@@ -23,8 +23,30 @@ def main(argv=None):
                         help='window100 is opt-in development-only; requires a persistent Git-external output')
     parser.add_argument('--debug-forward-history', action='store_true',
                         help='window100 only: persist compact search history at checkpoints')
+    parser.add_argument('--monitor-dir', help='fresh Git-external monitoring directory')
+    parser.add_argument('--profile', action='store_true', help='attach optional py-spy (requires --monitor-dir)')
     args = parser.parse_args(argv)
+    if args.profile and not args.monitor_dir:
+        parser.error('--profile requires --monitor-dir')
     try:
+        if args.monitor_dir:
+            from lpf.search.monitor import supervise
+            raw = list(sys.argv[1:] if argv is None else argv)
+            forwarded = []
+            i = 0
+            while i < len(raw):
+                token = raw[i]
+                option, separator, _ = token.partition('=')
+                # argparse accepts unique long-option abbreviations as well as =.
+                if option.startswith('--') and len(option) > 2 and '--monitor-dir'.startswith(option):
+                    i += 1 if separator else 2
+                elif option.startswith('--') and len(option) > 2 and '--profile'.startswith(option):
+                    i += 1
+                else:
+                    forwarded.append(raw[i])
+                    i += 1
+            return supervise([sys.executable, str(Path(__file__).resolve()), *forwarded],
+                             args.monitor_dir, args.output, profile=args.profile, root=ROOT)
         if args.mode == 'production':
             print('STOP: production_not_authorized: G0/G1 and G2-G5 not connected', file=sys.stderr)
             return 3
