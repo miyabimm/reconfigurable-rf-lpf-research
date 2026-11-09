@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import signal
 import subprocess
+import sys
 import time
 
 import psutil
@@ -98,6 +99,24 @@ def _wait_and_sample(child, proc, start, output, interval, stream, errors):
 
 
 def supervise(command, directory, output, *, profile=False, root, interval=1.0):
+    # Once known, the scientific child exit is authoritative even if a monitor
+    # stream fails to flush/close or post-processing cannot write its summary.
+    child_result = {}
+    try:
+        return _supervise(command, directory, output, profile=profile, root=root,
+                          interval=interval, child_result=child_result)
+    except Exception as exc:
+        if 'exit_code' not in child_result:
+            raise
+        try:
+            print(f'monitoring incomplete: {type(exc).__name__}: {exc}; '
+                  f'child exit code {child_result["exit_code"]}', file=sys.stderr)
+        except (OSError, ValueError):
+            pass
+        return child_result['exit_code']
+
+
+def _supervise(command, directory, output, *, profile, root, interval, child_result):
     logs = _external_fresh(directory, root, output)
     env = os.environ.copy()
     env['LPF_DEVELOP_MONITOR_EVENTS'] = str(logs / 'optimizer-events.jsonl')
@@ -125,6 +144,7 @@ def supervise(command, directory, output, *, profile=False, root, interval=1.0):
             else:
                 profile_status['error'] = 'py-spy not installed'
         exit_code = _wait_and_sample(child, proc, start, output, interval, stream, samples_error)
+        child_result['exit_code'] = exit_code
         child_wall = time.monotonic() - start
         if profiler:
             if profiler.poll() is None:
@@ -165,12 +185,16 @@ def supervise(command, directory, output, *, profile=False, root, interval=1.0):
     except (OSError, ValueError) as exc:
         samples_error.append(f'process readback: {exc}')
     events = []
+    event_readback_failed = False
     try:
         events = [json.loads(line) for line in (logs / 'optimizer-events.jsonl').read_text().splitlines()]
     except (OSError, ValueError) as exc:
+        event_readback_failed = True
         samples_error.append(f'optimizer readback: {exc}')
     elapsed = child_wall
     end_events = [e for e in events if e.get('event') == 'local_run_end']
+    start_count = sum(e.get('event') == 'local_run_start' for e in events)
+    event_status = 'incomplete' if event_readback_failed or start_count != len(end_events) else 'unverified'
     peak = max((sum(p['rss_bytes'] for p in r['processes']) for r in rows), default=None)
     last = rows[-1] if rows else None
     cpu_rows = [r['processes'] for r in rows if r['processes']]
@@ -188,8 +212,8 @@ def supervise(command, directory, output, *, profile=False, root, interval=1.0):
         last_observed_process_tree_system_s=sum(p['system_s'] for p in last_cpu) if last_cpu else None,
         last_observed_process_tree_cpu_s=sum(p['user_s'] + p['system_s'] for p in last_cpu) if last_cpu else None,
         confirmed_forwards=forwards, confirmed_forwards_per_wall_s=forwards/elapsed if forwards is not None and elapsed else None,
-        final_observed_progress=progress, optimizer_start_count=sum(e.get('event') == 'local_run_start' for e in events),
-        optimizer_end_count=len(end_events), optimizer_wall_s=sum(e['wall_s'] for e in end_events),
+        final_observed_progress=progress, optimizer_start_count=start_count,
+        optimizer_end_count=len(end_events), optimizer_event_status=event_status, optimizer_wall_s=sum(e['wall_s'] for e in end_events),
         optimizer_cpu_s=sum(e['cpu_s'] for e in end_events), profile=profile_status, errors=samples_error,
         limitations=['RSS is a sampled peak, not an instantaneous maximum.',
                      'Process tree CPU is a snapshot; exited short-lived descendants may be missing.',

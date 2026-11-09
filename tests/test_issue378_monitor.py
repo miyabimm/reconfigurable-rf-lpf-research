@@ -1,3 +1,5 @@
+from contextlib import redirect_stderr
+import io
 import json
 import os
 from pathlib import Path
@@ -7,7 +9,7 @@ import sys
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 from scipy.optimize import OptimizeResult
@@ -32,6 +34,7 @@ class MonitorTests(unittest.TestCase):
                     self.assertFalse(summary['profile']['available'])
                     self.assertEqual(summary['profile']['error'], 'py-spy not installed')
                     self.assertIsNone(summary['confirmed_forwards'])
+                    self.assertEqual(summary['optimizer_event_status'], 'unverified')
                     self.assertTrue((directory / 'process.jsonl').read_text())
                     with self.assertRaises(FileExistsError):
                         supervise([sys.executable, '-c', 'pass'], directory, None, root=ROOT)
@@ -65,6 +68,55 @@ class MonitorTests(unittest.TestCase):
             summary = json.loads((logs/'monitor-summary.json').read_text())
             self.assertIn('sample failed', summary['errors'])
             self.assertEqual(summary['exit_code'], 4)
+
+    def test_post_run_log_failures_preserve_child_exit(self):
+        from lpf.search import monitor
+        real_write = Path.write_text
+        real_open = Path.open
+        real_wait = monitor._wait_and_sample
+        with tempfile.TemporaryDirectory(prefix='issue378-post-failure-') as tmp:
+            for code in (0, 4):
+                for failure in ('summary', 'flush', 'close'):
+                    with self.subTest(code=code, failure=failure):
+                        logs = Path(tmp)/f'{code}-{failure}'
+                        marker = Path(tmp)/f'{code}-{failure}-calls'
+                        cmd = [sys.executable, '-c', f"from pathlib import Path; Path({str(marker)!r}).open('a').write('x'); raise SystemExit({code})"]
+                        def write(path, *args, **kwargs):
+                            if failure == 'summary' and path.name == 'monitor-summary.json':
+                                raise OSError('summary write failed')
+                            return real_write(path, *args, **kwargs)
+                        def wait(child, proc, start, output, interval, stream, errors):
+                            result = real_wait(child, proc, start, output, interval, stream, errors)
+                            if failure == 'flush':
+                                stream.flush = Mock(side_effect=OSError('final flush failed'))
+                            return result
+                        def open_file(path, *args, **kwargs):
+                            stream = real_open(path, *args, **kwargs)
+                            if failure == 'close' and path.name == 'process.jsonl' and args and args[0] == 'x':
+                                class CloseFailure:
+                                    def __enter__(self):
+                                        return stream
+                                    def __exit__(self, *args):
+                                        stream.close()
+                                        raise OSError('close failed')
+                                return CloseFailure()
+                            return stream
+                        error = io.StringIO()
+                        with patch.object(Path, 'write_text', write), patch.object(Path, 'open', open_file), \
+                             patch.object(monitor, '_wait_and_sample', wait), redirect_stderr(error):
+                            self.assertEqual(supervise(cmd, logs, None, root=ROOT, interval=.02), code)
+                        self.assertEqual(marker.read_text(), 'x')
+                        self.assertIn('monitoring incomplete', error.getvalue())
+                        self.assertFalse((logs/'monitor-summary.json').exists())
+
+    def test_unpaired_optimizer_event_is_incomplete(self):
+        with tempfile.TemporaryDirectory(prefix='issue378-unpaired-') as tmp:
+            logs = Path(tmp)/'logs'
+            workload = "import os; open(os.environ['LPF_DEVELOP_MONITOR_EVENTS'], 'a').write('{\"event\":\"local_run_start\"}\\n')"
+            self.assertEqual(supervise([sys.executable, '-c', workload], logs, None, root=ROOT, interval=.02), 0)
+            summary = json.loads((logs/'monitor-summary.json').read_text())
+            self.assertEqual((summary['optimizer_start_count'], summary['optimizer_end_count']), (1, 0))
+            self.assertEqual(summary['optimizer_event_status'], 'incomplete')
 
     def test_profile_sampled_function_counts(self):
         with tempfile.TemporaryDirectory(prefix='issue378-spy-') as tmp:
