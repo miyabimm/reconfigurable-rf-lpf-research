@@ -1,6 +1,6 @@
 # Issue #377：途中結果・安全条件の相違により停止
 
-**未完了 / Draft用資料。** 最新main `9b0a83cf5411a283740114170269fbf7effcdd3e` で短いbaselineを1回実行した。3,000評価Job、変更後の実RF同値性・速度比較、独立MNA、Stage C/Dは **not_run**。60秒／20秒の達成判定はできない。
+**未完了 / Draft用資料。** 最新main `9b0a83cf5411a283740114170269fbf7effcdd3e` で短いbaselineを1回実行した。3,000評価Job、変更後の計画した実RF同値性・速度比較、Stage C/Dは **not_run**。60秒／20秒の達成判定はできない。PR作成時に自動起動したCIは費用未計測の実RFテストを実行しており、後述のとおり費用上限の遵守は未確認。
 
 ## 停止理由
 
@@ -15,7 +15,7 @@ Issue #377は各RF forward前のsource/import同一性を明記している。�
 - RF-T008 rev3 **trial** 明示opt-in、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、full_lpf、6設定28個別区間、既存S2P。formal RF-F003は不変。
 - seed1002の既存25変数start SHA `6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f`、search grid 70 samples SHA `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。Python 3.12.15、NumPy 2.5.4、SciPy 1.18.1、BLAS/OMP/MKL各1 thread。
 - 実行前に凍結した最大割当はbaseline Job cap 8,000 + 変更後短計測 cap 8,000 + 3,000評価Job cap 212,000 + 他の全RFテスト・audit枠 22,000 = **250,000**。baseline Plan SHA `8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e`、source identity SHA `fcbfc45411e3502f780ed68e73920e953daf064c550d8d6e63962c14084a4adb`。静的最大予約はbaseline 7,812、未実行benchmark 211,064。preflight byte SHA `c7c6da521148418da55cd0e4e0fcaffb4fcc33e392c559cc78bc90f3f7c393d6`。
-- 実費用は search `100×70=7,000`、selection `2×84=168`、terminal `476`、計 requested=completed **7,644**、reserved=unknown **0**。独立MNA/denseは0。変更後短計測・3,000評価・別RFテストは未実行。旧#361 unknown予約および#372/#375のrawを変更・相殺しない。
+- baseline Jobの実費用は search `100×70=7,000`、selection `2×84=168`、terminal `476`、計 requested=completed **7,644**、Jobのreserved=unknown **0**。Jobの独立MNA/denseは0。変更後短計測・3,000評価・ローカル別RFテストは未実行。旧#361 unknown予約および#372/#375のrawを変更・相殺しない。\n- **CIの未計上費用：** Draft PR作成で自動起動した[CI 42722071175](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/42722071175)が `test_issue309_rf_core` 等の実RF・独立MNAテストを実行後、`test_issue317_fixed_worker` 実行中に停止した。CIのRF sample数・途中中断分は計測されておらず、追加RF費用はunknown。CIに対し上記22,000枠の上限強制も行っていないため、**Issue全体の250,000上限遵守は証明できない**。自動CIのRF費用を実行前計画に計上しなかったのは当方の見落とし。未確定費用を0とせず、追加RF・CI再実行を停止。ログ原本の保存先とSHAは下記。
 - 実行前sourceでの結果：nfev 100、nit 1、evaluation budget exhausted、solver未収束、exit 4。terminal有限格子 strict FAIL。科学rawの親・worker SHAはsummaryと照合した。形式的G0/G1・保存監査・物理実装性・連続帯域は未検証。
 
 ## 現行window100の短時間プロファイル
@@ -47,6 +47,6 @@ SciPy差分の97 callbackは全100 search residual callの内数であり、line
 
 ## 原本と保全
 
-- Git外永続raw・監視・入力 `/home/user/issue377-rf-profile-20261110/`。マニフェストSHA `2c0b8263ad7146d0d39c9dc4d8f0fd84a4d6c7d5474272fb970ec73251f5884c`、全現存ファイルを実byte読戻し・SHA記録、manifest自身はatomic verified。外部バックアップは未検証。
+- Git外永続raw・監視・入力 `/home/user/issue377-rf-profile-20261110/`。baseline時点のマニフェストSHA `2c0b8263ad7146d0d39c9dc4d8f0fd84a4d6c7d5474272fb970ec73251f5884c`、当時の各ファイルを実byte読戻し・SHA記録、manifest自身はatomic verified。後から保存したCI log `ci-unmetered/run.log` SHA `350dcba001290ad6f768444223031b1b57914edf97463e1ec6985e3dfa2c34fb` はこのmanifestの対象外。外部バックアップは未検証。
 - 短時間hookは `/tmp/issue377-profile-hook-1000-1484683/` にも残存（同じ内容を上記inputsに保存）。作業worktree `/home/user/src/reconfigurable-rf-lpf-issue377` はレビュー用に保持。
 - 正式EXP、Main/Extension、100 restart、変更後3,000評価、アルゴリズム／勾配／restart政策変更は **not_run**。Phase 2のまま。科学的最適性・物理実装性・連続周波数保証は主張しない。
