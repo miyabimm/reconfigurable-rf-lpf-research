@@ -207,8 +207,15 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
                     if not np.isfinite(a['worst_il_db']) or a['worst_il_db'] < 0:
                         raise ValueError('Hybrid requires finite nonnegative IL; no floor')
                     return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
+                import os
+                event_path = os.environ.get('LPF_DEVELOP_MONITOR_EVENTS') if not formal else None
+                def event_callback(event):
+                    event.update(job_id=spec.job_id, arm=d['arm'], step=step['name'])
+                    with open(event_path, 'a', encoding='utf-8') as stream:
+                        stream.write(json.dumps(event, sort_keys=True) + '\n')
+                extra = {'event_callback': event_callback} if event_path else {}
                 out = hybrid_minimize(residuals, x, d['bounds'], seed=d['seed'],
-                                      aggregation=step['aggregation'], **opts)
+                                      aggregation=step['aggregation'], **extra, **opts)
                 found = [r.end_x for r in out.runs if r.end_x is not None]
                 if out.best_x is not None:
                     found.append(out.best_x)

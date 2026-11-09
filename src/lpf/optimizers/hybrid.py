@@ -48,7 +48,7 @@ class _Stop(Exception):
 
 def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                     max_restarts: int, max_evaluations: int, restart_sigma: float,
-                    weights=None, aggregation: str = 'sum') -> HybridResult:
+                    weights=None, aggregation: str = 'sum', event_callback=None) -> HybridResult:
     """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
 
     The default 'sum' is weighted least squares; 'max' is the maximum weighted
@@ -149,6 +149,20 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
             nonlocal nit
             nit += 1
 
+        # Optional diagnostics are deliberately isolated from scientific control flow.
+        def emit(event):
+            if event_callback is not None:
+                try:
+                    event_callback(event)
+                except Exception:
+                    pass
+
+        import time
+        timed = event_callback is not None and np.any(free)
+        if timed:
+            wall_start, cpu_start = time.monotonic(), time.process_time()
+            emit(dict(event='local_run_start', seed=seed, run_index=run_index,
+                      monotonic_s=wall_start, process_cpu_s=cpu_start))
         try:
             if not np.any(free):
                 value = objective(z_start)
@@ -169,6 +183,21 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
             run = LocalRun(start_x.tolist(), start_fun,
                            None if last_x is None else last_x.tolist(), last_fun,
                            False, None, reason, nit, local_nfev)
+        except BaseException as exc:
+            if timed:
+                emit(dict(event='local_run_end', seed=seed, run_index=run_index,
+                          monotonic_s=time.monotonic(), process_cpu_s=time.process_time(),
+                          wall_s=time.monotonic()-wall_start, cpu_s=time.process_time()-cpu_start,
+                          nfev=local_nfev, nit=nit, success=False, status=None,
+                          message=f'{type(exc).__name__}: {exc}', interrupted=True))
+            raise
+        if timed:
+            wall_end, cpu_end = time.monotonic(), time.process_time()
+            emit(dict(event='local_run_end', seed=seed, run_index=run_index,
+                      monotonic_s=wall_end, process_cpu_s=cpu_end,
+                      wall_s=wall_end-wall_start, cpu_s=cpu_end-cpu_start,
+                      nfev=run.nfev, nit=run.nit, success=run.success,
+                      status=run.status, message=run.message, interrupted=run.status is None))
         runs.append(run)
         if reason != 'restarts_exhausted':
             break

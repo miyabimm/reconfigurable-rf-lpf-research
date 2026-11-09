@@ -31,6 +31,8 @@ Piの通常作業は必要なファイルを取得した完全checkoutで行う�
 2=unknown/入力不正/保存障害STOP、3=production未認可。
 いずれも正式RF認定ではなく、G0–G5未承認・dense/全帯域独立MNA/保存監査は未実施。
 [契約・再現コマンド・限定証拠](diagnostics/issue321_development_cli.md)を参照。
+任意の外部CPU/RSS監視と局所探索イベント・py-spy試行は
+[Issue #378の利用法と制限](diagnostics/issue378_monitor.md)を参照。
 
 開発専用 `--storage-mode window100` は別形式の100 forward予約・チェックポイントを明示opt-inする。
 出力は既存ディレクトリの下の**未存在・Git管理外・永続**パスを指定し、system tmpやcheckoutは拒否する。
