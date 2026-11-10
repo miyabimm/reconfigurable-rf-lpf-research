@@ -21,7 +21,7 @@
 | 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md)、[#369開発用100-forward予約](issue369_forward_window.md) | 中断・未照合費用・原本所在不明、時間診断とmock限定の保存比較。Pilot再実行の指示ではない |
 | 限定実証・レビュー証拠 | [#372診断途中停止](issue372/README.md)、[修正版診断・Pilot](issue372/followup.md) | 集計例外・原本保全、後続のwindow100実RF診断と2-seed未収束Pilot |
 | 限定実証・レビュー証拠 | [#375 Pilot結果](issue375/followup.md)、[summary](issue375/pilot-summary.json) | RF-T008 trialの新規6500-evaluation上限比較。1002→1001の順に実行し、#372との同格子比較・違反推移・未収束/strict FAILを記録。非EXP、Phase 2 |
-| 開発ツール・限定検証 | [#378 共通監視](issue378_monitor.md)、[#381 py-spy](issue381/README.md)、[#383 内部タイマー](issue383_timing.md) | 開発CLI監視と限定合成負荷。#381の子起動と#383の内部計時は別モード |
+| 開発ツール・限定検証 | [#378 共通監視](issue378_monitor.md)、[#381 py-spy](issue381/README.md)、[#383 内部タイマー](issue383_timing.md)・[非RFベンチマーク](issue383_benchmark.py) | 開発CLI監視と限定合成負荷。#381の子起動と#383の内部計時は別モード |
 | 限定実証・レビュー証拠 | [#254](issue254_curated_storage.md) | 旧共通curated保存と容量STOPの実測。現保存規則の代わりではない |
 | 歴史・旧仕様 | [#235報告](issue235_scaling.md)・[JSON](issue235_scaling.json)、[#239](issue239_optimizer_comparison.md) | 旧座標正規化・optimizer比較契約・診断。保存vector/SHAは原証拠 |
 | 歴史・旧仕様 | [#241](issue241_scipy_de_preview.md)、[#243](issue243_de_exploration_boundaries.md) | DE mock接続と評価境界。本番runnerの存在を意味しない |
