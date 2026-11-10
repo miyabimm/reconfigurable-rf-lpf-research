@@ -1,8 +1,32 @@
 # Issue #381：restart生成時間とpy-spy限定検証
 
-## 状態・境界
+## レビュー対応後：共通CLIで実取得（独立再レビュー待ち）
 
-**未完了：共通CLIの `--monitor-dir ... --profile` による実プロファイルは取得できていない。** Linux Yamaによる同一ユーザーattach拒否のため、インストールだけを成功と扱わない。公式の子起動方式は非RF合成負荷で成功したが、共通監視への統合はしていない。以下の独立手順は終了状態や監視の契約を代替しない。ChatGPT独立レビュー待ち。
+#382のレビューを受け、既存共通監視の `--profile` を子起動に変更。`py-spy --subprocesses` の子helperが新規process group内のgateを起動し、PID通知後にgateを開いて同じPIDで科学CLIを一度だけexecする。通知前にhelperが死亡するとgateはEOFで閉じ、科学処理は始まらない。真のwait結果も専用pipeで監視親へ通知し、py-spy exitは独立して記録。helperの状態喪失やexec失敗時は観測済PIDの終了を待って **exit unknownとしてSTOP**、再試行しない。SIGINTをCLI process groupへ転送、stdout/stderrはprofiler出力と分離、終了後の監視保存失敗時は既知の科学exitを保持する。短命process、helper異常、profileなし、全event欠落などで監視自体は未完了になり得る。Linuxのprocess groupとFD継承を使用し、Linux/WSL2以外は未検証。
+
+**実共通CLIの非RFテスト**：下記再現スクリプトは `scripts/run_rf_search.py develop --config not-used --mode production` を直接呼び、子CLIの起動時だけ一時 `sitecustomize.py` の `synthetic_load()`（整数演算3,000万回）を実行させた後、本来のproduction未許可exit 3とする。RFモデル評価・科学raw出力なし。監視条件を除き同じ負荷、3反復、順序rotate。`--monitor-dir ... --profile` は実py-spy 0.4.3、100Hz、`--subprocesses`、native/idleなし。Yama `ptrace_scope=1` のまま、sudo/権限緩和なし。科学CLI PID・exit・ログと `profile.speedscope.json` のframe indexを読戻し、CLI PIDのstackから `profile-functions.json` を集計した。現在のWorkerはCLI同一プロセス内。3回の対象PIDは **18282/18440/18566**、同PID samples **341/371/359**、全process samples **341/371/362**、`synthetic_load` inclusive samples **176/205/200**、科学exitは全て3、profiler exitは全て0。別PIDのhelper samplesは集計から除外。gateとCLIは同じPIDであり、exec前のgate起動sampleが混入し得る。py-spyはgate時のコマンド名をexec後も保持し得るので、PIDや表示名だけではCLIコードの取得を証明しない。本測定は `synthetic_load` のframeを確認している。これは統計的なstack出現数であり正確な関数時間ではない。実RF profileは未実施。
+
+| 条件 | CLI起動〜終了wall秒 各3回 | 合成負荷内CPU秒 各3回 | 負荷内ru_maxrss KiB 各3回 | 観測peak RSS bytes 各3回 |
+|---|---|---|---|---|
+| 監視なし | 2.892, 2.801, 2.734 | 1.894, 1.837, 1.812 | 14176, 15328, 15456 | 未取得 |
+| psutil | 3.746, 3.785, 3.760 | 1.823, 1.865, 1.827 | 98472, 98236, 98220 | 45744128, 35397632, 42823680 |
+| psutil＋実py-spy | 4.675, 4.655, 4.624 | 1.856, 1.846, 1.863 | 14020, 14052, 14024 | 79339520, 86413312, 87240704 |
+
+全checksum 12285。起動wall中央値2.801/3.760/4.655秒、監視なし比約+34.2%/+66.2%、psutilのみ比py-spy約+23.8%。同じ合成負荷だが起動層・計測器が異なり、3回の記述統計で変動・起動時間を含み、因果推定・RFへの外挿ではない。負荷内CPUはprofiler自身を含まない。ru_maxrssはexec前に受け継ぐ最大値にも影響され、観測RSSとは定義・単位が違い直接比較不可。監視のprocess tree RSS/CPUはCLIと子孫でありhelper/profiler自体を含まない。
+
+```sh
+# NEW_DIRは未存在のsystem tmpパス。非RF診断ファイルを保持する。
+uv run --frozen python project/diagnostics/issue381/common_cli_benchmark.py "$NEW_DIR"
+LPF_TEST_REAL_PYSPY=1 uv run --frozen python -m unittest discover -s tests -p 'test_issue381_profile.py' -v
+```
+
+非RF観測は `/tmp/issue381-review-cli-gated-20261110/` に保持。`results.json` SHA256 `6129775575ebc0516d73e48c571ddc8f5afdb3589fb4f8d2f91e9d81e5586318`。3つのprofile SHA256は順に `ecc86d78a59d94765534753981c17050e96a3f6b394e9a6af8bf627736dc0e61`、`812f3e58dea52480fd35221f592d55d24bd357bc9a6a8b91ee15906143b18bac`、`9905bb1dee038a10e5e518777da5aa1d3cb037b6164f61b8afba4ea3949de22c`。外部バックアップ未検証。前段の非gate版限定計測も `/tmp/issue381-review-cli-20261110/` に保持。
+
+**境界テスト**：実py-spyで科学exit 0/2/3/4・stdout/stderrとSIGINTを確認。mock profilerでも実exitの分離、監視保存障害、reporter死亡時の子完了待ち・unknown、通知前のgate閉鎖、exec失敗・SIGINTを確認。専用データ転送とプロセス管理の追加は独立レビューを要する。RF条件、solver、予算、window100、3,000評価定義は不変。実RF追加探索・再ベンチ・EXPはnot_run。
+
+## 初回提出 `d5f33b1` 時点の履歴（以下は旧attach方式）
+
+以下の未完了表記・測定値は当時の履歴であり、上記のレビュー対応後の状態ではない。**当時**は共通CLIの `--monitor-dir ... --profile` による実プロファイルを取得できなかった。Linux Yamaによる同一ユーザーattach拒否のため、インストールだけを成功と扱わなかった。公式の子起動方式は非RF合成負荷で成功したが、当時は共通監視に統合していなかった。
 
 - `main` 基点 `9b0a83cf5411a283740114170269fbf7effcdd3e`。PR #380 HEAD `de8651f9455f9a60e1892c4329f7eed098c54ae5` の記録・差分を確認。#377の3,000 residual/Objective評価、60秒／stretch 20秒、`max_restarts=0` は変更も再実行もしていない。
 - RF追加探索、実RF 100 restart、正式EXP、本番計算はnot_run。RF条件、solver・Job/Plan、予算・checkpoint、科学rawは変更しない。RF condition ID/SHAはこの非RF計測には適用なし。

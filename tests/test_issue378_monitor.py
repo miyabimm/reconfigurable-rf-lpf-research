@@ -135,20 +135,26 @@ class MonitorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='issue378-spy-') as tmp:
             fake = Path(tmp)/'py-spy'
             fake.write_text('#!'+sys.executable+'\n' + '''
-import json, sys
+import json, subprocess, sys
 out = sys.argv[sys.argv.index('--output')+1]
+subprocess.run(sys.argv[sys.argv.index('--')+1:], close_fds=False)
 with open(out, 'w') as f:
     json.dump({'shared': {'frames': [{'name':'f'}, {'name':'g'}]},
-               'profiles': [{'samples': [[0,1], [0], [0,0]]}]}, f)
+               'profiles': [{'name': 'Process ' + open(out+'.pid').read() + ' Thread 1',
+                             'samples': [[0,1], [0], [0,0]]}]}, f)
 ''')
             fake.chmod(0o755)
             directory = Path(tmp)/'logs'
             with patch('lpf.search.monitor.shutil.which', return_value=str(fake)):
-                rc = supervise([sys.executable, '-c', 'import time; time.sleep(.15)'],
+                pid_path = directory/'profile.speedscope.json.pid'
+                workload = f'import os; from pathlib import Path; Path({str(pid_path)!r}).write_text(str(os.getpid()))'
+                rc = supervise([sys.executable, '-c', workload],
                                directory, None, profile=True, root=ROOT, interval=.02)
             self.assertEqual(rc, 0)
             summary = json.loads((directory/'monitor-summary.json').read_text())
             self.assertTrue(summary['profile']['available'])
+            self.assertTrue(summary['profile']['target_exec_samples_unverified'])
+            self.assertEqual(summary['profile']['target_pid'], summary['child_pid'])
             self.assertEqual(summary['profile']['sample_count'], 3)
             stats = json.loads((directory/'profile-functions.json').read_text())
             self.assertEqual([(x['name'], x['inclusive_samples']) for x in stats], [('f',3),('g',1)])

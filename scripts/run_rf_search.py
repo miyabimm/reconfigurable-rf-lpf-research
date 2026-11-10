@@ -24,7 +24,7 @@ def main(argv=None):
     parser.add_argument('--debug-forward-history', action='store_true',
                         help='window100 only: persist compact search history at checkpoints')
     parser.add_argument('--monitor-dir', help='fresh Git-external monitoring directory')
-    parser.add_argument('--profile', action='store_true', help='attach optional py-spy (requires --monitor-dir)')
+    parser.add_argument('--profile', action='store_true', help='use optional py-spy child profiling (requires --monitor-dir)')
     args = parser.parse_args(argv)
     if args.profile and not args.monitor_dir:
         parser.error('--profile requires --monitor-dir')
