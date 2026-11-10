@@ -6,7 +6,7 @@
 
 限定改修後、同じseed1002の3,000 search forwardを含む**局所探索1回は77.445秒wall／76.500秒process CPU**、nfev 3,000、nit 80、評価上限によりsolver未収束（exit 4）。**60秒・20秒はともに未達**。Job全体は監視wall 86.333秒、最終観測process-tree CPU 84.06秒、観測peak RSS 143,097,856 bytes。局所runとJob全体は別、RSSはサンプリングpeak、CPUは終了した短命子を欠く可能性がある。これは単一条件・1回の観測であり大域最適性を示さない。
 
-同じ固定入力による変更前後の短時間実RF比較で、保存されたselection 2件とterminal 1件の**全Sパラメータ、IL/APL/RL、requirements全体・mandatory g、物理/SPD、solver結果と費用経路はcanonical JSONで完全一致**。各件は全6設定・28個別区間を含む。独立MNAは別のテストで6点のみPASS（後述）。それ以外の全帯域独立MNA、dense、連続周波数、Q(f)・SRF・EM・公差・実測・物理実装性は未検証。PRはDraftでありChatGPT独立レビュー・CI PASS・科学的認定ではない。
+同じ固定入力による変更前後の短時間実RF比較で、保存されたselection 2件とterminal 1件の**全Sパラメータ、IL/APL/RL、requirements全体・mandatory g、物理/SPD、solver結果と費用経路はcanonical JSONで完全一致**。各件は全6設定・28個別区間を含む。独立MNAは別のテストで6点のみPASS（後述）。それ以外の全帯域独立MNA、dense、連続周波数、Q(f)・SRF・EM・公差・実測・物理実装性は未検証。PRはDraftでありChatGPT独立レビュー待ち。CI PASSと科学的認定は別である。
 
 ## 条件・予算・原本
 
@@ -22,7 +22,7 @@
 | 変更後3,000評価 | 210,000 | 168 | 252 | 476 | 210,896 | 0 / 0 |
 | **合計** | | | | | **226,184** | **0 / 0** |
 
-Job内independent spot・denseはnot_run・0。2026-11-10ユーザー判断によりCI・ローカル単体/回帰/独立MNAテストは上記の研究Job上限対象外だが、未計測分を0とは扱わない。PR作成時に自動起動した[CI 42722071175](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/42722071175)は実RF/MNAテスト実行後cancelled、sample数は未計測、CI PASSではない。これを予算対象に含めた旧停止判定は**ユーザー判断で訂正**された。旧#361 unknown予約・#372/#375 rawは変更・相殺しない。
+Job内independent spot・denseはnot_run・0。2026-11-10ユーザー判断によりCI・ローカル単体/回帰/独立MNAテストは上記の研究Job上限対象外だが、未計測分を0とは扱わない。PR作成時に自動起動した[CI 42722071175](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/42722071175)は実RF/MNAテスト実行後cancelled、sample数は未計測。後続の[CI 42819846885](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/42819846885)はHEAD `7a93a8c` でPASS、RF/MNAテスト費用は別枠・未計測。これを予算対象に含めた旧停止判定は**ユーザー判断で訂正**された。旧#361 unknown予約・#372/#375 rawは変更・相殺しない。
 
 永続raw・監視・preflight・監査は `/home/user/issue377-rf-profile-20261110/`。全40ファイルのbyte/SHA読戻しmanifest `resume-manifest.json` SHA `9b1d6d38c2d53f742cdc7e4038d755c3455917b77a504edee9225e48e927d6e8`、manifest自体もatomic readback済。benchmark parent SHA `1ca5f299ec7c559b9501a1dc6112454c4f0aac1f344d998be186124213f5c172`、worker `f92fc2b89ee2e819b0732b5257e96eff3518694e771aca08c2d79938f5e28d9b`、summary `de6214f3eaf66316c2604b64fbe71979ecabcb999e817e6d4632b924964eec16`。Git外ローカルであり外部バックアップは未検証。
 
