@@ -126,7 +126,7 @@ def _development_options(step):
     return {**defaults[step['solver']], **step['options']}
 
 
-def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
+def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy', timer=None):
     """Single-process fixed steps, shared durable RF ledger, development tmp only.
 
     solver_kind labels patched solver tests as fixture; it does not replace RF.
@@ -134,7 +134,7 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     """
     if spec.data.get('kind') != 'development_only' or spec.trial_id != 'development_only':
         raise ValueError('not_ready: Development entry rejects formal/unknown JobSpec')
-    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
+    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind, timer=timer)
 
 
 def execute_campaign_job(spec, checkpoint, *, root, solver_kind='scipy'):
@@ -144,7 +144,14 @@ def execute_campaign_job(spec, checkpoint, *, root, solver_kind='scipy'):
     return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
 
 
-def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
+def _timed_solver(timer, name, solver, *args, **kwargs):
+    if timer is None:
+        return solver(*args, **kwargs)
+    with timer.measure(name):
+        return solver(*args, **kwargs)
+
+
+def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', timer=None):
     from pathlib import Path
     import numpy as np
     from .plan import ROOT, Plan
@@ -181,11 +188,15 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
                                       debug_forward_history=d.get('debug_forward_history', False))
     if expected != spec:
         raise ValueError('Fixed Job/input/source/options SHA mismatch')
+    from lpf.timing import timed_call
     if d.get('storage_mode', 'legacy') == 'window100':
         from ._window_evaluation import WindowJobEvaluation
-        meter = WindowJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
+        meter_class = WindowJobEvaluation
     else:
-        meter = FixedJobEvaluation(plan, definition, policy, d['arm'], checkpoint, spec, root=root)
+        meter_class = FixedJobEvaluation
+    meter = timed_call(timer, 'evaluation_initialization', meter_class,
+                       plan, definition, policy, d['arm'], checkpoint, spec, root=root)
+    meter.timer = timer
     result = meter.result
     result.update(status='unknown', solver_execution_kind=solver_kind, rf_backend='rf_core')
     arm = next(a for a in cfg['arms'] if a['name'] == d['arm'])
@@ -200,6 +211,7 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
             raw.update(status='unknown', input_vector=plain(x), input_vector_sha256=vector_sha(x))
             meter._checkpoint()
             p = Problem.from_fixed_stage(meter)
+            p.timer = timer
             opts = d['solver_options'][i]
             if step['solver'] == 'hybrid':
                 def residuals(v):
@@ -207,14 +219,27 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
                     if not np.isfinite(a['worst_il_db']) or a['worst_il_db'] < 0:
                         raise ValueError('Hybrid requires finite nonnegative IL; no floor')
                     return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
+                if timer is not None:
+                    unmeasured_residuals = residuals
+                    def residuals(v):
+                        return timer.call('solver_callback', unmeasured_residuals, v)
                 import os
-                event_path = os.environ.get('LPF_DEVELOP_MONITOR_EVENTS') if not formal else None
+                event_path = os.environ.get('LPF_DEVELOP_MONITOR_EVENTS') if not formal and timer is None else None
                 def event_callback(event):
                     event.update(job_id=spec.job_id, arm=d['arm'], step=step['name'])
                     with open(event_path, 'a', encoding='utf-8') as stream:
                         stream.write(json.dumps(event, sort_keys=True) + '\n')
-                extra = {'event_callback': event_callback} if event_path else {}
-                out = hybrid_minimize(residuals, x, d['bounds'], seed=d['seed'],
+                if timer is not None:
+                    def collect_event(event):
+                        if event['event'] in ('local_run_end', 'restart_start_generated'):
+                            label = 'hybrid_local_run' if event['event'] == 'local_run_end' else 'hybrid_restart_generation'
+                            timer.add(f"{label}:{step['name']}", round(event['wall_s'] * 1e9),
+                                      failed=event.get('interrupted', False))
+                    extra = {'event_callback': collect_event}
+                else:
+                    extra = {'event_callback': event_callback} if event_path else {}
+                out = _timed_solver(timer, f"solver:{step['name']}:hybrid", hybrid_minimize,
+                                      residuals, x, d['bounds'], seed=d['seed'],
                                       aggregation=step['aggregation'], **extra, **opts)
                 found = [r.end_x for r in out.runs if r.end_x is not None]
                 if out.best_x is not None:
@@ -224,7 +249,8 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
             else:
                 solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
                 callback = p.residuals if step['solver'] == 'slsqp' else p.errors
-                out = solver(callback, x, d['bounds'], constraints=p.constraints,
+                out = _timed_solver(timer, f"solver:{step['name']}:{step['solver']}", solver,
+                             callback, x, d['bounds'], constraints=p.constraints,
                              aggregation=step['aggregation'], **opts)
                 next_x, success = out.x, out.success
                 found = [out.x]

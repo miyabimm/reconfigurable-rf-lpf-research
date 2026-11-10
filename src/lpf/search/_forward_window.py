@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import os
 
+from lpf.timing import timed_method
 from .storage import atomic_verified
 
 
@@ -84,6 +85,7 @@ class ForwardJournal:
             self.failed = True
             raise
 
+    @timed_method('window_checkpoint_save')
     def _save(self, *, reserve):
         if self.inflight:
             raise RuntimeError('Cannot confirm an in-flight forward')

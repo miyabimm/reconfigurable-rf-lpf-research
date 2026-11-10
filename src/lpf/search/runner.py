@@ -389,7 +389,8 @@ def _validate_development_output(output, root, storage_mode):
 
 
 def run_development(plan, definition, policy, starts, output, *, root=None,
-                    spot_checks=None, solver_kind='scipy', storage_mode='legacy', debug_forward_history=False):
+                    spot_checks=None, solver_kind='scipy', storage_mode='legacy', debug_forward_history=False,
+                    timing_jobs=None):
     """Schema-2 same-process fixed seed×arm execution, system tmp only.
 
     starts maps *every* frozen integer seed to {vector, vector_sha256}; no start
@@ -437,6 +438,14 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
             depends_on=rows[-1]['job_id'] if rows else None, status='not_started',
             raw_path=f'{spec.job_id}.json', cap=cap, reserved=cap, released=0,
             requested=0, completed=0, independent_requested=0, independent_completed=0))
+    if timing_jobs is not None:
+        from lpf.timing import TimerCollector
+        timing_jobs.extend(dict(job_id=spec.job_id, plan_sha256=spec.plan_sha256,
+                                source_sha256=spec.source_sha256, status='not_started',
+                                solvers=[{'step': step['name'], 'solver': step['solver']}
+                                         for step in next(a for a in config['arms']
+                                                          if a['name'] == spec.data['arm'])['steps']],
+                                timer=TimerCollector()) for spec in specs)
     state = dict(kind='stage4c2_development_only', status='not_started', plan=plan.data,
         plan_sha256=plan.sha256, source_sha256=specs[0].source_sha256,
         gates=plan.data['gates'], jobs=rows, trials={})
@@ -473,8 +482,17 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
         _development_totals(state)
         save_parent(state)
         try:
-            returned = execute_development_job(spec, output / row['raw_path'], root=root,
-                                               solver_kind=solver_kind)
+            if timing_jobs is None:
+                returned = execute_development_job(spec, output / row['raw_path'], root=root,
+                                                   solver_kind=solver_kind)
+            else:
+                diagnostic = timing_jobs[index]
+                diagnostic['status'] = 'unknown'
+                timer = diagnostic['timer']
+                returned = timer.call('job_worker', execute_development_job, spec,
+                                      output / row['raw_path'], root=root,
+                                      solver_kind=solver_kind, timer=timer)
+                diagnostic['status'] = returned.get('payload', returned).get('status', 'unknown')
             readback = _window_development_readback if storage_mode == 'window100' else _development_readback
             imported = readback(output / row['raw_path'], returned, spec)
         except (Exception, KeyboardInterrupt) as exc:

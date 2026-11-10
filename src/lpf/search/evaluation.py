@@ -7,6 +7,7 @@ import numpy as np
 
 from .storage import plain, vector_sha
 
+from lpf.timing import timed_call
 from lpf.constraint_versions import load_constraint, rf_input_file
 from lpf.rf_core.model import build_rf_model
 from .component_constraints import validate_values
@@ -141,7 +142,8 @@ class FixedStageEvaluation:
             row['vector'] = x.tolist()
             if x.ndim == 1 and x.dtype.kind in 'fiu' and np.all(np.isfinite(x)):
                 row['vector_sha256'] = vector_sha(x)
-            physical = validate_values(self.definition, self.model.schema, x, self.policy)
+            physical = timed_call(getattr(self, 'timer', None), 'physical_validation',
+                                  validate_values, self.definition, self.model.schema, x, self.policy)
             x = np.asarray(x, dtype=float)
             x.setflags(write=False)
             row.update(vector_sha256=vector_sha(x), physical_checks=physical)
@@ -165,14 +167,15 @@ class FixedStageEvaluation:
         self.status = 'unknown'
         self._checkpoint()  # durable full-batch charge BEFORE evaluate(x)
         try:
-            response = evaluator.evaluate(x)
+            response = timed_call(getattr(self, 'timer', None), 'rf_forward', evaluator.evaluate, x)
             # Preserve a complete response even if subsequent assessment fails.
             # Save every completed response metric, including complex external S.
             row['response'] = dict(s_real=response.s.real.tolist(), s_imag=response.s.imag.tolist(),
                 **{k: getattr(response, k).tolist() for k in
                    ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')})
             row['phase'] = 'requirements'
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
+            assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
+                                    response, self.requirements, requested_grid=self.grid)
             row['assessment'] = plain(assessment)
             row.update(status='completed', completed=n, phase='completed',
                        reason='forward_and_requirements_completed')
