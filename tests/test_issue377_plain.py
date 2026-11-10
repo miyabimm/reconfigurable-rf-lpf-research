@@ -1,10 +1,13 @@
 """Regression coverage for checkpoint conversion; no RF evaluations."""
 from dataclasses import asdict, dataclass, is_dataclass
+from pathlib import Path
+import sys
 import unittest
 from unittest.mock import patch
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.search.evaluation import raw_numbers
 from lpf.search.storage import canonical, plain
 
