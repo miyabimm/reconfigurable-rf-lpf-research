@@ -126,7 +126,7 @@ def _development_options(step):
     return {**defaults[step['solver']], **step['options']}
 
 
-def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
+def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy', timer=None):
     """Single-process fixed steps, shared durable RF ledger, development tmp only.
 
     solver_kind labels patched solver tests as fixture; it does not replace RF.
@@ -134,7 +134,7 @@ def execute_development_job(spec, checkpoint, *, root=None, solver_kind='scipy')
     """
     if spec.data.get('kind') != 'development_only' or spec.trial_id != 'development_only':
         raise ValueError('not_ready: Development entry rejects formal/unknown JobSpec')
-    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
+    return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind, timer=timer)
 
 
 def execute_campaign_job(spec, checkpoint, *, root, solver_kind='scipy'):
@@ -144,7 +144,14 @@ def execute_campaign_job(spec, checkpoint, *, root, solver_kind='scipy'):
     return _execute_fixed_job(spec, checkpoint, root=root, solver_kind=solver_kind)
 
 
-def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
+def _timed_solver(timer, name, solver, *args, **kwargs):
+    if timer is None:
+        return solver(*args, **kwargs)
+    with timer.measure(name):
+        return solver(*args, **kwargs)
+
+
+def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', timer=None):
     from pathlib import Path
     import numpy as np
     from .plan import ROOT, Plan
@@ -214,7 +221,8 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
                     with open(event_path, 'a', encoding='utf-8') as stream:
                         stream.write(json.dumps(event, sort_keys=True) + '\n')
                 extra = {'event_callback': event_callback} if event_path else {}
-                out = hybrid_minimize(residuals, x, d['bounds'], seed=d['seed'],
+                out = _timed_solver(timer, f"solver:{step['name']}:hybrid", hybrid_minimize,
+                                      residuals, x, d['bounds'], seed=d['seed'],
                                       aggregation=step['aggregation'], **extra, **opts)
                 found = [r.end_x for r in out.runs if r.end_x is not None]
                 if out.best_x is not None:
@@ -224,7 +232,8 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
             else:
                 solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
                 callback = p.residuals if step['solver'] == 'slsqp' else p.errors
-                out = solver(callback, x, d['bounds'], constraints=p.constraints,
+                out = _timed_solver(timer, f"solver:{step['name']}:{step['solver']}", solver,
+                             callback, x, d['bounds'], constraints=p.constraints,
                              aggregation=step['aggregation'], **opts)
                 next_x, success = out.x, out.success
                 found = [out.x]

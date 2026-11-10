@@ -389,7 +389,8 @@ def _validate_development_output(output, root, storage_mode):
 
 
 def run_development(plan, definition, policy, starts, output, *, root=None,
-                    spot_checks=None, solver_kind='scipy', storage_mode='legacy', debug_forward_history=False):
+                    spot_checks=None, solver_kind='scipy', storage_mode='legacy', debug_forward_history=False,
+                    timing_jobs=None):
     """Schema-2 same-process fixed seed×arm execution, system tmp only.
 
     starts maps *every* frozen integer seed to {vector, vector_sha256}; no start
@@ -473,8 +474,15 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
         _development_totals(state)
         save_parent(state)
         try:
+            timing_options = {}
+            if timing_jobs is not None:
+                from lpf.timing import TimerCollector
+                timer = TimerCollector()
+                timing_jobs.append(dict(job_id=spec.job_id, plan_sha256=spec.plan_sha256,
+                                        source_sha256=spec.source_sha256, timer=timer))
+                timing_options['timer'] = timer
             returned = execute_development_job(spec, output / row['raw_path'], root=root,
-                                               solver_kind=solver_kind)
+                                               solver_kind=solver_kind, **timing_options)
             readback = _window_development_readback if storage_mode == 'window100' else _development_readback
             imported = readback(output / row['raw_path'], returned, spec)
         except (Exception, KeyboardInterrupt) as exc:
