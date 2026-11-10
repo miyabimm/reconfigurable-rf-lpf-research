@@ -510,8 +510,10 @@ class FixedWorkerTests(unittest.TestCase):
         events = Path(self.raw.name) / 'events.jsonl'
 
         def hybrid(callback, start, bounds, **opts):
-            # Hybrid intentionally ignores monitoring failures; reproduce that boundary.
-            for event in (dict(event='local_run_start'), dict(event='local_run_end', nfev=0)):
+            # Preserve both the local-run lifecycle and restart diagnostics.
+            for event in (dict(event='local_run_start'),
+                          dict(event='restart_start_generated', run_index=1),
+                          dict(event='local_run_end', nfev=0)):
                 try:
                     opts['event_callback'](event)
                 except Exception:
@@ -523,7 +525,7 @@ class FixedWorkerTests(unittest.TestCase):
             result = execute_development_job(spec, path, solver_kind='fixture')
         self.assertEqual(result['requested'], 0)
         rows = [json.loads(line) for line in events.read_text().splitlines()]
-        self.assertEqual([r['event'] for r in rows], ['local_run_start', 'local_run_end'])
+        self.assertEqual([r['event'] for r in rows], ['local_run_start', 'restart_start_generated', 'local_run_end'])
         self.assertTrue(all(r['job_id'] == spec.job_id and r['arm'] == 'demo' and
                             r['step'] == 'coarse' for r in rows))
 

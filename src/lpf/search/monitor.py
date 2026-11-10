@@ -1,4 +1,5 @@
 """Optional external development supervisor. Scientific files are read-only here."""
+from collections import Counter
 import json
 import os
 from pathlib import Path
@@ -6,6 +7,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 
 import psutil
@@ -56,10 +58,10 @@ def _observe(output):
 def _sample(proc, start, output):
     processes = []
     try:
-        children = proc.children(recursive=True)
+        children = proc.children(recursive=True) if proc else []
     except psutil.Error:
         children = []
-    for p in [proc, *children]:
+    for p in ([proc, *children] if proc else []):
         try:
             with p.oneshot():
                 cpu = p.cpu_times()
@@ -98,6 +100,65 @@ def _wait_and_sample(child, proc, start, output, interval, stream, errors):
         signal.signal(signal.SIGINT, previous)
 
 
+class _ProfiledChild:
+    """Receive CLI status independently of py-spy, which discards child exit codes."""
+    def __init__(self, executable, command, logs, env, stdout, stderr, profile_log):
+        read_fd, write_fd = os.pipe()
+        try:
+            self.profiler = subprocess.Popen(
+                [executable, 'record', '--subprocesses', '--rate', '100', '--format', 'speedscope',
+                 '--output', str(logs / 'profile.speedscope.json'), '--', sys.executable,
+                 str(Path(__file__).with_name('_profile_child.py')), str(write_fd),
+                 str(stdout.fileno()), str(stderr.fileno()), *command],
+                stdout=profile_log, stderr=profile_log, env=env, start_new_session=True,
+                pass_fds=(write_fd, stdout.fileno(), stderr.fileno()))
+        except BaseException:
+            os.close(read_fd)
+            raise
+        finally:
+            os.close(write_fd)
+        self.pid = None
+        self.exit_code = None
+        self.error = None
+        self.scientific_proc = None
+        self.started = threading.Event()
+        self.finished = threading.Event()
+        def read_status():
+            try:
+                with os.fdopen(read_fd, 'r', encoding='utf-8') as stream:
+                    for line in stream:
+                        kind, _, value = line.rstrip('\n').partition(' ')
+                        if kind == 'pid' and self.pid is None:
+                            self.pid = int(value)
+                            self.started.set()
+                        elif kind == 'exit' and self.pid is not None and self.exit_code is None:
+                            self.exit_code = int(value)
+                        elif kind == 'error':
+                            self.error = value
+                        else:
+                            raise ValueError('invalid profiler child status')
+            except (OSError, ValueError) as exc:
+                self.error = str(exc)
+            finally:
+                self.started.set()
+                self.finished.set()
+        threading.Thread(target=read_status, daemon=True).start()
+
+    def poll(self):
+        return (self.exit_code if self.exit_code is not None else 0) if self.finished.is_set() else None
+
+    def wait(self, timeout=None):
+        if not self.finished.wait(timeout):
+            raise subprocess.TimeoutExpired('scientific CLI', timeout)
+        if self.exit_code is None or self.error is not None:
+            # A dead reporter does not prove its CLI has stopped. Never retry or
+            # return while an observed CLI is still executing without a waiter.
+            if self.scientific_proc is not None:
+                self.scientific_proc.wait()
+            raise RuntimeError('scientific CLI exit unknown: ' + (self.error or 'status pipe closed'))
+        return self.exit_code
+
+
 def supervise(command, directory, output, *, profile=False, root, interval=1.0):
     # Once known, the scientific child exit is authoritative even if a monitor
     # stream fails to flush/close or post-processing cannot write its summary.
@@ -124,41 +185,70 @@ def _supervise(command, directory, output, *, profile, root, interval, child_res
     start = time.monotonic()
     profiler = None
     profile_status = {'requested': profile, 'available': False, 'rate_hz': 100,
-                      'mode': 'py-spy default CPU sampling; no idle, no native, no subprocesses',
+                      'mode': 'py-spy CPU sampling with subprocesses; no idle or native',
                       'target': 'CLI PID', 'sample_count': None, 'exit_code': None}
     samples_error = []
     with (logs / 'stdout.txt').open('x') as stdout, (logs / 'stderr.txt').open('x') as stderr, \
          (logs / 'process.jsonl').open('x', buffering=1) as stream:
-        child = subprocess.Popen(command, stdout=stdout, stderr=stderr, env=env, start_new_session=True)
-        proc = psutil.Process(child.pid)
-        if profile:
-            executable = shutil.which('py-spy')
+        executable = shutil.which('py-spy') if profile else None
+        if profile and not executable:
+            profile_status['error'] = 'py-spy not installed'
+        previous = None
+        child = None
+        if executable:
+            profile_log = (logs / 'profile-stderr.txt').open('x')
+            pending_interrupt = []
+            def defer_interrupt(_signum, _frame):
+                if child is None or child.pid is None:
+                    pending_interrupt.append(True)
+                else:
+                    try:
+                        os.killpg(child.pid, signal.SIGINT)
+                    except ProcessLookupError:
+                        pass
+            previous = signal.signal(signal.SIGINT, defer_interrupt)
+        try:
             if executable:
-                try:
-                    profile_log = (logs / 'profile-stderr.txt').open('x')
-                    profiler = subprocess.Popen([executable, 'record', '--pid', str(child.pid), '--rate', '100',
-                        '--format', 'speedscope', '--output', str(logs / 'profile.speedscope.json')],
-                        stdout=subprocess.DEVNULL, stderr=profile_log)
-                except OSError as exc:
-                    profile_status['error'] = str(exc)
+                child = _ProfiledChild(executable, command, logs, env, stdout, stderr, profile_log)
+                profiler = child.profiler
+                child.started.wait()
+                if child.pid is None:
+                    child.wait()
+                if pending_interrupt:
+                    defer_interrupt(signal.SIGINT, None)
             else:
-                profile_status['error'] = 'py-spy not installed'
-        exit_code = _wait_and_sample(child, proc, start, output, interval, stream, samples_error)
-        child_result['exit_code'] = exit_code
-        child_wall = time.monotonic() - start
-        if profiler:
-            if profiler.poll() is None:
-                try:
-                    profiler.send_signal(signal.SIGINT)
-                except ProcessLookupError:
-                    pass
-            profile_status['exit_code'] = profiler.wait()
-            profile_log.close()
+                child = subprocess.Popen(command, stdout=stdout, stderr=stderr, env=env, start_new_session=True)
+            try:
+                proc = psutil.Process(child.pid)
+            except psutil.NoSuchProcess:
+                proc = None
+            if executable:
+                child.scientific_proc = proc
+            exit_code = _wait_and_sample(child, proc, start, output, interval, stream, samples_error)
+            child_result['exit_code'] = exit_code
+            child_wall = time.monotonic() - start
+            if profiler:
+                profile_status['exit_code'] = profiler.wait()
+        finally:
+            if profiler and profiler.poll() is None:
+                profiler.wait()
+            if previous is not None:
+                signal.signal(signal.SIGINT, previous)
+            if executable:
+                profile_log.close()
         stdout.flush(); stderr.flush(); stream.flush()
     if profile and profiler:
         try:
             data = json.loads((logs / 'profile.speedscope.json').read_bytes())
-            profiles = data['profiles']
+            all_profiles = data['profiles']
+            profiles = [p for p in all_profiles if p.get('name', '').startswith(f'Process {child.pid} Thread ')]
+            profile_status['target_pid'] = child.pid
+            # The gated launcher execs in the same PID. py-spy can sample before
+            # exec and cache the old process name; attribution to CLI code must
+            # be established from frames, not PID/count alone.
+            profile_status['target_exec_samples_unverified'] = True
+            profile_status['sampled_profiles'] = [p.get('name') for p in all_profiles]
+            profile_status['total_sample_count'] = sum(len(p.get('samples', [])) for p in all_profiles)
             profile_status['sample_count'] = sum(len(p.get('samples', [])) for p in profiles)
             profile_status['available'] = profile_status['exit_code'] == 0 and profile_status['sample_count'] > 0
             if profile_status['available']:
@@ -193,8 +283,15 @@ def _supervise(command, directory, output, *, profile, root, interval, child_res
         samples_error.append(f'optimizer readback: {exc}')
     elapsed = child_wall
     end_events = [e for e in events if e.get('event') == 'local_run_end']
-    start_count = sum(e.get('event') == 'local_run_start' for e in events)
-    event_status = 'incomplete' if event_readback_failed or start_count != len(end_events) else 'unverified'
+    start_events = [e for e in events if e.get('event') == 'local_run_start']
+    start_count = len(start_events)
+    restart_events = [e for e in events if e.get('event') == 'restart_start_generated']
+    def event_key(event):
+        return tuple(event.get(k) for k in ('job_id', 'arm', 'step', 'seed', 'run_index'))
+    expected_restarts = Counter(event_key(e) for e in start_events if isinstance(e.get('run_index'), int) and e['run_index'] > 0)
+    observed_restarts = Counter(event_key(e) for e in restart_events)
+    restart_missing = sum((expected_restarts - observed_restarts).values())
+    event_status = 'incomplete' if event_readback_failed or start_count != len(end_events) or restart_missing else 'unverified'
     peak = max((sum(p['rss_bytes'] for p in r['processes']) for r in rows), default=None)
     last = rows[-1] if rows else None
     cpu_rows = [r['processes'] for r in rows if r['processes']]
@@ -213,7 +310,8 @@ def _supervise(command, directory, output, *, profile, root, interval, child_res
         last_observed_process_tree_cpu_s=sum(p['user_s'] + p['system_s'] for p in last_cpu) if last_cpu else None,
         confirmed_forwards=forwards, confirmed_forwards_per_wall_s=forwards/elapsed if forwards is not None and elapsed else None,
         final_observed_progress=progress, optimizer_start_count=start_count,
-        optimizer_end_count=len(end_events), optimizer_event_status=event_status, optimizer_wall_s=sum(e['wall_s'] for e in end_events),
+        optimizer_end_count=len(end_events), restart_generated_count=len(restart_events),
+        restart_missing_key_count=restart_missing, optimizer_event_status=event_status, optimizer_wall_s=sum(e['wall_s'] for e in end_events),
         optimizer_cpu_s=sum(e['cpu_s'] for e in end_events), profile=profile_status, errors=samples_error,
         limitations=['RSS is a sampled peak, not an instantaneous maximum.',
                      'Process tree CPU is a snapshot; exited short-lived descendants may be missing.',
