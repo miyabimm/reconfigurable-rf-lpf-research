@@ -1,5 +1,6 @@
 """Opt-in development-only forward windows; never used by formal Campaigns."""
 import numpy as np
+from lpf.timing import timed_call, timed_method
 
 from ._forward_window import ForwardJournal
 from ._job_evaluation import FixedJobEvaluation
@@ -148,6 +149,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
         snapshot['unsaved_window_results_may_be_lost'] = True
         return snapshot
 
+    @timed_method('checkpoint')
     def _checkpoint(self):
         # Parent constructor calls this before allocations exist. No RF is
         # possible until activate() has persisted the first window.
@@ -173,6 +175,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
             if self.journal is None:
                 self.journal = ForwardJournal(self.path, identity=plain(self.spec),
                     validate_inputs=self._contract, snapshot=self.snapshot, budget=self._budget)
+                self.journal.timer = getattr(self, 'timer', None)
                 self.journal.start()
             else:
                 self.journal.boundary(reserve=True)
@@ -191,7 +194,8 @@ class WindowJobEvaluation(FixedJobEvaluation):
             row['vector'] = x.tolist()
             if x.ndim == 1 and x.dtype.kind in 'fiu' and np.all(np.isfinite(x)):
                 row['vector_sha256'] = vector_sha(x)
-            physical = validate_values(self.definition, self.model.schema, x, self.policy, frozen_model=self.model)
+            physical = timed_call(getattr(self, 'timer', None), 'physical_validation', validate_values,
+                                  self.definition, self.model.schema, x, self.policy, frozen_model=self.model)
             x = np.asarray(x, dtype=float)
             x.setflags(write=False)
             row.update(vector_sha256=vector_sha(x), physical_checks=physical)
@@ -216,12 +220,13 @@ class WindowJobEvaluation(FixedJobEvaluation):
         if not self.stage.startswith(self.arm+'/') or self.spec.data['spot_checks'].get(self.stage):
             self.evidence_rows.append(row)
         try:
-            response = self.cached_evaluator.evaluate(x)
+            response = timed_call(getattr(self, 'timer', None), 'rf_forward', self.cached_evaluator.evaluate, x)
             if not self.stage.startswith(self.arm+'/') or self.spec.data['spot_checks'].get(self.stage):
                 row['response'] = dict(s_real=response.s.real.tolist(), s_imag=response.s.imag.tolist(),
                     **{k: getattr(response, k).tolist() for k in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')})
             row['phase'] = 'requirements'
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
+            assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
+                                    response, self.requirements, requested_grid=self.grid)
             row['assessment'] = (_compact_assessment(assessment) if self.stage.startswith(self.arm+'/')
                                  else plain(assessment))
             if self.debug_history and self.stage in self.hybrid_stages:

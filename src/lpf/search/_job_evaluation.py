@@ -7,6 +7,7 @@ import subprocess
 
 import numpy as np
 
+from lpf.timing import timed_method
 from .evaluation import FixedStageEvaluation, raw_numbers
 from .preflight import check_next_batch
 from .storage import sha, plain
@@ -64,6 +65,7 @@ class FixedJobEvaluation(FixedStageEvaluation):
         else:
             super()._validate_checkpoint()
 
+    @timed_method('source_contract')
     def _contract(self):
         super()._contract()
         if self.spec.data['kind'] == 'campaign_formal_job_v1':
@@ -122,6 +124,7 @@ class FixedJobEvaluation(FixedStageEvaluation):
             trial_remaining=self.data['costs']['max_trial_requested_samples']-self.requested,
             job_reserved=reserved, trial_reserved=reserved+self.other_jobs)
 
+    @timed_method('evaluation')
     def evaluate(self, vector):
         # Base appends and checkpoints the row before forward. Tag the row in
         # _checkpoint, including rejected/unknown rows, before it is persisted.
@@ -156,6 +159,7 @@ class FixedJobEvaluation(FixedStageEvaluation):
             self.spot_check(result['batch_index'], indices)
         return result
 
+    @timed_method('checkpoint')
     def _checkpoint(self):
         for row in self.rows:
             if 'allocation' not in row:
