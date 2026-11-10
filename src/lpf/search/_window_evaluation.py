@@ -164,8 +164,10 @@ class WindowJobEvaluation(FixedJobEvaluation):
     def activate(self, allocation, grid):
         if self.status != 'ready' or allocation not in self.allocations:
             raise RuntimeError('STOP: inactive/failed/unknown allocation')
-        # An old partial window is confirmed before changing allocation/grid.
-        if self.journal is not None:
+        # An active partial window must be confirmed before changing its grid.
+        # finish() already persisted the inactive state, so repeating that save
+        # before reserving the next allocation adds no crash protection.
+        if self.journal is not None and self.active is not None:
             self.journal.boundary(reserve=False)
         self.active, self.stage = allocation, grid
         self.grid = self.plan.requested_grid(grid)
