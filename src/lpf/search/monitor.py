@@ -1,4 +1,5 @@
 """Optional external development supervisor. Scientific files are read-only here."""
+from collections import Counter
 import json
 import os
 from pathlib import Path
@@ -193,8 +194,15 @@ def _supervise(command, directory, output, *, profile, root, interval, child_res
         samples_error.append(f'optimizer readback: {exc}')
     elapsed = child_wall
     end_events = [e for e in events if e.get('event') == 'local_run_end']
-    start_count = sum(e.get('event') == 'local_run_start' for e in events)
-    event_status = 'incomplete' if event_readback_failed or start_count != len(end_events) else 'unverified'
+    start_events = [e for e in events if e.get('event') == 'local_run_start']
+    start_count = len(start_events)
+    restart_events = [e for e in events if e.get('event') == 'restart_start_generated']
+    def event_key(event):
+        return tuple(event.get(k) for k in ('job_id', 'arm', 'step', 'seed', 'run_index'))
+    expected_restarts = Counter(event_key(e) for e in start_events if isinstance(e.get('run_index'), int) and e['run_index'] > 0)
+    observed_restarts = Counter(event_key(e) for e in restart_events)
+    restart_missing = sum((expected_restarts - observed_restarts).values())
+    event_status = 'incomplete' if event_readback_failed or start_count != len(end_events) or restart_missing else 'unverified'
     peak = max((sum(p['rss_bytes'] for p in r['processes']) for r in rows), default=None)
     last = rows[-1] if rows else None
     cpu_rows = [r['processes'] for r in rows if r['processes']]
@@ -213,7 +221,8 @@ def _supervise(command, directory, output, *, profile, root, interval, child_res
         last_observed_process_tree_cpu_s=sum(p['user_s'] + p['system_s'] for p in last_cpu) if last_cpu else None,
         confirmed_forwards=forwards, confirmed_forwards_per_wall_s=forwards/elapsed if forwards is not None and elapsed else None,
         final_observed_progress=progress, optimizer_start_count=start_count,
-        optimizer_end_count=len(end_events), optimizer_event_status=event_status, optimizer_wall_s=sum(e['wall_s'] for e in end_events),
+        optimizer_end_count=len(end_events), restart_generated_count=len(restart_events),
+        restart_missing_key_count=restart_missing, optimizer_event_status=event_status, optimizer_wall_s=sum(e['wall_s'] for e in end_events),
         optimizer_cpu_s=sum(e['cpu_s'] for e in end_events), profile=profile_status, errors=samples_error,
         limitations=['RSS is a sampled peak, not an instantaneous maximum.',
                      'Process tree CPU is a snapshot; exited short-lived descendants may be missing.',

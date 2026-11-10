@@ -315,7 +315,6 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy'):
             raise
     meter._checkpoint()
     if d.get('storage_mode') == 'window100':
-        import json
         return json.loads(meter.path.read_bytes())
     return meter.snapshot()
 

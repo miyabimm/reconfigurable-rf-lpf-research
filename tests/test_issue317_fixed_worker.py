@@ -502,6 +502,27 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(result['selection']['excluded'][0]['status'], 'invalid')
         self.assertEqual(len(result['terminal']['candidates']), 2)
 
+    def test_hybrid_worker_writes_monitor_events_without_rf(self):
+        def change(c):
+            c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+                options=dict(maxiter=1, max_restarts=0, max_evaluations=2, restart_sigma=.1))
+        spec, path, *_ = self.job(change)
+        events = Path(self.raw.name) / 'events.jsonl'
+
+        def hybrid(callback, start, bounds, **opts):
+            for event in (dict(event='local_run_start'), dict(event='restart_start_generated', run_index=1)):
+                opts['event_callback'](event)
+            return FixtureHybrid([], None)
+
+        with patch.dict('os.environ', {'LPF_DEVELOP_MONITOR_EVENTS': str(events)}), \
+             patch('lpf.search.worker.hybrid_minimize', side_effect=hybrid):
+            result = execute_development_job(spec, path, solver_kind='fixture')
+        self.assertEqual(result['requested'], 0)
+        rows = [json.loads(line) for line in events.read_text().splitlines()]
+        self.assertEqual([r['event'] for r in rows], ['local_run_start', 'restart_start_generated'])
+        self.assertTrue(all(r['job_id'] == spec.job_id and r['arm'] == 'demo' and
+                            r['step'] == 'coarse' for r in rows))
+
     def test_empty_solver_no_observation_or_implicit_retry(self):
         def change(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',

@@ -15,11 +15,11 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 - `process.jsonl` は約1秒間隔でmonotonic時刻、CLI PIDとその子孫ごとのuser/system CPU秒・RSSを記録する。CPU秒はOS累積値でCPU%ではない。RSS集計最大は**同時観測値の最大**で、瞬間最大ではない。重複せず子孫を列挙するが、サンプリング間に終了した短命子のCPUやRSSは欠落し得る。最後のCPUも実終了時の厳密値ではない。
 - 時系列中のprogressは `run.json` のjob/seed/status/requested/completed/reservedと、存在するwindow rawの `checkpoint_number`、`confirmed`、`uncertain_upper`、`window` をそのまま読取ったもの。親の値とworker checkpointは別時点・別用途。観測時刻はmonitor側の時刻であり、checkpoint確定時刻ではない。欠測の補間や未確定forwardの確定はしない。親/worker rawと既存のatomic readbackが正本。
-- `optimizer-events.jsonl` はHybridのSciPy local run開始/終了だけ。seed/job/arm/step/run_indexでworker rawの既存solver結果・vectorに対応できる。wallとprocess CPU、終了時nfev/nit・success/status/messageを記録する。`success` は個々の数値solverの状態であり探索全体の終了とは別。予算切れ等はstatus null、異常割込みもendを試みるが、強制終了や記録障害時には開始のみ残り得る。イベントの記録失敗は科学処理を停止させず、イベント不在は「探索が存在しなかった」証明ではない。全固定boxはSciPyを呼ばないので対象外。
-- `monitor-summary.json` は閉じた時系列・イベントの読戻しから集計する。forward/sは全jobのwindow checkpointを観測できるときの**確定済みforward数/全wall**であり、途中の速度や未確定分を推定しない。欠測はnull。局所run時間合計とプロセス全体は別。`optimizer_event_status` は読戻し失敗またはstart/end数の不一致を `incomplete`、その他を `unverified` とする。数が一致してもイベント書込み失敗や全件欠落を否定できず、科学rawとの完全な照合はしていない。コマンド、Plan/source SHA、exit、サンプリング間隔、欠測と制限も残す。比較には同じRF条件・入力・負荷・サンプリング・実行環境・計測成功状態が必要。
+- `optimizer-events.jsonl` はHybridのSciPy local run開始/終了と、`run_index>=1` の `restart_start_generated`。後者は正規乱数摂動・clipと次の物理開始点構築のwall/CPUの和であり、その間の別処理やevent I/Oを含まない。run 0は凍結入力でイベントなし。seed/job/arm/step/run_indexでworker rawの既存solver結果・vectorに対応できる。wallとprocess CPU、終了時nfev/nit・success/status/messageを記録する。`success` は個々の数値solverの状態であり探索全体の終了とは別。予算切れ等はstatus null、異常割込みもendを試みるが、強制終了や記録障害時には開始のみ残り得る。イベントの記録失敗は科学処理を停止させず、イベント不在は「探索が存在しなかった」証明ではない。全固定boxはSciPyを呼ばないので対象外。
+- `monitor-summary.json` は閉じた時系列・イベントの読戻しから集計する。forward/sは全jobのwindow checkpointを観測できるときの**確定済みforward数/全wall**であり、途中の速度や未確定分を推定しない。欠測はnull。局所run時間合計とプロセス全体は別。`optimizer_event_status` は読戻し失敗、start/end数の不一致、観測されたrestartのlocal startに対応する生成イベントの欠落を `incomplete`、その他を `unverified` とする。`restart_generated_count` と `restart_missing_key_count` は観測されたイベントのみの集計であり、全件欠落や生成後の中断は完全には判定できない。数が一致してもイベント書込み失敗や全件欠落を否定できず、科学rawとの完全な照合はしていない。コマンド、Plan/source SHA、exit、サンプリング間隔、欠測と制限も残す。比較には同じRF条件・入力・負荷・サンプリング・実行環境・計測成功状態が必要。
 - `--profile` は追加依存にしない `py-spy record --pid ... --rate 100 --format speedscope`。既定CPU sampling、idle/native/subprocessなし。`profile.speedscope.json` と `profile-functions.json`（各functionがstackに含まれたsample数、同一stack内の再帰は1回）を保存する。これは統計的inclusive sample数であり正確な関数実行時間ではない。`profile-stderr.txt`、profiler独自exit、sample数、availableを確認する。未導入・権限拒否・空/不正出力は取得失敗として記録し、RF子CLIのexitと混同しない。nativeは未調査、権限緩和は前提としない。
 
-科学raw・費用台帳は監視が変更しない。詳細なRF内部タイミング、性能改善、本番探索は対象外。
+科学raw・費用台帳は監視が変更しない。詳細なRF内部タイミング、性能改善、本番探索は対象外。Yama環境での実attach失敗と独立した子起動方式の制約・限定計測は [#381](issue381/README.md) を参照。
 
 ## 合成負荷の限定観測
 

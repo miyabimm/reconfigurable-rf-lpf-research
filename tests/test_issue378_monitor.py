@@ -118,6 +118,19 @@ class MonitorTests(unittest.TestCase):
             self.assertEqual((summary['optimizer_start_count'], summary['optimizer_end_count']), (1, 0))
             self.assertEqual(summary['optimizer_event_status'], 'incomplete')
 
+    def test_missing_restart_event_is_incomplete(self):
+        with tempfile.TemporaryDirectory(prefix='issue381-missing-') as tmp:
+            logs = Path(tmp)/'logs'
+            events = [dict(event='local_run_start', seed=9, run_index=1),
+                      dict(event='local_run_end', seed=9, run_index=1, wall_s=1, cpu_s=1)]
+            workload = ("import os; open(os.environ['LPF_DEVELOP_MONITOR_EVENTS'], 'a').write("
+                        + repr(''.join(json.dumps(e) + '\n' for e in events)) + ")")
+            self.assertEqual(supervise([sys.executable, '-c', workload], logs, None, root=ROOT, interval=.02), 0)
+            summary = json.loads((logs/'monitor-summary.json').read_text())
+            self.assertEqual(summary['restart_generated_count'], 0)
+            self.assertEqual(summary['restart_missing_key_count'], 1)
+            self.assertEqual(summary['optimizer_event_status'], 'incomplete')
+
     def test_profile_sampled_function_counts(self):
         with tempfile.TemporaryDirectory(prefix='issue378-spy-') as tmp:
             fake = Path(tmp)/'py-spy'
@@ -195,13 +208,28 @@ with open(out, 'w') as f:
         with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
             out = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **options)
         self.assertEqual(len(out.runs), 100)
-        self.assertEqual(len(events), 200)
+        restarts = [e for e in events if e['event'] == 'restart_start_generated']
+        local_events = [e for e in events if e['event'] != 'restart_start_generated']
+        self.assertEqual(len(restarts), 99)
+        self.assertEqual([e['run_index'] for e in restarts], list(range(1, 100)))
+        for event in restarts:
+            self.assertEqual(event['seed'], 1)
+            self.assertGreaterEqual(event['wall_s'], 0)
+            self.assertGreaterEqual(event['cpu_s'], 0)
+        self.assertEqual(len(local_events), 200)
         for i in range(100):
-            start, end = events[2*i:2*i+2]
+            start, end = local_events[2*i:2*i+2]
             self.assertEqual((start['run_index'], end['run_index']), (i, i))
             self.assertEqual((end['nfev'], end['nit'], end['success']), (1, 0, True))
             self.assertGreaterEqual(end['wall_s'], 0)
             self.assertGreaterEqual(end['cpu_s'], 0)
+        with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+            baseline_many = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], **options)
+            failed_callback = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)],
+                                              event_callback=Mock(side_effect=OSError('missing')), **options)
+        from dataclasses import asdict
+        self.assertEqual(asdict(out), asdict(baseline_many))
+        self.assertEqual(asdict(out), asdict(failed_callback))
         events.clear()
         budget_options = dict(seed=1, maxiter=2, max_restarts=1, max_evaluations=1, restart_sigma=.1)
         baseline = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], **budget_options)

@@ -107,12 +107,30 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
         x[free] = np.clip(lo[free] + z * width[free], lo[free], hi[free])
         return x
 
+    # Optional diagnostics never control the scientific path.
+    def emit(event):
+        if event_callback is not None:
+            try:
+                event_callback(event)
+            except Exception:
+                pass
+
+    import time
     z_start = (x0[free] - lo[free]) / width[free]
     for run_index in range(max_restarts + 1):
         if total >= max_evaluations:
             reason = 'evaluation_budget_exhausted'
             break
-        start_x = x0.copy() if run_index == 0 else physical(z_start)
+        if run_index and event_callback is not None:
+            wall_start, cpu_start = time.monotonic(), time.process_time()
+            start_x = physical(z_start)
+            wall_end, cpu_end = time.monotonic(), time.process_time()
+            emit(dict(event='restart_start_generated', seed=seed, run_index=run_index,
+                      monotonic_s=wall_end, process_cpu_s=cpu_end,
+                      wall_s=restart_wall_s + (wall_end - wall_start),
+                      cpu_s=restart_cpu_s + (cpu_end - cpu_start)))
+        else:
+            start_x = x0.copy() if run_index == 0 else physical(z_start)
         start_fun = None
         last_x = last_fun = None
         local_nfev = nit = 0
@@ -149,15 +167,6 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
             nonlocal nit
             nit += 1
 
-        # Optional diagnostics are deliberately isolated from scientific control flow.
-        def emit(event):
-            if event_callback is not None:
-                try:
-                    event_callback(event)
-                except Exception:
-                    pass
-
-        import time
         timed = event_callback is not None and np.any(free)
         if timed:
             wall_start, cpu_start = time.monotonic(), time.process_time()
@@ -206,7 +215,12 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                 reason = 'evaluation_budget_exhausted'
                 break
             # Project only the random restart, never the user's initial point.
+            if event_callback is not None:
+                wall_start, cpu_start = time.monotonic(), time.process_time()
             z_start = np.clip(np.asarray(sol.x) + rng.normal(0.0, restart_sigma, size=z_start.size), 0.0, 1.0)
+            if event_callback is not None:
+                restart_wall_s = time.monotonic() - wall_start
+                restart_cpu_s = time.process_time() - cpu_start
 
     return HybridResult(runs, None if best_x is None else best_x.tolist(), best_fun,
                         total, reason, seed, maxiter, max_restarts,
