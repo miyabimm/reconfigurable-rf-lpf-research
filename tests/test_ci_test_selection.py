@@ -57,7 +57,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_responsibility_examples(self):
         examples = {
-            'README.md': {'DOC'}, 'rf/bands.csv': {'RF'},
+            'README.md': set(), 'rf/bands.csv': {'RF'},
             'src/lpf/search/starts.py': {'OPT'}, 'src/lpf/search/worker.py': {'RUN', 'STORE'},
             'src/lpf/search/gates.py': {'GATE'}, 'project/experiment_storage_policy.md': {'STORE'},
         }
@@ -73,7 +73,7 @@ class SelectionTests(unittest.TestCase):
         self.write('README.md', 'changed\n')
         self.write('src/lpf/search/starts.py', 'changed\n')
         self.commit()
-        self.assertEqual(set(self.plan()['classes']), {'DOC', 'OPT'})
+        self.assertEqual(set(self.plan()['classes']), {'OPT'})
 
     def test_document_directories_accept_new_markdown_but_not_code(self):
         for path in ('project/methods.md', 'project/diagnostics/new-note.md',
@@ -85,7 +85,7 @@ class SelectionTests(unittest.TestCase):
                 self.commit()
                 result = self.plan()
                 self.assertFalse(result['full'], result)
-                self.assertEqual(result['classes'], ['DOC'])
+                self.assertEqual(result['classes'], [])
         for path in ('project/diagnostics/new.py', 'project/fixtures/new.yaml',
                      'project/new.json', 'unknown/new.md', 'project/instructions.md'):
             with self.subTest(path=path):
@@ -94,6 +94,17 @@ class SelectionTests(unittest.TestCase):
                 self.write(path, 'new unknown or governing input\n')
                 self.commit()
                 self.assertTrue(self.plan()['full'])
+
+    def test_document_only_runs_no_selected_tests(self):
+        self.write('README.md', 'changed\n')
+        self.commit()
+        result = self.plan()
+        self.assertFalse(result['full'])
+        self.assertEqual(result['classes'], [])
+        with patch.dict(os.environ, {'GITHUB_STEP_SUMMARY': ''}), \
+             patch.object(selector.subprocess, 'run') as run:
+            selector.execute(result)
+        run.assert_not_called()
 
     def test_document_rules_keep_safety_ownership(self):
         for path, expected in {
@@ -124,13 +135,13 @@ class SelectionTests(unittest.TestCase):
         self.write('README.md', 'second\n')
         self.commit()
         head = self.head()
-        self.assertEqual(set(self.plan('push')['classes']), {'DOC', 'OPT'})
+        self.assertEqual(set(self.plan('push')['classes']), {'OPT'})
         self.git('checkout', '-qb', 'advanced', self.base)
         self.write('unknown.txt', 'base only\n')
         self.commit()
         advanced = self.head()
         self.git('checkout', '-q', 'main')
-        self.assertEqual(set(self.plan(base=advanced, head=head)['classes']), {'DOC', 'OPT'})
+        self.assertEqual(set(self.plan(base=advanced, head=head)['classes']), {'OPT'})
         self.assertTrue(self.plan('push', base=advanced, head=head)['full'])
 
     def test_bad_comparison_and_modes(self):
