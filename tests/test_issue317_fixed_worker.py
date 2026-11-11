@@ -118,7 +118,8 @@ class FixedWorkerTests(unittest.TestCase):
         assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
             policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
             requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
-            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[],
+            mandatory_g=[0.] * sum(len(ix) for _, ix, _ in meter.prepared_requirements.mandatory))
         with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
              patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
              patch.object(meter, '_contract', side_effect=AssertionError('per-forward contract')), \
@@ -156,7 +157,8 @@ class FixedWorkerTests(unittest.TestCase):
         assessment = dict(status='evaluated', policy_id=p['active_constraint_id'],
             policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
             requirements_fingerprint=meter.requirements.fingerprint, grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'],
-            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+            strict_feasible=False, worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[],
+            mandatory_g=[0.] * sum(len(ix) for _, ix, _ in meter.prepared_requirements.mandatory))
         with patch.object(RFEvaluator, 'evaluate', return_value=response) as forward, \
              patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment), \
              patch.object(meter.journal, 'validate_inputs', wraps=meter.journal.validate_inputs) as contract:
@@ -174,6 +176,89 @@ class FixedWorkerTests(unittest.TestCase):
         saved = json.loads(path.read_bytes())
         self.assertEqual((saved['confirmed']['forwards'], saved['confirmed']['requested']), (101, 101*n))
         self.assertIsNone(saved['window'])
+
+    def test_window_search_defers_details_until_new_best(self):
+        from lpf.rf_core.model import RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.performance import evaluate_requirements, PreparedRequirements
+        _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        responses = []
+        def fake(evaluator, vector):
+            n = len(evaluator.grid.frequency_hz)
+            il = np.zeros(n)
+            if len(responses) == 2:
+                il[np.isin(evaluator.grid.segment, [i.segment for i in meter.requirements.intervals
+                                                  if i.type == 'stop'])] = 10.
+            response = RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                np.zeros((n, 2, 2), complex), il, *[np.zeros(n) for _ in range(3)])
+            responses.append(response)
+            return response
+        with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake) as forward, \
+             patch('lpf.search._window_evaluation.evaluate_requirements', wraps=evaluate_requirements) as assess:
+            first_result = meter.evaluate(x)
+            second_result = meter.evaluate(x)
+            improved_result = meter.evaluate(x)
+        first, second = first_result['assessment'], second_result['assessment']
+        expected_grid_sha = plan.data['grids']['demo/coarse']['sha256']
+        self.assertEqual(first_result['grid_sha256'], expected_grid_sha)
+        self.assertEqual(second_result['grid_sha256'], expected_grid_sha)
+        self.assertEqual(forward.call_count, 3)
+        self.assertEqual([isinstance(c.args[1], PreparedRequirements) for c in assess.call_args_list],
+                         [True, False, True, True, False])
+        self.assertEqual(first, second)
+        self.assertNotIn('rows', first)
+        for response, result in zip(responses, (first_result, second_result, improved_result)):
+            detailed = evaluate_requirements(response, meter.requirements, requested_grid=meter.grid)
+            for field in ('worst_il_db', 'mandatory_g', 'strict_feasible', 'max_violation_db', 'sum_violation_db'):
+                self.assertEqual(result['assessment'][field], detailed[field])
+        self.assertEqual(meter.scientific_best['demo/coarse']['batch_index'], 2)
+        self.assertIn('rows', meter.scientific_best['demo/coarse']['assessment'])
+        meter.finish()
+        saved = json.loads(path.read_bytes())['payload']['best_observed_by_stage']['demo/coarse']
+        self.assertEqual(saved['grid_sha256'], expected_grid_sha)
+        self.assertEqual(saved['batch_index'], 2)
+        self.assertFalse(saved['assessment']['nominal_pass'])
+        self.assertEqual(len(saved['assessment']['rows']), len(meter.requirements.limits))
+        self.assertEqual(saved['physical_checks']['checked_settings'], 6)
+
+    def test_window_debug_and_search_spot_keep_detailed_evidence(self):
+        from lpf.rf_core.model import RFResponse
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        from lpf.search.performance import evaluate_requirements, PreparedRequirements
+        for debug, spot in ((True, {}), (False, {'demo/coarse': [0]})):
+            with self.subTest(debug=debug, spot=bool(spot)):
+                _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+                spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100',
+                                              debug_forward_history=debug, spot_checks=spot)
+                with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+                    meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+                meter.activate('demo/coarse', 'demo/coarse')
+                def fake(evaluator, vector):
+                    n = len(evaluator.grid.frequency_hz)
+                    return RFResponse(evaluator.grid, evaluator.model.policy_id, evaluator.model.policy_fingerprint,
+                        np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
+                independent = dict(s=np.zeros((2, 2), complex), il_db=0., apl_db=0., in_rl_db=0., out_rl_db=0.)
+                with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake) as forward, \
+                     patch('lpf.search._window_evaluation.evaluate_requirements', wraps=evaluate_requirements) as assess, \
+                     patch('lpf.rf_core.independent.evaluate_independent_response', return_value=independent):
+                    result = meter.evaluate(x)
+                self.assertEqual(forward.call_count, 1)
+                self.assertEqual(len(assess.call_args_list), 1)
+                self.assertNotIsInstance(assess.call_args.args[1], PreparedRequirements)
+                self.assertIn('rows', result['assessment'])
+                meter.finish()
+                payload = json.loads(path.read_bytes())['payload']
+                row = payload['batches'][0]
+                self.assertIs(type(row['assessment']['nominal_pass']), bool)
+                self.assertEqual(row['grid_sha256'], plan.data['grids']['demo/coarse']['sha256'])
+                if spot:
+                    self.assertIn('response', row)
+                    self.assertEqual(row['independent']['status'], 'pass')
+                    self.assertEqual(payload['best_observed_by_stage']['demo/coarse']['batch_index'], 0)
 
     def test_window_mock_step_transition_preserves_bests_and_counts(self):
         from lpf.rf_core.model import RFResponse
@@ -245,7 +330,8 @@ class FixedWorkerTests(unittest.TestCase):
             policy_fingerprint=meter.model.policy_fingerprint, mode='full_lpf',
             requirements_fingerprint=meter.requirements.fingerprint,
             grid_fingerprint=plan.data['grids']['demo/coarse']['sha256'], strict_feasible=False,
-            worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[])
+            worst_il_db=1., max_violation_db=2., sum_violation_db=3., rows=[],
+            mandatory_g=[0.] * sum(len(ix) for _, ix, _ in meter.prepared_requirements.mandatory))
         sizes = []
         with patch.object(RFEvaluator, 'evaluate', return_value=response), \
              patch('lpf.search._window_evaluation.evaluate_requirements', return_value=assessment):

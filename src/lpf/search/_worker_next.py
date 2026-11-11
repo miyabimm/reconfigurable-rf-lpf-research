@@ -8,7 +8,7 @@ from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.rf_core.model import build_rf_model
 from .component_constraints import physical_bounds, validate_values
-from .performance import compile_requirements, evaluate_requirements, grid_fingerprint
+from .performance import compile_requirements, evaluate_requirements, grid_fingerprint, prepare_requirements
 from .preflight import definition_sha, freeze
 from .storage import sha, vector_sha
 
@@ -40,6 +40,7 @@ class MinimalWorker:
                 sha(asdict(self.requirements)) != sha(data['requirements']) or
                 grid_fingerprint(self.grid) != data['grids'][f"{arm}/{self.step['name']}"]['sha256']):
             raise ValueError('Model/requirements/grid mismatch')
+        self.prepared_requirements = prepare_requirements(self.requirements, self.grid)
         self.bounds = physical_bounds(definition, self.model.schema, policy)
         validate_values(definition, self.model.schema, vector, policy, frozen_model=self.model)
         self.x = np.array(vector, dtype=float, copy=True)
@@ -51,7 +52,7 @@ class MinimalWorker:
         x = np.asarray(x, dtype=float)
         x.setflags(write=False)
         response = self.evaluator.evaluate(x)
-        assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
+        assessment = evaluate_requirements(response, self.prepared_requirements)
         return response, assessment
 
     def residuals(self, vector):

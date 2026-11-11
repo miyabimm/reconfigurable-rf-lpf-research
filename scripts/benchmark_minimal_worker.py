@@ -21,6 +21,7 @@ from lpf.search._job_evaluation import source_identity
 from lpf.search.component_constraints import validate_values
 from lpf.search.plan import ROOT, load_preflight
 from lpf.search.proposals import definition_from_data
+from lpf.search.performance import summarize_mandatory
 from lpf.search.starts import load_explicit
 from lpf.search.storage import plain, sha, vector_sha
 
@@ -65,9 +66,10 @@ def main():
     if result.best_x is not None:
         physical = validate_values(definition, worker.model.schema, result.best_x, policy, frozen_model=worker.model)
         _, assessment = worker.evaluate(result.best_x)  # post-timing inspection, not optimizer nfev
+        summary = summarize_mandatory(assessment, worker.prepared_requirements)
         observation = dict(physical=physical, worst_il_db=assessment['worst_il_db'],
-                           strict_feasible=assessment['strict_feasible'],
-                           max_violation_db=assessment['max_violation_db'])
+                           strict_feasible=summary['strict_feasible'],
+                           max_violation_db=summary['max_violation_db'])
     report = dict(kind='development_only_minimal_worker_benchmark', setup_s=ready-start,
                   solver_s=end-ready, total_s=end-start, solver=asdict(result), observation=observation,
                   plan_sha256=plan.sha256, rf_inputs=plan.data['rf_inputs'],

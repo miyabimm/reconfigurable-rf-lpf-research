@@ -5,7 +5,7 @@ from lpf.timing import timed_call, timed_method
 from ._forward_window import ForwardJournal
 from ._job_evaluation import FixedJobEvaluation
 from .component_constraints import validate_values
-from .performance import evaluate_requirements, grid_fingerprint
+from .performance import evaluate_requirements, prepare_requirements, summarize_mandatory
 from .storage import plain, vector_sha
 from .evaluation import raw_numbers
 
@@ -171,6 +171,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
             self.journal.boundary(reserve=False)
         self.active, self.stage = allocation, grid
         self.grid = self.plan.requested_grid(grid)
+        self.prepared_requirements = prepare_requirements(self.requirements, self.grid)
         # Construction interpolates the fixed preloaded S2Ps, never inside a forward.
         self.cached_evaluator = self.model.evaluator(self.grid)
         try:
@@ -188,7 +189,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
     def _assess(self, vector):
         if self.status != 'ready' or self.journal is None:
             raise RuntimeError('STOP: failed/stopped/unknown Job cannot retry')
-        row = dict(stage=self.stage, allocation=self.active, grid_sha256=grid_fingerprint(self.grid),
+        row = dict(stage=self.stage, allocation=self.active, grid_sha256=self.prepared_requirements.grid_fingerprint,
                    requested=0, completed=0, status='rejected', phase='physical_values',
                    independent={'status': 'not_run', 'reason': 'not requested'})
         try:
@@ -227,10 +228,18 @@ class WindowJobEvaluation(FixedJobEvaluation):
                 row['response'] = dict(s_real=response.s.real.tolist(), s_imag=response.s.imag.tolist(),
                     **{k: getattr(response, k).tolist() for k in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')})
             row['phase'] = 'requirements'
-            assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
-                                    response, self.requirements, requested_grid=self.grid)
-            row['assessment'] = (_compact_assessment(assessment) if self.stage.startswith(self.arm+'/')
-                                 else plain(assessment))
+            search = self.stage.startswith(self.arm+'/')
+            compact_search = search and not self.debug_history and not self.spec.data['spot_checks'].get(self.stage)
+            if compact_search:
+                assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
+                                        response, self.prepared_requirements)
+                assessment.update(summarize_mandatory(assessment, self.prepared_requirements))
+                row['assessment'] = {key: assessment[key] for key in
+                                     ('worst_il_db', 'strict_feasible', 'max_violation_db', 'sum_violation_db')}
+            else:
+                assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
+                                        response, self.requirements, requested_grid=self.grid)
+                row['assessment'] = _compact_assessment(assessment) if search else plain(assessment)
             if self.debug_history and self.stage in self.hybrid_stages:
                 row['assessment']['hybrid_objective'] = _hybrid_observation(
                     assessment, self.hybrid_stages[self.stage])
@@ -243,8 +252,10 @@ class WindowJobEvaluation(FixedJobEvaluation):
                        (1, a['max_violation_db'], a['sum_violation_db'], a['worst_il_db'], row['vector_sha256']))
                 previous = self.scientific_best.get(self.stage)
                 if previous is None or key < previous['_key']:
-                    full = plain(a)
-                    full['nominal_pass'] = _compact_assessment(a)['nominal_pass']
+                    detailed = (evaluate_requirements(response, self.requirements, requested_grid=self.grid)
+                                if compact_search else a)
+                    full = plain(detailed)
+                    full['nominal_pass'] = _compact_assessment(detailed)['nominal_pass']
                     self.scientific_best[self.stage] = dict(_key=key, batch_index=row['batch_index'],
                         vector=row['vector'], vector_sha256=row['vector_sha256'], assessment=full,
                         physical_checks=physical, grid_sha256=row['grid_sha256'])
@@ -257,7 +268,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
             raise
         result = dict(vector=x.copy(), vector_sha256=vector_sha(x), model=self.model,
                       assessment=assessment, plan_sha256=self.plan.sha256,
-                      grid_sha256=grid_fingerprint(self.grid), batch_index=len(self.rows)-1)
+                      grid_sha256=self.prepared_requirements.grid_fingerprint, batch_index=len(self.rows)-1)
         indices = self.spec.data['spot_checks'].get(self.stage)
         if indices:
             self.spot_check(result['batch_index'], indices)

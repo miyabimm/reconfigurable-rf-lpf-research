@@ -288,24 +288,25 @@ def build_evaluation_grid(requirements, points_per_interval, stop_points_per_int
     return EvaluationGrid(frequency, setting, segment)
 
 
-def evaluate_requirements(response, requirements, *, requested_grid):
-    """Assess a response against an independently frozen *requested* grid.
+@dataclass(frozen=True)
+class PreparedRequirements:
+    requirements: Requirements
+    grid: object
+    grid_fingerprint: str
+    indices: tuple
+    mandatory: tuple
+    objective_indices: np.ndarray
 
-    Stage 4 owns grid construction. Requiring that grid here prevents a partial
-    response from declaring its own completed samples to be the entire request.
-    No interpolation, endpoint substitution, tolerance, or RF forwards occur.
-    Errors STOP with ValueError, never a finite mandatory-FAIL score.
-    """
-    from ..rf_core.model import RFResponse
-    r, req = response, requirements
-    if not isinstance(r, RFResponse) or not isinstance(req, Requirements):
-        raise ValueError('Expected RFResponse and compiled Requirements')
-    if (r.policy_id, r.policy_fingerprint) != (req.policy_id, req.policy_fingerprint):
-        raise ValueError('Response policy mismatch')
-    fingerprint = grid_fingerprint(requested_grid)
-    if grid_fingerprint(r.grid) != fingerprint:
-        raise ValueError('Incomplete response or requested-grid mismatch')
-    g = r.grid
+
+def prepare_requirements(requirements, grid):
+    """Validate one immutable requested grid and prepare interval indices."""
+    req, g = requirements, grid
+    if not isinstance(req, Requirements):
+        raise ValueError('Expected compiled Requirements')
+    content = asdict(req)
+    if _digest({k: v for k, v in content.items() if k != 'fingerprint'}) != req.fingerprint:
+        raise ValueError('Requirements fingerprint mismatch')
+    fingerprint = grid_fingerprint(g)
     n = len(g.frequency_hz)
     samples = list(zip(g.segment.tolist(), g.setting.tolist(), g.frequency_hz.tolist()))
     if len(set(samples)) != n:
@@ -325,6 +326,69 @@ def evaluate_requirements(response, requirements, *, requested_grid):
         covered[ix] = True
     if not np.all(covered):
         raise ValueError('Samples assigned to unknown/excluded interval or wrong setting')
+    # Back with immutable bytes: writeable=False alone can be reversed by callers.
+    def immutable(ix):
+        return np.frombuffer(ix.tobytes(), dtype=ix.dtype)
+    rule_indices = tuple(immutable(indices[rule.interval.identity]) for rule in req.limits)
+    mandatory = tuple((rule, ix, 'il_db' if rule.metric == 'attenuation_db' else rule.metric)
+                      for rule, ix in zip(req.limits, rule_indices) if rule.level == 'mandatory')
+    return PreparedRequirements(req, g, fingerprint, rule_indices, mandatory,
+        immutable(np.flatnonzero(np.isin(g.segment, req.objective_segments))))
+
+
+def summarize_mandatory(assessment, prepared):
+    """Reconstruct legacy per-rule violation aggregates from signed samples."""
+    g = assessment['mandatory_g']
+    offset = 0
+    violations = []
+    for _, ix, _ in prepared.mandatory:
+        end = offset + len(ix)
+        violations.append(max(0., -min(g[offset:end])))
+        offset = end
+    if offset != len(g):
+        raise ValueError('Mandatory sample count mismatch')
+    return dict(strict_feasible=all(v == 0 for v in violations),
+                max_violation_db=max(violations, default=0.),
+                sum_violation_db=sum(violations))
+
+
+def _residual(rule, observations):
+    """Signed violation; its negation is the solver's g >= 0 constraint."""
+    return (observations - rule.threshold_db if rule.bound == 'max_db'
+            else rule.threshold_db - observations)
+
+
+def evaluate_requirements(response, requirements, *, requested_grid=None):
+    """Evaluate a response; prepared inputs provide the minimal solver path.
+
+    The legacy detailed path remains available for saved evidence. Prepared
+    inputs must be bound to the exact immutable grid used by the RF evaluator.
+    """
+    from ..rf_core.model import RFResponse
+    r, req = response, requirements
+    if isinstance(req, PreparedRequirements):
+        if not isinstance(r, RFResponse) or r.grid is not req.grid:
+            raise ValueError('Response/prepared-grid identity mismatch')
+        if (r.policy_id, r.policy_fingerprint) != (req.requirements.policy_id,
+                                                  req.requirements.policy_fingerprint):
+            raise ValueError('Response policy mismatch')
+        mandatory = []
+        for rule, ix, metric in req.mandatory:
+            mandatory.extend((-_residual(rule, getattr(r, metric)[ix])).tolist())
+        return dict(worst_il_db=float(np.max(r.il_db[req.objective_indices])),
+                    mandatory_g=tuple(mandatory))
+    if not isinstance(r, RFResponse) or not isinstance(req, Requirements):
+        raise ValueError('Expected RFResponse and compiled Requirements')
+    if (r.policy_id, r.policy_fingerprint) != (req.policy_id, req.policy_fingerprint):
+        raise ValueError('Response policy mismatch')
+    prepared = prepare_requirements(req, requested_grid)
+    fingerprint = prepared.grid_fingerprint
+    if grid_fingerprint(r.grid) != fingerprint:
+        raise ValueError('Incomplete response or requested-grid mismatch')
+    g = r.grid
+    n = len(g.frequency_hz)
+    samples = list(zip(g.segment.tolist(), g.setting.tolist(), g.frequency_hz.tolist()))
+    indices = {rule.interval.identity: ix for rule, ix in zip(req.limits, prepared.indices)}
     metrics = {}
     if np.asarray(r.s).shape != (n, 2, 2) or not np.all(np.isfinite(r.s)):
         raise ValueError('Invalid complex response')
@@ -343,7 +407,7 @@ def evaluate_requirements(response, requirements, *, requested_grid):
     for rule in req.limits:
         ix = indices[rule.interval.identity]
         obs = metrics[rule.metric][ix]
-        e = obs-rule.threshold_db if rule.bound == 'max_db' else rule.threshold_db-obs
+        e = _residual(rule, obs)
         worst = int(np.argmax(e))
         violation = max(0., float(e[worst]))
         rows.append(dict(requirement=rule, sample_indices=tuple(map(int, ix)),

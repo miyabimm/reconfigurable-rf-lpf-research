@@ -141,7 +141,8 @@ class RFCoreTests(unittest.TestCase):
         with patch.object(CoupledLCTopology, 'port_admittance',
                           return_value=np.array([-np.eye(2)/50], complex)):
             with self.assertRaises(ValueError): evaluator.evaluate(x)
-        for s in (np.full((1,2,2), np.nan), np.zeros((2,2))):
+        for s in (np.full((1,2,2), np.nan), np.full((1,2,2), np.inf),
+                  np.full((1,2,2), -np.inf), np.zeros((2,2))):
             with self.assertRaises(ValueError): power_response(s, 50, 60-40j)
         with self.assertRaises(ValueError): power_response(through, -50, 50)
         with self.assertRaises(ValueError): EvaluationGrid([1e9], [True], [0])

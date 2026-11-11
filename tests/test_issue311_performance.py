@@ -11,7 +11,7 @@ from test_issue307_constraints import make
 from lpf.constraint_versions import load_constraint
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import RFResponse
-from lpf.search.performance import compile_requirements, evaluate_requirements
+from lpf.search.performance import compile_requirements, evaluate_requirements, prepare_requirements, summarize_mandatory
 from lpf.search.validation import rank_candidates
 
 BANDS = Path(__file__).resolve().parents[1] / 'rf/bands.csv'
@@ -43,6 +43,47 @@ class PerformanceTests(unittest.TestCase):
     def setUp(self):
         self.p = load_constraint('RF-F003')
         self.req = compile_requirements(self.p, BANDS)
+
+    def test_prepared_solver_parity_and_grid_identity(self):
+        for cid in ('RF-F003', 'RF-T006', 'RF-T008'):
+            req = compile_requirements(load_constraint(cid, allow_trial=True), BANDS)
+            r = synthetic(req)
+            prepared = prepare_requirements(req, r.grid)
+            old = assess(r, req)
+            new = evaluate_requirements(r, prepared)
+            self.assertEqual(old['worst_il_db'], new['worst_il_db'])
+            np.testing.assert_array_equal(old['mandatory_g'], new['mandatory_g'])
+            self.assertEqual(set(new), {'worst_il_db', 'mandatory_g'})
+            clone = EvaluationGrid(r.grid.frequency_hz, r.grid.setting, r.grid.segment)
+            with self.assertRaisesRegex(ValueError, 'identity'):
+                evaluate_requirements(replace(r, grid=clone), prepared)
+            with self.assertRaisesRegex(ValueError, 'policy'):
+                evaluate_requirements(replace(r, policy_id='wrong'), prepared)
+            with self.assertRaises(ValueError):
+                prepared.indices[0].setflags(write=True)
+            missing = EvaluationGrid(r.grid.frequency_hz[2:], r.grid.setting[2:], r.grid.segment[2:])
+            with self.assertRaises(ValueError):
+                prepare_requirements(req, missing)
+            il, s = r.il_db.copy(), r.s.copy()
+            stop = next(i for i, seg in enumerate(r.grid.segment) if seg == 2)
+            il[stop] = np.inf
+            s[stop, 1, 0] = 0
+            apl = r.apl_db.copy(); apl[stop] = np.inf
+            zero = replace(r, il_db=il, apl_db=apl, s=s)
+            detailed = assess(zero, req)
+            fast = evaluate_requirements(zero, prepared)
+            np.testing.assert_array_equal(detailed['mandatory_g'], fast['mandatory_g'])
+            summary = summarize_mandatory(fast, prepared)
+            self.assertEqual(summary, {k: detailed[k] for k in summary})
+        req = compile_requirements(load_constraint('RF-T008', allow_trial=True), BANDS, 'matching_only')
+        r = synthetic(req)
+        prepared = prepare_requirements(req, r.grid)
+        self.assertEqual(prepared.mandatory, ())
+        self.assertEqual(assess(r, req)['mandatory_g'], ())
+        self.assertEqual(evaluate_requirements(r, prepared)['mandatory_g'], ())
+        self.assertEqual(summarize_mandatory(evaluate_requirements(r, prepared), prepared),
+                         dict(strict_feasible=True, max_violation_db=0., sum_violation_db=0.))
+        self.assertEqual(evaluate_requirements(r, prepared)['worst_il_db'], assess(r, req)['worst_il_db'])
 
     def test_current_policies_modes_and_immutable_sources(self):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
@@ -79,7 +120,11 @@ class PerformanceTests(unittest.TestCase):
         self.assertEqual(req.intervals[2].low_hz, 1326e6)  # no harmonic scaling
         h2 = [r for r in req.limits if r.interval.region == 'H2' and r.interval.case == 'B13+B14' and r.level == 'mandatory']
         self.assertEqual([(r.interval.note, r.threshold_db) for r in h2], [('B13', 31.), ('B14', 30.)])
-        self.assertTrue(assess(synthetic(req), req)['strict_feasible'])
+        response = synthetic(req)
+        detailed = assess(response, req)
+        self.assertTrue(detailed['strict_feasible'])
+        np.testing.assert_array_equal(detailed['mandatory_g'],
+            evaluate_requirements(response, prepare_requirements(req, response.grid))['mandatory_g'])
 
     def test_existing_scalar_import_does_not_require_src_on_sys_path(self):
         # Smoke's existing src.lpf consumers must not import the lpf-only RF
@@ -98,16 +143,23 @@ class PerformanceTests(unittest.TestCase):
         for metric, bound, threshold in (('in_rl_db', 'min_db', 21),
                                           ('out_rl_db', 'max_db', 19),
                                           ('apl_db', 'max_db', .1)):
-            rules.append(dict(metric=metric, selector={'case': 'B71', 'region': 'UL'},
-                              level='mandatory', **{bound: threshold}))
+            rule = dict(metric=metric, selector={'case': 'B71', 'region': 'UL'},
+                        level='mandatory', **{bound: threshold})
+            rules.append({**rule, bound: threshold + 3})
+            p['evaluation']['performance']['limits']['overrides'].append(rule)
         req = compile_requirements(p, BANDS)
         r = synthetic(req)
         a = assess(r, req)
         self.assertEqual(a['max_violation_db'], 1)
         self.assertAlmostEqual(a['sum_violation_db'], 2.1)
+        np.testing.assert_array_equal(a['mandatory_g'],
+            evaluate_requirements(r, prepare_requirements(req, r.grid))['mandatory_g'])
         s = r.s.copy(); s[0, 0, 0] = 0
         rl = r.in_rl_db.copy(); rl[0] = np.inf
-        a = assess(replace(r, s=s, in_rl_db=rl), req)
+        r = replace(r, s=s, in_rl_db=rl)
+        a = assess(r, req)
+        np.testing.assert_array_equal(a['mandatory_g'],
+            evaluate_requirements(r, prepare_requirements(req, r.grid))['mandatory_g'])
         row = next(row for row in a['rows'] if row['requirement'].metric == 'in_rl_db')
         self.assertEqual(row['residuals_db'], (-np.inf, 1.))
 
@@ -143,6 +195,10 @@ class PerformanceTests(unittest.TestCase):
         a = assess(replace(r, il_db=il), self.req)
         self.assertFalse(a['strict_feasible'])
         self.assertEqual((a['max_violation_db'], a['sum_violation_db']), (3, 5))
+        prepared = prepare_requirements(self.req, r.grid)
+        fast = evaluate_requirements(replace(r, il_db=il), prepared)
+        summary = summarize_mandatory(fast, prepared)
+        self.assertEqual(summary, {k: a[k] for k in summary})
         row = next(row for row in a['rows'] if row['requirement'].interval.segment == 2 and row['requirement'].level == 'mandatory')
         self.assertEqual(row['residuals_db'], (2., 1.))
         self.assertEqual(row['sample_pass'], (False, False))
