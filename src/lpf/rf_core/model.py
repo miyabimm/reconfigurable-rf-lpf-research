@@ -100,7 +100,7 @@ def power_response(s, zs, zl):
         metrics = (il, il + 10*np.log10(available),
                    -20*np.log10(magnitude[:, 0, 0]),
                    -20*np.log10(magnitude[:, 1, 1]))
-    if any(np.any(np.isnan(m)) for m in metrics):
+    if any(np.any(np.isnan(m)) or np.any(np.isneginf(m)) for m in metrics):
         raise CircuitNumericalError('db_invalid', 'Undefined dB response')
     return (result, *metrics)
 

@@ -11,7 +11,7 @@ from test_issue307_constraints import make
 from lpf.constraint_versions import load_constraint
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import RFResponse
-from lpf.search.performance import compile_requirements, evaluate_requirements
+from lpf.search.performance import compile_requirements, evaluate_requirements, prepare_requirements
 from lpf.search.validation import rank_candidates
 
 BANDS = Path(__file__).resolve().parents[1] / 'rf/bands.csv'
@@ -43,6 +43,35 @@ class PerformanceTests(unittest.TestCase):
     def setUp(self):
         self.p = load_constraint('RF-F003')
         self.req = compile_requirements(self.p, BANDS)
+
+    def test_prepared_solver_parity_and_grid_identity(self):
+        for cid in ('RF-F003', 'RF-T006', 'RF-T008'):
+            req = compile_requirements(load_constraint(cid, allow_trial=True), BANDS)
+            r = synthetic(req)
+            prepared = prepare_requirements(req, r.grid)
+            old = assess(r, req)
+            new = evaluate_requirements(r, prepared)
+            self.assertEqual(old['worst_il_db'], new['worst_il_db'])
+            np.testing.assert_array_equal(old['mandatory_g'], new['mandatory_g'])
+            self.assertEqual(set(new), {'worst_il_db', 'mandatory_g'})
+            clone = EvaluationGrid(r.grid.frequency_hz, r.grid.setting, r.grid.segment)
+            with self.assertRaisesRegex(ValueError, 'identity'):
+                evaluate_requirements(replace(r, grid=clone), prepared)
+            with self.assertRaisesRegex(ValueError, 'policy'):
+                evaluate_requirements(replace(r, policy_id='wrong'), prepared)
+            with self.assertRaises(ValueError):
+                prepared.indices[0].setflags(write=True)
+            missing = EvaluationGrid(r.grid.frequency_hz[2:], r.grid.setting[2:], r.grid.segment[2:])
+            with self.assertRaises(ValueError):
+                prepare_requirements(req, missing)
+            il, s = r.il_db.copy(), r.s.copy()
+            stop = next(i for i, seg in enumerate(r.grid.segment) if seg == 2)
+            il[stop] = np.inf
+            s[stop, 1, 0] = 0
+            apl = r.apl_db.copy(); apl[stop] = np.inf
+            zero = replace(r, il_db=il, apl_db=apl, s=s)
+            np.testing.assert_array_equal(assess(zero, req)['mandatory_g'],
+                                          evaluate_requirements(zero, prepared)['mandatory_g'])
 
     def test_current_policies_modes_and_immutable_sources(self):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
