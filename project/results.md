@@ -1,5 +1,7 @@
 # RF-LPFの保存結果と検証証拠
 
+**本書は研究ナレッジベースの代表結果・失敗要因・検証限界の正本です。** [Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)により、正式記録に不要な旧raw・checkpoint・補助数値は知見抽出後に削減します。古い結果の参照先が現行treeからGit固定履歴へ変わっても、当時の検証状態は変わりません。過去全試行の完全再現は保証しません。
+
 数値原本は[実験索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/experiment_index.csv)と各EXPのmanifest・候補・検証記録です。有限格子のbest-foundを大域最適性、連続帯域保証、実装性能の保証とは扱いません。正式／試験／旧条件、`matching_only`／`full_lpf`、bare LPF／外部ポートを混ぜず、実効制約SHA・格子・検証深度が同じ候補だけを比較します。
 
 | RF条件 | 保存証拠への入口 | 注意 |

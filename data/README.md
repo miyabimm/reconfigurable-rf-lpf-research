@@ -1,34 +1,13 @@
-# data/：研究証拠・歴史的データ
+# data/：実験管理台帳と移行途中の旧データ
 
-**正式RF数値の現役正本は [rf/constraints/registry.json](../rf/constraints/registry.json)、周波数帯は [rf/bands.csv](../rf/bands.csv)、固定S2Pは [rf/parasitics/](../rf/parasitics/) です。**
+**正式RF入力の正本は[rf/constraints/registry.json](../rf/constraints/registry.json)、[rf/bands.csv](../rf/bands.csv)、[rf/parasitics/](../rf/parasitics/)です。** `data/constraints/`・`data/bands.csv`・`data/parasitics/`の互換リンクは現役callerを確認した後に削減の可否を判断します。
 
-旧 `data/constraints/`・`data/bands.csv`・`data/parasitics/` は既存コード・研究履歴の参照互換用です。今後の正式条件更新時に編集・二重同期する場所ではありません。
+## 維持する原則
 
-## 残すデータの役割と原本
+- `experiment_index.csv`・`experiment_number_registry.csv`：正式EXPの実行／検証状態とG0中央番号予約に必要な台帳。新規EXP保存ゲートG0〜G5は維持します。
+- 現行探索・RF評価・正式実験記録に必要な機械入力、選抜候補、独立検証根拠：実際の依存関係と将来の利用価値で選別します。
+- `validation/`、`repository_reviews/`、`pareto_snapshots/`、`catalog/`、旧補助索引やZIP等：**移行途中の歴史資産**であり、恒久保管を約束しません。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で知見を[methods](../project/methods.md)・[results](../project/results.md)へ抽出し、不要なら実際に削除します。
 
-| 場所 | 役割・正本との関係 |
-|---|---|
-| `experiment_index.csv`、`experiment_number_registry.csv` | 実行・検証索引とG0番号予約の中央台帳。原証拠は対応EXP |
-| `candidate_index.csv`、`research_*.csv`、`supplemental_experiment_evidence_index.csv`、`experiment_evidence_inventory.csv` | 候補・検証overlay・出典・保管判断の索引。数値原本やEXP manifestを置換しない |
-| [catalog/](catalog/README.md) | 2026-10-17固定入力3件と派生CSV2件。集計JSON/Markdownの重複とその専用生成機能は廃止 |
-| `pareto_snapshots/` | 当時の選別集合・条件・参照SHA。選別の再現には元集合が必要なため履歴証拠として保持。現行最良一覧ではない |
-| `validation/` | EXP外に保存された追試・独立検証・回収checkpoint・当時のcode snapshot。単なるcacheではなく、元EXPと異なる評価深度の証拠。EXP-034〜041の旧runner一時lock・重複ログ79件は#359で削減し、元manifestと数値結果・中断traceは保持 |
-| [repository_reviews/](repository_reviews/README.md) | EXP-042元ZIP・member、EXP-046/047等の出典と残存する固定レビュー。時点固定の保全一覧は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/repository_reviews)を参照 |
-| 旧branch／外部ZIPの目録 | [整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data)に保管。元ZIPが未収録の場合もあり、Gitだけで計算を復元できるとは主張しない |
-| `phase2_git_storage_budget.json` | 保存容量の機械検査入力。単なる説明文書と分類しない |
-| `constraints/`、`bands.csv`、`design_constraints.json`、`parasitics/` | `rf/`正本を指す旧参照互換symlink。現行コード・歴史的callerが依存するため保全 |
+歴史的な原SHA、旧manifestのpath登録、過去の数値証拠という理由だけでは保管を継続しません。ただし旧データを使う現行コード／テスト／CIがあれば、科学的機能を保って依存を解消してから削除します。元manifestを残す場合は当時の内容を遡及改竄せず、旧証拠が現行treeに揃わなくなったことを明記します。
 
-各ファイルのblob・現行参照元・原本・処置は[Issue #352](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/352)のDraft PR棚卸しに記録します。
-原manifest・重要な数値証拠・checkpointは変更しません。#359では旧runnerの一時ファイルを削減し、`audit_provenance`は固定されたEXP-034〜041 manifestに限り削除済み一時ファイルを検査対象外とします。現存証拠と新EXP保存のSHA検査は厳格なままです。この監査は旧全証拠の完全性PASSを意味しません。削除前の記録は[固定tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/validation)を参照。以前は以下の**バイト同一configコピー5件**も削減しました。残す側は原EXP manifestに固定され、コピー側には現役コードcallerがありません。旧保全CSVや元summaryに削除側のパスが記載されていても、その当時の原文は改竄しません。
-
-| 削除した `validation/` 以下のコピー | 現在残るバイト同一原本（同じ親ディレクトリ以下） |
-|---|---|
-| `rf_f002_checkpoint_warmstarts_20261014/config.json` | `corrected-run/config.json` |
-| `rf_f002_grid_refinement_20261014/config.json` | `run/config.json` |
-| `rf_f002_recovery_20261014/retry-config-max-attempts-2.json` | `exp036-sigint-resume/config.json` |
-| `rf_f002_unscaled_followup_20261014/config.json` | `run/config.json` |
-| `rf_f002_warm_start_refinement_20261014/config.json` | `unremapped-import-diagnostic/config.json` |
-
-旧46件保全台帳の全パス存在を要求する時点固定監査は、今回の承認済みコピー削減後のtreeを当時のtreeとして検査しません。[時点固定の監査ガイド](../project/legacy_git_replay.md)に従います。削除側の逐語原本もGit履歴に残り、新たな復元機能は不要です。
-
-研究証拠・監査・候補・台帳（例：`experiment_number_registry.csv` と `experiment_index.csv`）は引き続き `data/` に原本を保存します。Pi Codeは通常、必要なファイルを含む完全checkoutで作業し、全履歴検証と新EXP番号予約では実際の証拠・履歴の完全性を確認します。旧実験結果・SHA固定の証拠は遡及変更しません。
+**過去全実験の原バイト・探索履歴の再現と、今後のEXPの必要な再現性は別です。** 現行RFの条件・全6設定／28区間・H2/H3・独立MNA・SPD・受動性／電力、現行EXPの保存SHA検査は省略しません。整理前の情報が必要な場合はGit履歴・旧Issueを参照しますが、それだけで数値的な再現PASSとは扱いません。

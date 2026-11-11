@@ -13,7 +13,7 @@
 | [#325 Campaign](diagnostics/issue325_campaign.md) | PR #326〜#329：schema2 envelope、data-only逐次提案、2予算/予約/raw照合、明示G0/G1・G2・G3/G4・G5 eligibility。隔離Git fixtureで検査 | `run_campaign()` 自動loopは `not_ready`。正式EXP運用の実績なし、G5実削除なし |
 | [#330 実SciPy非EXP](diagnostics/issue330_real_scipy.md) / PR #331 | 開発＋隔離Git架空EXP各1 Job、実SciPy内RF callbackを限定確認。各616/616 samples、独立terminal 1 spot。配線・保存のソフトウェア検査PASS | 予算終了で **未収束**、全9 batchの **strict finite-grid FAIL**。SciPy success/statusはnull。正式EXPではない |
 | [#301](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/301) 実行基盤 | 固定順逐次実行と明示提出APIあり | Scheduler／parallel／retry／resumeは未完了。自動提案・自動ライフサイクルも未提供 |
-| 文書・保存CI | #333で現行操作と歴史資料を分離。[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334) の保存専用CI軽量化はmain統合済み | 保存専用と確実に分類された場合だけ一般回帰を省略。全新規EXP保存監査・予約/provenance検証は必須。不明・混在は通常回帰。#170の広域docs/data整理とは分担し、元証拠を変更しない |
+| 文書・保存CI | #333で現行操作と歴史資料を分離。[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334) の保存専用CI軽量化はmain統合済み | 保存専用と確実に分類された場合だけ一般回帰を省略。全新規EXP保存監査・予約/provenance検証は必須。不明・混在は通常回帰。旧資産削減は#397で実施し、新規EXPの証拠検証は維持 |
 
 | 科学・運用判定 | 現時点の範囲 |
 |---|---|
@@ -37,7 +37,7 @@
 | Stage 3：目的・初期値・SLSQP v2統合 | **完了（mock配線＋単一start実SciPy smoke）** | [#180](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/180) / PR #187・#188、[後続#198](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/198) / [PR #199](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/199)。RF-T005の既存3L・1 startで実SciPy配線を限定確認。fine固定GJM C=0 pFで部品/box FAIL、有限格子厳密FAIL。本番探索・RF認定なし |
 | Stage 4：有限トポロジー・候補・Pareto | **完了（限定回帰）** | [#189](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/189) / PR #190・#191。有限候補記録・証拠深度別比較、候補昇格はblocked |
 | Stage 5A/5B：共通実行入口・保存／監査ゲート | **完了（synthetic/mock・隔離fixture）** | [#192](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/192) / [PR #193](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/193)、[#194](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/194) / [PR #195](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/195)。#195はmain `8eb25f0` に統合、PR最終HEAD通常CI 305件・Pi sparse 79件PASS、main smoke 305件PASS |
-| 文書・実験証拠の整理 | **継続** | [#170](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/170)。[PR #201](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/201)で不足21行を追記してinventory66行へ整合。完全checkoutのinventory監査PASSは#201で記録済み（科学的RF検証とは別） |
+| 研究知見のKB統合・旧資産削減 | **未完了・実削減は今後** | [#397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で知見抽出→正式記録選別→旧コード・数値・資料削除→現行RF/G0〜G5検証を進める。旧#170/#352/#371は閉鎖済みの履歴。以前の歴史inventory監査PASSは新RF性能の検証ではない |
 
 この表は当時の限定コード・回帰の到達記録であり、現行Campaignの機能一覧ではない。
 [親Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)の57項目を一括完了とはしない。
