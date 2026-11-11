@@ -72,6 +72,13 @@ class PerformanceTests(unittest.TestCase):
             zero = replace(r, il_db=il, apl_db=apl, s=s)
             np.testing.assert_array_equal(assess(zero, req)['mandatory_g'],
                                           evaluate_requirements(zero, prepared)['mandatory_g'])
+        req = compile_requirements(load_constraint('RF-T008', allow_trial=True), BANDS, 'matching_only')
+        r = synthetic(req)
+        prepared = prepare_requirements(req, r.grid)
+        self.assertEqual(prepared.mandatory, ())
+        self.assertEqual(assess(r, req)['mandatory_g'], ())
+        self.assertEqual(evaluate_requirements(r, prepared)['mandatory_g'], ())
+        self.assertEqual(evaluate_requirements(r, prepared)['worst_il_db'], assess(r, req)['worst_il_db'])
 
     def test_current_policies_modes_and_immutable_sources(self):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
@@ -108,7 +115,11 @@ class PerformanceTests(unittest.TestCase):
         self.assertEqual(req.intervals[2].low_hz, 1326e6)  # no harmonic scaling
         h2 = [r for r in req.limits if r.interval.region == 'H2' and r.interval.case == 'B13+B14' and r.level == 'mandatory']
         self.assertEqual([(r.interval.note, r.threshold_db) for r in h2], [('B13', 31.), ('B14', 30.)])
-        self.assertTrue(assess(synthetic(req), req)['strict_feasible'])
+        response = synthetic(req)
+        detailed = assess(response, req)
+        self.assertTrue(detailed['strict_feasible'])
+        np.testing.assert_array_equal(detailed['mandatory_g'],
+            evaluate_requirements(response, prepare_requirements(req, response.grid))['mandatory_g'])
 
     def test_existing_scalar_import_does_not_require_src_on_sys_path(self):
         # Smoke's existing src.lpf consumers must not import the lpf-only RF
@@ -127,16 +138,23 @@ class PerformanceTests(unittest.TestCase):
         for metric, bound, threshold in (('in_rl_db', 'min_db', 21),
                                           ('out_rl_db', 'max_db', 19),
                                           ('apl_db', 'max_db', .1)):
-            rules.append(dict(metric=metric, selector={'case': 'B71', 'region': 'UL'},
-                              level='mandatory', **{bound: threshold}))
+            rule = dict(metric=metric, selector={'case': 'B71', 'region': 'UL'},
+                        level='mandatory', **{bound: threshold})
+            rules.append({**rule, bound: threshold + 3})
+            p['evaluation']['performance']['limits']['overrides'].append(rule)
         req = compile_requirements(p, BANDS)
         r = synthetic(req)
         a = assess(r, req)
         self.assertEqual(a['max_violation_db'], 1)
         self.assertAlmostEqual(a['sum_violation_db'], 2.1)
+        np.testing.assert_array_equal(a['mandatory_g'],
+            evaluate_requirements(r, prepare_requirements(req, r.grid))['mandatory_g'])
         s = r.s.copy(); s[0, 0, 0] = 0
         rl = r.in_rl_db.copy(); rl[0] = np.inf
-        a = assess(replace(r, s=s, in_rl_db=rl), req)
+        r = replace(r, s=s, in_rl_db=rl)
+        a = assess(r, req)
+        np.testing.assert_array_equal(a['mandatory_g'],
+            evaluate_requirements(r, prepare_requirements(req, r.grid))['mandatory_g'])
         row = next(row for row in a['rows'] if row['requirement'].metric == 'in_rl_db')
         self.assertEqual(row['residuals_db'], (-np.inf, 1.))
 

@@ -294,6 +294,7 @@ class PreparedRequirements:
     grid: object
     grid_fingerprint: str
     indices: tuple
+    mandatory: tuple
     objective_indices: np.ndarray
 
 
@@ -328,9 +329,17 @@ def prepare_requirements(requirements, grid):
     # Back with immutable bytes: writeable=False alone can be reversed by callers.
     def immutable(ix):
         return np.frombuffer(ix.tobytes(), dtype=ix.dtype)
-    return PreparedRequirements(req, g, fingerprint,
-        tuple(immutable(indices[rule.interval.identity]) for rule in req.limits),
+    rule_indices = tuple(immutable(indices[rule.interval.identity]) for rule in req.limits)
+    mandatory = tuple((rule, ix, 'il_db' if rule.metric == 'attenuation_db' else rule.metric)
+                      for rule, ix in zip(req.limits, rule_indices) if rule.level == 'mandatory')
+    return PreparedRequirements(req, g, fingerprint, rule_indices, mandatory,
         immutable(np.flatnonzero(np.isin(g.segment, req.objective_segments))))
+
+
+def _residual(rule, observations):
+    """Signed violation; its negation is the solver's g >= 0 constraint."""
+    return (observations - rule.threshold_db if rule.bound == 'max_db'
+            else rule.threshold_db - observations)
 
 
 def evaluate_requirements(response, requirements, *, requested_grid=None):
@@ -348,12 +357,8 @@ def evaluate_requirements(response, requirements, *, requested_grid=None):
                                                   req.requirements.policy_fingerprint):
             raise ValueError('Response policy mismatch')
         mandatory = []
-        for rule, ix in zip(req.requirements.limits, req.indices):
-            if rule.level == 'mandatory':
-                metric = 'il_db' if rule.metric == 'attenuation_db' else rule.metric
-                obs = getattr(r, metric)[ix]
-                mandatory.extend((rule.threshold_db - obs if rule.bound == 'max_db'
-                                  else obs - rule.threshold_db).tolist())
+        for rule, ix, metric in req.mandatory:
+            mandatory.extend((-_residual(rule, getattr(r, metric)[ix])).tolist())
         return dict(worst_il_db=float(np.max(r.il_db[req.objective_indices])),
                     mandatory_g=tuple(mandatory))
     if not isinstance(r, RFResponse) or not isinstance(req, Requirements):
@@ -386,7 +391,7 @@ def evaluate_requirements(response, requirements, *, requested_grid=None):
     for rule in req.limits:
         ix = indices[rule.interval.identity]
         obs = metrics[rule.metric][ix]
-        e = obs-rule.threshold_db if rule.bound == 'max_db' else rule.threshold_db-obs
+        e = _residual(rule, obs)
         worst = int(np.argmax(e))
         violation = max(0., float(e[worst]))
         rows.append(dict(requirement=rule, sample_indices=tuple(map(int, ix)),
