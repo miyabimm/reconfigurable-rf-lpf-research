@@ -19,4 +19,4 @@ boxの対象外である接続・role・物理順序・Q・PCB数・固定/IC/�
 
 対象テストは、合法候補の旧新RF応答/requirements/Hybrid、全座標の閉区間端点と直外、全6設定、型/形状/NaN/Inf、定義・policy不一致、直接RF CoreのSPD閾値、window best物理証拠、開始後SPD失敗時の課金とSTOP、独立MNA・電力/受動性関連の既存回帰を含む。具体的なコマンド・結果はPRを参照。有限テストで連続周波数・EM・Q(f)・SRF・公差・実測の保証はしない。
 
-実RF性能A/Bは**未実施、改善率は未主張**。承認用の具体案：最新main基準と本PRを同一環境・Plan/source原本vector SHA・seed 1002・RF-T008 rev3 trial明示opt-in・70 samples/forward・Hybrid最大100 nfevで、それぞれ3回（合計6 run、最大600 forward / 42,000 requested samples）。実行前に入力・source各SHA、順序、setup/素solver/totalと計測負荷を凍結し、失敗・未収束も記録する。これは提案であり**予算・実行は未承認**。比較に必要な同一環境・入力が確認できない場合は実行しない。
+実RF A/Bはユーザー承認後、旧新各3回・計600 forward／42,000 samplesで実施。[条件・原記録・結果・限界](issue394_ab/README.md)を参照。6 runとも未収束。MinimalWorkerの限定計測であり、保存付きJobの性能やRF認定を意味しない。
