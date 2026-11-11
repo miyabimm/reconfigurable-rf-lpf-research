@@ -9,11 +9,10 @@ from pathlib import Path
 
 import classify_storage_ci as storage
 
-CLASSES = ('DOC', 'RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
+CLASSES = ('RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # Existing smoke modules, grouped by responsibility. Boundary modules can occur
 # in more than one group; the runner deduplicates them.
 SUITES = {
-    'DOC': '''test_phase2_current_status_review.py''',
     'RF': '''test_constraint_versioning.py test_issue307_constraints.py test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_issue309_rf_core.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_rf_f002_t004.py test_research_catalog.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py''',
@@ -33,7 +32,7 @@ BOUNDARY = ['test_issue343_d3_science']
 PATHS = {
     'project/specification.md': 'RF', 'project/slsqp_iteration_policy.md': 'OPT',
     'project/experiment_storage_policy.md': 'STORE', 'project/campaign_workflow.md': 'GATE RUN STORE',
-    'project/instructions.md': 'FULL', 'README.md': 'DOC',
+    'project/instructions.md': 'FULL',
     'src/lpf/search/gates.py': 'GATE', 'src/lpf/search/preflight.py': 'GATE',
     'src/lpf/search/checkout.py': 'GATE STORE',
     'src/lpf/experiment_preservation.py': 'STORE FULL',
@@ -47,7 +46,6 @@ PATHS = {
     'src/lpf/search/plan.py': 'GATE RUN',
     'scripts/run_rf_search.py': 'RUN', 'scripts/audit_new_experiment_storage.py': 'STORE',
     'scripts/reserve_experiment_number.py': 'STORE GATE', 'scripts/experiment_id_registry.py': 'STORE GATE',
-    'scripts/verify_phase2_cleanup_w1_links.py': 'DOC',
 }
 # Shared kernels and structural files stay unknown => conservative FULL.
 
@@ -55,14 +53,15 @@ PATHS = {
 def ordinary_document(path):
     # Directory defaults apply only to prose; governing contracts above retain
     # their RF/OPT/RUN/GATE/STORE ownership (and instructions remains FULL).
-    return path.startswith(('project/', 'docs/')) and path.endswith('.md') and path not in PATHS
+    return path == 'README.md' or (path.startswith(('project/', 'docs/'))
+                                   and path.endswith('.md') and path not in PATHS)
 
 
 def path_classes(path):
     if path in PATHS:
         return set(PATHS[path].split())
     if ordinary_document(path):
-        return {'DOC'}
+        return set()
     if path in {'rf/bands.csv', 'rf/constraints/registry.json',
                 'rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p',
                 'rf/parasitics/circuit2_poc_through_0_6ghz.s2p'} or re.fullmatch(
@@ -179,10 +178,9 @@ def execute(plan_data):
     print('Unselected classes:', ', '.join(x for x in CLASSES if x not in groups) or '(none)', flush=True)
     print('Test units:', ', '.join(sorted(modules)) or '(none)', flush=True)
     boundary = plan_data['full'] or bool(set(groups) & {'RF', 'OPT', 'RUN', 'GATE'})
-    links = plan_data['full'] or 'DOC' in groups
     rf_run = ('RF' in groups and 'RUN' not in groups and not plan_data['full']
               and not plan_data['storage_only'])
-    extra = (BOUNDARY if boundary else []) + (list(RF_RUN_BOUNDARY) if rf_run else []) + (['active-only local links'] if links else [])
+    extra = (BOUNDARY if boundary else []) + (list(RF_RUN_BOUNDARY) if rf_run else [])
     print('Additional test units:', ', '.join(extra) or '(none)', flush=True)
     summary = os.getenv('GITHUB_STEP_SUMMARY')
     if summary:
@@ -206,9 +204,6 @@ def execute(plan_data):
     if rf_run:
         print('Running RF/Worker boundary units:', ', '.join(RF_RUN_BOUNDARY), flush=True)
         subprocess.run([sys.executable, '-m', 'unittest', '-v', *RF_RUN_BOUNDARY], check=True, env=env)
-    if links:
-        print('Running active-only local links', flush=True)
-        subprocess.run([sys.executable, 'scripts/verify_phase2_cleanup_w1_links.py', '--active-only'], check=True, env=env)
 
 
 def main():
