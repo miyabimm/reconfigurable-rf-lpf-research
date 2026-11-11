@@ -1,8 +1,12 @@
 """Development-only minimum-path equivalence and failure checks."""
 import copy
-from dataclasses import replace
+import importlib.util
+import io
+import json
+from dataclasses import dataclass, replace
 from pathlib import Path
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -78,6 +82,59 @@ class MinimalWorkerTests(unittest.TestCase):
             with self.assertRaisesRegex(ArithmeticError, 'RF failure'): worker.evaluate(x)
         with patch.object(worker, 'evaluate', return_value=(None, {'worst_il_db': float('nan'), 'mandatory_g': []})):
             with self.assertRaises(ValueError): worker.residuals(x)
+
+
+class SourceBoundaryTests(unittest.TestCase):
+    def test_identity_once_and_mismatch_stops_before_preflight(self):
+        spec = importlib.util.spec_from_file_location('benchmark_minimal_worker', ROOT / 'scripts/benchmark_minimal_worker.py')
+        bench = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bench)
+        identity = {'head': 'test', 'files': {'src/test.py': 'digest'}, 'dirty_patch_sha256': 'dirty', 'environment': {}}
+        with patch.object(bench, 'source_identity', return_value=identity) as source:
+            actual, source_sha, script_sha = bench.freeze_source(None, None)
+            self.assertEqual(actual, identity)
+            self.assertEqual(source_sha, sha(identity))
+            self.assertEqual(len(script_sha), 64)
+            source.assert_called_once_with(ROOT)
+        for source_expected, script_expected in (('wrong', script_sha), (source_sha, 'wrong')):
+            argv = ['benchmark', '--config', 'unused', '--starts', 'unused', '--arm', 'demo', '--seed', '23',
+                    '--expected-source-sha256', source_expected, '--expected-script-sha256', script_expected]
+            with patch.object(bench, 'source_identity', return_value=identity) as source, \
+                 patch.object(bench, 'load_preflight') as preflight, patch('sys.argv', argv):
+                with self.assertRaisesRegex(ValueError, 'SHA mismatch'):
+                    bench.main()
+                source.assert_called_once_with(ROOT)
+                preflight.assert_not_called()
+        with patch.object(bench, 'source_identity', return_value=identity) as source:
+            self.assertEqual(bench.freeze_source(source_sha, script_sha), (identity, source_sha, script_sha))
+            source.assert_called_once_with(ROOT)
+
+    def test_report_contains_start_identity_without_rf(self):
+        spec = importlib.util.spec_from_file_location('benchmark_minimal_worker', ROOT / 'scripts/benchmark_minimal_worker.py')
+        bench = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bench)
+        identity = {'head': 'start', 'files': {'src/test.py': 'digest'}, 'dirty_patch_sha256': 'dirty', 'environment': {}}
+        @dataclass
+        class Output:
+            best_x: object = None
+        worker = SimpleNamespace(step={'name': 'coarse', 'options': {'max_evaluations': 1, 'max_restarts': 0}},
+            model=SimpleNamespace(policy_id='fixture', policy_fingerprint='fixture'), solve=lambda: Output())
+        plan = SimpleNamespace(data={'config': {'definition': {}, 'rf': {'constraint_id': 'fixture', 'allow_trial': True}},
+            'rf_inputs': {}, 'grids': {'demo/coarse': {'sha256': 'grid'}}}, sha256='plan')
+        argv = ['benchmark', '--config', 'unused', '--starts', 'unused', '--arm', 'demo', '--seed', '23']
+        output = io.StringIO()
+        with patch.object(bench, 'source_identity', return_value=identity) as source, \
+             patch.object(bench, 'load_preflight', return_value=plan), \
+             patch.object(bench, 'definition_from_data'), patch.object(bench, 'load_constraint'), \
+             patch.object(bench, 'load_explicit', return_value={23: {'vector': [1.], 'vector_sha256': 'start'}}), \
+             patch.object(bench, 'MinimalWorker', return_value=worker), \
+             patch('sys.argv', argv), patch('sys.stdout', output):
+            bench.main()
+        report = json.loads(output.getvalue())
+        self.assertEqual(report['source_identity'], identity)
+        self.assertEqual(report['source_sha256'], sha(identity))
+        self.assertEqual(len(report['benchmark_script_sha256']), 64)
+        source.assert_called_once_with(ROOT)
 
 
 if __name__ == '__main__':
