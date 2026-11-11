@@ -336,6 +336,22 @@ def prepare_requirements(requirements, grid):
         immutable(np.flatnonzero(np.isin(g.segment, req.objective_segments))))
 
 
+def summarize_mandatory(assessment, prepared):
+    """Reconstruct legacy per-rule violation aggregates from signed samples."""
+    g = assessment['mandatory_g']
+    offset = 0
+    violations = []
+    for _, ix, _ in prepared.mandatory:
+        end = offset + len(ix)
+        violations.append(max(0., -min(g[offset:end])))
+        offset = end
+    if offset != len(g):
+        raise ValueError('Mandatory sample count mismatch')
+    return dict(strict_feasible=all(v == 0 for v in violations),
+                max_violation_db=max(violations, default=0.),
+                sum_violation_db=sum(violations))
+
+
 def _residual(rule, observations):
     """Signed violation; its negation is the solver's g >= 0 constraint."""
     return (observations - rule.threshold_db if rule.bound == 'max_db'

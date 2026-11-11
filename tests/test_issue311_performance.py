@@ -11,7 +11,7 @@ from test_issue307_constraints import make
 from lpf.constraint_versions import load_constraint
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import RFResponse
-from lpf.search.performance import compile_requirements, evaluate_requirements, prepare_requirements
+from lpf.search.performance import compile_requirements, evaluate_requirements, prepare_requirements, summarize_mandatory
 from lpf.search.validation import rank_candidates
 
 BANDS = Path(__file__).resolve().parents[1] / 'rf/bands.csv'
@@ -190,6 +190,10 @@ class PerformanceTests(unittest.TestCase):
         a = assess(replace(r, il_db=il), self.req)
         self.assertFalse(a['strict_feasible'])
         self.assertEqual((a['max_violation_db'], a['sum_violation_db']), (3, 5))
+        prepared = prepare_requirements(self.req, r.grid)
+        fast = evaluate_requirements(replace(r, il_db=il), prepared)
+        summary = summarize_mandatory(fast, prepared)
+        self.assertEqual(summary, {k: a[k] for k in summary})
         row = next(row for row in a['rows'] if row['requirement'].interval.segment == 2 and row['requirement'].level == 'mandatory')
         self.assertEqual(row['residuals_db'], (2., 1.))
         self.assertEqual(row['sample_pass'], (False, False))
