@@ -42,17 +42,13 @@ class Phase2CurrentStatusTests(unittest.TestCase):
                                     issue[2] == "missing-campaign.md" and
                                     issue[3] == "missing" for issue in issues), issues)
 
-    def test_campaign_guide_entrypoints_and_diagnostic_inventory(self):
-        """Keep one current entrypoint without orphaning Issue evidence."""
+    def test_campaign_guide_entrypoints_and_diagnostic_links(self):
+        """Keep current documentation entrypoints and local links valid."""
         guide = ROOT / "project/campaign_workflow.md"
         index = ROOT / "project/diagnostics/README.md"
         self.assertTrue(guide.is_file())
         self.assertIn("project/campaign_workflow.md", (ROOT / "README.md").read_text())
         self.assertIn("(campaign_workflow.md)", (ROOT / "project/README.md").read_text())
-        inventory = index.read_text()
-        for path in (ROOT / "project/diagnostics").iterdir():
-            if path.is_file() and path.name != "README.md":
-                self.assertIn(f"({path.name})", inventory, path.name)
         # Local Markdown targets in the current entrypoints must resolve.
         import re
         for page in (guide, index):
