@@ -30,7 +30,7 @@
     {
       "method": "grid",
       "status": "failed",
-      "path": "data/validation/issue233_multistart_pilot/EXP-094-17pt.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-094/validation/17pt.json",
       "sha256": "a53394a05d266d0e388342405b3935ea7465e60392b438d28250a346e6796dce"
     }
   ]
