@@ -197,7 +197,7 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 - **epigraph変数 `t` を物理ILと取り違えない。** #233の非収束EXP-086/093では最終`t`が巨大な負値へ破綻した。報告するworst ILは**最終完全回路ベクトルをforward評価した値**であり、`t`でもsolver successでもない。破綻を含む開始点をRF適合Paretoへ昇格しない。
 - **次回の探索設計への示唆（未実行提案）：** まず失敗を「非収束／epigraph破綻」「厳密閾値直下」「周波数格子内部の見落とし」に分ける。回復法・座標系を比べるなら、初期値・有限差分の**物理**摂動量・制約閾値/guard・評価格子・予算を固定し、収束、strict適合、IL、費用を別指標で比較する。17点も連続帯域保証ではなく、今回strict候補0のため1,001点/区間・84点独立MNA・電力／受動性の後段検証は**未実施**。方法の採用や追加実験を承認したものではない。
 
-代表値・9ペアの全記録と限界は[結果の整理](results.md#rf-t008旧条件の多初期値と座標ab比較)および各[元集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/report.json)・[対照集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/report.json)を参照する。集計README/JSONへのリンクは削減前の固定Gitコミットを指す。27件の17点検証overlayはEXP-086〜112の保存manifest／storage_recordにSHA登録されており、現行treeで維持する。この統合は既存結果の読取りであり、新しいRF計算・EXP・独立検証を実施していない。
+代表値・9ペアの全記録と限界は[結果の整理](results.md#rf-t008旧条件の多初期値と座標ab比較)および各[元集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/report.json)・[対照集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/report.json)を参照する。集計README/JSONへのリンクは削減前の固定Gitコミットを指す。27件の17点検証overlayはEXP-086〜112の各`validation/17pt.json`へ元JSONのGit blob/SHA-256を変えずに移動し、保存manifest／storage_recordの**参照パスだけ**を更新した。旧metadataの原文は移動前の固定Git履歴に残る。この統合は既存結果の読取りであり、新しいRF計算・EXP・独立検証を実施していない。
 
 ## BSF合成と有限Q損失からの設計仮説
 
