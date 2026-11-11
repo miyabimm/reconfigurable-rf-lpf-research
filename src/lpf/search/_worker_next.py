@@ -7,7 +7,8 @@ import numpy as np
 from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_input_file
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.rf_core.model import build_rf_model
-from .component_constraints import physical_bounds, validate_values
+from .component_constraints import (physical_bounds, validate_values, validate_search_box,
+                                    _validate_values_with_bounds, _check_vector_box)
 from .performance import compile_requirements, evaluate_requirements, grid_fingerprint, prepare_requirements
 from .preflight import definition_sha, freeze
 from .storage import sha, vector_sha
@@ -42,25 +43,48 @@ class MinimalWorker:
             raise ValueError('Model/requirements/grid mismatch')
         self.prepared_requirements = prepare_requirements(self.requirements, self.grid)
         self.bounds = physical_bounds(definition, self.model.schema, policy)
-        validate_values(definition, self.model.schema, vector, policy, frozen_model=self.model)
+        self._physical_bounds = self.bounds
+        _validate_values_with_bounds(definition, self.model.schema, vector, policy, self.bounds,
+                                     frozen_model=self.model)
         self.x = np.array(vector, dtype=float, copy=True)
         self.evaluator = self.model.evaluator(self.grid)
 
+    def _check_box(self, vector):
+        return _check_vector_box(vector, self._physical_bounds)
+
     def evaluate(self, vector):
-        x = np.array(vector, copy=True)
-        validate_values(self.definition, self.model.schema, x, self.policy, frozen_model=self.model)
-        x = np.asarray(x, dtype=float)
+        # Public/external candidates cross a trust boundary. SPD remains RF Core's job.
+        return self._evaluate(self._check_box(vector))
+
+    def _evaluate(self, vector):
+        x = np.array(vector, dtype=float, copy=True)
         x.setflags(write=False)
         response = self.evaluator.evaluate(x)
         assessment = evaluate_requirements(response, self.prepared_requirements)
         return response, assessment
 
     def residuals(self, vector):
-        _, a = self.evaluate(vector)
+        return self._residuals(self.evaluate(vector))
+
+    def _solver_residuals(self, vector):
+        # Hybrid constructs all callback candidates within its frozen box.
+        return self._residuals(self._evaluate(vector))
+
+    @staticmethod
+    def _residuals(evaluation):
+        _, a = evaluation
         if not np.isfinite(a['worst_il_db']) or a['worst_il_db'] < 0:
             raise ValueError('Hybrid requires finite nonnegative IL; no floor')
         return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
 
     def solve(self):
-        return hybrid_minimize(self.residuals, self.x, self.bounds, seed=self.seed,
-                               aggregation=self.step['aggregation'], **self.step['options'])
+        # Check the solver box at the boundary, not at every callback.
+        validate_search_box(self.bounds, self._physical_bounds)
+        self._check_box(self.x)
+        result = hybrid_minimize(self._solver_residuals, self.x, self.bounds, seed=self.seed,
+                                 aggregation=self.step['aggregation'], **self.step['options'])
+        for vector in [result.best_x, *(run.end_x for run in result.runs)]:
+            if vector is not None:
+                self._check_box(vector)
+                validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
+        return result

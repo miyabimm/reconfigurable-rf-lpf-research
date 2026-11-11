@@ -45,6 +45,13 @@ def physical_bounds(definition, schema, policy):
 
 def validate_values(definition, schema, x, policy, *, frozen_model=None):
     """Check complete values, structural/Q/layout model, all-L SPD; not RF PASS."""
+    return _validate_values_with_bounds(definition, schema, x, policy,
+                                        physical_bounds(definition, schema, policy),
+                                        frozen_model=frozen_model)
+
+
+def _validate_values_with_bounds(definition, schema, x, policy, box, *, frozen_model=None):
+    """Internal boundary check with bounds just constructed from this policy."""
     from lpf.rf_core import build_rf_model
     from lpf.topology_management import audit_variable_connection_roles
     from lpf.rf_core.coupled_lc import CircuitValues
@@ -53,7 +60,7 @@ def validate_values(definition, schema, x, policy, *, frozen_model=None):
         raise ValueError('Expected numeric component values, not boolean/string coercion')
     values = x if isinstance(x, CircuitValues) else schema.decode(x)
     vector = schema.encode(values)  # fixed/IC/constant invariance and six settings
-    box = np.asarray(physical_bounds(definition, schema, policy))
+    box = np.asarray(box)
     if not np.all(np.isfinite(vector)) or np.any(vector < box[:, 0]) or np.any(vector > box[:, 1]):
         raise ValueError('Component value outside closed physical bounds')
     # Frozen common model owns counts/Q/layout/constants and policy approval.
@@ -88,6 +95,15 @@ def validate_values(definition, schema, x, policy, *, frozen_model=None):
             'promotion_blockers': ('independent_mna_not_checked', 'dense_rf_not_checked'),
             'rf_performance_checked': False, 'independent_mna_checked': False,
             'physical_q_srf_em_checked': False}
+
+
+def _check_vector_box(vector, bounds):
+    """Check an external flat vector against a previously frozen physical box."""
+    x, box = np.asarray(vector), np.asarray(bounds)
+    if (x.dtype.kind not in 'fiu' or x.shape != (len(box),) or
+            not np.all(np.isfinite(x)) or np.any(x < box[:, 0]) or np.any(x > box[:, 1])):
+        raise ValueError('Expected finite numeric vector within closed physical bounds')
+    return x
 
 
 def validate_search_box(bounds, physical):

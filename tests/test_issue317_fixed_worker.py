@@ -197,11 +197,14 @@ class FixedWorkerTests(unittest.TestCase):
                 np.zeros((n, 2, 2), complex), il, *[np.zeros(n) for _ in range(3)])
             responses.append(response)
             return response
+        from lpf.search.component_constraints import validate_values
         with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake) as forward, \
-             patch('lpf.search._window_evaluation.evaluate_requirements', wraps=evaluate_requirements) as assess:
+             patch('lpf.search._window_evaluation.evaluate_requirements', wraps=evaluate_requirements) as assess, \
+             patch('lpf.search._window_evaluation.validate_values', wraps=validate_values) as physical:
             first_result = meter.evaluate(x)
             second_result = meter.evaluate(x)
             improved_result = meter.evaluate(x)
+        self.assertEqual(physical.call_count, 2)  # first and new best, not the tied forward
         first, second = first_result['assessment'], second_result['assessment']
         expected_grid_sha = plan.data['grids']['demo/coarse']['sha256']
         self.assertEqual(first_result['grid_sha256'], expected_grid_sha)
@@ -224,6 +227,32 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertFalse(saved['assessment']['nominal_pass'])
         self.assertEqual(len(saved['assessment']['rows']), len(meter.requirements.limits))
         self.assertEqual(saved['physical_checks']['checked_settings'], 6)
+        self.assertTrue(saved['physical_checks']['component_policy_pass'])
+        self.assertGreater(saved['physical_checks']['min_L_eigenvalue_H'], 0)
+
+    def test_window_core_spd_failure_charges_started_forward_and_stops(self):
+        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        n = len(meter.grid.frequency_hz)
+        with patch.object(type(meter.model.topology), 'matrices',
+                          side_effect=CircuitNumericalError('mutual_not_spd', 'test')):
+            with self.assertRaisesRegex(CircuitNumericalError, 'mutual_not_spd'):
+                meter.evaluate(x)
+        self.assertEqual((meter.requested, meter.completed), (n, 0))
+        self.assertEqual(meter.status, 'storage_failed')
+        self.assertEqual(meter.rows[-1]['status'], 'failed')
+        self.assertEqual(meter.rows[-1]['phase'], 'forward')
+        self.assertTrue(meter.journal.failed)
+        with self.assertRaises(RuntimeError):
+            meter.evaluate(x)
+        saved = json.loads(path.read_bytes())
+        self.assertIsNotNone(saved['window'])  # reserved window remains unknown
+        self.assertEqual(saved['confirmed']['forwards'], 0)
 
     def test_window_debug_and_search_spot_keep_detailed_evidence(self):
         from lpf.rf_core.model import RFResponse

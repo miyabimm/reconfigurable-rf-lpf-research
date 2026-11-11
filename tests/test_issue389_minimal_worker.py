@@ -76,7 +76,7 @@ class MinimalWorkerTests(unittest.TestCase):
             MinimalWorker(plan, d, wrong, 'demo', 23, x, vector_sha(x), root=ROOT)
         for value in (np.full_like(x, np.nan), np.full_like(x, 1e30)):
             with self.assertRaises(ValueError): worker.evaluate(value)
-        with patch('lpf.rf_core.nominal_inductors.check_nominal_inductors', side_effect=ValueError('non-SPD')):
+        with patch.object(type(worker.model.topology), 'matrices', side_effect=ValueError('non-SPD')):
             with self.assertRaisesRegex(ValueError, 'non-SPD'): worker.evaluate(x)
         with patch.object(type(worker.evaluator), 'evaluate', side_effect=ArithmeticError('RF failure')):
             with self.assertRaisesRegex(ArithmeticError, 'RF failure'): worker.evaluate(x)
