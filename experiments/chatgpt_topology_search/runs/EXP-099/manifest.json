@@ -385,7 +385,7 @@
       "sha256": "95c15d83c91a9fbf3ce4c359c79af2a88c1162409f338ceb817b5fa20674973b"
     },
     {
-      "path": "data/validation/issue237_coordinate_ab/EXP-099-17pt.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-099/validation/17pt.json",
       "sha256": "0c34285ee961341672cd7a94ffeea7898a9eef5f0731cce80425bb0500d1a109"
     }
   ],
