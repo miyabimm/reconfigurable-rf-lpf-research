@@ -70,14 +70,19 @@ class PerformanceTests(unittest.TestCase):
             s[stop, 1, 0] = 0
             apl = r.apl_db.copy(); apl[stop] = np.inf
             zero = replace(r, il_db=il, apl_db=apl, s=s)
-            np.testing.assert_array_equal(assess(zero, req)['mandatory_g'],
-                                          evaluate_requirements(zero, prepared)['mandatory_g'])
+            detailed = assess(zero, req)
+            fast = evaluate_requirements(zero, prepared)
+            np.testing.assert_array_equal(detailed['mandatory_g'], fast['mandatory_g'])
+            summary = summarize_mandatory(fast, prepared)
+            self.assertEqual(summary, {k: detailed[k] for k in summary})
         req = compile_requirements(load_constraint('RF-T008', allow_trial=True), BANDS, 'matching_only')
         r = synthetic(req)
         prepared = prepare_requirements(req, r.grid)
         self.assertEqual(prepared.mandatory, ())
         self.assertEqual(assess(r, req)['mandatory_g'], ())
         self.assertEqual(evaluate_requirements(r, prepared)['mandatory_g'], ())
+        self.assertEqual(summarize_mandatory(evaluate_requirements(r, prepared), prepared),
+                         dict(strict_feasible=True, max_violation_db=0., sum_violation_db=0.))
         self.assertEqual(evaluate_requirements(r, prepared)['worst_il_db'], assess(r, req)['worst_il_db'])
 
     def test_current_policies_modes_and_immutable_sources(self):
