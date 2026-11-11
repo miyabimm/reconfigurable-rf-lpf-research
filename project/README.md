@@ -6,7 +6,7 @@ Piの通常作業は必要なファイルを取得した完全checkoutで行う�
 - `rf/constraints/registry.json` の `active_formal_id` が現行正式版。原則として承認済みJSONは**上書きしない**。新正式条件は所有者承認後に新IDとして追加し、active指定を変更する。trialは自動昇格させない。
   - #307 / #306 v1.0の承認済み例外として、現役F003/T005〜T008は同一IDでschema 2・閉区間へ移行（GJM01/PCB_L下限変更を含む）。旧版・旧registry・SHA・親子関係を`rf/constraints/history/pre-issue-307/`に先行保存。新旧SHA対応は`rf/constraints/history/issue307-migration.json`。旧EXPや凍結済み計画のSHAは書換えず、現役条件として再実行しない。
 - 不変の旧RF JSON内の `data/...` は**保存時の論理パス**であり、`src/lpf/constraint_versions.py` が新 `rf/` 実体へ解決する。履歴JSON内容・旧実効SHA・S2P SHAは維持する。現役JSONの#307移行後実効SHAは旧版と区別する。ファイル欠落やSHA不一致時は失敗させる。
-- 各EXPの原manifest、重要証拠、番号台帳は従来の `experiments/`・`data/` に保全する。番号予約・保存監査の前にcheckoutの完全性を確認する。着手は[運用正本](instructions.md)のIssueスコープとユーザーのPi Code起動指示に従い、完全checkoutでG0/G1を満たす（追加の二重承認は不要）。
+- 現行の正式EXP記録と中央番号台帳は `experiments/`・`data/` に保持し、今後のEXPの番号予約・保存監査に必要なcheckoutの完全性を確認する。旧EXPの原証拠は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で知見抽出後に削減可能とし、歴史的な全件再現を前提としない。着手は[運用正本](instructions.md)に従い、G0/G1を満たす（追加の二重承認は不要）。
 - CIは `.github/workflows/audit.yml` で通常の回帰テストと保存監査を実行する。CI PASSは新RF性能の科学的保証ではない。
 
 ## 現行フローと資料の入口
@@ -15,7 +15,7 @@ Piの通常作業は必要なファイルを取得した完全checkoutで行う�
 - [ロードマップ](roadmap.md)：mainの実装実績と未検証ゲート。
 - [解析手法・理論](methods.md)：共通モデル、T/π磁気結合と零点の統合知識、BSF文献の出典。
 - [保存結果](results.md)：代表結果から条件・格子・検証深度を区別して元EXPへ戻る。
-- [データ保全の役割](../data/README.md)：完全treeでの台帳・validation・Pareto・復元証拠の入口（通常sparseでは非取得）。
+- [データの役割](../data/README.md)：中央台帳と移行途中の旧数値・診断資料の案内。
 - [診断・歴史資料索引](diagnostics/README.md)：旧Stageごとの説明、限定実証・レビュー証拠、整理候補。古い「未接続」「レビュー待ち」は当時の範囲であり現況の正本ではない。
 - 固定step Worker／逐次親Runnerの詳細は [#317](diagnostics/issue317_fixed_worker.md)／[#319](diagnostics/issue319_parent_runner.md)。
 - 旧schema1の `preflight`／`run` は撤去済み。旧EXP変換・互換保証は提供しない（経緯は[#302](diagnostics/issue302_sequential_search.md)）。

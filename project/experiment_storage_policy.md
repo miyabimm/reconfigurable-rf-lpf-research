@@ -1,5 +1,7 @@
 # 新規実験のGitHub-only保存ポリシー v1
 
+> **2026-11-11 新しい歴史資産方針（[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)）**：本書の**新規EXP用G0〜G5・正式実験保存契約は変更しません**。一方、本書の旧EXPの全原証拠保持・旧スクリプトの個別削除承認に関する当時の記述は、現行treeの永続保全義務ではありません。過去実験の知見を`project/methods.md`・`project/results.md`に抽出した後、現行研究・正式記録に不要な歴史資産は削除可能です。旧manifestの原文や実績を遡及改竄せず、現行treeで旧全実験が完全再現可能とは主張しません。
+
 **ポリシーID：phase2-git-only-v1。** 本変更のmainマージ以降に新規作成する **EXP-050以降**へ適用する。**EXP-001～049（特にRF-T006のEXP-048/049）**の原manifest／checkpoint／証拠には遡及適用しない。研究対象とRF数値仕様の変更は含まない。
 
 **既存根拠：** [運用正本](instructions.md)、[整理計画（固定履歴版）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[2026-10-15保存方針案](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_result_storage_policy_proposal_20261015.md)、[既存容量基準](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/phase2_git_storage_budget.json)、[EXP番号中央予約](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_number_reservation_policy_20261015.md)。当時の提案・歴史記録は上書きしない。
@@ -130,7 +132,7 @@ python scripts/audit_new_experiment_storage.py audit
 
 - **常設テストの追加条件：** RFモデルの恒久的不変条件、再発があり得る具体的バグ、共通API／保存規則の契約に対応し、複数回再利用されること。実験1回限りの期待値照合、探索途中の数値比較、使い捨てfixtureは原則 results/EXP-NNN/ に置く。バグ修正時の恒久的退行検知は、専用EXP番号のテストファイルを量産せず既存の共通テストへ集約する。
 - **新テストのPRレビュー：** 既存テストで代替できない理由、検出する失敗、常時CIか必要時実行か、古いテストの置換・統合候補を確認する。新しいworkflowや実験ごとの監査スクリプトを無条件に追加しない。
-- **古いテスト／一時スクリプトの退役：** 元数値・失敗検出能力・スクリプト参照・再実行依存を確認したうえで削除候補へ記録し、所有者の個別承認と別PRで現行treeから整理する。単に古い/未参照という理由で自動削除しない。
+- **古いテスト／一時スクリプトの退役：** [Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)の承認済み方針に従い、研究知見を抽出し、現行caller・科学的不変条件・新規EXP保存ゲートへの依存を確認した後で削除してよい。旧ファイルごとの追加承認は不要。現行正式記録・重要checkpointの損失は別途判断する。
 - **ドキュメント：** 現行正本へのリンクを維持し、各EXPの臨時レポートを目的なく新規作成しない。サマリーは原則run_summary、過去の重要な判断は固定SHA付き履歴に残す。
 
 ## 5. 再現性と昇格の境界
@@ -141,4 +143,4 @@ python scripts/audit_new_experiment_storage.py audit
 
 formal RF-F003／trial RF-T005／旧制約を混在させない。30dB必須、35dB公称、strict_finite_grid/tolerance_only、同一評価格子の違いも明示。報告値だけでベクトルを欠く候補はreported_onlyに留め、索引へ無根拠に昇格させない。
 
-**本変更は新規実験保存規則の導入のみ。既存原本、旧ZIP、旧workflow、ブランチ・タグ・Git履歴の整理・削除の承認ではない。**
+**この保存ポリシーを導入した当時は既存原本の削除を承認していなかった。** 2026-11-11以降はIssue #397の知見抽出・旧資産削減方針が歴史資産に優先する。新規EXPのG0〜G5、正式RF入力・科学評価条件、Git履歴は変更しない。
