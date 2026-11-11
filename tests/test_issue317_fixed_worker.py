@@ -191,8 +191,12 @@ class FixedWorkerTests(unittest.TestCase):
             meter.evaluate(x)
             meter.finish()
             first = json.loads(path.read_bytes())
+            writes = meter.journal.write_calls
             meter.activate('demo/fine', 'demo/fine')
             boundary = json.loads(path.read_bytes())
+            self.assertEqual(meter.journal.write_calls, writes + 1)
+            self.assertEqual(boundary['previous_confirmed'], first['confirmed'])
+            self.assertEqual(boundary['previous_uncertain_upper'], first['uncertain_upper'])
             self.assertEqual(boundary['confirmed'], first['confirmed'])
             self.assertEqual(boundary['window']['first_forward'], 1)
             meter.evaluate(x)
@@ -202,6 +206,25 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(payload['progress_by_allocation']['demo/coarse']['forwards'], 1)
         self.assertEqual(payload['progress_by_allocation']['demo/fine']['forwards'], 1)
         self.assertEqual(payload['batches'], [])
+
+    def test_window_inactive_transition_save_failure_retains_finished_record(self):
+        from lpf.search._window_evaluation import WindowJobEvaluation
+        _, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
+        spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
+        with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
+            meter = WindowJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
+        meter.activate('demo/coarse', 'demo/coarse')
+        meter.finish()
+        before = path.read_bytes()
+        with patch('lpf.search._forward_window.atomic_verified', side_effect=OSError('fixture failure')) as save:
+            with self.assertRaisesRegex(OSError, 'fixture failure'):
+                meter.activate('demo/fine', 'demo/fine')
+            self.assertEqual(save.call_count, 1)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertTrue(meter.journal.failed)
+        self.assertEqual(meter.status, 'storage_failed')
+        with self.assertRaisesRegex(RuntimeError, 'STOP'):
+            meter.journal.begin_forward()
 
     def test_window_normal_300_mock_forwards_bounded_payload(self):
         from types import SimpleNamespace
