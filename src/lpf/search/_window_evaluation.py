@@ -5,7 +5,7 @@ from lpf.timing import timed_call, timed_method
 from ._forward_window import ForwardJournal
 from ._job_evaluation import FixedJobEvaluation
 from .component_constraints import validate_values
-from .performance import evaluate_requirements, grid_fingerprint, prepare_requirements, summarize_mandatory
+from .performance import evaluate_requirements, prepare_requirements, summarize_mandatory
 from .storage import plain, vector_sha
 from .evaluation import raw_numbers
 
@@ -189,7 +189,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
     def _assess(self, vector):
         if self.status != 'ready' or self.journal is None:
             raise RuntimeError('STOP: failed/stopped/unknown Job cannot retry')
-        row = dict(stage=self.stage, allocation=self.active, grid_sha256=grid_fingerprint(self.grid),
+        row = dict(stage=self.stage, allocation=self.active, grid_sha256=self.prepared_requirements.grid_fingerprint,
                    requested=0, completed=0, status='rejected', phase='physical_values',
                    independent={'status': 'not_run', 'reason': 'not requested'})
         try:
@@ -268,7 +268,7 @@ class WindowJobEvaluation(FixedJobEvaluation):
             raise
         result = dict(vector=x.copy(), vector_sha256=vector_sha(x), model=self.model,
                       assessment=assessment, plan_sha256=self.plan.sha256,
-                      grid_sha256=grid_fingerprint(self.grid), batch_index=len(self.rows)-1)
+                      grid_sha256=self.prepared_requirements.grid_fingerprint, batch_index=len(self.rows)-1)
         indices = self.spec.data['spot_checks'].get(self.stage)
         if indices:
             self.spot_check(result['batch_index'], indices)

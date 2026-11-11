@@ -192,8 +192,12 @@ class FixedWorkerTests(unittest.TestCase):
                 np.zeros((n, 2, 2), complex), *[np.zeros(n) for _ in range(4)])
         with patch.object(RFEvaluator, 'evaluate', autospec=True, side_effect=fake) as forward, \
              patch('lpf.search._window_evaluation.evaluate_requirements', wraps=evaluate_requirements) as assess:
-            first = meter.evaluate(x)['assessment']
-            second = meter.evaluate(x)['assessment']
+            first_result = meter.evaluate(x)
+            second_result = meter.evaluate(x)
+        first, second = first_result['assessment'], second_result['assessment']
+        expected_grid_sha = plan.data['grids']['demo/coarse']['sha256']
+        self.assertEqual(first_result['grid_sha256'], expected_grid_sha)
+        self.assertEqual(second_result['grid_sha256'], expected_grid_sha)
         self.assertEqual(forward.call_count, 2)
         self.assertEqual(len(assess.call_args_list), 3)
         self.assertEqual([isinstance(c.args[1], PreparedRequirements) for c in assess.call_args_list],
@@ -202,6 +206,8 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertNotIn('rows', first)
         self.assertIn('rows', meter.scientific_best['demo/coarse']['assessment'])
         meter.finish()
+        saved = json.loads(path.read_bytes())['payload']['best_observed_by_stage']['demo/coarse']
+        self.assertEqual(saved['grid_sha256'], expected_grid_sha)
 
     def test_window_mock_step_transition_preserves_bests_and_counts(self):
         from lpf.rf_core.model import RFResponse
