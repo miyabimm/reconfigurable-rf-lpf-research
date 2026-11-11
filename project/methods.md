@@ -187,6 +187,18 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 
 旧T01〜T13と退役assertionの細目・当時のCI値は[固定開発文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあり、現在のCI分類・モジュールは`scripts/select_ci_tests.py`とそのテストを正本とします。45/66 inventory不一致等の旧known FAILを、後日の文書整理で過去PASSにしません。
 
+## 多初期値・座標正規化・有限格子での探索上の教訓（RF-T008旧条件）
+
+**適用範囲：** [#233多初期値](../data/validation/issue233_multistart_pilot/README.md)と[#237座標A/B](../data/validation/issue237_coordinate_ab/README.md)の**実行済み**有限探索。どちらも `full_lpf`、RF-T008 rev3 **trial**、当時の実効制約SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`、固定外部S2P・全6設定／28不連続区間を使用。現在のschema 2 RF-T008の実効SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`とは別条件であり、現行RF-F003の実績へ転用しない。
+
+- **開始点は収束とRF適合を分けて評価する。** #233は固定3構成×nominal/Sobol 2点の計9 startで数値収束7件、17点/区間の厳密H2/H3≥30dB適合0件。nominal 3本は既存1-startの損失値を再現し、3L0GJMのSobol index 1もnominalに近い損失へ到達したが、適合率や最悪ILの改善は観測されなかった。少数startで多初期値一般の無効性や最適解不在は結論できない。
+- **正規化は単独の解決策ではない。** #237は保存済み9初期値を物理座標A／正規化座標Bで各1回比較し、収束A=7/9、B=8/9、17点strict適合は両方0/9だった。両方式ともSciPy 1.18.1の既定絶対有限差分 `eps≈1.49e-8` を各座標単位に適用するため、Bでは物理有限差分幅もbox幅倍に変わる。座標変換だけの因果効果、安定した速度優位、正規化の標準採用は示されていない（実消費stage・nfevも異なる）。
+- **格子と制約残差は段階別に厳密判定する。** 粗2点／精3点のsolver `status=0` は密格子でのRF適合を意味しない。#233のEXP-091は精3点のH2/H3自体が30dBを上回っても、passband epigraph残差が微小負でchecked対象外となり、17点再評価ではB28のH2が29.713319dBへ低下した。30dB直下を丸め・許容差でPASSにせず、H2/H3・passband残差と測定格子を別々に報告する。
+- **epigraph変数 `t` を物理ILと取り違えない。** #233の非収束EXP-086/093では最終`t`が巨大な負値へ破綻した。報告するworst ILは**最終完全回路ベクトルをforward評価した値**であり、`t`でもsolver successでもない。破綻を含む開始点をRF適合Paretoへ昇格しない。
+- **次回の探索設計への示唆（未実行提案）：** まず失敗を「非収束／epigraph破綻」「厳密閾値直下」「周波数格子内部の見落とし」に分ける。回復法・座標系を比べるなら、初期値・有限差分の**物理**摂動量・制約閾値/guard・評価格子・予算を固定し、収束、strict適合、IL、費用を別指標で比較する。17点も連続帯域保証ではなく、今回strict候補0のため1,001点/区間・84点独立MNA・電力／受動性の後段検証は**未実施**。方法の採用や追加実験を承認したものではない。
+
+代表値・9ペアの全記録と限界は[結果の整理](results.md#rf-t008旧条件の多初期値と座標ab比較)および各[元集計](../data/validation/issue233_multistart_pilot/report.json)・[対照集計](../data/validation/issue237_coordinate_ab/report.json)を参照する。この統合は既存結果の読取りであり、新しいRF計算・EXP・独立検証を実施していない。
+
 ## BSF合成と有限Q損失からの設計仮説
 
 以下は2026-10-14の文献・旧RF-T004研究の統合であり、**新規合成の実行報告や現行RF-F003適合の証明ではありません**。元の文献調査・導出全文は[整理前Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs/research)にあります。
