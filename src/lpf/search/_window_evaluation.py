@@ -4,7 +4,8 @@ from lpf.timing import timed_call, timed_method
 
 from ._forward_window import ForwardJournal
 from ._job_evaluation import FixedJobEvaluation
-from .component_constraints import validate_values
+from .component_constraints import (validate_values, physical_bounds, validate_search_box,
+                                    _validate_values_with_bounds, _check_vector_box)
 from .performance import evaluate_requirements, prepare_requirements, summarize_mandatory
 from .storage import plain, vector_sha
 from .evaluation import raw_numbers
@@ -61,6 +62,10 @@ class WindowJobEvaluation(FixedJobEvaluation):
         self.progress = {}
         self.scientific_best = {}
         super().__init__(plan, definition, policy, arm, path, spec, root=root)
+        self.physical_bounds = physical_bounds(definition, self.model.schema, policy)
+        validate_search_box(spec.data['bounds'], self.physical_bounds)
+        _validate_values_with_bounds(definition, self.model.schema, spec.data['start']['vector'],
+                                     policy, self.physical_bounds, frozen_model=self.model)
         self.result['kind'] = 'development_window_raw_v1'
         chosen = next(a for a in self.data['config']['arms'] if a['name'] == arm)
         self.hybrid_stages = {f"{arm}/{step['name']}": step['aggregation']
@@ -197,11 +202,20 @@ class WindowJobEvaluation(FixedJobEvaluation):
             row['vector'] = x.tolist()
             if x.ndim == 1 and x.dtype.kind in 'fiu' and np.all(np.isfinite(x)):
                 row['vector_sha256'] = vector_sha(x)
-            physical = timed_call(getattr(self, 'timer', None), 'physical_validation', validate_values,
-                                  self.definition, self.model.schema, x, self.policy, frozen_model=self.model)
+            compact_search = (self.stage.startswith(self.arm+'/') and not self.debug_history and
+                              not self.spec.data['spot_checks'].get(self.stage))
+            if compact_search:
+                timed_call(getattr(self, 'timer', None), 'physical_validation',
+                           _check_vector_box, x, self.physical_bounds)
+                physical = None
+            else:
+                physical = timed_call(getattr(self, 'timer', None), 'physical_validation', validate_values,
+                                      self.definition, self.model.schema, x, self.policy, frozen_model=self.model)
             x = np.asarray(x, dtype=float)
             x.setflags(write=False)
-            row.update(vector_sha256=vector_sha(x), physical_checks=physical)
+            row['vector_sha256'] = vector_sha(x)
+            if physical is not None:
+                row['physical_checks'] = physical
             n = len(self.grid.frequency_hz)
             self._check_budget(n)
             self.journal.begin_forward()
@@ -252,6 +266,12 @@ class WindowJobEvaluation(FixedJobEvaluation):
                        (1, a['max_violation_db'], a['sum_violation_db'], a['worst_il_db'], row['vector_sha256']))
                 previous = self.scientific_best.get(self.stage)
                 if previous is None or key < previous['_key']:
+                    # Only candidates retained as scientific best need the full
+                    # physical evidence; the forward already performed RF-Core SPD.
+                    if physical is None:
+                        physical = timed_call(getattr(self, 'timer', None), 'physical_validation',
+                            validate_values, self.definition, self.model.schema, x, self.policy,
+                            frozen_model=self.model)
                     detailed = (evaluate_requirements(response, self.requirements, requested_grid=self.grid)
                                 if compact_search else a)
                     full = plain(detailed)
