@@ -234,7 +234,8 @@ class WindowJobEvaluation(FixedJobEvaluation):
                 assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
                                         response, self.prepared_requirements)
                 assessment.update(summarize_mandatory(assessment, self.prepared_requirements))
-                row['assessment'] = assessment
+                row['assessment'] = {key: assessment[key] for key in
+                                     ('worst_il_db', 'strict_feasible', 'max_violation_db', 'sum_violation_db')}
             else:
                 assessment = timed_call(getattr(self, 'timer', None), 'requirements', evaluate_requirements,
                                         response, self.requirements, requested_grid=self.grid)
