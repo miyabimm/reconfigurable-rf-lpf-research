@@ -22,6 +22,12 @@ class TimingTests(unittest.TestCase):
     setup_model = MinimalWorkerTests.setup_model
     prepare = MinimalWorkerTests.prepare
 
+    def test_retained_start_input_byte_identity(self):
+        import hashlib
+        starts = ROOT / 'project/diagnostics/issue401_starts_1002.json'
+        self.assertEqual(hashlib.sha256(starts.read_bytes()).hexdigest(),
+                         '63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab')
+
     def test_solver_path_and_plain_equivalence(self):
         _, _, _, _, plain = self.prepare()
         _, _, _, _, timed = self.prepare()

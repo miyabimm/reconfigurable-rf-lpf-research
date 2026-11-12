@@ -49,8 +49,9 @@ def main():
         raise ValueError(f'Source mismatch: {changed}; STOP')
     names = ('issue401_benchmark.py', 'issue401_timing.py')
     scripts = {name: digest(HERE / name) for name in names}
-    if any(digest(OLD / 'project/diagnostics' / name) != scripts[name] for name in names):
-        raise ValueError('Benchmark scripts differ; STOP')
+    starts = HERE / 'issue401_starts_1002.json'
+    if digest(starts) != '63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab':
+        raise ValueError('Original start bytes mismatch; STOP')
     sources = {k: sha(v) for k, v in identities.items()}
     order = [('old', True), ('new', True)] + [(mode, False) for mode in ('old', 'new', 'new', 'old') * 5]
     out.mkdir(exist_ok=False)
@@ -60,14 +61,17 @@ def main():
     reference = None
     for i, (mode, warmup) in enumerate(order):
         root = roots[mode]
-        if sha(source_identity(root)) != sources[mode] or any(digest(root / 'project/diagnostics' / n) != scripts[n] for n in names):
+        if (sha(source_identity(root)) != sources[mode] or
+                any(digest(HERE / n) != scripts[n] for n in names) or
+                digest(starts) != '63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab'):
             raise RuntimeError('Source changed; STOP, no retry')
-        command = [sys.executable, str(root / 'project/diagnostics/issue401_benchmark.py'),
+        command = [sys.executable, str(HERE / 'issue401_benchmark.py'),
                    '--mode', 'plain', '--source-sha', sources[mode]]
         prefix = f'{i:02d}-{mode}'
         save(out / (prefix + '.started.json'), dict(sequence=i, warmup=warmup, command=command,
              max_forward=100, samples_per_forward=70))
         env = os.environ.copy(); env['PYTHONPATH'] = str(root / 'src')
+        env['ISSUE401_STARTS_PATH'] = str(starts)
         result = subprocess.run(command, cwd=root, env=env, text=True, capture_output=True, check=False)
         save(out / (prefix + '.json'), dict(sequence=i, warmup=warmup, mode=mode,
              returncode=result.returncode, stdout=result.stdout, stderr=result.stderr))

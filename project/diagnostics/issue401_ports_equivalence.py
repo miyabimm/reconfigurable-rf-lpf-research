@@ -30,7 +30,7 @@ def main():
     ref = plan.data['config']['definition']
     definition = definition_from_data(json.loads((ROOT / ref['path']).read_bytes()))
     policy = load_constraint('RF-T008', root=ROOT, allow_trial=True)
-    start = load_explicit(ROOT / 'project/diagnostics/issue375/starts-1002.json')[1002]
+    start = load_explicit(ROOT / 'project/diagnostics/issue401_starts_1002.json')[1002]
     if (plan.sha256 != '8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e' or
             start['vector_sha256'] != '6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f' or
             vector_sha(start['vector']) != start['vector_sha256']):

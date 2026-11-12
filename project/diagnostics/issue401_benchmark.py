@@ -21,7 +21,7 @@ from lpf.timing import TimerCollector
 from issue401_timing import instrument
 
 CONFIG = 'project/diagnostics/issue377/baseline.yaml'
-STARTS = ROOT / 'project/diagnostics/issue375/starts-1002.json'
+STARTS = Path(os.environ.get('ISSUE401_STARTS_PATH', ROOT / 'project/diagnostics/issue401_starts_1002.json'))
 VECTOR = '6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f'
 STARTS_SHA = '63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab'
 PLAN = '8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e'
