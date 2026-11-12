@@ -187,6 +187,16 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 
 旧T01〜T13と退役assertionの細目・当時のCI値は[固定開発文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあり、現在のCI分類・モジュールは`scripts/select_ci_tests.py`とそのテストを正本とします。45/66 inventory不一致等の旧known FAILを、後日の文書整理で過去PASSにしません。
 
+## 過去RF-F003と試験トポロジーの比較境界
+
+**2026年10月の旧条件のみに適用する教訓：** [実行済みの正式/試験別結果](results.md#正式rf-f003旧版とrf-t005t007試験の固定比較2026-10)を参照。制約IDだけでなく実効SHA・可変C個数・接地DTC付属寄生・追加阻止帯・固定外部S2P・測定格子・検証深度を一致させて比較する。旧RF-F003 `f8571020...`や旧RF-T005/T006/T007の局所値を現行schema2の正式RF-F003 `e12c42b1...`の達成値に転用しない。
+
+- **構造変更は目的ごとに再最適化する。** RF-T005で3枝のCvが使える場合と正式RF-F003の2枝、RF-T007で接地DTCごとに0.5pF/Q40を強制する場合は同じ回路でも別条件。#EXP-055でCv接続を変更して4LのILを0.875795→0.817366dBに改善したが、内部30dB guardは約0.005dBであり製造余裕の証明ではない。
+- **追加阻止帯は通過損失を増やしうる。** RF-T006の全設定3〜6GHz≥20dB追加によりEXP-048は面積5⅓でIL2.920706dB。EXP-049のQ33モデル・面積18でもIL1.166797dBで目標1.1dB未達。Lの公表値域（0.8nH下限）と定数Q/SRF実現性を区別し、20dB達成の狭い0.080dB余裕を物理保証としない。
+- **磁気結合は図式・signed k・全行列SPD・実現性を分ける。** 歴史的24候補の構造CSVは旧14候補の電気接続を`unknown`とし、EXP-042の一部接続も関連EXP-047資料からの推定だった。signed kのベクトル一致は巻線極性、PCB配置、Q(f)、受動性の製作後保証ではない。旧棚卸しで照合できたGit blob SHAやZIP CRCもネットワークの独立MNA再計算とは異なる。
+
+今回の整理は既存保存結果の要約のみで、新しい可変C上限・評価指標・RF topology判定やBSF合成式を変更しない。正式制約は[active registry](../rf/constraints/registry.json)で判断する。
+
 ## 多初期値・座標正規化・有限格子での探索上の教訓（RF-T008旧条件）
 
 **適用範囲：** [#233多初期値](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/README.md)と[#237座標A/B](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/README.md)の**実行済み**有限探索。どちらも `full_lpf`、RF-T008 rev3 **trial**、当時の実効制約SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`、固定外部S2P・全6設定／28不連続区間を使用。現在のschema 2 RF-T008の実効SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`とは別条件であり、現行RF-F003の実績へ転用しない。

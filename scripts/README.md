@@ -8,9 +8,8 @@
 |---|---|---|
 | RF候補の台帳監査 | [audit_research_catalog.py](audit_research_catalog.py) | 登録候補・元証拠と条件IDの健全性を監査 |
 | 候補・RF数値監査 | [audit_results.py](audit_results.py) | manifest／候補等を監査。EXP-047原manifestは非標準のまま保持し、[出典固定の索引専用アダプター](../src/lpf/legacy_manifest_adapter.py)で例外的に照合。新規runの厳格検証は維持 |
-| 条件別パレート報告 | [report_research_pareto.py](report_research_pareto.py) | 既定は現行の旧系統台帳。`--catalog data/catalog/phase2_candidate_catalog_20261017.csv`指定で2026-10-17固定**24候補・10条件群**を出力 |
+| 条件別パレート報告 | [report_research_pareto.py](report_research_pareto.py) | 現存する`data/research_candidate_register.csv`などを明示的に読み取る汎用の同条件別解析器。旧24候補固定カタログは削減済み |
 | 候補のPCB可変Cルール | [verify_no_pcb_tunable_candidates.py](verify_no_pcb_tunable_candidates.py) | 対象条件の候補種別制限を検証 |
-| 統合24候補の派生生成・照合 | [build_phase2_candidate_catalog.py](build_phase2_candidate_catalog.py) | 旧14件固定CSV＋最新10件の不変出典をSHAで検証して生成、`--check`は再生成せず一致判定 |
 | 歴史的W0データ・リンク監査（現在の常用対象外） | [旧tree監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_tree.py)、[旧link監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_links.py) | 2026-10-17の固定コミットを基準とした一時監査。必要時は[時点固定の監査案内](../project/legacy_git_replay.md)で元版を取得 |
 
 ## 共通実装と実験固有スクリプトの区別
@@ -21,7 +20,7 @@
 
 ## 過去の管理スクリプト（mainから退役）
 
-2026-10-15の出典棚卸し・46ファイル保全分類を生成した旧ツールは、研究原本を維持したまま既定のリポジトリから退役。必要時は [build_reference_inventory.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py) と [triage_unlinked_evidence.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/triage_unlinked_evidence.py) を固定コミットから取り出す。旧報告書・分類CSV・原実験データは削除しない。
+2026-10-15の出典棚卸し・46ファイル保全分類を生成した旧ツールは、研究原本を維持したまま既定のリポジトリから退役。必要時は [build_reference_inventory.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py) と [triage_unlinked_evidence.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/triage_unlinked_evidence.py) を固定コミットから取り出す。当時の旧報告・分類CSVは[固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data)から参照しますが、現行正式EXPの原記録やRF保存ゲートは不変更です。
 
 ## 新規EXP保存ゲート（main運用中）
 

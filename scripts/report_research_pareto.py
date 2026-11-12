@@ -34,8 +34,8 @@ def dominates(a, b):
 def make_report(root=ROOT, catalog_path="data/research_candidate_register.csv"):
     """Report a selected curated catalog; default remains the historical 14-row source.
 
-    The 2026-10-17 unified view is opt-in via --catalog, and must first pass
-    scripts/build_phase2_candidate_catalog.py --check.
+    Historical 2026-10-17 unified catalog has been retired in Issue #397.
+    Explicit --catalog paths can still be used for present curated CSV inputs.
     """
     root = Path(root)
     records = _rows(root, catalog_path)
@@ -168,8 +168,7 @@ def main():
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, required=True)
     parser.add_argument("--catalog", default="data/research_candidate_register.csv",
-                        help="curated CSV source; use data/catalog/phase2_candidate_catalog_20261017.csv "
-                             "for the 24-row unified Phase 2 view")
+                        help="curated CSV source; default data/research_candidate_register.csv")
     args = parser.parse_args()
     view, summary = make_report(catalog_path=args.catalog)
     for p, data in (
