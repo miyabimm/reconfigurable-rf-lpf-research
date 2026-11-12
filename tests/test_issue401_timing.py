@@ -49,9 +49,12 @@ class TimingTests(unittest.TestCase):
         with timing.instrument(worker, timer, deep=True):
             result = worker.solve()
         rows = timer.snapshot()
-        for name in ('l3_port_admittance', 'l3_node_admittance', 'l3_matrices', 'l3_power_response'):
+        for name in ('l3_port_admittance', 'l3_node_admittance', 'l3_matrices', 'l3_power_response',
+                     'l3_decode', 'l3_encode', 'l3_y_to_s_solve'):
             self.assertEqual(rows[name]['count'], result.nfev)
             self.assertEqual(rows[name]['failed'], 0)
+        self.assertEqual(rows['l3_cascade']['count'], 2 * result.nfev)
+        self.assertEqual(rows['l3_cascade']['failed'], 0)
 
     def test_failure_propagates_and_counts(self):
         _, _, _, _, worker = self.prepare()
