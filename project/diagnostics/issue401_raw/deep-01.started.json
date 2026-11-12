@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/home/user/src/reconfigurable-rf-lpf-research/.venv/bin/python",
+    "/home/user/src/reconfigurable-rf-lpf-research/project/diagnostics/issue401_benchmark.py",
+    "--mode",
+    "deep",
+    "--source-sha",
+    "d9f52dee2b49abc773d9e1f1481dd275ba20351752308ab2588c79bdaf4b8201"
+  ],
+  "reservation_forward": 100,
+  "reservation_samples": 7000,
+  "sequence": 1,
+  "warmup": false
+}
