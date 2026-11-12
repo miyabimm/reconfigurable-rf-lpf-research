@@ -31,9 +31,12 @@ def hashes():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--post-ports', action='store_true', help='write a new post-optimization measurement set')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--post-ports', action='store_true', help='write the first post-optimization measurement set')
+    group.add_argument('--post-ports-repeat', action='store_true', help='write a separate repeat measurement set')
     args = parser.parse_args()
-    output = HERE / 'issue401_postports_raw' if args.post_ports else OUT
+    output = (HERE / 'issue401_postports_repeat_raw' if args.post_ports_repeat else
+              HERE / 'issue401_postports_raw' if args.post_ports else OUT)
     if any(os.environ.get(k) != '1' for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')):
         raise ValueError('Single-thread environment required')
     identity, scripts = source_identity(ROOT), hashes()
