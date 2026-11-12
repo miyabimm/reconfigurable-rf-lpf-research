@@ -60,7 +60,7 @@ unknown/中断/不一致では予約とrawを保持してSTOP。自動retry・re
 ```bash
 uv sync --frozen
 uv run --frozen python scripts/verify_phase2_cleanup_w1_links.py --active-only
-uv run --frozen python -m unittest -v tests.test_issue325_campaign tests.test_issue325_campaign_gates tests.test_issue321_development_cli
+PYTHONPATH=tests uv run --frozen python -m unittest -v test_issue325_campaign test_issue325_campaign_gates test_issue321_development_cli
 uv run --frozen python scripts/audit_new_experiment_storage.py audit
 ```
 

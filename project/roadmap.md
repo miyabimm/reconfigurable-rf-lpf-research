@@ -2,6 +2,8 @@
 
 **現況：2026-11-13／Phase 2継続。** 本書は開発の到達度と未検証項目の入口。日付別履歴はIssue/PR、保存数値は[results.md](results.md)と[EXP索引](../data/experiment_index.csv)を参照。正式条件は[active registry](../rf/constraints/registry.json)、帯域は[bands.csv](../rf/bands.csv)。
 
+現役の診断・限定実証の入口は[diagnostics/README.md](diagnostics/README.md)です（本整理では同ディレクトリの変更を行いません）。研究の承認境界は[運用正本](instructions.md)。
+
 ## 現行開発の到達点
 
 | 系統 | main統合済み／確認済みの範囲 | 未実施・制限 |
