@@ -6,4 +6,6 @@
 
 EXP-086〜112の17点診断は、それぞれの`EXP-NNN/validation/17pt.json`に集約しています（Issue #397／PR #399）。移動前と数値JSONのGit blob/SHA-256は同一で、manifest・storage_recordは証拠の参照パスだけを更新しています。元記録の逐語原文は移動前の[固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/6ac982306cd5899dee99b40dee660d3a6986db89/experiments/chatgpt_topology_search/runs)に残ります。新規EXPの保存ゲートを変更するものではありません。
 
+RF-T008 rev3の旧Pareto原証拠は[EXP-058/pareto/](chatgpt_topology_search/runs/EXP-058/pareto/)（5件）と[EXP-059/pareto/](chatgpt_topology_search/runs/EXP-059/pareto/)（1件）に、元JSONのGit blob/SHA-256を変えずに集約しました。manifestとstorage_recordの証拠パスだけを更新しています。EXP-058の記録状態は`running`のままで、数値結果の存在を保存完了と混同しません。EXP-062〜065の正式チェックポイント・MNAは各EXPの既存パスを維持し、横断レビュー2件は元の`data/pareto_snapshots/`に残しています。
+
 歴史的な[matching_limit/](matching_limit/)のコードは現行RF-F003実行器ではありません。現在の探索入口と検証手順は[project/README](../project/README.md)を参照します。

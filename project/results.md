@@ -15,16 +15,28 @@
 
 ## RF-T008 v3の横断比較（2026-10-20の固定履歴）
 
-EXP-062〜065の264試行（249収束・15非収束）、全6設定・28区間×1,001点の記録です。後続EXPを含む最新値への更新でも正式RF-F003への昇格でもありません。
+**条件：** RF-T008 rev3 **試験**、当時の実効SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`、`full_lpf`、固定外部S2P、50Ω源／60−j40Ω負荷、全6設定・28個別区間×1,001点の有限評価。後続schema2の実効SHAや正式RF-F003の成果に読み替えない。EXP-062〜065は合計264 start（249収束・15非収束）、選別10 checkpointの保存済み84点独立枝電流MNA証拠をレビューした。
 
-| chip面積 | worst IL dB | 出典 |
-|---:|---:|---|
-| 3 / 3⅔ / 4⅓ | 1.010350255 / 0.934027580 / 0.928118761 | EXP-058。EXP-063は24/24両段階収束、固定3L配置で更新なし |
-| 4 | 0.929126781 | EXP-064、4L/0GJM・PCB-C配置 |
-| 5⅓ | 0.829711540 | EXP-065で更新（EXP-062時点0.833505430） |
-| 6 | 0.827841148 | EXP-062、4L/3GJM |
+| chip面積 | L / GJM | 有限格子worst IL [dB] | 観測ベストの出典 |
+|---:|---|---:|---|
+| 3 | 3L / 0GJM | 1.010350255 | EXP-058、EXP-063で再確認 |
+| 3⅔ | 3L / 1GJM | 0.934027580 | EXP-058、EXP-063で再確認 |
+| 4 | 4L / 0GJM | 0.929126781 | EXP-064、PCB-C配置探索で更新 |
+| 4⅓ | 3L / 2GJM | 0.928118761 | EXP-058、EXP-063で再確認 |
+| 4⅔ | 4L / 1GJM | 0.837133749 | EXP-059、接地PCB-C配置で更新 |
+| 5⅓ | 4L / 2GJM | 0.829711540 | EXP-065、EXP-062時点0.833505430から更新 |
+| 6 | 4L / 3GJM | 0.827841148 | EXP-062 |
 
-選別10解の部品・SPD・既存MNA記録を照合したレビューであり、レビュー自体が全28区間を独立RF解法で再計算したものではありません。[統合スナップショット](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)と[逐語レビュー原文](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/3370ea4/docs/results/rf_t008_pr148_151_independent_review_20261020.md)を参照。EXP-058のrunning/preservedとreadbackの区別を後日のレビューで遡及変更しません。
+これは**探索した構成集合内の観測非劣解**であり、大域Paretoではない。面積6⅔（4L/4GJM）の局所ベストIL=0.837795449dBは、より小さい面積6の0.827841148dBに**支配**され、上表には加えない。
+
+**トポロジーと失敗の教訓：**
+- 面積4の4L/0GJMはEXP-058時点の局所best 0.948650159dBでは面積3⅔に支配されていたが、EXP-064の12配置×2初期値（24/24収束）で0.929126781dBに改善し、新しい観測非劣点となった。最初の配置で不利でも4L構成一般が不可能という証拠ではない。
+- EXP-059の4L/1GJMは**23 PCB配置×2 DTC配置＝46回路、92 start（81収束・11非収束）**を実施し、41回路で収束済み30dB候補を得た。面積4⅔の保存元0.854367459dBから**0.837133749dB**へ改善。最良はN4–GNDとN3–GNDの接地PCB-C **2枝**（未装着の3枝目のゼロ埋め座標は部品ではない）。PCB-Cを単純に増設するより、接地点・Q・DTC配置を含めて共同最適化する価値を示す限定観測であり、部品の取り外し**だけ**の因果効果ではない。
+- EXP-063の3L検証は24/24収束しても、対象3面積で既存EXP-058のPareto値を実質更新しなかった。EXP-065は8固定C配置×4 DTC配置×3 Lグラフ＝**96回路／192 start（178収束・14非収束）**で面積5⅓を0.833505430→0.829711540dBへ改善。ただし狭い試行範囲での非改善も、当該構成一般の限界証明ではない。
+
+選別点のH2/H3は有限格子でほぼ30.005dBの内部guard近傍。**公称35dBとIL≤0.30dBは未達**。保存済み独立MNA報告・部品/SPD・電力残差を第三者が照合したが、レビュー自体は全28区間の独立RFネットワーク再計算ではない。連続帯域極値、Q(f)、SRF、物理的同時signed k、EM、温度／公差、IC/PCB実面積、実測は未確認。**EXP-058のmanifest/storage_recordは依然`running`であり、数値選別点の存在を保存完了へ遡及修正しない。**
+
+出典：現行の[EXP-058選抜ベクトル](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-058/pareto)・[EXP-059配置比較](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-059/pareto)・EXP-062〜065の各checkpoint/MNA、継続保存する[横断レビューJSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)と[先行比較JSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/pareto_snapshots/rf_t008_exp062_exp063_exp064_cross_pr_20261020.json)、[レビュー原文](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/3370ea4/docs/results/rf_t008_pr148_151_independent_review_20261020.md)。派生5スナップショットは知見統合後に削減し、原文は[削減前のGit固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)でのみ参照する。この編集では新しいRF計算・EXP・独立MNAを実施していない。
 
 ## RF-T008旧条件の多初期値と座標A/B比較
 
