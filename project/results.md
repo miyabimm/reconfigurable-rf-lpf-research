@@ -73,9 +73,30 @@
 
 **再現性／削減境界：** 実行時のPlan・source・grid・seed/vector・環境・raw SHAの逐語原文は[整理前の固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/504058c52b360e02e37649f509d257dea139ad64/project/diagnostics)で確認できる。#372/#375の全rawは**Git外のローカル原本**を前提とし、その将来可用性は未確認。#391の生計時rawもGit外、#393の生JSONは削減対象。原文・再実行可能性の削減は**科学的結果の変更ではない**。現在の性能計測用`issue391_benchmark.py`は後続[#394比較](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/project/diagnostics/issue394_ab)でも利用しており保持するが、当時の実測値を最新の性能と呼ばない。新しいRF評価・Pilot/EXP・本番ベンチはこの整理で実行していない。
 
+## 旧data/validationの整理とRF-F002の教訓（Issue #397）
+
+2026年10月のRF-F001/F002、RF-T003/T004、旧Phase 2 manager/solverの補助記録を分類した。削減前の`data/validation/`は**182件・4,351,659 bytes**。今もEXP-047の非標準manifestを元SHA照合して正式実験索引に使う`exp047_legacy_manifest_adapter_20261017.json`（1,946 bytes）だけは保持し、**旧計算補助181件・4,349,713 bytesを削除**する。旧原文は[変更前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)から確認できるが、現行treeだけでの再実行は不可。
+
+**RF-F002旧実効SHA `f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2`での観測**（現行正式RF-F003と比較しない）：
+
+| 旧EXP | 実行済み成果と限界 |
+|---|---|
+| **032** | 4 start、maxiter各5のfull-LPF worker数比較で2-workerが約**1.853倍**。全点非収束／H2/H3必須30dB未達、長時間本番Campaignの高速化保証ではない |
+| **033** | 座標正規化・有限差分刻みの違いを調査、maxiter120でIL≤0.30dB候補未達。異なるソースSHAやdirty worktreeを同一実験条件とみなさない |
+| **034〜037** | SIGINT/SIGTERM・PID/lock・resumeのライフサイクル挙動を確認。EXP-035の1-worker **347.126秒**／2-worker **201.347秒**は限定ベンチ。元checkpointのoutput node 3をmanager node 2へ**remapせず**投入したため、そのoptimizer値は元EXP-017/023候補のRF再評価ではない |
+| **038** | remap訂正後の2 topology×2 startが30/35dB stageで収束し、21点/区間で35dBを許容差内達成。ILは代表**0.378349/0.459808dB**、0.30dB未達。初期値近傍の同じ局所解は大域最適性ではない |
+| **039** | 9点から17点/区間への最適化格子変更で2局所点のIL差**1e−11dB未満**、21点で再評価。連続帯域の極値保証ではない |
+| **040** | scaled FTOL=1e−8/1e−6の2初期値は類似解。unscaledはともにmaxiter=60に達し非収束。EXP-017由来のunscaled IL約**0.318693dB**は30dB tolerance内であって35dB適合ではない |
+| **041** | 30dB点IL約**0.318693dB**、35dB点約**0.378349dB**。収束・許容差・strict適合とIL目標を分離する |
+| **016/017・旧T003/T004** | [旧試験結果](#旧rf-f001t003r2の成果と限界)と[回収・訂正](#訂正回収再現性元記録を上書きしない)へ代表値を抽出済み。EXP-017の完全回収ベクトルは各EXP側にあり、旧trialを現行正式値に転用しない |
+
+**科学的境界：** 現行のEXP-016/017/023/034〜041の原manifest・選抜checkpoint・実験索引を改竄しない。EXP-034〜041の旧manifestに登録された`data/validation/`補助原本は欠損するが、**元manifest自体のSHAで固定した8件の履歴索引監査のみ**、欠損した旧データを除外する。現存する登録証拠のSHA照合は継続し、直接`validate_manifest`、新規EXPのG0〜G5、正式RF/独立MNAの科学回帰には例外を設けない。EXP-047用overlayのSHA・内容はそのまま維持する。旧RF-T003専用リプレイスクリプト／専用テストは原入力と一体で削除し、現役のSPD・受動性・電力保存・独立枝電流MNA検査を残す。
+
+**未実施：** 旧全候補の再最適化、1,001点全帯域と84点MNAの再計算、連続周波数極値・EM/Q(f)/SRF/公差・実測。旧記録中の有限結果と今回の整理作業を混同しない。
+
 ## 旧RF-F001/T003・R2の成果と限界
 
-以下は旧一定Q・旧可変C範囲・強結合モデルの履歴で、現行RF制約へ持ち越しません。各候補の全L/C/kと6設定Cvは[保存validation](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/data/validation)、探索の試行数・中断・未実行範囲は[整理前の逐語文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあります。新たなRF再計算は行っていません。
+以下は旧一定Q・旧可変C範囲・強結合モデルの履歴で、現行RF制約へ持ち越しません。各候補の全L/C/kと6設定Cvは[削減前の固定validation Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)、探索の試行数・中断・未実行範囲は[整理前の逐語文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあります。新たなRF再計算は行っていません。
 
 - **EXP-015/R2**：[固定監査JSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/r2/EXP015_COMMON_MODEL_AUDIT.json)は4候補を7,001点/区間で再現（保存メトリック差0）、各72点の3方式照合で最大利得差3.17e−15、電力残差3.36e−17W。旧3CのHV/HQ候補はRF-T002接続条件に適合、2C候補はF001/T001/T002いずれも不適合。全4件30dBを満たすが35dB・IL0.30dBは未達。API移管計画と実装済みを混同しない。
 - **EXP-016旧F001探索**：GJM Q80とPCB-C Q40は別部品。元217探索・追補の実行環境と完全ログは不明。初期報告を後のRF-T004正式検証と読み替えない（下記の事後追試を区別）。
@@ -83,7 +104,7 @@
 
 RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6af73a495a2a9cf8f512ccb45ab08`）、1対GND＋1非GND橋絡Cv、各0〜4pF/Q80、隣接|k|≤0.4の**試験**です。下表の主要選抜解は28個別区間×7,001点＋84代表点独立枝電流MNA、SPD・電力の元検証記録を持ちます。全探索試行がこの深度で検証済みという意味ではありません。
 
-| 系列／チップ費 | 保存時の最悪IL dB・最小減衰 | 元JSON（data/validation/以下）と解釈 |
+| 系列／チップ費 | 保存時の最悪IL dB・最小減衰 | 旧JSON（削減前data/validation/）の出典と解釈 |
 |---|---|---|
 | 4L/2GJM、5⅓ | 0.376495319 / 30.000828dB | `rft003_20261012/target30_results.json`。IL未達。比較35dB版0.491136506との差は異なる共同最適化解 |
 | 5L/2GJM、6⅓・初期拡張 | 0.361230713 / 約30dB | `rft003_20261013/phase2_5l_results.json`。配列変更後0.348361188は`continued_5l_coupling_row.json`。IL未達 |
@@ -101,7 +122,7 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 ### EXP-016/017と旧RF-F002 runner
 
-- **EXP-017 0.301248245dBは30dB点、35dB点ではない。** 当初RG-001 openだった完全ベクトルは後日回収済み。旧「未回収」を現在の結論にしない。[回収追試](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/validation/exp017_rf_f002_recovered_20261015/summary.json)はIL0.3012482451489075、H2 30.004999999986865、H3 30.004641701571376dB、電力残差1.8214596497756474e−17W。IL目標は未達。
+- **EXP-017 0.301248245dBは30dB点、35dB点ではない。** 当初RG-001 openだった完全ベクトルは後日回収済み。旧「未回収」を現在の結論にしない。[回収追試の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation/exp017_rf_f002_recovered_20261015/summary.json)はIL0.3012482451489075、H2 30.004999999986865、H3 30.004641701571376dB、電力残差1.8214596497756474e−17W。IL目標は未達。
 - 原ZIPの26member目録は[整理前の固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/exp017_rf_f002_source_zip_index_20261015.json)。元2,959B候補は`EXP-017/EXP017-LQW4-H30-NEAR.original.json`、SHA256 `fa997fb131a1237c41ec8a42ead80e40fe2436275a7e944837afecea9c387896`。`.recovered.json`は正規化表現でバイト原本ではない。ZIP本体と残り25memberはGit未収録、453局所試行の再最適化はしていない。
 - 別の`RF-T004-EXP017-bundle.zip`（118,646B、SHA256 `48175d3579d3814e5d3740858ee3959b88e9731b835cb2cd306ce6b0093ae640`）は**RF-T004試験**の証拠。14,001点のIL `0.2999624819232782` をRF-F002欠落ベクトルと取り違えない。元ZIPはGit未収録。
 - **EXP-016 READMEの完了主張とmanifestのunknown/not_runは時点が違う**。後日の4保存候補の7,001点/区間＋84点独立MNA追試は`data/validation/exp016_ci_replay_20261014.json`と`data/validation/exp016_rf_t004_numpy2_replay_20261014/summary.json`に別保存。CI 38587242196、commit `90c87551c4720441ba7120f1457ea318c752dc34`、RF-T004 effective SHA `c66302a281a1fdb88da355fc44dac1ef3b1c4e18e8ff297db9e842b219b5b0c4`。保存ベクトルの数値再現であって、初回探索・環境・事前登録の遡及証明ではない。

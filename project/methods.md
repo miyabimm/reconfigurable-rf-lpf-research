@@ -222,6 +222,15 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 
 以上は当時の診断から再利用する**判断基準**であり、新しいPilot、RF/EXP、ベンチマーク、最適化を今回実行・承認したものではない。旧raw・一回限りの診断コードを削除しても、現役の`MinimalWorker`・科学的回帰、後続#394でも使用した共通`issue391_benchmark.py`は残す。
 
+## 旧RF-F002のsolver・manager設計の教訓（Issue #397）
+
+[旧RF-F002の実測・非収束記録](results.md#旧datavalidationの整理とrf-f002の教訓issue-397)は、現在の正式RF-F003で再実行していない。学ぶべき点は次の四つである。
+
+- **checkpoint端子の写像を保存前に検証する。** 旧EXP-034〜037では元output node 3とmanager node 2のremapを欠き、ベンチ・復旧の検査結果が候補RF再評価結果でない。端子・接地・接続roleと全設定のforward一致を新規実験のG1で明示する。
+- **solver成功と厳密RF/ILを分離する。** 旧EXP-038の35dBは`1e−5dB`許容差内で、最悪ILは0.30dB未達。EXP-040のunscaledは非収束で、30dBと35dBの達成度も異なる。9/17点の局所安定性は28×1,001点・独立MNAや連続帯域の保証ではない。
+- **並列高速化を小さい旧負荷から外挿しない。** 旧4 start短時間の1.85倍と別の旧4taskの1.72倍は異なる条件。新規負荷では同一worker/seed/grid/sourceで反復・費用・停止状態を測る。
+- **旧証拠の退役と現役保存契約は別。** SHA固定のEXP-034〜041原manifestはそのまま保管。履歴索引に限って欠損した旧`data/validation/`補助証拠を除く。現存証拠・直接manifest検証・新規EXPのG0〜G5は厳格なSHA比較を維持する。
+
 ## BSF合成と有限Q損失からの設計仮説
 
 以下は2026-10-14の文献・旧RF-T004研究の統合であり、**新規合成の実行報告や現行RF-F003適合の証明ではありません**。元の文献調査・導出全文は[整理前Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs/research)にあります。
