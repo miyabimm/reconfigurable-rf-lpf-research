@@ -1,20 +1,20 @@
-# scripts/：探索・検証・監査の用途別案内（Phase 2）
+# scripts/：現役操作・監査の入口
 
-> 実行前に制約ID・コード・データ・実行状態を確認すること。以下の説明は**閲覧用索引**であり、個々のrunnerが正式RF-F003を実装済みとの主張ではない。新規実験の計算にはmainでの事前EXP番号予約・照合が必要。
+実行前に[運用正本](../project/instructions.md)、[現在地](../project/roadmap.md)、[RF制約](../rf/constraints/registry.json)を確認する。**スクリプトの存在は新規EXPや本番計算の承認ではない。**
 
-## 主要スクリプトの案内
+## 現役の用途
 
-| 系統 | スクリプト | 主な役割 |
-|---|---|---|
-| RF候補の台帳監査 | [audit_research_catalog.py](audit_research_catalog.py) | 登録候補・元証拠と条件IDの健全性を監査 |
-| 候補・RF数値監査 | [audit_results.py](audit_results.py) | manifest／候補等を監査。EXP-047原manifestは非標準のまま保持し、[出典固定の索引専用アダプター](../src/lpf/legacy_manifest_adapter.py)で例外的に照合。新規runの厳格検証は維持 |
-| 条件別パレート報告 | [report_research_pareto.py](report_research_pareto.py) | 現存する`data/research_candidate_register.csv`などを明示的に読み取る汎用の同条件別解析器。旧24候補固定カタログは削減済み |
-| 候補のPCB可変Cルール | [verify_no_pcb_tunable_candidates.py](verify_no_pcb_tunable_candidates.py) | 対象条件の候補種別制限を検証 |
-| 歴史的W0データ・リンク監査（現在の常用対象外） | [旧tree監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_tree.py)、[旧link監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_links.py) | 2026-10-17の固定コミットを基準とした一時監査。必要時は[時点固定の監査案内](../project/legacy_git_replay.md)で元版を取得 |
+| 用途 | スクリプト／扱い |
+|---|---|
+| schema2固定definitionの開発CLI | [run_rf_search.py](run_rf_search.py)、詳細は[project README](../project/README.md#開発用固定definition-cli)。正式EXPへ自動昇格しない |
+| RF評価・保存済み候補の監査 | [audit_results.py](audit_results.py)。旧EXP-047非標準manifestは[experiment_manifest.py](../src/lpf/experiment_manifest.py)のSHA固定index-only viewで索引照合。**削除済み専用adapterは使わない** |
+| 候補の台帳照合 | [audit_research_catalog.py](audit_research_catalog.py)、[report_research_pareto.py](report_research_pareto.py)。同条件・同格子・同検証深度のみ比較 |
+| 新規EXP番号の予約・照合 | [reserve_experiment_number.py](reserve_experiment_number.py)、[experiment_id_registry.py](experiment_id_registry.py) |
+| 新規EXP保存ゲート | [audit_new_experiment_storage.py](audit_new_experiment_storage.py)、[experiment_manifests.py](experiment_manifests.py) |
+| CI差分・選択回帰 | [classify_storage_ci.py](classify_storage_ci.py)、[select_ci_tests.py](select_ci_tests.py)、[audit.yml](../.github/workflows/audit.yml) |
+| 一時的なMinimalWorker開発ベンチ | [benchmark_minimal_worker.py](benchmark_minimal_worker.py)。非EXP・RF性能認定外 |
 
-## MinimalWorker開発ベンチ
-
-[benchmark_minimal_worker.py](benchmark_minimal_worker.py) は正式Job・EXPではない。例（trialを明示した既存Plan、出力先は呼出側で確保）：
+## 開発ベンチ（正式EXPではない）
 
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
@@ -24,42 +24,21 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   --arm hybrid --seed 1002 --mode plain > result.json
 ```
 
-`--mode timed` はL1/L2、`deep` はL3も記録。plainは計器を設置しない。stdout JSONをrunごとに保存し、失敗時のstderr・終了コードも別に保管する。source identityとscript SHA、Plan・RF入力・grid・starts/vector SHA、solver、環境・affinity・inclusive timersを記録する。任意の `--expected-source-sha256` / `--expected-script-sha256` はRF前に不一致を拒否する。`solver_s` は `worker.solve()` のみ（Hybrid単独ではない）、`total_s` はsetup＋solve、best_xの追加評価 `observation_s` / `observation_forward_count` はその外でsolver nfevに含まれない。dense・独立検証・保存台帳は実施しない。比較手順と限界は[methods](../project/methods.md#minimalworker性能診断の運用401408)参照。
+- `plain`は無計時、`timed`はL1/L2、`deep`はL3内訳も記録。包含区間は二重加算しない。
+- source/Plan/RF条件・grid・seed/完全vector・環境とscript SHAを記録する。`worker.solve()`と後段の追加`best_x`観測forwardは費用・時間境界を分離する。
+- `--expected-source-sha256` / `--expected-script-sha256`は任意の不一致拒否。旧新比較はwarmup除外・順序交替・分布と外れ値の提示を要する。
+- 利用価値と限界は[methods](../project/methods.md#minimalworker性能診断の運用401408)・[results](../project/results.md#minimalworker性能診断issue-401)に集約。`project/diagnostics/`のファイル自体はIssue #397で変更しない。
 
-## 共通実装と実験固有スクリプトの区別
-
-旧有限グラフ選別は[legacy_graph_search.py](../src/lpf/legacy_graph_search.py)、設定ハッシュと原子的JSON保存は[checkpoint_io.py](../src/lpf/checkpoint_io.py)にある。旧matchingの結合・可変C layout実装は現役APIから退役し、現行treeにない。元commitと元パスは[履歴索引](../archive/issue343/README.md)を参照し、`git show <元commit>:<元パス>`で取得する。変更していない`experiments/matching_limit/`の旧facadeからは現checkoutでimportできず、再現には元commitの環境が必要。P4-A有限選別予算は正式RF制約ではない。
-
-`full_lpf_checkpoint_import.py`は**実験固有または過去データ再現用**であり、今後の汎用RF探索入口ではない。RF-T008の旧`curate_exp062.py`～`curate_exp065.py`と`review_rft008_exp062_065.py`は、参照する派生集計と合わせて[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で退役した。元処理の逐語原文は[削減前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/scripts)でのみ参照できる。新規Pi Code専用の実装はまだない。
-
-## 過去の管理スクリプト（mainから退役）
-
-2026-10-15の出典棚卸し・46ファイル保全分類を生成した旧ツールは、研究原本を維持したまま既定のリポジトリから退役。必要時は [build_reference_inventory.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/build_reference_inventory.py) と [triage_unlinked_evidence.py](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f0337963688d2a7155b8e28488d6723f2578e73e/scripts/triage_unlinked_evidence.py) を固定コミットから取り出す。当時の旧報告・分類CSVは[固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data)から参照しますが、現行正式EXPの原記録やRF保存ゲートは不変更です。
-
-## 新規EXP保存ゲート（main運用中）
-
-EXP-050以降の開始前・保存完了・PR監査は [保存ポリシー](../project/experiment_storage_policy.md) と scripts/audit_new_experiment_storage.py を参照する。対象はEXP-050以降の新規runのmanifestとstorage_record。EXP-001～049（完了済みEXP-048/049を含む）は既存のまま保護し、書き換えない。
-
-~~~bash
-python scripts/audit_new_experiment_storage.py preflight EXP-NNN
-python scripts/audit_new_experiment_storage.py finalize EXP-NNN
-python scripts/audit_new_experiment_storage.py audit
-~~~
-
-## プログラム実行の前提
-
-通常のリポジトリ環境は `uv.lock` に固定されたuvで管理される。たとえば既存回帰を実行する場合はルートで次の操作を行う。
+## 新規EXPの保存と通常回帰
 
 ```bash
 uv sync --frozen
-uv run --frozen python scripts/audit_results.py
+python scripts/audit_new_experiment_storage.py preflight EXP-NNN
+python scripts/audit_new_experiment_storage.py finalize EXP-NNN
+python scripts/audit_new_experiment_storage.py audit
 uv run --frozen python -m unittest discover -s tests -v
 ```
 
-2026-10-17の[旧失敗run](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39015048662)はEXP-047の原manifest不足を検出した当時の証拠。その後[統合PR #71の全回帰CI](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39028160775)は**マージ前SUCCESS（325テスト）**。これは数値探索の完全再演・原実行SHA復元・物理実装の証明ではない。
-
-## 保全と変更のルール
-
-探索・検証スクリプトの変更に伴って原checkpointや実行済み結果を改変しない。新条件の数値を算出する場合は、コードSHA・制約SHA・bandsと固定S2P・格子・独立検証を記録する。Phase 3は明示承認まで停止。
-
-[全体README](../README.md) ／ [実験原本の案内](../experiments/README.md) ／ [結果の入口](../project/results.md)
+- G0 main予約→G1入力・source照合→G2 run→G3選別保存→G4 PR/CI→G5 remote readback/cleanup eligibility。詳細は[保存ポリシー](../project/experiment_storage_policy.md)。G5の可否判定はraw削除ではない。
+- 旧`full_lpf_checkpoint_import.py`、旧W0/W3監査、旧matching facade、廃止済みcurationは現役汎用入口ではない。古い実験コマンドの再実行は[固定Git履歴](../project/legacy_git_replay.md)と依存環境を確認する。
+- RF数値の新規採用には全6設定・28区間、SPD・受動性・電力保存、固定S2P、独立MNAを条件・検証深度つきで報告する。CI PASSだけで正式RF適合としない。
