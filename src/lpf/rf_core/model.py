@@ -151,11 +151,15 @@ class RFEvaluator:
     grid: EvaluationGrid
     pre: np.ndarray = field(init=False, repr=False)
     post: np.ndarray = field(init=False, repr=False)
+    source_ohms: complex = field(init=False, repr=False)
+    load_ohms: complex = field(init=False, repr=False)
 
     def __post_init__(self):
         if not isinstance(self.grid, EvaluationGrid):
             raise TypeError('Expected frozen EvaluationGrid')
         policy = self.model.resolved_policy
+        object.__setattr__(self, 'source_ohms', _fixed_port_impedance(policy, 'source_ohms'))
+        object.__setattr__(self, 'load_ohms', _fixed_port_impedance(policy, 'load_ohms'))
         for name, key in [('pre', 'input_parasitic'), ('post', 'output_parasitic')]:
             s = [get_two_port_s(policy, key, float(f)) for f in self.grid.frequency_hz]
             object.__setattr__(self, name, _frozen(s, np.complex128))
@@ -171,9 +175,7 @@ class RFEvaluator:
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError('s_singular', 'Singular Y-to-S conversion') from exc
         full = _cascade(_cascade(self.pre, core), self.post)
-        p = m.resolved_policy
-        data = power_response(full, _fixed_port_impedance(p, 'source_ohms'),
-                              _fixed_port_impedance(p, 'load_ohms'))
+        data = power_response(full, self.source_ohms, self.load_ohms)
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
                   for j, a in enumerate(data)]
         return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
