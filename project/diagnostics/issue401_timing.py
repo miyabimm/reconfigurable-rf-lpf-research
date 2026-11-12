@@ -9,6 +9,8 @@ from functools import wraps
 from unittest.mock import patch
 
 from lpf.search import _worker_next as wn
+from lpf.rf_core import model as rf_model
+from lpf.rf_core.coupled_lc import CoupledLCTopology
 from lpf.timing import TimerCollector
 
 
@@ -20,7 +22,7 @@ def _wrap(timer, name, function):
 
 
 @contextmanager
-def instrument(worker, timer):
+def instrument(worker, timer, *, deep=False):
     """Install L1/L2 probes on the *actual* solver path for one process."""
     if not isinstance(timer, TimerCollector):
         raise TypeError('TimerCollector required')
@@ -36,4 +38,12 @@ def instrument(worker, timer):
             (wn, 'validate_values', 'postsolve_validation'),
         ):
             stack.enter_context(patch.object(obj, attr, _wrap(timer, region, getattr(obj, attr))))
+        if deep:
+            for obj, attr, region in (
+                (CoupledLCTopology, 'port_admittance', 'l3_port_admittance'),
+                (CoupledLCTopology, 'node_admittance', 'l3_node_admittance'),
+                (CoupledLCTopology, 'matrices', 'l3_matrices'),
+                (rf_model, 'power_response', 'l3_power_response'),
+            ):
+                stack.enter_context(patch.object(obj, attr, _wrap(timer, region, getattr(obj, attr))))
         yield

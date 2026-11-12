@@ -32,7 +32,7 @@ WORKER = '74c47f29637ed73bdf57fbc3ab64e6f928de59f020eb29bd030c6c7f41600b15'
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', choices=('plain', 'timed'), required=True)
+    parser.add_argument('--mode', choices=('plain', 'timed', 'deep'), required=True)
     parser.add_argument('--source-sha', required=True)
     args = parser.parse_args()
     wall, cpu = time.perf_counter(), time.process_time()
@@ -58,8 +58,8 @@ def main():
             or worker.step['options']['max_restarts'] != 0):
         raise ValueError('Policy/budget mismatch; STOP before RF')
     ready, cpu_ready = time.perf_counter(), time.process_time()
-    timer = TimerCollector() if args.mode == 'timed' else None
-    with instrument(worker, timer) if timer else nullcontext():
+    timer = TimerCollector() if args.mode != 'plain' else None
+    with instrument(worker, timer, deep=args.mode == 'deep') if timer else nullcontext():
         result = worker.solve()
     end, cpu_end = time.perf_counter(), time.process_time()
     if result.nfev != 100:

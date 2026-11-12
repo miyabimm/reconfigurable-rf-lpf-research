@@ -39,6 +39,16 @@ class TimingTests(unittest.TestCase):
         self.assertEqual(rows['hybrid_minimize']['count'], 1)
         self.assertEqual(rows['postsolve_validation']['count'], 2)
 
+    def test_deep_regions_follow_rf_path(self):
+        _, _, _, _, worker = self.prepare()
+        timer = TimerCollector()
+        with timing.instrument(worker, timer, deep=True):
+            result = worker.solve()
+        rows = timer.snapshot()
+        for name in ('l3_port_admittance', 'l3_node_admittance', 'l3_matrices', 'l3_power_response'):
+            self.assertEqual(rows[name]['count'], result.nfev)
+            self.assertEqual(rows[name]['failed'], 0)
+
     def test_failure_propagates_and_counts(self):
         _, _, _, _, worker = self.prepare()
         timer = TimerCollector()
