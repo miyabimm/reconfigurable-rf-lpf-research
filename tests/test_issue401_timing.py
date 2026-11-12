@@ -1,7 +1,11 @@
 """Timing instrumentation follows Hybrid's private callback, not public APIs."""
 import importlib.util
+from pathlib import Path
+import sys
 import unittest
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 import numpy as np
 from lpf.search.plan import ROOT
