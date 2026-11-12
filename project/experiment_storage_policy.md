@@ -1,146 +1,55 @@
-# 新規実験のGitHub-only保存ポリシー v1
+# 新規EXPのGitHub-only保存ポリシー v1
 
-> **2026-11-11 新しい歴史資産方針（[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)）**：本書の**新規EXP用G0〜G5・正式実験保存契約は変更しません**。一方、本書の旧EXPの全原証拠保持・旧スクリプトの個別削除承認に関する当時の記述は、現行treeの永続保全義務ではありません。過去実験の知見を`project/methods.md`・`project/results.md`に抽出した後、現行研究・正式記録に不要な歴史資産は削除可能です。旧manifestの原文や実績を遡及改竄せず、現行treeで旧全実験が完全再現可能とは主張しません。
-
-**ポリシーID：phase2-git-only-v1。** 本変更のmainマージ以降に新規作成する **EXP-050以降**へ適用する。**EXP-001～049（特にRF-T006のEXP-048/049）**の原manifest／checkpoint／証拠には遡及適用しない。研究対象とRF数値仕様の変更は含まない。
-
-**既存根拠：** [運用正本](instructions.md)、[整理計画（固定履歴版）](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/12b1dfd7a91ab466a6cfbbb8b4db968715e91d5f/docs/phase2_repository_reorganization_plan_20261017.md)、[2026-10-15保存方針案](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_result_storage_policy_proposal_20261015.md)、[既存容量基準](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/phase2_git_storage_budget.json)、[EXP番号中央予約](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/0bf0e3a41e2ed2a5ae4e734ccec71bc530c19a53/docs/experiment_number_reservation_policy_20261015.md)。当時の提案・歴史記録は上書きしない。
-
-## 適用開始と歴史的実験の保護
-
-**適用はEXP-050以降のみ。** 保存規則を策定していたPR #116は、RF-T006条件でEXP-048とEXP-049が2026-10-18に探索・保存された後でmainへ統合するため、両実験には遡及適用しない。両実験の既存manifest、数値結果、独立MNA記録と実行コードを移動・変更・削除せず、`storage_record.json`や`run_summary.json`を後付けで要求しない。従来のSHA・実験索引・台帳は正本のまま保護する。
-
-**対象外なのは新保存形式への遡及変換のみ。** EXP-048/049はRF試験の追跡対象として保持し、将来の新EXPでそのベクトルを使用する場合はEXP-050以降の保存規則を守る。常時CIのauditはEXP-001～049を新形式で検査しないが、最新mainに現存すること・manifest/選抜結果が不変であることを別途マージ前に確認する。既存証拠の削除を承認するものではない。
+**ポリシーID：`phase2-git-only-v1`。対象は新規EXP-050以降。** EXP-001〜049には新形式を遡及要求せず、元manifestの実績を改竄しない。過去資産の削減は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)が別途承認済みであり、現行正式実験・新規G0〜G5を緩和しない。運用権限は[instructions](instructions.md)、明示APIは[Campaignガイド](campaign_workflow.md)。
 
 ## 1. A/B/Cの役割
 
-| 区分 | 保存対象 | 基本ルール |
-|---|---|---|
-| **A 必須** | main予約済みEXP、厳格manifest、実効RF制約/bands/固定S2P SHA、実行コード/環境/seed、探索件数サマリー、重要候補の完全L/C/kと全6設定Cv、検証状態、元path/SHA | GitへコミットしGit HEADからのbyte再取得で照合する |
-| **B 選別** | Pareto非劣点、30/35dB境界、異なるトポロジー、代表的な失敗・未収束・停止再開診断 | 実行**前**に選別ルール・top K・予測保存容量を明記する |
-| **C 一時** | 全iteration、無差別workerログ、heartbeat、キャッシュ、再生成可能な大量波形、不要lock | 原則Git管理外のresults/。A/Bの保全確認前に削除しない |
+| 区分 | 保持範囲 |
+|---|---|
+| **A 必須** | main予約済EXP・manifest、RF ID/effective SHA、bands/S2P、source/env/seed/plan、件数/停止理由、代表候補の完全L/C/k/端子/物理列と全6設定Cv、検証状態、元証拠path/SHA・Git HEADからの実byte readback |
+| **B 事前選別** | Pareto非劣、30/35dB境界、異なる構造、代表的失敗/未収束等。開始**前**に選別rule/top K・予測保存容量を登録 |
+| **C 一時** | 全iteration、無差別raw/heartbeat/cache/大量波形。原則Git管理外`results/`。A/Bの完全保全・G5資格確認前に削除不可 |
 
-ファイル名や拡張子だけで旧原本をCへ分類しない。失敗実験も実行範囲・試行数・理由を保存し、「未実行」「実行済み」「未収束」「独立検証済み」を混同しない。
+失敗・中断・未実行・未収束を削除して成功だけにしない。旧manifestが古いファイルを記録していても、過去の元内容を遡及変更しない。旧原証拠は知見抽出と現役依存判定後に削減可能。
 
-## 2. ファイル構成・正本
+## 2. 正本とファイル構成
 
-~~~
+```text
 experiments/chatgpt_topology_search/runs/EXP-NNN/
-  manifest.json          # 既存schema 1: 制約・コード・環境・実行/検証・evidenceの正本
-  storage_record.json    # 新規schema 1: 選別方針・保存完了状態
-  run_summary.json       # 試行/失敗/未開始、選別理由、limitations
-  checkpoints/
-    <candidate_id>.json  # 完全回路と6設定可変C
-data/validation/         # 独立解析・再評価・訂正は別ファイル
-results/                 # Git管理外のraw一時出力
-~~~
+  manifest.json          # source / RF条件 / 実行・検証・evidence
+  storage_record.json    # 選別rule / stage / SHA・容量 / Git readback
+  run_summary.json       # 試行数・未実行・失敗・限界
+  checkpoints/<candidate_id>.json
+  validation/<evidence>.json  # 対象EXPへ紐付ける独立検証等（必要時）
+results/EXP-NNN/        # Git管理外の一時raw
+```
 
-汎用探索の experiments/matching_limit/runs/EXP-NNN/ も同じ扱いとする。元manifestの再評価結果を元実験の結果に改竄せず、別validation overlayへ保存する。Paretoの固定スナップショットも上書きしない。
+- `storage_record.schema_version=1`、`policy=phase2-git-only-v1`、`experiment_id`、`phase=Phase 2`、`stage=planned|running|complete`、`selection`（top_k/retain/rule/estimated_curated_bytes）、`summary`、`checkpoints`、`validation_overlays`、`supporting_evidence`、`git_readback`、`size_exception`、`limitations`。具体的schemaと検証は[audit_new_experiment_storage.py](../scripts/audit_new_experiment_storage.py)と実験保存テストを参照する。
+- completeは**A/B証拠の保存完了**で、数値収束・RF合格・独立MNA実施の証明ではない。manifestのexecution.statusとvalidationを別に管理する。unknown/欠損は`preservation_incomplete`とlimitationsへ記す。
+- checkpointはcandidate_id、接続/topology、素子L/C/Qと端子、couplings signed k、chip_row、固定値、B71/B12/B28/B13+B14/B26/B8の可変Cを完全保存。条件/evidence SHAをmanifestに紐付ける。
+- `data/validation/`の旧182件は#397で退役済み。新規証拠は対象EXPの選別領域へ保存し、**歴史の元manifestや登録済みSHAを保存に合わせて書き換えない**。
 
-storage_record.json は以下の形式で探索開始前に作る（**EXP-050の架空例示**。予約や実際の探索実行を意味しない）。
+## 3. G0〜G5：新規EXPを始めるたびに実施
 
-~~~json
-{
-  "schema_version": 1,
-  "policy": "phase2-git-only-v1",
-  "experiment_id": "EXP-050",
-  "phase": "Phase 2",
-  "stage": "planned",
-  "selection": {
-    "top_k": 5,
-    "retain": ["best", "pareto", "30db_boundary", "35db_boundary", "topology_diversity", "representative_failure"],
-    "rule": "面積-IL非劣点、30/35dB境界、異種トポロジー、代表的失敗を保存。top_kは追加の通常上位解の数であり、独立の重要点を捨てる上限ではない。",
-    "estimated_curated_bytes": 250000
-  },
-  "summary": null,
-  "checkpoints": [],
-  "validation_overlays": [],
-  "supporting_evidence": [],
-  "git_readback": "not_run",
-  "size_exception": null,
-  "limitations": []
-}
-~~~
+| ゲート | 必須操作と失敗境界 |
+|---|---|
+| **G0 予約** | 最新main上の`data/experiment_number_registry.csv`へ番号・ownerを**事前予約**し、branchだけの仮番号では実行しない。必要な台帳と履歴の完全checkoutを確認 |
+| **G1 preflight** | RF ID/trial opt-in・effective SHA、bands/S2P、承認source・実import origin・dirty・uv.lock/env、完全vector・seed・Plan/grid・予算、選別/容量を照合。`python scripts/audit_new_experiment_storage.py preflight EXP-NNN`は保存準備の監査 |
+| **G2 run** | checkout外`results/EXP-NNN/`にrawを原子的に記録。失敗/unknown/中断も保存し、A/Bの選別までrawを維持。勝手にretry/resumeせず予約費用と実消費を分離 |
+| **G3 curate/finalize** | run_summaryへ件数/停止理由・限界、A/B候補の完全vector、元証拠SHA・独立検証の実施/未実施を保存。Git commit後にHEAD:pathの**実byte**を読み戻し、段階ごとの記録を照合。`python scripts/audit_new_experiment_storage.py finalize EXP-NNN` |
+| **G4 PR/CI** | `python scripts/audit_new_experiment_storage.py audit`。G0/manifest/index・選別・実byte/SHA・件数・未分類追跡ファイル・容量のFAILを見逃さない。PRレビュー後mainへ保存 |
+| **G5 cleanup eligibility** | **最新remote main**でA/B実byte再取得、保存監査・原raw一覧・再開要否を再確認。可否判定は**実削除でない**。欠損/unknown/再開予定があれば保留 |
 
-stage は planned → running → complete。データが欠落している部分／中断／失敗は preservation_incomplete として不足内容をlimitationsに記録する。**stage=completeは証拠保存完了であり、数値収束、独立MNA、RF目標達成、実装保証の意味ではない。** 実行状態の正本はmanifest.execution.status、検証状態はmanifest.validation。
+正式Campaignを呼ぶ前に[操作ガイド](campaign_workflow.md#3-正式expg0g1を先に満たし明示g2を呼ぶ)のG0/G1を満たす。孤立spotチェックや隔離Git fixtureを、全帯域MNA/本物の正式EXPと呼ばない。
 
-保存した各checkpointは candidate_id、topology（接続）、components（全L/C・Q・シリーズ・端子）、couplings（符号付きk）、chip_row（物理チップ配置）、fixed_values（固定素子値）、ic_variable_C_pf_by_settingを含む。後者にはB71、B12、B28、B13+B14、B26、B8の6設定分の枝容量配列を入れる。スクリプトは構造と0～3pFの基本型のみを監査し、回路の数値真実性を証明しない。
+## 4. 容量・例外とCI
 
-storage_record.checkpoints の各行は candidate_id / selection_reason / path / sha256。selection_reason は best、pareto、30db_boundary、35db_boundary、topology_diversity、representative_failure、other。validation_overlays は method（independent_mna/grid/spd/power_balance/other）・status（passed/failed/not_run）・path・sha256。**未実施はnot_runのままとする。** 実験固有のソース断片、dirty差分、代表的停止ログなど、checkpoint・summary・検証以外の不可欠な成果のみ supporting_evidence として登録する。各行には path、sha256、role（source_snapshot/dirty_patch/representative_failure/recovery_state/method_note/other）、reason を要求する。**manifest.evidence に登録された全証拠をstorage_record上でも分類**し、分類不能な残余ファイルは保存完了を拒否する。1つの実データを複数の別ファイル名で重複保存しない。
+- 基準は[data/phase2_git_storage_budget.json](../data/phase2_git_storage_budget.json)：**単一ファイル128KiB超はsoft review、1MiB超は原則拒否、新規EXP一式10,000,000 bytes超はowner明示例外**（size_exceptionに承認者/URL/理由）。tracked全体25MiBは増加傾向の手動監査指標。GitHub公式hard limitではない。
+- G4ではmanifest・storage自身もEXP容量に数え、未分類のGit追跡raw、重複/未登録証拠、forced-addされた一時ファイルを拒否する。
+- 保存専用と明確に分類できるPR/main pushだけ一般RF/optimizer/runner回帰を省略できる。**全新規EXP監査、番号予約・provenanceテストは常時実行**。unknown/混在/削除/renameは一般回帰へfail-closed。G5のremote照合をCIで代用しない。
 
-run_summary.json の最低構造は次のとおり。試行（start等）の件数であり関数evaluation数とは区別する。
+## 5. 再現性と科学的昇格の境界
 
-~~~json
-{
-  "experiment_id": "EXP-050",
-  "attempts": {
-    "planned": 100, "attempted": 85, "converged": 20,
-    "nonconverged": 60, "failed": 5, "not_started": 15
-  },
-  "selected_candidate_count": 2,
-  "best_found": [],
-  "limitations": ["局所探索のみ。連続周波数極値・Q(f)/SRF/EM未検証"]
-}
-~~~
-
-converged + nonconverged + failed = attempted、attempted + not_started = plannedを厳守。Campaignで投入済みJobの結果が不明の場合に限り、`attempts.unknown` を追加し、前者を converged + nonconverged + failed + unknown = attempted とする。不明を失敗や未開始へ丸めず、unknown > 0 の保存完了は拒否する。候補ゼロの場合は selected_candidate_count=0 に加え no_candidate_reason を記載する。
-
-**Campaign（Issue #325）:** 1 EXPを1つの承認済みCampaignとし、未来の提案はplanned試行数へ算入しない。実際に採用・投入したJobを試行として集計し、各Job内の未開始step、拒否提案、未評価出力はCampaign証拠に別記する。G1の選別規則を弱めず、当面はbounded Jobの合法な全出力を保守的なA/B上位集合として保持する（同構造・同vectorのみ重複除外、未出力時のstartは診断用）。異なる格子の結果を再順位付けしない。`campaign_evidence.json` に提案原bytes、採否、完全start/JobSpec、各stepの終了・失敗・未開始とraw SHAを保存し、`run_summary.json` のraw全ファイルinventoryと合わせて未分類残余を検知する。G3/G4の明示Git保存に続き、G5はremote mainのA/B実バイト一致・再開不要・分類完了・raw inventory不変を再確認して当該EXPの一時Cのみ削除可能と判定する。API自体はpushも削除も行わない。
-
-## 3. 運用ゲート（EXPを開始するたびに実施）
-
-**G0 予約確定。** 最新mainの中央台帳へ先にEXP番号を予約し、照合PASSを確認。番号の予測・PRブランチ上の仮番号では計算を開始しない。台帳予約と `owner` の照合はID・provenance整合の検査であり、外部承認認証APIではない。着手指示の扱いは[運用正本](instructions.md)に従う。
-
-~~~bash
-git fetch origin main
-python scripts/experiment_id_registry.py --experiment-id EXP-NNN --owner <GitHub actor>
-~~~
-
-**G1 preflight。** 共通manifest生成器で厳格manifestを作る。RF-T005は明示の --allow-trial が必要。目的（matching_only/full_lpf）、RF実効SHA、bands、外部S2P、コードcommit/dirty差分、uv.lock/環境、seed（不明なら不明と明記）、探索範囲・格子・収束/選別基準・予測容量を記録し、storage_recordをplannedで作る。新runのmanifestに保存対象と制約SHAを紐付ける。
-
-~~~bash
-python scripts/audit_new_experiment_storage.py preflight EXP-NNN
-~~~
-
-**G2 run。** 一時出力は原則 Git管理外の results/EXP-NNN/ に集約し、実行中は原子的に書く。多数のiteration dump、workerログ、同じ候補の毎時コピー、テストの一時fixtureはGitへ追加しない。意味ある候補の完全ベクトルと必要な失敗診断だけをA/Bへ昇格し、Actions Artifactの保持期限やworkerの寿命に依存させない。
-
-**G3 finalize。** 完了・失敗・中断件数をrun_summaryへ集計し、選別checkpoint、独立検証結果（未実行なら未実行）、manifest.evidence、SHAを保存。Gitへコミット後に HEAD:path を実際に読み戻してbyte一致を確認し、storage_recordのstageをcomplete、git_readbackをpassedへ更新する。保存記録自身のコミット後、次のコマンドで再照合する。
-
-~~~bash
-python scripts/audit_new_experiment_storage.py finalize EXP-NNN
-~~~
-
-PASSまで生rawの自動削除は禁止。証拠が欠落した場合はpreservation_incompleteを記録して必要なrawを保持し、勝手にcompleteへ昇格しない。保存済み候補の独立MNA、6設定の全区間極値、SPD、受動性、電力収支、SRF/EM、温度公差は別に実行し、**実施した範囲のみ**検証結果へ記録する。
-
-**G4 PR/CI。** 次でEXP-050以降のrunを一括監査する。古い実験は監査形式の対象外。
-
-~~~bash
-python scripts/audit_new_experiment_storage.py audit
-~~~
-
-チェック項目：origin/mainの予約とRF条件、既存厳格manifest、選別計画、証拠のSHA/実ファイル、6設定checkpoint構造、試行件数、Git HEAD byte再取得、保存容量に加え、**未分類のGit追跡ファイル、重複証拠、force-addされた一時ファイル**を拒否する。新しいEXPディレクトリにGit追跡ファイルを置く場合は、manifest/storage_record自身以外の全ファイルをA/B証拠に分類する。テストfixture等の使い捨てファイルをGitへ入れない。
-
-**CIの軽量性（Issue #332、ユーザー承認済み）：** 保存専用と確実に分類できるPR／main pushでは一般RF・optimizer・runner回帰を省くが、同じ `smoke` jobで上記の全新規EXP保存監査と予約・provenance・保存監査テストを必ず実行する。分類はPRのmerge-base→head、pushのbefore→afterの全差分を対象とし、不明・混在・削除・rename等は通常回帰へ戻す。現実装はbaseで予約済みかつplanned/runningの単一EXP内JSONと、任意の `data/experiment_index.csv` の当該EXP行1件の追加・更新に限定する。他EXP行の原byte、ヘッダ、順序は不変とし、未知形式や他のdata変更は通常回帰へ戻す。indexとmanifestの整合は常時実行のprovenanceテストでも検査する（分類は保存監査の代用ではない）。保存監査FAILは省略できない。G5のremote実byte再確認とcleanup可否判定は別途必要で、CI軽量化はこれを代替しない。既存の数値的な全歴史テストは引き続き必要時に実行する。**CI PASSは独立RF計算の再実行を意味しない。**
-
-**G5 ローカルCの後片付け。** finalizeがPASSし、runの停止/再開が不要、A/Bへ昇格すべき元データがないことをrun担当者が確認した場合に限り、results/EXP-NNN/ 内のCを消去してよい。ほかのEXPや全resultsをまとめて削除しない。消去前後の「実験ID・finalize PASSのcommit SHA・残したA/B証拠・消去対象」の確認結果はPR本文または短い要約に記録する。finalize未達、preservation_incomplete、再開予定あり、依存不明の場合はそのCを保留し、保留理由と期限（または次のレビュー条件）を管理する。**既存Git原証拠の削除権限とは別のローカル一時作業領域だけの規則。**
-
-## 4. 容量基準・例外
-
-既存の data/phase2_git_storage_budget.json を値の正本とする。単一ファイル128KiB超は手動レビュー目安、1MiB超は原則保存不可。新規EXPの選別済み一式は **10MB（十進10,000,000 bytes）** を基準とし、超過する場合だけレビュー後に所有者の容量例外承認が必要（2026-11-02の所有者決定、Issue #256）。tracked総容量25MiBで増加傾向を監査する。これらはGitHub公式の一律hard limitではない。個別例外は storage_record.size_exception に approved_by / approval_url / reason を記録し、**所有者の明示承認**に紐付ける。監査器は1MiBと10,000,000 bytesを機械判定し、manifestとstorage_record自身もEXP保存容量へ算入する。128KiB超はsoft_file_review_pathsへ報告する。25MiBはGit追跡treeの増加傾向を手動・定期的に再監査するレビュー指標であり、Git pack/全履歴の大きさと混同しない。機械的な旧資料削除の根拠にはしない。
-
-## 5. テスト・コード・文書を増やさない原則
-
-- **常設テストの追加条件：** RFモデルの恒久的不変条件、再発があり得る具体的バグ、共通API／保存規則の契約に対応し、複数回再利用されること。実験1回限りの期待値照合、探索途中の数値比較、使い捨てfixtureは原則 results/EXP-NNN/ に置く。バグ修正時の恒久的退行検知は、専用EXP番号のテストファイルを量産せず既存の共通テストへ集約する。
-- **新テストのPRレビュー：** 既存テストで代替できない理由、検出する失敗、常時CIか必要時実行か、古いテストの置換・統合候補を確認する。新しいworkflowや実験ごとの監査スクリプトを無条件に追加しない。
-- **古いテスト／一時スクリプトの退役：** [Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)の承認済み方針に従い、研究知見を抽出し、現行caller・科学的不変条件・新規EXP保存ゲートへの依存を確認した後で削除してよい。旧ファイルごとの追加承認は不要。現行正式記録・重要checkpointの損失は別途判断する。
-- **ドキュメント：** 現行正本へのリンクを維持し、各EXPの臨時レポートを目的なく新規作成しない。サマリーは原則run_summary、過去の重要な判断は固定SHA付き履歴に残す。
-
-## 5. 再現性と昇格の境界
-
-- **候補再評価可能：** 完全L/C/k・6設定Cv・RF実効SHA・S2P・コード・数値格子等が揃い再評価できる。監査による形式照合は、その数値計算を実行した証明ではない。
-- **探索再実行可能：** さらに初期値/seed/依存環境/探索範囲/ジョブ割当とdirty時の実ソースが必要。並列・浮動小数点の非決定性は限界として記録する。
-- **全試行厳密再生：** 全iteration/乱数状態等を実際に保管した場合のみ主張。通常保証しない。
-
-formal RF-F003／trial RF-T005／旧制約を混在させない。30dB必須、35dB公称、strict_finite_grid/tolerance_only、同一評価格子の違いも明示。報告値だけでベクトルを欠く候補はreported_onlyに留め、索引へ無根拠に昇格させない。
-
-**この保存ポリシーを導入した当時は既存原本の削除を承認していなかった。** 2026-11-11以降はIssue #397の知見抽出・旧資産削減方針が歴史資産に優先する。新規EXPのG0〜G5、正式RF入力・科学評価条件、Git履歴は変更しない。
+- **候補再評価**には完全L/C/kと全6設定Cv、RF実効SHA・固定S2P・格子・参照面・source情報が必要。**探索再実行**には更にseed/初期値/環境・試行順・ソースdirty実bytes等が必要。**全iterationの厳密再生**は原状態を実保存した場合のみ主張する。
+- Formal/trial/旧条件、matching_only/full_lpf、solver収束、strict 30dB／公称35dB、IL≤0.30dB、許容差内、独立MNA・電力/受動性、連続帯域保証は別判定。保存形式PASSをRF適合へ昇格しない。
+- 新しい常設テストはRF不変条件・現役共通API・G0〜G5・既知バグ再発防止に限定。使い捨てEXPごとのfixture/大きなrawをGitに追加しない。研究史の旧ファイルは#397の知見選別後に削減可能だが、現行正式記録・重要checkpointの改変は別判断。

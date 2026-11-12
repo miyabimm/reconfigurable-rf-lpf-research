@@ -1,149 +1,69 @@
 # Campaign操作ガイド（現行schema 2）
 
-本書は**既存の明示APIを人が順に呼ぶ手順**。承認権限は[運用正本](instructions.md)、
-RF数値は[registry](../rf/constraints/registry.json)、保存規則は[保存ポリシー](experiment_storage_policy.md)を参照する。
-APIの詳細・限定実証は[診断索引](diagnostics/README.md)。本書は別の仕様正本でも実験起動指示でもない。
-`run_campaign()` の自動ループは **`not_ready`**。自動AI、watcher、並列Scheduler、retry/resumeは提供しない。
+**既存APIを明示的に順に呼ぶ操作手順。** 承認と着手は[運用正本](instructions.md)、G0〜G5の保存規則は[保存ポリシー](experiment_storage_policy.md)、正式RF数値は[registry](../rf/constraints/registry.json)。`run_campaign()`自動ループは`not_ready`で、AI自動起動・scheduler・parallel・retry/resumeは未提供。
 
 ## 1. 入力を分けて凍結する
 
-最新 `main` のコードと正本を確認する。RFは `active_formal_id`、trialは明示opt-in。
-[全6設定・28個別区間](../rf/bands.csv)と、選択JSONで指定された固定S2P・SHAを使う。
-履歴JSONの論理 `data/...` パスはloaderがbyte同一の `rf/` 実体へ解決し、欠落・SHA不一致はSTOP。
-旧EXPの条件SHAを現役SHAへ書き換えない。
-
-| 入力・所有者 | 含めるもの／凍結境界 |
+| 入力 | 契約 |
 |---|---|
-| **研究側のCampaign Plan YAML**（schema_version **2**） | `rf`、`objective: full_lpf`、`definition: null`、`seeds`、`arms`の固定steps/solver/options、Job/Trial sample上限、selection、terminal/dense/anytime格子と費用。`campaign`に総topology数・総RF sample予算・構造cap・独立検査対象。開始前にPlan/SHAを凍結し、途中変更しない |
-| **AIのdata-only topology proposal YAML**（schema_version **1**） | `proposal_id`, `based_on_state_sha256`, `reason`, `definition`のみ。最新snapshotのSHAと完全な既存 `CircuitDefinition` データを渡す。solver、予算、seed、RF条件、数値x（L/C/k値）、コマンドは含めない |
+| 研究側Campaign Plan YAML（schema_version **2**） | RF ID/実効SHA、`objective: full_lpf`、`definition: null`、seed、1 seed×1 arm固定steps/solver、Job/Trial予算、selection・terminal/dense/anytime格子、`campaign`の総topology/sample上限・構造許可範囲・独立検証上限を開始前に凍結 |
+| AIのdata-only proposal YAML（schema_version **1**） | `proposal_id`、`based_on_state_sha256`、`reason`、完全な既存`CircuitDefinition`の`definition`のみ。solver・予算・seed・RF条件・L/C/kの数値vector・コマンドは含めない |
 
-現在のCampaignは **1 seed × 1 armの固定ルール**。未来の構造/start/Job一覧をPlanに先取りしない。
-`campaign`は `max_topologies / max_rf_samples / structure / independent` を必須とし、
-structureは節点数・固定/可変C数、許可L/C種類・role、coupling/IC-fixedの可否を制限する。
-RF部品上限を拡張する仕組みではない。`independent`は `not_run`かbounded terminal spotのみ。
-terminal検査では `max_candidates` をselectionの `top_k` と一致させ、sample indexを明示する。
-
-**入力例の出典：** schema2の基底フィールドは[静的fixture](fixtures/issue313_preflight.yaml)、
-Campaign追加キーとproposal生成例は[Campaign契約テスト](../tests/test_issue325_campaign.py)の
-`setup_campaign()` / `proposal()`。これらは開発fixtureであり、承認済み研究予算ではない。
-構造は既存dataclass全フィールド（枝順・向き、physical_order、符号付き結合slot、IC-fixedを含む）を保つ。
-未知/重複キー・不正型は拒否する。詳細は[入力契約](diagnostics/issue325_campaign.md#入力契約)と
-[preflight実装](../src/lpf/search/preflight.py)、[proposal loader](../src/lpf/search/proposals.py)。
-
-### 探索stepの阻止域点数（Issue #363）
-
-schema2の各 `arms[].steps[]` だけに、任意の整数 `stop_points_per_interval`（2以上）を
-指定できる。未指定なら従来どおり全通常区間が `points_per_interval` 点。指定時は通常の
-H2/H3区間のみその点数で、UL/DL・追加固定step帯域・S2P範囲は不変。例えば
-`points_per_interval: 2` と `stop_points_per_interval: 3` はRF-T008 full_lpfで
-UL/DL 28点、H2 21点、H3 21点、計70 samples/forward（旧設定は56点）。
-各区間は両端を含む等間隔で、3点指定なら両端＋中央。B13/B14は別区間のまま。
-selection・terminal・anytime・dense格子は変わらない。Planはstep格子の配列/SHAと実点数を
-凍結し、sample予約と実forwardの計数に使用する。段階ごとに固定する機能であり、optimizer内で
-動的に格子を切り替えない。将来のHybrid粗・広域→SLP密・局所へ接続可能だが、性能は未実証。
-
-Hybrid(sum)は残差成分の二乗和なので、H2/H3点数増加は目的中の高調波違反項の個数・重みを
-変える。重み正規化やhard制約変更は行わず、旧56点の目的値と直接比較しない。strict 30dBは
-同条件の共通評価格子で比較する。探索中のRF適合、密格子・連続帯域性能は保証されない。
-
-後続 #361 に適用する場合は、Planの探索stepに上記2/3を指定し、Pilot `max_evaluations: 3000`、
-Main/Extension `8000`、step予約案それぞれ220,000／575,000 samplesを設定してpreflightで
-selection・terminal・anytimeを含むJob/Trial上限を照合してから凍結する（詳細・権限は #361）。
-これらは計画案であり、本変更は#361の実行許可や科学的結果ではない。
+- RFはactive formal、trialは明示opt-in。6設定／28の**不連続**区間・UL/DL/H2/H3と固定S2PをSHA照合。旧EXPの実効SHAを現役の制約に読み替えない。
+- `campaign.max_topologies/max_rf_samples/structure/independent`は必須。structureは節点・L/C数・役割・結合/IC-fixedの可否を制限する。independentは`not_run`か上限つきterminal spot、対象数は`selection.top_k`と一致。未知/重複キー、不正型を拒否する。
+- 旧条件パス`data/...`は[constraint_versions.py](../src/lpf/constraint_versions.py)で現役`rf/`実体へ解決し、欠落/SHA不一致はSTOP。サンプル数は全区間と選別・独立観測を明示して予約する。
+- **step格子 #363**：`arms[].steps[].stop_points_per_interval`（任意、整数2以上）はH2/H3だけの点数を変更し、UL/DL・固定追加区間・S2P・terminal/dense/anytimeは不変。通常2/阻止3では28+21+21=**70 samples/forward**。各区間端点を含みB13/B14は分割を維持。Hybrid(sum)は残差二乗和なので56点の目的値と単純比較できない。格子切替はstep間のみ。
+- 開発fixtureは[issue313_preflight.yaml](fixtures/issue313_preflight.yaml)と[Campaign契約テスト](../tests/test_issue325_campaign.py)。実験承認済みPlanではない。APIの実契約は[preflight.py](../src/lpf/search/preflight.py)・[proposals.py](../src/lpf/search/proposals.py)を確認。
 
 ## 2. 開発（非EXP）：1提案ずつ提出する
 
-以下は呼出側が `campaign_yaml`、`proposal_yaml`、未存在のcheckout外system tmpパス `output` を用意するAPI例。
-`submit`は実RF/solverを実行し得るので、read-only検査と混同しない。
+呼出側が`campaign_yaml`、`proposal_yaml`、checkout外の未存在system tmpパス`output`を用意する。`submit`は**実RFとsolverを実行し得る**。
 
 ```python
 from lpf.search.plan import load_preflight
-from lpf.search.campaign import (
-    begin_development_campaign, submit_development_proposal, campaign_snapshot,
-)
-
-plan = load_preflight(campaign_yaml)  # 静的検査・RF/格子/Plan SHA凍結、RF forwardなし
+from lpf.search.campaign import begin_development_campaign, submit_development_proposal
+plan = load_preflight(campaign_yaml)  # 静的検査のみ
 snapshot = begin_development_campaign(plan, output)
-# AIはsnapshotのbased_on_state_sha256を参照して1件のproposal_yamlを作る。
+# AIは最新snapshotのbased_on_state_sha256へ1件だけ提案する
 snapshot = submit_development_proposal(plan, proposal_yaml, output)
-# 次提案も必ず新snapshotを使う。拒否イベントでもSHAは変わる。
+# 拒否でも状態SHAは更新。次の提案には新snapshotを使う。
 ```
 
-経路は **proposal → Controller → 完全start/JobSpec → Worker → raw読戻し → 次snapshot**。
-Controllerは単一Sobol点から完全xを生成し、部品/role/全L行列SPD等を検査する（clip・補充・再試行なし）。
-JobSpecにはdefinition、start、seed、Plan/proposal/state/source SHAを凍結。
-親 `campaign.json` は採否・構造SHA・費用・予約を持ち、proposal元bytesとJob rawも保存する。
-次Job capを予約しatomic unknown markerを確定してから実行し、raw実bytes/SHA/費用照合後だけ余剰を返す。
-主RFのrequested/completedと独立MNA spotsは別計数。snapshotは読み取り用コピーであり台帳編集用ではない。
-
-この経路はsystem tmp限定・`development_only`で、G0/G1/G2〜G5正式運用を満たさない。
-開発rawを名前変更して正式EXPへ昇格しない。固定definition向けの既存CLI `develop` は
-[project README](README.md#開発用固定definition-cli)を参照（Campaign CLIではない）。
+- 経路：proposal→Controller（Sobol 1点から完全x、clip・補充なし）→Gates/JobSpec→Worker→raw再読込→次snapshot。
+- Definition・全L/C/k・物理列、SPD/role、Plan/proposal/seed/state/source SHAと予算を固定する。Job予約/unknown markerを先に永続化し、実byte/SHA照合後だけ残予算を返す。
+- 開発は`development_only`でG0/G1〜G5の正式EXPではない。固定definition CLIは[project README](README.md#開発用固定definition-cli)を参照。
 
 ## 3. 正式EXP：G0/G1を先に満たし、明示G2を呼ぶ
 
-具体的なChatGPT起票の実験IssueとユーザーのPi Code起動が着手指示。
-IssueがOpenなだけでは起動しない。追加の本人認証は不要だが、**完全checkout・main中央G0予約・G1は必須**。
-予約や全履歴auditの前に必要なデータと履歴が揃っていることを確認する。
+具体的Issue範囲とユーザーのPi Code起動を着手指示とし、追加のowner認証を求めない。ただし**完全checkout・main中央番号予約・remote main/G1の実ソース照合は省略不可**。
 
-1. 最新mainの中央台帳でEXPを予約・照合する（番号の予測やbranch上だけの予約は不可）。
-2. `search.gates.prepare_campaign(plan, experiment_id, owner=..., request_id=..., purpose=..., selection=..., root=...)`
-   で当該EXPのplanned manifest/storageを作成。既存EXPは上書きせず、予約・commit/push・RF計算もしない。
-   `selection`は保存ポリシー形式の事前選別規則・予測容量。将来の未提出Jobはplanned件数にしない。
-3. plannedをmainへ保存後、`campaign_preflight(plan, experiment_id, owner=..., request_id=..., root=...)`。
-   main/HEAD/作業木の実bytes、予約、Plan、承認code/lock/env等を照合する。
-   ロード済み `lpf.*`／`scripts.*` のoriginとpackage検索パスも承認checkoutに照合し、不一致はforward前STOP。
-   planned前のapproved sourceとplanned後のruntime source/HEADは別に扱う。
-   `preflight_ready`はread-only技術照合のみ（`execution_allowed=False`）。
-4. 着手指示の範囲内で `begin_campaign(plan, experiment_id, owner=..., request_id=..., root=...)`、
-   次に `submit_campaign_proposal(plan, proposal_yaml, experiment_id, owner=..., request_id=..., root=...)`
-   を1件ずつ呼ぶ。これらは `lpf.search.campaign` のAPI。
-   Git ignoredな `results/EXP-NNN/` に正式kindの親/Job/rawを保存する。
-   各提出・Worker入口・forward/独立spot直前にもG0/G1を再照合する。HEAD進行も自動rebindしない。
+1. 最新mainの[中央番号台帳](../data/experiment_number_registry.csv)でEXPを**事前予約**し、登録ID/ownerを照合。branchだけの仮番号では計算しない。
+2. `lpf.search.gates.prepare_campaign(plan, experiment_id, owner=..., request_id=..., purpose=..., selection=..., root=...)`でplanned manifest/storageを生成し、mainへ保存。既存EXPの上書きや予約・RF計算は行わない。
+3. `campaign_preflight(plan, experiment_id, owner=..., request_id=..., root=...)`でmain/HEAD/実byte、Plan、承認されたcheckout/import origin・環境・予約を照合。`preflight_ready`はread-onlyで、実行許可そのものではない。
+4. 指示範囲で`lpf.search.campaign.begin_campaign(plan, experiment_id, owner=..., request_id=..., root=...)`、続いて`submit_campaign_proposal(plan, proposal_yaml, experiment_id, owner=..., request_id=..., root=...)`を**1件ずつ**呼ぶ。
+5. G2 rawはcheckout外のGit無視`results/EXP-NNN/`へ原子的に保存。提出時・Worker入口・forward/独立MNA直前にもG0/G1を再確認し、HEAD進行で勝手にsourceを付け替えない。
 
-**検証境界：** G0/G3〜G5の隔離Git fixtureはダミーsourceと実importが異なり、import同一性の証拠ではない。
-別の非EXPテストは実Python originの一致、同一bytesの別checkout・検索パス混入の拒否を検査する。
-この検査はimport-hookやプロセス内改変を防ぐsecurity sandboxではなく、ロード後にcheckoutを切り替えた
-長寿命プロセスのメモリ上のコードや改変されたbytecodeまで証明しない。正式運用は承認checkoutの新規Python
-プロセスで行い、通常のG0/G1を再確認する。実環境全体や正式EXPの成功は未実証。
+origin検証は別checkout・検索パス混入を拒否する限定的配線であり、改変されたメモリ上コード・bytecodeを証明しない。正式運用は承認checkoutの新規Pythonプロセスで行う。実Campaignの成功実証は未完了。
 
 ## 4. G2終了後：G3 → G4 → G5（削除しない）
 
-`lpf.search.preservation` の明示APIを、RF実行とは別に呼ぶ。
-
-| 工程 | 操作と境界 |
+| ゲート | 操作とSTOP条件 |
 |---|---|
-| G3 curated | `curate_campaign(experiment_id, root=...)`。親/Job/raw/提案/費用を再照合し、保存規則を弱めず合法出力・完全回路/全6設定Cv・失敗/未収束等をcuratedへ保存。unknown/欠落/未分類/容量超過はSTOP |
-| G3/G4 Git保存 | curated diffを人が確認後 `finalize_campaign(experiment_id, root=...)`。当該EXP/indexを2段階commitし、HEAD実byte readback・保存監査。自動pushなし。別途PR・CI・独立レビューを経てmainへ保存する |
-| G5 eligibilityのみ | `campaign_cleanup_eligibility(experiment_id, root=..., resume_needed=False, classification_complete=True)`。最新remote mainのA/B実bytes・監査・raw inventory不変等を再確認し、当該EXPの一時C一覧と可否を返す。**実削除なし**。未保全/unknown/再開必要なら不可 |
+| G3 curated | `lpf.search.preservation.curate_campaign(experiment_id, root=...)`。親/Job/raw/提案/費用のSHA・分類・容量を確認し、完全ベクトル/6設定Cv、失敗/未収束も選別保存。不明/欠落/容量超過はSTOP |
+| G3/G4 Git保存 | `finalize_campaign(experiment_id, root=...)`。EXP/indexを2段階commitし、実byte readback/保存監査。**自動pushなし**。PR・CI・独立レビューでmain反映 |
+| G5 eligibilityのみ | `campaign_cleanup_eligibility(experiment_id, root=..., resume_needed=False, classification_complete=True)`で最新remote mainのA/B実bytesとraw不変を照合し、一時Cの削除**可否だけ**を返す。実削除はしない |
 
-unknown・中断・source/Plan/raw不一致・保存/読戻し障害では**予約とrawを保持して後続STOP**。
-自動retry/resumeや結果の成功扱いは禁止。G4 `complete`は保存完了だけで、solver/RF合格ではない。
-詳細は[保存ポリシー](experiment_storage_policy.md#3-運用ゲートexpを開始するたびに実施)と
-[保存実装](../src/lpf/search/preservation.py)。
+unknown/中断/不一致では予約とrawを保持してSTOP。自動retry・resumeや成功への丸めをしない。`complete`は保存完了で、solver収束・strict RF PASS・独立MNAを意味しない。
 
-## 5. 最小検証と報告
-
-文書入口/リンク回帰は完全checkoutで以下を実行する。Campaign回帰は通常CIの既存モジュール。
-本書の例を新EXPとして実行するコマンドではない。
+## 5. 検証と報告
 
 ```bash
 uv sync --frozen
-uv run --frozen python -m unittest discover -s tests -p test_phase2_current_status_review.py -v
 uv run --frozen python scripts/verify_phase2_cleanup_w1_links.py --active-only
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=tests \
-  uv run --frozen python -m unittest -v test_issue325_campaign test_issue325_campaign_gates test_issue321_development_cli
-# 正式保存監査のみ。完全checkoutの証拠が必要。
+uv run --frozen python -m unittest -v tests.test_issue325_campaign tests.test_issue325_campaign_gates tests.test_issue321_development_cli
 uv run --frozen python scripts/audit_new_experiment_storage.py audit
 ```
 
-現行CIは[通常smoke](../.github/workflows/audit.yml)。
-保存専用CIの軽量化は[#332](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/332)／[PR #334](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/334)でmainへ統合済み。保存専用と確実に分類できる場合のみ一般回帰を省き、全新規EXP保存監査と予約・provenance検証は常時実行する。不明・混在・対象外ファイルは通常回帰へ戻す。
-
-報告はIssue/範囲、branch/HEAD/dirty差分、PR、RF ID/effective SHA・bands/S2P、Plan/提案/start、
-予算/格子/seed/環境、requested/completed/reserved、停止理由、保存先と実施チェックを示す。
-**ソフトウェア配線PASS／solver収束／strict finite-grid／独立MNAの点数・範囲／G3-G5保存／科学的未検証**を別欄にする。
-全6設定・28不連続区間を橋渡しせず評価し、sample予算やsolver nfevを独立検証深度の代用にしない。
-独立1 spotは全帯域MNAではない。denseは現Workerで `not_run`。
-有限格子PASSでも連続周波数・SRF/Q(f)/EM/公差/実測・物理成立や大域最適性は保証しない。
-研究はPhase 2を維持する。
+通常CIは[audit.yml](../.github/workflows/audit.yml)。保存専用変更でも新EXP保存・番号・provenance監査は必須、不明/混在差分は一般回帰へ戻す。
+報告はIssue/承認範囲、HEAD/dirty、RF ID/実効SHA・bands/S2P、Plan/proposal/seed・grid/費用・環境、requested/completed/unknown、保存証拠SHAと各G0〜G5を区別する。solver収束／strict有限格子／独立MNAの点数と範囲／未実施項目を別に示す。
+全6設定・28区間/H2/H3、SPD・受動性・電力保存・固定S2Pを維持する。独立1 spotは全帯域検証ではなく、有限格子PASSは連続帯域・Q(f)/SRF/EM/公差/実測の保証ではない。研究はPhase 2継続。
