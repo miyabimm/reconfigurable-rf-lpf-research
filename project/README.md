@@ -32,7 +32,7 @@
 ```bash
 uv sync --frozen
 uv run --frozen python scripts/run_rf_search.py develop \
-  --config <schema2.yaml> --starts <starts.json> --output <未存在のcheckout外パス>
+  --config <schema2.yaml> --starts <starts.json> --output <未存在のcheckout外system tmpディレクトリ>
 ```
 
 - `--starts`はseedから完全vector/SHAへの入力。自動clip・補充・別トポロジーへの単純投影はしない。

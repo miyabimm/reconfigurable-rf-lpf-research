@@ -40,6 +40,8 @@ results/EXP-NNN/        # Git管理外の一時raw
 | **G4 PR/CI** | `python scripts/audit_new_experiment_storage.py audit`。G0/manifest/index・選別・実byte/SHA・件数・未分類追跡ファイル・容量のFAILを見逃さない。PRレビュー後mainへ保存 |
 | **G5 cleanup eligibility** | **最新remote main**でA/B実byte再取得、保存監査・原raw一覧・再開要否を再確認。可否判定は**実削除でない**。欠損/unknown/再開予定があれば保留 |
 
+G5は削除可否の判定のみ。A/Bがremote mainで実byte確認済み、rawが不要で再開予定がなく、担当者が削除対象と残す証拠を確認した場合に限り、Git管理外の当該EXPのCを**別操作で**処分できる。誤分類・保存不完全なら保持する。
+
 正式Campaignを呼ぶ前に[操作ガイド](campaign_workflow.md#3-正式expg0g1を先に満たし明示g2を呼ぶ)のG0/G1を満たす。孤立spotチェックや隔離Git fixtureを、全帯域MNA/本物の正式EXPと呼ばない。
 
 ## 4. 容量・例外とCI
