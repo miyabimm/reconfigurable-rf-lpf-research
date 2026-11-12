@@ -10,6 +10,8 @@
 
 RF-T008 rev3の旧コスト別Pareto資料はIssue #397の第2バッチで整理しました。EXP-058/059のSHA登録済み6件は[当該EXP配下](../experiments/chatgpt_topology_search/runs/)へバイト同一移動し、派生集計7件を削除しました。PR間比較の専用スクリプトと旧curation用4スクリプトも退役し、現行treeの過去データ復元・再レビュー専用の依存を解消しました。研究結論は[results](../project/results.md)・[methods](../project/methods.md)、保存選抜候補とMNAは各EXPで確認できます。旧資料は整理前の[固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)に残ります。
 
+RF-T005／旧RF-F003・RF-T007の6派生Paretoと固定24候補カタログ6件、W4等の旧repository review群は第4バッチで科学的比較・原出典の限界を[results](../project/results.md#正式rf-f003旧版とrf-t005t007試験の固定比較2026-10)・[methods](../project/methods.md#過去rf-f003と試験トポロジーの比較境界)に統合後、専用生成・監査コードとともに現行treeから削除しました。元の全CSV/JSON/ZIPの逐語情報は[削減前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data)に残ります。旧RF-F002等の`data/validation/`は今回一括削除せず、原EXP・現役依存と個別に照合します。
+
 歴史的な原SHA、旧manifestのpath登録、過去の数値証拠という理由だけでは保管を継続しません。ただし旧データを使う現行コード／テスト／CIがあれば、科学的機能を保って依存を解消してから削除します。元manifestを残す場合は当時の内容を遡及改竄せず、旧証拠が現行treeに揃わなくなったことを明記します。
 
 **過去全実験の原バイト・探索履歴の再現と、今後のEXPの必要な再現性は別です。** 現行RFの条件・全6設定／28区間・H2/H3・独立MNA・SPD・受動性／電力、現行EXPの保存SHA検査は省略しません。整理前の情報が必要な場合はGit履歴・旧Issueを参照しますが、それだけで数値的な再現PASSとは扱いません。
