@@ -29,7 +29,7 @@
   "validation_overlays": [
     {
       "method": "grid",
-      "path": "data/validation/issue237_coordinate_ab/EXP-109-17pt.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-109/validation/17pt.json",
       "sha256": "0f77985a280d9fbcb38f0b5d17b0cf5797e85a15cf275f8b80bd7e371a1079e4",
       "status": "passed"
     }
