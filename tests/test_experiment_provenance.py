@@ -10,7 +10,7 @@ from unittest.mock import patch
 from src.lpf.constraint_versions import constraint_fingerprint, load_constraint, validate_registry
 from src.lpf.experiment_manifest import (
     ROOT, RUNS, audit_provenance, experiment_index, new_manifest,
-    validate_manifest, write_manifest, _retired_runtime_view,
+    validate_manifest, write_manifest, _retired_runtime_view, _legacy_exp047_index_view,
 )
 
 
@@ -149,6 +149,18 @@ class ManifestTests(unittest.TestCase):
             other = dict(original, experiment_id='EXP-050')
             self.assertEqual(_retired_runtime_view(path, other, root=root), other)
             self.assertEqual(original, json.loads(path.read_text()))
+
+    def test_exp047_legacy_source_is_pinned_without_validation_overlay(self):
+        path = ROOT / RUNS / 'EXP-047/manifest.json'
+        original = json.loads(path.read_text())
+        view = _legacy_exp047_index_view(path, original, root=ROOT)
+        self.assertEqual(view['execution']['status'], 'partial')
+        self.assertEqual(view['validation']['independent'], 'passed')
+        with tempfile.TemporaryDirectory() as temp:
+            altered = Path(temp) / 'manifest.json'
+            altered.write_bytes(path.read_bytes() + b' ')
+            with self.assertRaisesRegex(ValueError, 'original report changed'):
+                _legacy_exp047_index_view(altered, original, root=ROOT)
 
     def test_scoped_audit_still_checks_retained_and_new_evidence(self):
         path = ROOT / RUNS / 'EXP-034/manifest.json'

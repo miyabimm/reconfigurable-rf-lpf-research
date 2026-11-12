@@ -222,6 +222,47 @@ def experiment_index(manifests):
     return output.getvalue()
 
 
+def _legacy_exp047_index_view(path, manifest, *, root):
+    """Read one SHA-pinned old report as an index row, not as a new manifest."""
+    raw = Path(path).read_bytes()
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    if blob != "94973b5e5a9e9b0fcd3a3ad9ffd39ea4197475e0" or manifest.get("experiment_id") != "EXP-047":
+        raise ValueError("EXP-047 original report changed; review required")
+
+    # Retain checks on the original RF inputs and selected evidence, but no
+    # data/validation overlay or dedicated compatibility module.
+    from .constraint_history import archived_formal_evidence
+    digest = manifest["active_formal_constraint_sha256"]
+    resolved = archived_formal_evidence("RF-F003", digest, root=root)
+    if constraint_fingerprint(resolved) != digest:
+        raise ValueError("EXP-047 historical RF conditions changed")
+    if manifest["bands_sha256"] != file_sha256(Path(root) / "rf/bands.csv"):
+        raise ValueError("EXP-047 band definition changed")
+    for port, key in (("input", "input_parasitic"), ("output", "output_parasitic")):
+        s2p = resolved["external_port_parasitics"][key]
+        if (manifest["s2p_provenance"][port + "_sha256"] != s2p["sha256"]
+                or file_sha256(Path(root) / s2p["path"]) != s2p["sha256"]):
+            raise ValueError("EXP-047 fixed S2P changed")
+    candidates = manifest["validated_candidates"]
+    if not isinstance(candidates, list) or len(candidates) < 4:
+        raise ValueError("EXP-047 selected candidates missing")
+    for candidate in candidates:
+        name = candidate["reference"]
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+\.json", name) or not (Path(path).parent / name).is_file():
+            raise ValueError("EXP-047 selected evidence missing: " + name)
+
+    # Existing, historically classified index labels; not solver re-execution.
+    return {
+        "experiment_id": "EXP-047",
+        "purpose": "RF-F003 4L two-variable-C local optimization and corrected Q80 independent verification",
+        "objective": "full_lpf",
+        "constraints": {"class": "formal", "constraint_id": "RF-F003",
+                        "effective_constraint_sha256": digest},
+        "execution": {"status": "partial"},
+        "validation": {"numerical": "screened", "independent": "passed"},
+    }
+
+
 # Issue #397: only these 17 SHA-pinned historical manifests may omit absent
 # data/validation entries in the index audit. Originals stay unchanged; present
 # files and all direct/new EXP evidence validation remain SHA-strict.
@@ -288,8 +329,7 @@ def audit_provenance(*, root=ROOT):
                 # Strictly source-pinned 2026-10-17 in-chat source. The normal
                 # provenance schema still applies to every other run. We do
                 # not invent a missing execution SHA, seed, or environment.
-                from .legacy_manifest_adapter import legacy_exp047_index_view
-                m = legacy_exp047_index_view(root=root)
+                m = _legacy_exp047_index_view(path, raw_manifest, root=root)
             else:
                 view = _retired_runtime_view(path, raw_manifest, root=root)
                 validate_manifest(view, root=root, allow_archived=True)

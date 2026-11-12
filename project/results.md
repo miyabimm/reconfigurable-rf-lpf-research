@@ -97,7 +97,7 @@
 
 ## 旧data/validationの整理とRF-F002の教訓（Issue #397）
 
-2026年10月のRF-F001/F002、RF-T003/T004、旧Phase 2 manager/solverの補助記録を分類した。削減前の`data/validation/`は**182件・4,351,659 bytes**。今もEXP-047の非標準manifestを元SHA照合して正式実験索引に使う`exp047_legacy_manifest_adapter_20261017.json`（1,946 bytes）だけは保持し、**旧計算補助181件・4,349,713 bytesを削除**する。旧原文は[変更前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)から確認できるが、現行treeだけでの再実行は不可。
+2026年10月のRF-F001/F002、RF-T003/T004、旧Phase 2 manager/solverの補助記録を分類した。削減前の`data/validation/`は**182件・4,351,659 bytes**。**旧補助182件・4,351,659 bytesを削除**する。EXP-047の非標準manifestと選抜証拠はEXP配下に維持し、元manifestの固定Git blob SHAと必要な現存証拠の検査によって従来の実験索引行を照合する。旧原文は[変更前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)から確認できるが、現行treeだけでの再実行は不可。
 
 **RF-F002旧実効SHA `f20d27e93451dcec2f823e6f7c3731c06d843050c4d2ace8b0b46ded605542e2`での観測**（現行正式RF-F003と比較しない）：
 
@@ -112,7 +112,7 @@
 | **041** | 30dB点IL約**0.318693dB**、35dB点約**0.378349dB**。収束・許容差・strict適合とIL目標を分離する |
 | **016/017・旧T003/T004** | [旧試験結果](#旧rf-f001t003r2の成果と限界)と[回収・訂正](#訂正回収再現性元記録を上書きしない)へ代表値を抽出済み。EXP-017の完全回収ベクトルは各EXP側にあり、旧trialを現行正式値に転用しない |
 
-**科学的境界：** 現行のEXP-016/017/023/034〜041の原manifest・選抜checkpoint・実験索引を改竄しない。EXP-034〜041の旧manifestに登録された`data/validation/`補助原本は欠損するが、**元manifest自体のSHAで固定した17件（EXP-025〜041）の履歴索引監査のみ**、欠損した旧データを除外する。現存する登録証拠のSHA照合は継続し、直接`validate_manifest`、新規EXPのG0〜G5、正式RF/独立MNAの科学回帰には例外を設けない。EXP-047用overlayのSHA・内容はそのまま維持する。旧RF-T003専用リプレイスクリプト／専用テストは原入力と一体で削除し、現役のSPD・受動性・電力保存・独立枝電流MNA検査を残す。
+**科学的境界：** 現行のEXP-016/017/023/034〜041の原manifest・選抜checkpoint・実験索引を改竄しない。EXP-034〜041の旧manifestに登録された`data/validation/`補助原本は欠損するが、**元manifest自体のSHAで固定した17件（EXP-025〜041）の履歴索引監査のみ**、欠損した旧データを除外する。現存する登録証拠のSHA照合は継続し、直接`validate_manifest`、新規EXPのG0〜G5、正式RF/独立MNAの科学回帰には例外を設けない。EXP-047用overlayは退役し、元の非標準manifestおよび既存の索引行は改変しない。旧RF-T003専用リプレイスクリプト／専用テストは原入力と一体で削除し、現役のSPD・受動性・電力保存・独立枝電流MNA検査を残す。
 
 **未実施：** 旧全候補の再最適化、1,001点全帯域と84点MNAの再計算、連続周波数極値・EM/Q(f)/SRF/公差・実測。旧記録中の有限結果と今回の整理作業を混同しない。
 
