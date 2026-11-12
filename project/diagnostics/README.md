@@ -2,12 +2,12 @@
 
 **通常の操作入口は [Campaignガイド](../campaign_workflow.md)**。本ディレクトリのIssue番号付き資料は
 そのIssueのスコープ・当時の検証結果・レビュー証拠であり、現行状態は[ロードマップ](../roadmap.md)とmain実装を確認する。
-古い「Draft」「レビュー待ち」「未接続」を現況へ読み替えない。ここでは原資料を改変・移動・削除しない。
+古い「Draft」「レビュー待ち」「未接続」を現況へ読み替えない。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)では知見抽出済みの旧診断原資料を削減する。削減後の主要解釈は[methods](../methods.md)・[results](../results.md)、逐語原文は固定Git履歴を参照。
 #343で隔離された旧Pythonコピーは#362で現行treeから削除済み。[履歴索引](../../archive/issue343/README.md)の元commit・元パスから `git show` で取得する。
 
 ## 分類と用途
 
-分類は用途の整理であり、保存ポリシーのA/B/C判定ではない。「歴史・旧仕様」でも証拠は保持する。
+分類は現存資料の用途を示すもので、保存ポリシーのA/B/C判定ではない。過去の正式証拠・現役機能とは別に旧専用診断を退役させる。
 同じ資料に現役APIの説明があっても、現行フローを重複して転記しない。
 
 | 分類 | 所在 | 用途・現行ガイドとの関係 |
@@ -19,11 +19,10 @@
 | 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md)、[D2](issue343_d2.md)、[D3](issue343_d3_cleanup.md)、[D4](issue343_d4_cleanup.md)、[E1](issue343_e1_cleanup.md)、[E2](issue343_e2_cleanup.md) | 構造正本・保存ゲートの旧caller分離、科学回帰の現役API化、旧入口・候補・RF wrapper撤去と歴史資料の隔離。D4の残存matching旧layoutと未検証範囲に注意 |
 | 限定実証・レビュー証拠 | [#330報告](issue330_real_scipy.md)・[再現コード](issue330_real_scipy.py) | 実SciPy callback非EXP検証、旧実行との差、source/import制限。再現コードはRF計算を行うので文書確認時に起動しない |
 | 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md)、[#369開発用100-forward予約](issue369_forward_window.md) | 中断・未照合費用・原本所在不明、時間診断とmock限定の保存比較。Pilot再実行の指示ではない |
-| 限定実証・レビュー証拠 | [#372診断途中停止](issue372/README.md)、[修正版診断・Pilot](issue372/followup.md) | 集計例外・原本保全、後続のwindow100実RF診断と2-seed未収束Pilot |
-| 限定実証・レビュー証拠 | [#375 Pilot結果](issue375/followup.md)、[summary](issue375/pilot-summary.json) | RF-T008 trialの新規6500-evaluation上限比較。1002→1001の順に実行し、#372との同格子比較・違反推移・未収束/strict FAILを記録。非EXP、Phase 2 |
+| 歴史的開発診断（知見統合済み） | [#372/#375の結果と限界](../results.md#開発pilotの未収束と限定性能診断2026-11)・[探索の教訓](../methods.md#開発pilotの未収束と性能計測の教訓rf-t008-schema2issue-372375389391393) | 非EXPの二つのPilotとwindow100固定vector照合。専用入力・派生summary・旧診断コードを#397で削減、逐語原文は[整理前Git](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/504058c52b360e02e37649f509d257dea139ad64/project/diagnostics) |
 | 開発ツール・限定検証 | [#387 checkpoint境界](issue387_checkpoint.md) | 非active切替の限定修正、非RF旧新比較・異常注入 |
 | 開発ツール・限定検証 | [#378 共通監視](issue378_monitor.md)、[#381 py-spy](issue381/README.md)、[#383 内部タイマー](issue383_timing.md)・[非RFベンチマーク](issue383_benchmark.py)、[#385 短時間実RF内訳](issue385_timing.md) | 開発CLI監視・限定合成負荷・短時間実RF内訳。#381の子起動と#383の内部計時は別モード |
-| 開発ツール・限定検証 | [#389 最小Worker](issue389_minimal_worker.md)、[#391 性能内訳](issue391_worker_performance.md)・[再現スクリプト](issue391_benchmark.py) | 旧Worker置換前の単一Hybrid試作・限定同等性と短時間性能診断。正式運用・復旧なし |
+| 開発ツール・限定検証 | [#389/#391/#393の結果](../results.md#開発pilotの未収束と限定性能診断2026-11)・[現在も使う性能計測器](issue391_benchmark.py) | 旧Worker置換前の限定同等性と計測の教訓をKBへ統合。単発raw・専用A/Bコードを削減し、後続#394にも使用された再利用可能なplain/timed/profile計測器は残す |
 | 限定実証・レビュー証拠 | [#254](issue254_curated_storage.md) | 旧共通curated保存と容量STOPの実測。現保存規則の代わりではない |
 | 歴史・旧仕様 | [#235報告](issue235_scaling.md)・[JSON](issue235_scaling.json)、[#239](issue239_optimizer_comparison.md) | 旧座標正規化・optimizer比較契約・診断。保存vector/SHAは原証拠 |
 | 歴史・旧仕様 | [#241](issue241_scipy_de_preview.md)、[#243](issue243_de_exploration_boundaries.md) | DE mock接続と評価境界。本番runnerの存在を意味しない |

@@ -210,6 +210,18 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 
 これらは次の探索で配置と初期値の多様性を確保する**設計上の示唆**であり、新たなRF最適化やPhase移行の承認・実施記録ではない。
 
+## 開発Pilotの未収束と性能計測の教訓（RF-T008 schema2、Issue #372/#375/#389/#391/#393）
+
+**条件と出典：** 非EXP・Phase 2の開発専用診断。RF-T008 rev3 **trial opt-in**、実効SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、`full_lpf`、固定入力/出力S2P・全6設定/28不連続区間。#372/#375の同じ4L・2複合Cv入力の初期seedと、#389/#391/#393の最小Worker比較は**別の測定目的とコードHEAD**。正式RF-F003、旧RF-T008実効SHA `7de08611...`、10月の密格子Paretoの証拠とは混同しない。[代表結果・履歴固定リンク](results.md#開発pilotの未収束と限定性能診断2026-11)を参照。
+
+- **予算増加・solver収束・strict RF適合は独立。** #372は2 seedとも3,000評価で予算切れ、#375ではseed1002を6,500まで延長しても予算切れ／RF不適合、seed1001は6,006評価でsolver収束したがRF不適合。局所反復の増量は必須減衰30dBもILも保証しない。科学順位のbest-observed vectorとsolver terminalも別に判定する。
+- **目的値の単一指標化は危険。** #375 seed1002は84点格子で最大違反28.516→0.710dB、合計違反388.449→0.957dBへ低下しても、worst ILは途中の0.988dB（1,000評価）から9.279dB（6,500評価）へ悪化。各forward時点の値であり過去bestではない。70点search、84点anytime、476点terminalでは格子と選抜対象を明示し、失敗を低ILのParetoに昇格しない。
+- **データ完全性の停止を科学的不適合にすり替えない。** #372の初回診断はlegacy summaryにない`io`キーを参照する集計コードの`KeyError`で停止しただけで、RF計算やwindow100が失敗したという証拠ではない。後続の固定vector実RF/IO readback照合は当時成功したが、全最適化と全帯域保証は別。window100の予約／確定／unknown、readbackと終端状態は分ける。
+- **性能のボトルネックは計測契約に依存する。** #391の100-forward測定ではrequirements `0.105035s`、RF `0.080692s`、physical `0.050532s`（1回の詳細計時）。包含区間の`evaluate/residual`と二重加算しない。固定grid fingerprintや詳細出力の事前計算は**未実装の高速化候補**であり、候補依存の全6設定/28区間、H2/H3、SPD、NaN/STOP、S2P、残差の科学的契約を省略しない。
+- **同等性と速度優位を分ける。** #389の限定最小Worker回帰、#393の旧詳細/新prepared各100-forwardのvector・RF・solver一致はその条件での数値同等性。#393のwall時間差は旧→新の単一順序で測定負荷・cacheを固定しておらず、再現した速度比や現行Worker全体の加速率ではない。plain/timed/profileで計測器の負荷が変わる（#391のcProfile solverはplain中央値より約35%長い）。比較には同じ入力・source SHA・seed・solver・grid/参照面での複数回、順序入替、無計時plain基準と分布の評価が必要。
+
+以上は当時の診断から再利用する**判断基準**であり、新しいPilot、RF/EXP、ベンチマーク、最適化を今回実行・承認したものではない。旧raw・一回限りの診断コードを削除しても、現役の`MinimalWorker`・科学的回帰、後続#394でも使用した共通`issue391_benchmark.py`は残す。
+
 ## BSF合成と有限Q損失からの設計仮説
 
 以下は2026-10-14の文献・旧RF-T004研究の統合であり、**新規合成の実行報告や現行RF-F003適合の証明ではありません**。元の文献調査・導出全文は[整理前Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs/research)にあります。
