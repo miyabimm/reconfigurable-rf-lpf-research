@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Issue 401 opt-in instrumentation for the development-only MinimalWorker.
+"""Opt-in instrumentation for the development-only MinimalWorker.
 
 Only install in a dedicated benchmark process, never in a production worker.
 Regions are inclusive and exceptions are propagated unchanged.

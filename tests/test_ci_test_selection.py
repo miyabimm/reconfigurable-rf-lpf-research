@@ -95,6 +95,17 @@ class SelectionTests(unittest.TestCase):
                 self.commit()
                 self.assertTrue(self.plan()['full'])
 
+    def test_deleted_diagnostic_raw_forces_full_and_keeps_changed_tests(self):
+        self.write('project/diagnostics/issue401_raw/run.json', '{}\n')
+        self.commit()
+        self.base = self.head()
+        self.git('rm', 'project/diagnostics/issue401_raw/run.json')
+        self.write('tests/test_unregistered.py', 'changed\n')
+        self.commit()
+        result = self.plan()
+        self.assertTrue(result['full'], result)
+        self.assertIn('tests/test_unregistered.py', result['changed_tests'])
+
     def test_document_only_runs_no_selected_tests(self):
         self.write('README.md', 'changed\n')
         self.commit()

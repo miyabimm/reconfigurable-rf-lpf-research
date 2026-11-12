@@ -1,5 +1,7 @@
 """Timing instrumentation follows Hybrid's private callback, not public APIs."""
 import importlib.util
+import io
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -10,11 +12,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 import numpy as np
 from lpf.search.plan import ROOT
 from lpf.timing import TimerCollector
+from lpf.search import _minimal_worker_timing as timing
 from test_issue389_minimal_worker import MinimalWorkerTests
-
-spec = importlib.util.spec_from_file_location('issue401_timing', ROOT / 'project/diagnostics/issue401_timing.py')
-timing = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(timing)
 
 
 class TimingTests(unittest.TestCase):
@@ -61,6 +60,38 @@ class TimingTests(unittest.TestCase):
             self.assertEqual(rows[name]['failed'], 0)
         self.assertEqual(rows['l3_cascade']['count'], 2 * result.nfev)
         self.assertEqual(rows['l3_cascade']['failed'], 0)
+
+    def test_benchmark_modes_separate_postsolve_forward(self):
+        spec = importlib.util.spec_from_file_location('benchmark_minimal_worker', ROOT / 'scripts/benchmark_minimal_worker.py')
+        bench = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bench)
+        reports = []
+        for mode in ('plain', 'timed', 'deep'):
+            plan, definition, policy, vector, worker = self.prepare()
+            output = io.StringIO()
+            argv = ['benchmark', '--config', 'unused', '--starts',
+                    str(ROOT / 'project/diagnostics/issue401_starts_1002.json'),
+                    '--arm', 'demo', '--seed', '23', '--mode', mode]
+            with patch.object(bench, 'source_identity', return_value={'fixture': True}), \
+                 patch.object(bench, 'load_preflight', return_value=plan), \
+                 patch.object(bench, 'definition_from_data', return_value=definition), \
+                 patch.object(bench, 'load_constraint', return_value=policy), \
+                 patch.object(bench, 'load_explicit', return_value={23: {'vector': vector, 'vector_sha256': 'fixture'}}), \
+                 patch.object(bench, 'MinimalWorker', return_value=worker), \
+                 patch('sys.argv', argv), patch('sys.stdout', output):
+                bench.main()
+            report = json.loads(output.getvalue())
+            reports.append(report)
+            self.assertEqual(report['mode'], mode)
+            self.assertEqual(report['solver']['nfev'], 3)
+            self.assertEqual(report['observation_forward_count'], 1)
+            if mode == 'plain':
+                self.assertEqual(report['timers'], {})
+            else:
+                self.assertEqual(report['timers']['rf_forward']['count'], 3)
+                self.assertEqual('l3_port_admittance' in report['timers'], mode == 'deep')
+        self.assertEqual(reports[0]['solver'], reports[1]['solver'])
+        self.assertEqual(reports[0]['solver'], reports[2]['solver'])
 
     def test_failure_propagates_and_counts(self):
         _, _, _, _, worker = self.prepare()

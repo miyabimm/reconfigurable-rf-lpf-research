@@ -121,7 +121,7 @@ class SourceBoundaryTests(unittest.TestCase):
             model=SimpleNamespace(policy_id='fixture', policy_fingerprint='fixture'), solve=lambda: Output())
         plan = SimpleNamespace(data={'config': {'definition': {}, 'rf': {'constraint_id': 'fixture', 'allow_trial': True}},
             'rf_inputs': {}, 'grids': {'demo/coarse': {'sha256': 'grid'}}}, sha256='plan')
-        argv = ['benchmark', '--config', 'unused', '--starts', 'unused', '--arm', 'demo', '--seed', '23']
+        argv = ['benchmark', '--config', 'unused', '--starts', str(ROOT / 'project/diagnostics/issue401_starts_1002.json'), '--arm', 'demo', '--seed', '23']
         output = io.StringIO()
         with patch.object(bench, 'source_identity', return_value=identity) as source, \
              patch.object(bench, 'load_preflight', return_value=plan), \
@@ -134,6 +134,10 @@ class SourceBoundaryTests(unittest.TestCase):
         self.assertEqual(report['source_identity'], identity)
         self.assertEqual(report['source_sha256'], sha(identity))
         self.assertEqual(len(report['benchmark_script_sha256']), 64)
+        self.assertEqual(report['mode'], 'plain')
+        self.assertEqual(report['timers'], {})
+        self.assertEqual(report['observation_forward_count'], 0)
+        self.assertEqual(report['starts_file_sha256'], '63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab')
         source.assert_called_once_with(ROOT)
 
 

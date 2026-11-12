@@ -5,6 +5,10 @@
 古い「Draft」「レビュー待ち」「未接続」を現況へ読み替えない。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)では知見抽出済みの旧診断原資料を削減する。削減後の主要解釈は[methods](../methods.md)・[results](../results.md)、逐語原文は固定Git履歴を参照。
 #343で隔離された旧Pythonコピーは#362で現行treeから削除済み。[履歴索引](../../archive/issue343/README.md)の元commit・元パスから `git show` で取得する。
 
+## MinimalWorkerの現役性能診断
+
+[単一ベンチ入口](../../scripts/benchmark_minimal_worker.py)のplain/timed/deep、[操作・出力境界](../../scripts/README.md#minimalworker開発ベンチ)、[#401の方法](../methods.md#minimalworker性能診断の運用401408)・[結果](../results.md#minimalworker性能診断issue-401)。固定入力 [starts](issue401_starts_1002.json) と [baseline](issue377/baseline.yaml) は保持。#401専用raw・報告・単発driverは[PR #402時点の固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)にあり、現役treeへ移動・複製しない。他Issueの歴史診断はこの整理の対象外。
+
 ## 分類と用途
 
 分類は現存資料の用途を示すもので、保存ポリシーのA/B/C判定ではない。過去の正式証拠・現役機能とは別に旧専用診断を退役させる。

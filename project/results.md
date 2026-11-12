@@ -137,6 +137,16 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 - EXP-046の初期「全て30dB未達」と後続別4Lの一部達成は別時点。容量損失会計の訂正版は`independent_verified_1001_corrected.json`。旧容量診断を引用せず、訂正前後を保持する（保存説明ではIL/H2/H3非影響）。dirty実行・seed/environment欠損を捏造しない。
 - EXP-047のQインデックス誤りは`Q[5]=80`ではなく正しいGJMの`Q[1]=80`。元manifestの`q_bug_excluded_files`の5原本は正式性能順位から除外。manifest上6検証候補とパレート採録4候補を区別。optimizer commit/seed/environmentはunknown、Actionsでの元探索再実行証明はない。
 
+## MinimalWorker性能診断（Issue #401）
+
+[PR #402](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/402)・[原報告とrawの固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)。RF-T008 rev3 **trial** / full_lpf、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定・28別区間・70 samples/forward、seed1002・100 nfev、Plan `8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e`、grid `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。計測前HEAD `f5bd7dbb0d5ccc580999633b76116eb7356b80db`、port変更後詳細HEAD `6908e52149de9f59c51c859f291ba6f4cd8de72c` と `124a55c5b1cda68b17a41daeeede7447d70b0437`。単一thread・共有host、外部固定S2Pを含む有限格子。
+
+- 旧new交互plain（warmup各1＋各10、2 batch）で固定source/load事前準備のsolve中央値は旧97.285/105.981、新83.234/86.339 ms。対応差中央値−14.248/−14.863 msだが範囲はそれぞれ−41.030〜+11.622、−33.671〜+32.507 ms。3 vectorの複素S・IL/APL/RL・mandatory g配列digestは旧新完全一致（6 forward・420 samples）、全solver軌道の配列一致ではない。
+- Deepの100 forward中央値は変更前→後の再測定で RF 83.817→79.016、port 35.860→38.631、node 25.979→28.241、power 15.388→15.251、decode 7.911→8.153 ms。包含区間は加算不可、非交互のため差を変更の因果効果やplain速度比としない。後初回plain最大239.046ms、再測定deep最大162.408msの外れ値は除外していない。
+- C incidence先行準備は旧HEAD `f5bd7dbb0d5ccc580999633b76116eb7356b80db`／候補 `411110f8838d2a4889f64fc4e3393cc5beb919db`、22 run・2,200 forwardで対応差中央値−0.526ms、範囲−22.797〜+13.282ms。ノイズと区別できずrevert。初期26 run 2,600 forward、詳細33 run 3,300、port A/B 44 run 4,400、後詳細66 run 6,600は別実施分であり、各70 samples。全solver runは100 nfev予算切れ・**未収束**。
+
+計器の実RF負荷や汎用速度比は未確定。測定時のsolver一致はRF合格を意味しない。連続帯域、全軌道の独立MNA、EM・SRF・Q(f)・公差・実測・物理実現性は未検証。これは正式EXPや正式RF PASSではない。
+
 ## 文書統合と固定監査の読み方（Issue #352）
 
 研究解釈は本ページと[methods](methods.md)、現役実装とゲートは[roadmap](roadmap.md)、運用は変更しない[instructions](../project/instructions.md)へ集約しました。W3/W4/W5の当時の監査完了・CI成功は、原研究の数値再実行、重要証拠の削除許可、研究Phase移行ではありません。225件、131件、46件の台帳は重複し得る別集合で、単純合算しません。旧39/31/3 workflow数や「未merge」は各報告時点の意味で、現役状態ではありません。
