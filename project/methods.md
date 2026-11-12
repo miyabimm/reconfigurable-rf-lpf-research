@@ -199,6 +199,17 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 
 代表値・9ペアの全記録と限界は[結果の整理](results.md#rf-t008旧条件の多初期値と座標ab比較)および各[元集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/report.json)・[対照集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/report.json)を参照する。集計README/JSONへのリンクは削減前の固定Gitコミットを指す。27件の17点検証overlayはEXP-086〜112の各`validation/17pt.json`へ元JSONのGit blob/SHA-256を変えずに移動し、保存manifest／storage_recordの**参照パスだけ**を更新した。旧metadataの原文は移動前の固定Git履歴に残る。この統合は既存結果の読取りであり、新しいRF計算・EXP・独立検証を実施していない。
 
+## Pareto支配と配置選択の教訓（RF-T008 rev3の歴史的局所探索）
+
+**出典・有効範囲：** [EXP-058/059・062〜065の整理結果](results.md#rf-t008-v3の横断比較2026-10-20の固定履歴)。固定外部S2Pと6設定・28区間×1,001点、必須H2/H3≥30dB、当時のRF-T008 rev3 trial実効SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`の探索済み部分集合に限る。
+
+- **非劣性は再最適化後の同条件比較で判定する。** 面積4の旧4L/0GJM候補は低面積3⅔に支配されていたが、EXP-064のPCB-C配置探索で非劣点に変わった。局所探索で見つからないことを構成不可能の証明にせず、固定した面積クラスの異接続・異開始点を比較する。
+- **PCB-Cの配置・損失・枝数を独立に考える。** EXP-059ではhot-hot Q40のPCB-C橋絡の代わりにN3–GND/N4–GND（接地Q60）を使う4L/1GJM配置が有利だった。最良に3枝目のPCB-Cは装着されない。配線・Q・値とDTC接続を含む共同再最適化の観測なので、単一枝削除や接地化だけの因果効果と断言しない。
+- **部品費増加は性能改善を保証しない。** 面積6⅔/4GJMのbestは面積6/3GJMに支配された。他方、面積5⅓の96回路同時組合せではEXP-062基準から小幅改善した。L/GJM/PCB-C個数だけで候補を並べず、接続役割・物理列・結合SPD・選抜ベクトルと全設定の性能を同時に検証する。
+- **探索停止・検証深度をParetoから分離する。** 数値収束、有限格子30dB、84点独立MNA報告、電力保存、35dB公称目標、IL≤0.30dB、連続帯域と製作可能性は異なるゲート。小さな内部guard（約0.005dB）を製造余裕と解釈せず、保存済みMNA結果の監査を新たな独立解法実行と呼ばない。
+
+これらは次の探索で配置と初期値の多様性を確保する**設計上の示唆**であり、新たなRF最適化やPhase移行の承認・実施記録ではない。
+
 ## BSF合成と有限Q損失からの設計仮説
 
 以下は2026-10-14の文献・旧RF-T004研究の統合であり、**新規合成の実行報告や現行RF-F003適合の証明ではありません**。元の文献調査・導出全文は[整理前Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs/research)にあります。

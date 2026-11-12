@@ -64,7 +64,7 @@
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp059_4l1gjm_pcb_relocation_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-059/pareto/pcb_relocation.json",
       "sha256": "189ebcf5a590a834b9bcb15ca8296eb894087139f1c8ba13b1e97dcfee430d9e",
       "reason": "Complete top three EXP-059 candidate vectors and execution summary, original workflow run and artifact identifiers."
     }

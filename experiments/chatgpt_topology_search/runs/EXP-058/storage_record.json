@@ -32,13 +32,13 @@
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp058_area3_to_3p667_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area3_to_3p667.json",
       "sha256": "21dc10094dab9687e2c0e0877a37a6f595fe00199a929d750321fbe25a90aaf5",
       "reason": "Git checkpoint records executed area3 and area3p667 two observed Pareto full vectors and verification"
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp058_area4_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area4.json",
       "sha256": "c15ffc08d08f4f179d891680e0d55f57919ec80f13b7ab11824d7bf5e4b04209",
       "reason": "Area 4 RF-T008 four-L zero-GJM local search, dominated best vector, independent 9x9 MNA"
     },
@@ -50,19 +50,19 @@
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp058_area4p333_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area4p333.json",
       "sha256": "5309e04c98b5eccae4a77e8f7425c1adde0de7bba10184acfa92bbee4aa6a7c4",
       "reason": "Third non-dominated area4p333 3L/2GJM full vector and verified run"
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area4p667.json",
       "sha256": "f1a63cf5bcc95fc1b1f31f0bb7c20b2f52b035ac8084e89289ec76f794b6fca9",
       "reason": "Verified area4p667 non-dominated full network parameter vector and distinct coupled-L MNA"
     },
     {
       "role": "source_snapshot",
-      "path": "data/pareto_snapshots/rf_t008_exp058_area5p333_to_6p667_20261020.json",
+      "path": "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area5p333_to_6p667.json",
       "sha256": "30a96103cc020f2c5c74e394b90c60bc20d481a140b3bb78bf194e427c192a49",
       "reason": "Verified T008 area5p333, area6 and area6p667 numerical Pareto complete 4L vectors from GitHub Actions and 84 point independent MNA"
     }
