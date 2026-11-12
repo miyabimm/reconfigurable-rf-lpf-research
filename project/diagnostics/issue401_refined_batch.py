@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """New independent L2/L3 repetitions; preserve all previous Issue 401 evidence."""
+import argparse
 import hashlib
 import json
 import os
@@ -29,6 +30,10 @@ def hashes():
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--post-ports', action='store_true', help='write a new post-optimization measurement set')
+    args = parser.parse_args()
+    output = HERE / 'issue401_postports_raw' if args.post_ports else OUT
     if any(os.environ.get(k) != '1' for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')):
         raise ValueError('Single-thread environment required')
     identity, scripts = source_identity(ROOT), hashes()
@@ -36,8 +41,8 @@ def main():
     order = [('plain', True), ('timed', True), ('deep', True)]
     order += [(mode, False) for mode in ('plain', 'timed', 'timed', 'plain') * 5]
     order += [('deep', False)] * 10
-    OUT.mkdir(exist_ok=False)
-    save(OUT / 'freeze.json', dict(source_identity=identity, source_sha=source, scripts=scripts,
+    output.mkdir(exist_ok=False)
+    save(output / 'freeze.json', dict(source_identity=identity, source_sha=source, scripts=scripts,
          order=order, samples_per_forward=70, max_nfev_per_run=100,
          affinity=sorted(os.sched_getaffinity(0))))
     reference = None
@@ -46,10 +51,10 @@ def main():
             raise RuntimeError('Source changed; STOP, no retry')
         prefix = f'{i:02d}-{mode}'
         command = [sys.executable, str(HERE / 'issue401_benchmark.py'), '--mode', mode, '--source-sha', source]
-        save(OUT / (prefix + '.started.json'), dict(sequence=i, warmup=warmup, command=command,
+        save(output / (prefix + '.started.json'), dict(sequence=i, warmup=warmup, command=command,
              max_forward=100, samples_per_forward=70))
         result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
-        save(OUT / (prefix + '.json'), dict(sequence=i, warmup=warmup, returncode=result.returncode,
+        save(output / (prefix + '.json'), dict(sequence=i, warmup=warmup, returncode=result.returncode,
                                             stdout=result.stdout, stderr=result.stderr))
         if result.returncode:
             raise RuntimeError(f'{prefix} failed; STOP, retain unknown consumption')
