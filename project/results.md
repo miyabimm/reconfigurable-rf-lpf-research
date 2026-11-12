@@ -11,7 +11,29 @@
 | **RF-T006/T007（試験）** | [EXP-048](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-048)、同階層EXP-049/055 | 追加阻止帯・固定寄生モデルを区別 |
 | **RF-T008 v3（試験）** | [EXP-058](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-058)、同階層EXP-062〜068 | IC固定C＋最大2可変C、各EXPの収束・独立MNAを個別確認 |
 
-[旧RF-T005/F003パレートJSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/pareto_snapshots/rf_t005_rf_f003_20261017.json)と[固定24候補CSV](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/catalog/phase2_candidate_catalog_20261017.csv)は現行最良一覧ではありません。4GJM候補の原検証JSONの面積6は、固定カタログでは**6⅔**へ訂正（原本不変）。最低必須30dB、公称35dB、IL目標0.30dBは別判定です。Q(f)・SRF・EM・公差・実測は未保証。[ロードマップ](roadmap.md)／[手法・解釈](methods.md)。
+2026-10-17のRF-T005／旧RF-F003派生Paretoと24候補カタログは[以下の固定比較](#正式rf-f003旧版とrf-t005t007試験の固定比較2026-10)へ知見を統合し、旧派生原文は[マージ前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data)からのみ参照できます。最低必須30dB、公称35dB、IL目標0.30dBは別判定。Q(f)・SRF・EM・公差・実測は未保証。[ロードマップ](roadmap.md)／[手法・解釈](methods.md)。
+
+## 正式RF-F003旧版とRF-T005〜T007試験の固定比較（2026-10）
+
+**実行時条件を固定した歴史的な局所best-found。** 2026-10-17〜20の試験群はいずれも`full_lpf`、固定外部入出力S2P、50Ω源・60−j40Ω負荷、全6設定・28個別UL/DL/H2/H3区間、有限格子の必須H2/H3≥30dBを基礎とする。ただしRF-T006の**追加3〜6GHz・20dB**、RF-T007の**接地DTC 0.5pF/Q40固定寄生**、RF-T005の**可変C最大3枝**は同条件ではない。
+
+**旧実効SHAと現在のschema2実効SHAは別物：** RF-F003 `f85710200ccda5b72ab32f943540fbfd7a8abb3137c5f4e6e5ba7a6d7b3da2ba`（現行`e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86`）、RF-T005 `59a451775ab4914cf9f0e51785ebfb62b36217af7735e7c93e9fe70f2323e67c`（現行`413c1f2979926dd8bc56fe6730603864f6c582e2a72ec3f7bb0ab1ba81a7becd`）、RF-T006 `54e86864b32bb158857750e6c81e41289d2f762fe1f12c52ec851b12a06f5137`（現行`1d22e01d6da243bed24970de90a496e8f2d38b11bd5a5fae78e001398f647e1c`）、RF-T007 `c6f0fc685464964fff2abedf8b99dda0064c99bbe133ec8fecd91c4f60d2b430`（現行`5452690de1c8590f1f7c306f76e41692e1885ac190da3cef050f1d926145c944`）。旧結果を現行RF-F003の新しい検証・最良値へ自動昇格しない。
+
+| 旧条件・元EXP | chip面積 | worst IL [dB] | 数値の意味 |
+|---|---:|---:|---|
+| RF-F003旧・EXP-047 | 4⅔ / 5⅓ / 6 / 6⅔ | 0.882646928 / 0.843652332 / 0.836867952 / **0.833188234** | 最大2可変C、28区間×1,001点・選抜84点独立MNAの当時の観測非劣4点 |
+| RF-T005・EXP-043/045 | 3 / 3⅔ / 4⅓ | 0.944268363 / 0.895180009 / 0.879244690 | 最大3可変Cの観測非劣点、28区間×1,001点 |
+| RF-T005・EXP-042 | 4⅔ / 5⅓ / 6 | 0.819564515 / 0.811306586 / **0.805148668** | 面積6点はSLSQP**非収束**ながら28区間×7,001点の保存値で30dB適合、独立MNAは84点のみ |
+| RF-T006・EXP-048 | 5⅓ | **2.920705899** | 追加3〜6GHzの20dBを有限格子で達成したが、元EXP-047 IL0.843652332から悪化。46,034点評価、別式MNA114点PASS |
+| RF-T006・EXP-049 | 18 | **1.166797417** | Q33 LQW04モデル＋公表0.8nH下限にした代表例。追加阻止最小20.079968dB、IL≤1.1dB未達。別式MNA114点PASS |
+| RF-T007・EXP-050 | 3 / 3⅔ / 4⅓ | 0.938309198 / 0.909728967 / 0.891827011 | 接地DTC付属寄生を含む固定履歴の3L観測非劣 |
+| RF-T007・EXP-055 | 5⅓ | **0.817365590** | 4Lの配置探索後の保存値、EXP-053同面積0.875794664から改善0.058429074dB。28×1,001格子＋84点9×9独立MNA |
+
+**探索の否定的成果：** 旧RF-F003の面積4/4L/0GJMでは30dB PASS点を当時発見できなかったが不可能性証明ではない。EXP-049でIL1.158264dBとなった面積19の旧試行はLQW04の一つが0.4nHで公表0.8nH下限未満であり、上表の下限考慮例とは別。RF-T007/EXP-055の最小H3は30.004810049dBと閾値近傍で製造余裕の証明ではない。すべての観測非劣群で公称H2/H3≥35dBとIL≤0.30dBは未達。旧RF-F003 4GJM/面積6の**元JSON面積誤記は正しくは6⅔**（元検証原本の値は変更しない）。旧RF-T005の非収束候補も数値適合とsolver収束を混同しない。
+
+**旧W4資料から継承した出典上の注意：** EXP-042の当時のActions ZIP10個・19 member（うち未選別のcf2/both/pcb_cf2各数値＋独立報告の計6 member）は、既存Git選抜点と同一の採用checkpointであると検証されていない。旧資料のZIP SHA/CRC一致はRF独立計算を意味せず、6未選別点は当時の面積–IL非劣更新の根拠にならなかった。EXP-046の容量電力会計訂正とEXP-047のGJM Q-index誤りは**別問題**。EXP-047の誤index計5原本は正式順位から除外し、6検証候補と4 Pareto採録を区別する。EXP-046の実行元dirty・seed/環境欠落、EXP-047元optimizer commit/seed/環境unknownを埋めない。W4の46/131/225ファイル分類は重複する時点固定監査台帳であり、計算結果ではない。RF-T008旧#229の12 startは12/12収束でも厳密30dB適合0、dense1,001点・独立MNAは未実施（[元記録](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/repository_reviews/issue229_autonomous_search.json)）。
+
+**証拠の保管と限界：** 選抜完全L/C/k・6設定Cv・ソースとMNA報告は[EXP-042](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-042)、[EXP-047](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/experiments/chatgpt_topology_search/runs/EXP-047)、EXP-043/045/048/049/050〜055各runに残す。旧24候補カタログ、RF-T005/F003・RF-T007の派生ParetoとW4棚卸し/ZIPは知見を統合した後に退役し、[整理前の固定Git原文](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data)で確認する。元EXP manifestや現行RF loader/registryは不変更。数値条件の差、内部guard、元の選別証拠深度・非収束状態を失わせない。連続周波数極値、Q(f)、SRF、EM、磁気結合符号の物理的同時実現、温度・公差・実測は未検証。Gitの歴史的原文へのアクセスを**今回新しいMNAや最適化を実行したこと**とは呼ばない。
 
 ## RF-T008 v3の横断比較（2026-10-20の固定履歴）
 
@@ -110,8 +132,8 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 ### EXP-042、046/047の原本と訂正
 
-- EXP-042の[元10 ZIP](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)は26,953B・19memberをSHA/CRC付きで保存。既存Gitとのバイト一致は空stderr 1件だけ。ZIPハッシュ確認は数値独立再計算ではない。`target_35.json`の元run38999677194と選別run38774357292、`area_cf1.json`の38999677183と38775558755は**別Actions run**。単なる同run内stage差と断定しない。
-- 未選別`cf2/both/pcb_cf2`の6元JSON（23,460B）は`data/repository_reviews/w4_exp042_recovered_original_members_20261018/`にバイト同一で保存。存在しない3つの選別checkpointを生成しない。元報告は1,001点＋84点MNA、暫定IL0.8dB未達、既存同面積よりILが悪くIL/面積の新パレート根拠なし。調波余裕等も含む全面的劣位や独立再検証済みを意味しない。
+- EXP-042の[元10 ZIP（整理前固定Git履歴）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/repository_reviews/w4_exp042_actions_original_zip_b64_20261018.json)は26,953B・19memberをSHA/CRC付きで当時保存。既存Gitとのバイト一致は空stderr 1件だけ。ZIPハッシュ確認は数値独立再計算ではない。`target_35.json`の元run38999677194と選別run38774357292、`area_cf1.json`の38999677183と38775558755は**別Actions run**。単なる同run内stage差と断定しない。
+- 未選別`cf2/both/pcb_cf2`の6元JSON（23,460B）は[整理前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/repository_reviews/w4_exp042_recovered_original_members_20261018)に当時バイト同一で保存。存在しない3つの選別checkpointを生成しない。元報告は1,001点＋84点MNA、暫定IL0.8dB未達、既存同面積よりILが悪くIL/面積の新パレート根拠なし。調波余裕等も含む全面的劣位や独立再検証済みを意味しない。
 - EXP-046の初期「全て30dB未達」と後続別4Lの一部達成は別時点。容量損失会計の訂正版は`independent_verified_1001_corrected.json`。旧容量診断を引用せず、訂正前後を保持する（保存説明ではIL/H2/H3非影響）。dirty実行・seed/environment欠損を捏造しない。
 - EXP-047のQインデックス誤りは`Q[5]=80`ではなく正しいGJMの`Q[1]=80`。元manifestの`q_bug_excluded_files`の5原本は正式性能順位から除外。manifest上6検証候補とパレート採録4候補を区別。optimizer commit/seed/environmentはunknown、Actionsでの元探索再実行証明はない。
 
@@ -119,6 +141,6 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 研究解釈は本ページと[methods](methods.md)、現役実装とゲートは[roadmap](roadmap.md)、運用は変更しない[instructions](../project/instructions.md)へ集約しました。W3/W4/W5の当時の監査完了・CI成功は、原研究の数値再実行、重要証拠の削除許可、研究Phase移行ではありません。225件、131件、46件の台帳は重複し得る別集合で、単純合算しません。旧39/31/3 workflow数や「未merge」は各報告時点の意味で、現役状態ではありません。
 
-[W3統合文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)は当時のD-001〜004の出典・承認を記録する。元EXPや残存する[レビュー証拠](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/data/repository_reviews)は原blob・選別・終了状態・訂正の根拠です。時点固定のW4/W5保全一覧は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/repository_reviews)にあり、数値再検証ではありません。削除した日付別文書の逐語内容と試行内訳は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)、元pathごとの処置・残置callerは[PR #353](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/353)に記録します。復元専用機能・新アーカイブは追加しません。
+[W3統合文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)は当時のD-001〜004の出典・承認を記録する。正式EXPの残存するmanifest・選抜point・独立MNAが現在の証拠であり、退役した旧W4/W5の[原レビュー資料](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/repository_reviews)は当時の原blob分類・終了状態・訂正の参照に限ります。時点固定のW4/W5保全一覧は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/repository_reviews)にあり、数値再検証ではありません。削除した日付別文書の逐語内容と試行内訳は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)、元pathごとの処置・残置callerは[PR #353](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/353)に記録します。復元専用機能・新アーカイブは追加しません。
 
 Phase 2継続、Phase 3未承認。この整理で新しい科学的結論、RF条件、原EXPの実行／検証状態を変更しません。
