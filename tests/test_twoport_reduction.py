@@ -29,7 +29,7 @@ with patch.dict(sys.modules, {'lpf.port_parasitics': port_parasitics}):
         inductance,
     )
 
-SNAPSHOT = ROOT / "data/pareto_snapshots/rf_t008_exp058_area4p667_20261020.json"
+SNAPSHOT = ROOT / "experiments/chatgpt_topology_search/runs/EXP-058/pareto/area4p667.json"
 
 
 class TwoportReductionTests(unittest.TestCase):
