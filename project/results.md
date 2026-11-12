@@ -26,6 +26,24 @@ EXP-062〜065の264試行（249収束・15非収束）、全6設定・28区間×
 
 選別10解の部品・SPD・既存MNA記録を照合したレビューであり、レビュー自体が全28区間を独立RF解法で再計算したものではありません。[統合スナップショット](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/data/pareto_snapshots/rf_t008_exp062_065_integrated_20261020.json)と[逐語レビュー原文](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/3370ea4/docs/results/rf_t008_pr148_151_independent_review_20261020.md)を参照。EXP-058のrunning/preservedとreadbackの区別を後日のレビューで遡及変更しません。
 
+## RF-T008旧条件の多初期値と座標A/B比較
+
+[#233の固定3構成×3-start](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/README.md)と[#237の同一初期値9ペア対照](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/README.md)から、**探索の数値収束とRFの厳密適合を分ける必要性**が確認された。いずれもRF-T008 rev3 **trial**、`full_lpf`、当時の実効SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`、外部固定S2P・6設定／28個別区間の結果。現在のschema 2 RF-T008の実効SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、正式RF-F003とは混合しない。
+
+| 実行済み比較 | start／数値収束／非収束 | 17点/区間の厳密H2/H3≥30dB | 観測と限界 |
+|---|---|---|---|
+| #233：3構成×nominal/Sobol index 0/1 | 9／7／2 | **0/9** | 全件component・box・接続role・全L行列SPDはPASS。nominal 3本は先行1-startのILを再現。多初期値のRF適合改善は未観測 |
+| #237 A：物理座標、同9初期値 | 9／7／2 | **0/9** | #233のstatus・nfev・17点forward ILを再現した新EXP-096等 |
+| #237 B：正規化座標、同9初期値 | 9／8／1 | **0/9** | 1件の収束増加はRF適合増加を意味せず、有限差分の物理stepも変化 |
+
+#233は18 stage／12,206 nfev、#237はA: 18 stage／12,206 nfev、B: 20 stage／10,312 nfev。#237 BのEXP-100は既存v2の回復操作を1回含む。同じ初期値と予算**規則**でも実際のstage・評価回数は異なる。短時間の単回・非ランダム順の計時から速度優位を一般化しない。
+
+**境界の実例：** #233 EXP-091は精3点ではH2=`30.00000000002153`dB、H3=`35.20079203442586`dBだが、passband epigraph残差`−1.26e−11`dBでchecked選別対象外。17点ではB28・1422.875MHzのH2が`29.713319322336265`dBへ低下した。#237のA EXP-108は非収束、対応B EXP-109は数値収束したものの、17点最小H3=`29.996923233368015`dBでstrict FAIL。B EXP-100も回復後のH2=`29.999999999956906`dBでFAIL。**丸め・許容差によるPASS昇格は行わない。** 非収束時の巨大な負のepigraph `t` は物理挿入損失ではなく、worst ILは保存された回路ベクトルのforward値とする。
+
+両比較は粗2点／精3点の探索から17点/区間の有限forward評価まで。厳密30dB適合候補が0件のため、**密格子1,001点／区間、独立枝電流MNA84点、passivity／power balanceは全件 `not_run`**。部品／SPD検査PASSも、実際のレイアウト・Q(f)・SRF・EM・公差・実測・物理的signed kの実現保証ではない。旧Paretoとの異格子・guard・回路接続差を無視してIL順位を統合しない。
+
+詳しい解釈は[手法ノート](methods.md#多初期値座標正規化有限格子での探索上の教訓rf-t008旧条件)。数値根拠は[#233集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/report.json)と[#237集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/report.json)。参照したREADME・集計JSON・対照の補助コードは[固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation)で確認できる。EXP-086〜112の27件の17点検証overlayは、各EXPの`validation/17pt.json`へ**バイト同一で移動**し、正式manifest／storage_recordの証拠パスだけを移行した（SHA-256・数値・収束／RF検証状態は不変）。旧manifestの元バイトは[移動前の固定コミット](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/6ac982306cd5899dee99b40dee660d3a6986db89/experiments/chatgpt_topology_search/runs)に残る。この記述は**既存の実行済み結果の抽出**であり、再最適化・追加RF検証・現行正式RFへの再判定を実施していない。
+
 ## 旧RF-F001/T003・R2の成果と限界
 
 以下は旧一定Q・旧可変C範囲・強結合モデルの履歴で、現行RF制約へ持ち越しません。各候補の全L/C/kと6設定Cvは[保存validation](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/data/validation)、探索の試行数・中断・未実行範囲は[整理前の逐語文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)にあります。新たなRF再計算は行っていません。
