@@ -282,4 +282,10 @@ Issue #163/#168の開発記録を統合します。現役実装・対応条件�
 - [EXP-021](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/experiments/chatgpt_topology_search/runs/EXP-021/README.md)のHV35 B71：一定Qの2GHzスポットIL 37.388863dBに対し3GHzは3.276839dB。二重BSF的再透過の解釈であり、3GHzは仕様外のモデル外挿。孤立L3/C枝は低域側で容量性で、「BSFの誘導性領域を整合に使う」は未検証仮説。Schur縮約のY21零点、枝電流、零点感度を別途調べる必要がある。
 - [EXP-022の発見・再監査原本](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/experiments/chatgpt_topology_search/runs/EXP-022/topology_discovery_lessons.md)：L1端点(3,4)→(2,4)、PCB-C(3,4)→(1,4)を共同再最適化しIL≈0.352300→0.337988→0.318917→0.305720dB。差分は単独素子の因果効果ではない。「現行直列ESRで再現しない」という前段監査は**撤回**。7,001点/区間＋84点独立MNAでC-H30p0002はIL0.305481244/H2,H3 30.0002dB、C-H30p02は0.305720112/30.0200dB、いずれもIL未達。旧PRのEXP-021はID衝突によりEXP-022へ改番。面積6の大域最適性や旧W3-F4の性能維持を意味しない。
 
+## MinimalWorker性能診断の運用（#401/#408）
+
+開発専用の[単一ベンチ](../scripts/benchmark_minimal_worker.py)は同一Plan・grid・初期vector・source・環境で `plain`（無計時）、`timed`（L1/L2）、`deep`（L3）を区別する。`worker.solve()`の壁時計には前後の物理検査が含まれ、Hybrid単独ではない。後段のbest_x観察は別時間・追加1 forwardとして記録する。タイマー領域はinclusiveで、特に RF ⊃ port ⊃ node ⊃ matrices を加算しない。計器は実solver callbackを包み、失敗を再送出する。
+
+高速化は一仮説ずつ科学回帰後に旧新plainを別process・warmup除外・交互順（例：旧新新旧、各10回以上）で比較する。source/条件/環境と全run・未収束・外れ値を記録し、揺れたら除外せず再測定する。deep値や合成noopの校正を実RFの速度比としない。6設定・28区間、S2P、SPD、受動性・電力保存、独立MNAを既存検証で確認し、ノイズ未満の変更は退役する。[#401原記録と報告](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)、[結果と限界](results.md#minimalworker性能診断issue-401)。正式EXP・RF合格の代用ではない。
+
 現役の数値正本は[RF registry](../rf/constraints/registry.json)、結果・訂正・保全境界は[results](results.md)。この統合による新規RF計算・EXP・Phase移行はありません。

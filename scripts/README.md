@@ -12,6 +12,20 @@
 | 候補のPCB可変Cルール | [verify_no_pcb_tunable_candidates.py](verify_no_pcb_tunable_candidates.py) | 対象条件の候補種別制限を検証 |
 | 歴史的W0データ・リンク監査（現在の常用対象外） | [旧tree監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_tree.py)、[旧link監査](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/blob/f4fee54a4f4a48c1cb42bc1eae2ed8e3ad52d6a3/scripts/audit_phase2_cleanup_w0_links.py) | 2026-10-17の固定コミットを基準とした一時監査。必要時は[時点固定の監査案内](../project/legacy_git_replay.md)で元版を取得 |
 
+## MinimalWorker開発ベンチ
+
+[benchmark_minimal_worker.py](benchmark_minimal_worker.py) は正式Job・EXPではない。例（trialを明示した既存Plan、出力先は呼出側で確保）：
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  uv run --frozen python scripts/benchmark_minimal_worker.py \
+  --config project/diagnostics/issue377/baseline.yaml \
+  --starts project/diagnostics/issue401_starts_1002.json \
+  --arm hybrid --seed 1002 --mode plain > result.json
+```
+
+`--mode timed` はL1/L2、`deep` はL3も記録。plainは計器を設置しない。stdout JSONをrunごとに保存し、失敗時のstderr・終了コードも別に保管する。source identityとscript SHA、Plan・RF入力・grid・starts/vector SHA、solver、環境・affinity・inclusive timersを記録する。任意の `--expected-source-sha256` / `--expected-script-sha256` はRF前に不一致を拒否する。`solver_s` は `worker.solve()` のみ（Hybrid単独ではない）、`total_s` はsetup＋solve、best_xの追加評価 `observation_s` / `observation_forward_count` はその外でsolver nfevに含まれない。dense・独立検証・保存台帳は実施しない。比較手順と限界は[methods](../project/methods.md#minimalworker性能診断の運用401408)参照。
+
 ## 共通実装と実験固有スクリプトの区別
 
 旧有限グラフ選別は[legacy_graph_search.py](../src/lpf/legacy_graph_search.py)、設定ハッシュと原子的JSON保存は[checkpoint_io.py](../src/lpf/checkpoint_io.py)にある。旧matchingの結合・可変C layout実装は現役APIから退役し、現行treeにない。元commitと元パスは[履歴索引](../archive/issue343/README.md)を参照し、`git show <元commit>:<元パス>`で取得する。変更していない`experiments/matching_limit/`の旧facadeからは現checkoutでimportできず、再現には元commitの環境が必要。P4-A有限選別予算は正式RF制約ではない。
