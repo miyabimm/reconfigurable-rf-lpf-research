@@ -8,7 +8,7 @@ Units: L nH, C pF, omega rad/s, zero-based hot nodes, ground -1.
 The parametric vector schema is explicit and is deliberately distinct
 from the RF policy's admissible component ranges and topology restrictions.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -158,6 +158,7 @@ class CoupledLCTopology:
     inductor_q: tuple[float, ...]
     capacitor_edges: tuple[tuple[int, int], ...]
     capacitor_q: tuple[float, ...]
+    _capacitor_incidence: np.ndarray = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.inductor_tree, InductorTree):
@@ -169,7 +170,9 @@ class CoupledLCTopology:
             raise ValueError("Inductor/capacitor Q count mismatch")
         # Reuse shared checked endpoint routine without changing orientation.
         cap_edges = tuple(tuple(pair) for pair in self.capacitor_edges)
-        incidence_matrix(cap_edges, self.inductor_tree.node_count)
+        incidence = incidence_matrix(cap_edges, self.inductor_tree.node_count)
+        # Immutable backing: callers cannot re-enable writes and alter a later stamp.
+        incidence = np.frombuffer(incidence.tobytes(), dtype=incidence.dtype).reshape(incidence.shape)
         pairs = tuple(tuple(pair) for pair in self.coupling_pairs)
         if (any(len(pair) != 2 or type(pair[0]) is not int or
                 type(pair[1]) is not int or pair[0] == pair[1] or
@@ -177,6 +180,7 @@ class CoupledLCTopology:
                 len({frozenset(pair) for pair in pairs}) != len(pairs)):
             raise ValueError("Invalid duplicate or out-of-range coupling slots")
         object.__setattr__(self, "capacitor_edges", cap_edges)
+        object.__setattr__(self, "_capacitor_incidence", incidence)
         object.__setattr__(self, "coupling_pairs", pairs)
         object.__setattr__(self, "inductor_q", lq)
         object.__setattr__(self, "capacitor_q", cq)
@@ -245,8 +249,7 @@ class CoupledLCTopology:
         yc = omega[:, None] * 1e-12 * C / (
             1 / np.asarray(self.capacitor_q)[None, :] - 1j
         )
-        Bc = incidence_matrix(self.capacitor_edges,
-                              self.inductor_tree.node_count)
+        Bc = self._capacitor_incidence
         Y += np.einsum("fb,ib,jb->fij", yc, Bc, Bc, optimize=True)
         if not np.all(np.isfinite(Y)):
             raise CircuitNumericalError(
