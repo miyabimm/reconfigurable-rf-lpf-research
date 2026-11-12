@@ -17,7 +17,7 @@
 
 旧有限グラフ選別は[legacy_graph_search.py](../src/lpf/legacy_graph_search.py)、設定ハッシュと原子的JSON保存は[checkpoint_io.py](../src/lpf/checkpoint_io.py)にある。旧matchingの結合・可変C layout実装は現役APIから退役し、現行treeにない。元commitと元パスは[履歴索引](../archive/issue343/README.md)を参照し、`git show <元commit>:<元パス>`で取得する。変更していない`experiments/matching_limit/`の旧facadeからは現checkoutでimportできず、再現には元commitの環境が必要。P4-A有限選別予算は正式RF制約ではない。
 
-`curate_exp062.py`～`curate_exp065.py`、`review_rft008_exp062_065.py`、`full_lpf_checkpoint_import.py`は**実験固有または過去データ再現用**であり、今後の汎用RF探索入口ではない。元データと計算時点の再現性・参照先を個別に確認するまで無差別に削除しない。新規Pi Code専用の実装はまだない。
+`full_lpf_checkpoint_import.py`は**実験固有または過去データ再現用**であり、今後の汎用RF探索入口ではない。RF-T008の旧`curate_exp062.py`～`curate_exp065.py`と`review_rft008_exp062_065.py`は、参照する派生集計と合わせて[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で退役した。元処理の逐語原文は[削減前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/scripts)でのみ参照できる。新規Pi Code専用の実装はまだない。
 
 ## 過去の管理スクリプト（mainから退役）
 

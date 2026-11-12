@@ -8,7 +8,7 @@
 - 現行探索・RF評価・正式実験記録に必要な機械入力、選抜候補、独立検証根拠：実際の依存関係と将来の利用価値で選別します。
 - `validation/`、`repository_reviews/`、`pareto_snapshots/`、`catalog/`、旧補助索引やZIP等：**移行途中の歴史資産**であり、恒久保管を約束しません。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で知見を[methods](../project/methods.md)・[results](../project/results.md)へ抽出し、不要なら実際に削除します。
 
-RF-T008 rev3の旧コスト別Pareto資料はIssue #397の第2バッチで整理しました。EXP-058/059のSHA登録済み6件は[当該EXP配下](../experiments/chatgpt_topology_search/runs/)へバイト同一移動し、重複派生5件を削除しました。`pareto_snapshots/`のRF-T008横断レビュー2件は、既存の`review_rft008_exp062_065.py`が参照する比較証拠として維持します。旧資料の原文は整理前の[固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)を参照します。
+RF-T008 rev3の旧コスト別Pareto資料はIssue #397の第2バッチで整理しました。EXP-058/059のSHA登録済み6件は[当該EXP配下](../experiments/chatgpt_topology_search/runs/)へバイト同一移動し、派生集計7件を削除しました。PR間比較の専用スクリプトと旧curation用4スクリプトも退役し、現行treeの過去データ復元・再レビュー専用の依存を解消しました。研究結論は[results](../project/results.md)・[methods](../project/methods.md)、保存選抜候補とMNAは各EXPで確認できます。旧資料は整理前の[固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)に残ります。
 
 歴史的な原SHA、旧manifestのpath登録、過去の数値証拠という理由だけでは保管を継続しません。ただし旧データを使う現行コード／テスト／CIがあれば、科学的機能を保って依存を解消してから削除します。元manifestを残す場合は当時の内容を遡及改竄せず、旧証拠が現行treeに揃わなくなったことを明記します。
 

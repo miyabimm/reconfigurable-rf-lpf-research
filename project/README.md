@@ -127,9 +127,7 @@ IL/H2/H3・面積fraction・実効SHA・格子・検証深度を別列で保持�
 syntheticと実SLSQPの比較群は混在しない。診断候補の理由・値も残し、RF認定・正式Paretoへ昇格しない。
 `historical_benchmarks` は必須で、source、policy_id/SHA、objective、reference_planes、grid、validationと
 保存済み数値を渡す。同一条件以外は拒否し、歴史的1001点値は常時**外部参照**として表示するだけで粗格子と順位付けしない。
-完全checkoutでは `data/pareto_snapshots/rf_t008_exp062_exp063_exp064_cross_pr_20261020.json` の
-`observed_nondominated` を出典SHA・manifest条件/格子/深度とともに使えるが、snapshot中の過去のDraft状態は
-当時の記録であり現在の状態へ書き換えない。必要な履歴を確認せず比較PASSを主張しない。
+歴史的なRF-T008の比較値は[研究結果](results.md#rf-t008-v3の横断比較2026-10-20の固定履歴)とEXP-058/059・062〜065の保存証拠を出典として、条件SHA・manifestの格子/検証深度とともに入力する。PR間比較JSONは現行treeから削除済みで、逐語原文は[整理前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)に限る。過去のDraft状態を現在のPR状態と混同せず、出典を未確認の比較PASSは主張しない。
 
 `intermediate_scan(circuit, vector)` は既存forward evaluatorによる6設定/28個別区間×17点のread-only診断。
 構成/値/入力/ソースSHAを保持し、CandidateRecordの1/2/3点制約は変更しない。
