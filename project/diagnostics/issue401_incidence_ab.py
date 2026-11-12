@@ -31,8 +31,10 @@ def digest(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--candidate', choices=('incidence', 'ports'), default='incidence')
+    parser.add_argument('--repeat', action='store_true', help='write a distinct second measurement batch')
     args = parser.parse_args()
-    out = HERE / f'issue401_{args.candidate}_ab_raw'
+    suffix = '_repeat' if args.repeat else ''
+    out = HERE / f'issue401_{args.candidate}_ab{suffix}_raw'
     changed_file = {'incidence': 'src/lpf/rf_core/coupled_lc.py',
                     'ports': 'src/lpf/rf_core/model.py'}[args.candidate]
     if any(os.environ.get(k) != '1' for k in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')):
