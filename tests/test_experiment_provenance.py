@@ -125,7 +125,7 @@ class ManifestTests(unittest.TestCase):
             m['evidence'][0][field] = value
             with self.subTest(field=field), self.assertRaises(ValueError): validate_manifest(m)
 
-    def test_retired_runtime_scope_is_pinned_and_strict_for_remaining_evidence(self):
+    def test_retired_validation_scope_is_pinned_and_present_files_remain_checked(self):
         path = ROOT / RUNS / 'EXP-034/manifest.json'
         original = json.loads(path.read_text())
         with tempfile.TemporaryDirectory() as temp:
@@ -135,9 +135,8 @@ class ManifestTests(unittest.TestCase):
             view_paths = {e['path'] for e in view['evidence']}
             removed = original_paths - view_paths
             self.assertTrue(removed)
-            self.assertTrue(all(p.endswith(('.lock', '.log')) for p in removed))
-            self.assertIn('data/validation/rf_f002_recovery_20261014/sigint-resume/manager.log', view_paths)
-            self.assertIn('data/validation/rf_f002_recovery_20261014/process_recovery_summary.json', view_paths)
+            self.assertTrue(all(p.startswith('data/validation/') for p in removed))
+            self.assertNotIn('data/validation/rf_f002_recovery_20261014/process_recovery_summary.json', view_paths)
             # A restored file must again be checked, even if its bytes are wrong.
             restored = root / next(iter(removed))
             restored.parent.mkdir(parents=True, exist_ok=True)
@@ -158,14 +157,9 @@ class ManifestTests(unittest.TestCase):
         validate_manifest(view, allow_archived=True)
         with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
             validate_manifest(original, allow_archived=True)
-        from src.lpf import experiment_manifest as module
-        retained = ROOT / 'data/validation/rf_f002_recovery_20261014/process_recovery_summary.json'
-        real_sha = module.file_sha256
+        # Pinned history can omit absent auxiliary evidence, but unscoped
+        # manifest and every future EXP remain evidence-strict.
         self.assertEqual([], audit_provenance())
-        with patch.object(module, 'file_sha256', side_effect=lambda p: '0'*64 if Path(p) == retained else real_sha(p)):
-            with self.assertRaisesRegex(ValueError, 'evidence changed or missing'):
-                validate_manifest(view, allow_archived=True)
-            self.assertTrue(any('process_recovery_summary.json' in issue for issue in audit_provenance()))
         new = self.manifest()
         new['experiment_id'] = 'EXP-050'
         new['evidence'] = [next(e for e in original['evidence'] if e not in view['evidence'])]

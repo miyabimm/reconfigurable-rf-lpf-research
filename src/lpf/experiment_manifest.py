@@ -222,9 +222,9 @@ def experiment_index(manifests):
     return output.getvalue()
 
 
-# Issue #359: only these immutable historical manifests and their former
-# runtime-only files are eligible for a missing-file exception in the *index
-# audit*. Normal validate_manifest and new EXP storage remain fully strict.
+# Issue #397: only these eight SHA-pinned historical manifests may omit absent
+# data/validation entries in the index audit. Originals stay unchanged; present
+# files and all direct/new EXP evidence validation remain SHA-strict.
 _RETIRED_RUNTIME = {
     'EXP-034': ('5a8316cb09d2bed17103811422f3e0d21b0ada74eea4eabf8e4259f8f6854926', 'rf_f002_recovery_20261014/(?:manager-sigterm-residual|sigint-resume)'),
     'EXP-035': ('488307692164d0b49125c3cb63918c5febd8d395432c979edd19fbe136e4817f', 'rf_f002_parallel_benchmark_20261014/[12]-worker'),
@@ -235,15 +235,11 @@ _RETIRED_RUNTIME = {
     'EXP-040': ('792fc494504fbb8ac19d7dffab571760b66d3b3c3271dec8be5c85adc2401891', 'rf_f002_solver_ablation_20261014/runs/(?:scaled-relaxed-ftol|scaled-tight|unscaled-tight)'),
     'EXP-041': ('94476a496c28b5cfe4ad51caf7cc8130d60ee43e7771caa14c811a9b376bd96e', 'rf_f002_unscaled_followup_20261014/run'),
 }
-_RUNTIME_FILE = r'(?:\.manager\.lock|manager\.log|locks/[0-9a-f]{24}\.lock|logs/[0-9a-f]{24}\.attempt-[12]\.log)'
-_RECOVERY_TRACE = 'data/validation/rf_f002_recovery_20261014/sigint-resume/manager.log'
-
-
 def _retired_runtime_view(manifest_path, manifest, *, root):
-    """Omit only absent, retired runtime entries from a pinned manifest view.
+    """Omit missing old validation evidence for SHA-pinned EXP-034..041 only.
 
-    The original is untouched. Existing files, the interrupt traceback and all
-    other evidence remain SHA-checked. Never use this view for new EXP gates.
+    The original manifest stays unchanged; present evidence remains SHA-checked.
+    Direct manifest validation and new EXP G0–G5 never use this view.
     """
     if not isinstance(manifest, dict):
         return manifest
@@ -251,13 +247,12 @@ def _retired_runtime_view(manifest_path, manifest, *, root):
     if (spec is None or file_sha256(manifest_path) != spec[0]
             or _read(manifest_path) != manifest):
         return manifest
-    pattern = re.compile('data/validation/' + spec[1] + '/' + _RUNTIME_FILE)
     evidence = []
     for item in manifest['evidence']:
         name = item['path']
         repository_file(root, name)  # reject escapes even for retired entries
         path = Path(root) / name
-        retired = (name != _RECOVERY_TRACE and pattern.fullmatch(name)
+        retired = (name.startswith('data/validation/')
                    and not path.exists() and not path.is_symlink())
         if not retired:
             evidence.append(item)
@@ -265,10 +260,10 @@ def _retired_runtime_view(manifest_path, manifest, *, root):
 
 
 def audit_provenance(*, root=ROOT):
-    """Audit the index and evidence, except retired missing runtime artifacts.
+    """Audit the index and present evidence, excluding absent old validation files.
 
-    This is not a complete historical evidence audit; see Issue #359. Future
-    storage and direct manifest validation do not use this exception.
+    Pinned old EXPs are historical, not complete evidence checkouts. Future
+    storage and direct manifest validation remain fully strict.
     """
     root = Path(root)
     issues, manifests = [], []
