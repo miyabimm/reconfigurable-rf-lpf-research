@@ -222,42 +222,87 @@ def experiment_index(manifests):
     return output.getvalue()
 
 
-# Issue #359: only these immutable historical manifests and their former
-# runtime-only files are eligible for a missing-file exception in the *index
-# audit*. Normal validate_manifest and new EXP storage remain fully strict.
-_RETIRED_RUNTIME = {
-    'EXP-034': ('5a8316cb09d2bed17103811422f3e0d21b0ada74eea4eabf8e4259f8f6854926', 'rf_f002_recovery_20261014/(?:manager-sigterm-residual|sigint-resume)'),
-    'EXP-035': ('488307692164d0b49125c3cb63918c5febd8d395432c979edd19fbe136e4817f', 'rf_f002_parallel_benchmark_20261014/[12]-worker'),
-    'EXP-036': ('f7e6253436f8fe5e5756551f85c31b17c7107ca32e5592e65c2986966463db7e', 'rf_f002_recovery_20261014/exp036-sigint-resume'),
-    'EXP-037': ('c2b2e62097672378ded31e3a7fc912df494806c1e07e3c7a0f7a4519ea2c2de2', 'rf_f002_warm_start_refinement_20261014/unremapped-import-diagnostic'),
-    'EXP-038': ('fdb69db72215abebb23e0c0429db04c8b41f5c1a9e6d9b046b8abb77a2e5408f', 'rf_f002_checkpoint_warmstarts_20261014/corrected-run'),
-    'EXP-039': ('e2a9d0a7fddcf28077cfe508e1e631bf397b193395cc284b2bf24483f26f0ee5', 'rf_f002_grid_refinement_20261014/run'),
-    'EXP-040': ('792fc494504fbb8ac19d7dffab571760b66d3b3c3271dec8be5c85adc2401891', 'rf_f002_solver_ablation_20261014/runs/(?:scaled-relaxed-ftol|scaled-tight|unscaled-tight)'),
-    'EXP-041': ('94476a496c28b5cfe4ad51caf7cc8130d60ee43e7771caa14c811a9b376bd96e', 'rf_f002_unscaled_followup_20261014/run'),
+def _legacy_exp047_index_view(path, manifest, *, root):
+    """Read one SHA-pinned old report as an index row, not as a new manifest."""
+    raw = Path(path).read_bytes()
+    blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    if blob != "94973b5e5a9e9b0fcd3a3ad9ffd39ea4197475e0" or manifest.get("experiment_id") != "EXP-047":
+        raise ValueError("EXP-047 original report changed; review required")
+
+    # Retain checks on the original RF inputs and selected evidence, but no
+    # data/validation overlay or dedicated compatibility module.
+    from .constraint_history import archived_formal_evidence
+    digest = manifest["active_formal_constraint_sha256"]
+    resolved = archived_formal_evidence("RF-F003", digest, root=root)
+    if constraint_fingerprint(resolved) != digest:
+        raise ValueError("EXP-047 historical RF conditions changed")
+    if manifest["bands_sha256"] != file_sha256(Path(root) / "rf/bands.csv"):
+        raise ValueError("EXP-047 band definition changed")
+    for port, key in (("input", "input_parasitic"), ("output", "output_parasitic")):
+        s2p = resolved["external_port_parasitics"][key]
+        if (manifest["s2p_provenance"][port + "_sha256"] != s2p["sha256"]
+                or file_sha256(Path(root) / s2p["path"]) != s2p["sha256"]):
+            raise ValueError("EXP-047 fixed S2P changed")
+    candidates = manifest["validated_candidates"]
+    if not isinstance(candidates, list) or len(candidates) < 4:
+        raise ValueError("EXP-047 selected candidates missing")
+    for candidate in candidates:
+        name = candidate["reference"]
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+\.json", name) or not (Path(path).parent / name).is_file():
+            raise ValueError("EXP-047 selected evidence missing: " + name)
+
+    # Existing, historically classified index labels; not solver re-execution.
+    return {
+        "experiment_id": "EXP-047",
+        "purpose": "RF-F003 4L two-variable-C local optimization and corrected Q80 independent verification",
+        "objective": "full_lpf",
+        "constraints": {"class": "formal", "constraint_id": "RF-F003",
+                        "effective_constraint_sha256": digest},
+        "execution": {"status": "partial"},
+        "validation": {"numerical": "screened", "independent": "passed"},
+    }
+
+
+# Issue #397: only these 17 SHA-pinned historical manifests may omit absent
+# data/validation entries in the index audit. Originals stay unchanged; present
+# files and all direct/new EXP evidence validation remain SHA-strict.
+_RETIRED_VALIDATION = {
+    'EXP-025': 'd59a9bc56edd929830030322b900c157b645c3d9a83346178e52c3b6fb112872',
+    'EXP-026': '99368f564fbdd9c3bf0270154a29722164dd7d7595e69a5de6b9e276aa06fee0',
+    'EXP-027': 'ddf0e1d72ac947d9b0fbfe00d36a7ec2d374dfa01a8980c0975cdb8f95c7ca9b',
+    'EXP-028': '13379a7867f0aa0aae249298f0745e8c76bfd6d2cd9fa1b42c169af99dff412a',
+    'EXP-029': 'd7b7c0450cff6e328f34db5d214a18bec6e5d08184f55a79272549c328c48c1f',
+    'EXP-030': 'b544dfc748607eb7852ce576926b747ec7fe31d395f1ba33428b6419acac3c69',
+    'EXP-031': 'e06271455a5d324886cf41a18dec29d731c05c239578b14bef708b0a6af30bf6',
+    'EXP-032': '8a43527ef7420235e2eb0ee23335ede1e250c811cfd7fbf53d97599dd65e176c',
+    'EXP-033': '170295244cef4cbcf0f6c1ba86114ef89918765696d90d40c2500d6db4f8c79c',
+    'EXP-034': '5a8316cb09d2bed17103811422f3e0d21b0ada74eea4eabf8e4259f8f6854926',
+    'EXP-035': '488307692164d0b49125c3cb63918c5febd8d395432c979edd19fbe136e4817f',
+    'EXP-036': 'f7e6253436f8fe5e5756551f85c31b17c7107ca32e5592e65c2986966463db7e',
+    'EXP-037': 'c2b2e62097672378ded31e3a7fc912df494806c1e07e3c7a0f7a4519ea2c2de2',
+    'EXP-038': 'fdb69db72215abebb23e0c0429db04c8b41f5c1a9e6d9b046b8abb77a2e5408f',
+    'EXP-039': 'e2a9d0a7fddcf28077cfe508e1e631bf397b193395cc284b2bf24483f26f0ee5',
+    'EXP-040': '792fc494504fbb8ac19d7dffab571760b66d3b3c3271dec8be5c85adc2401891',
+    'EXP-041': '94476a496c28b5cfe4ad51caf7cc8130d60ee43e7771caa14c811a9b376bd96e',
 }
-_RUNTIME_FILE = r'(?:\.manager\.lock|manager\.log|locks/[0-9a-f]{24}\.lock|logs/[0-9a-f]{24}\.attempt-[12]\.log)'
-_RECOVERY_TRACE = 'data/validation/rf_f002_recovery_20261014/sigint-resume/manager.log'
-
-
 def _retired_runtime_view(manifest_path, manifest, *, root):
-    """Omit only absent, retired runtime entries from a pinned manifest view.
+    """Omit missing old validation evidence for SHA-pinned EXP-025..041 only.
 
-    The original is untouched. Existing files, the interrupt traceback and all
-    other evidence remain SHA-checked. Never use this view for new EXP gates.
+    The original manifest stays unchanged; present evidence remains SHA-checked.
+    Direct manifest validation and new EXP G0–G5 never use this view.
     """
     if not isinstance(manifest, dict):
         return manifest
-    spec = _RETIRED_RUNTIME.get(manifest.get('experiment_id'))
-    if (spec is None or file_sha256(manifest_path) != spec[0]
+    spec = _RETIRED_VALIDATION.get(manifest.get('experiment_id'))
+    if (spec is None or file_sha256(manifest_path) != spec
             or _read(manifest_path) != manifest):
         return manifest
-    pattern = re.compile('data/validation/' + spec[1] + '/' + _RUNTIME_FILE)
     evidence = []
     for item in manifest['evidence']:
         name = item['path']
         repository_file(root, name)  # reject escapes even for retired entries
         path = Path(root) / name
-        retired = (name != _RECOVERY_TRACE and pattern.fullmatch(name)
+        retired = (name.startswith('data/validation/')
                    and not path.exists() and not path.is_symlink())
         if not retired:
             evidence.append(item)
@@ -265,10 +310,10 @@ def _retired_runtime_view(manifest_path, manifest, *, root):
 
 
 def audit_provenance(*, root=ROOT):
-    """Audit the index and evidence, except retired missing runtime artifacts.
+    """Audit the index and present evidence, excluding absent old validation files.
 
-    This is not a complete historical evidence audit; see Issue #359. Future
-    storage and direct manifest validation do not use this exception.
+    Pinned old EXPs are historical, not complete evidence checkouts. Future
+    storage and direct manifest validation remain fully strict.
     """
     root = Path(root)
     issues, manifests = [], []
@@ -284,8 +329,7 @@ def audit_provenance(*, root=ROOT):
                 # Strictly source-pinned 2026-10-17 in-chat source. The normal
                 # provenance schema still applies to every other run. We do
                 # not invent a missing execution SHA, seed, or environment.
-                from .legacy_manifest_adapter import legacy_exp047_index_view
-                m = legacy_exp047_index_view(root=root)
+                m = _legacy_exp047_index_view(path, raw_manifest, root=root)
             else:
                 view = _retired_runtime_view(path, raw_manifest, root=root)
                 validate_manifest(view, root=root, allow_archived=True)
