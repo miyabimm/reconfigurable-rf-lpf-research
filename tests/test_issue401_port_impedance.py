@@ -1,6 +1,7 @@
 """Evaluator prepares the unchanged frozen source/load once, not per forward."""
+import json
 import unittest
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -26,6 +27,17 @@ class PreparedPortTests(unittest.TestCase):
                     actual = evaluator.evaluate(vector)
                 for name in ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
                     np.testing.assert_array_equal(getattr(actual, name), getattr(expected, name))
+
+    def test_invalid_fixed_impedance_stops_when_preparing_evaluator(self):
+        policy, _, model, _, _ = make('RF-T008')
+        grid = EvaluationGrid(np.array([1e9]), np.array([0]), np.array([0]))
+        for key, invalid in (('source_ohms', {'real': 0, 'imag': 0}),
+                             ('load_ohms', {'real': 50, 'imag': 0, 'frequency_dependent': True})):
+            with self.subTest(key=key):
+                changed = dict(policy, **{key: invalid})
+                bad = replace(model, policy_json=json.dumps(changed))
+                with self.assertRaisesRegex(ValueError, key):
+                    bad.evaluator(grid)
 
 
 if __name__ == '__main__':

@@ -20,3 +20,7 @@
 初回10組の対応差中央値のbootstrap参考95%区間（10,000再標本、seed401）は −29.52〜+5.77 ms、反復も −24.48〜+7.65 ms。両群20組をまとめると −20.85〜−3.27 msだが、共有host・順序・外れ値に依存し、独立同分布や統計的確証は保証されない。方向は両batchで同じだが分布は重なり、汎用的な速度改善率ではない。setupも含む初回total中央値は旧352.692／新344.740 ms。`solve_wall`は`worker.solve()`全体でありHybrid単独ではない。timer無効のplain比較、測定器負荷は別途厳密に校正していない。
 
 RF coreは共有されるが測定はMinimalWorkerのみ。window100・正式Campaignの実時間改善、未収束結果のRF性能適合、独立dense/連続周波数、Q(f)/SRF/EM、公差、実測、物理実装可能性を示すものではない。2,600 forwardの先行計測、3,300の詳細測定、2,200の不採用候補、上記4,400＋6はそれぞれ別の実施数量であり予算台帳付き正式EXPではない。
+
+## main追従と現役入力
+
+計測後にmainの#397 batch 3で元の `issue375/starts-1002.json` が削除されたため、当該入力のbyte-identicalな現役コピー `issue401_starts_1002.json` を作り、SHA照合は維持した。既存記録・当時のscript SHAは変更していない。main `246444b93fb6e6b082af6ece3c5bfc7bcaff05c9` のmerge後、`issue401_postmerge_smoke.json` に新しい入力経路によるplain 1 run（100 forward／7,000 samples）を記録。solver全出力はA/B旧版と一致し、予算切れ・未収束。旧新同一スクリプトによる今後の比較ではdriverが新しい入力の完全SHAを両者に適用する。
