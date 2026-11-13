@@ -41,13 +41,16 @@ class CAssemblyTests(unittest.TestCase):
     def compare(self, model, g, vectors, *, independent=False):
         req = prepare_requirements(compile_requirements(model.resolved_policy,
             rf_input_file(ROOT, model.resolved_policy['bands_file']), 'full_lpf'), g)
+        baseline = model.evaluator(g)
+        candidates = {v: probe.probe_model(model, v) for v in ('six', 'split')}
+        evaluators = {v: m.evaluator(g) for v, m in candidates.items()}
         for x in vectors:
-            old = model.evaluator(g).evaluate(x)
+            old = baseline.evaluate(x)
             old_g = evaluate_requirements(old, req)
             for variant in ('six', 'split'):
                 with self.subTest(variant=variant):
-                    new_model = probe.probe_model(model, variant)
-                    new = new_model.evaluator(g).evaluate(x)
+                    new_model = candidates[variant]
+                    new = evaluators[variant].evaluate(x)
                     self.assertIs(new.grid, g)
                     for key in ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
                         a, b = getattr(old, key), getattr(new, key)
@@ -70,9 +73,19 @@ class CAssemblyTests(unittest.TestCase):
         p, model, g, x = fixture()
         self.assertEqual((len(x), len(g.setting), len(set(g.segment)), len(set(g.setting))), (25, 70, 28, 6))
         changed = x.copy()
-        changed[:4] *= 1.01  # L and fixed C change between forwards too
+        changed[:model.schema.n_inductors + model.schema.n_fixed] *= 1.01
+        ic0 = model.schema.n_inductors + model.schema.n_fixed + model.schema.n_coupling
+        changed[ic0:ic0 + model.schema.n_ic_fixed] *= 1.01  # no stale fixed/L cache
         changed[-12:] = np.linspace(0, 3, 12)
         self.compare(model, g, [x, changed], independent=True)
+
+    def test_recorded_100_candidate_replay(self):
+        _, model, g, _ = fixture()
+        record = json.loads((ROOT/'project/diagnostics/issue410_equivalence.json').read_text())
+        from lpf.search.storage import vector_sha
+        self.assertEqual(len(record['vectors']), 100)
+        self.assertEqual([vector_sha(x) for x in record['vectors']], record['vector_sha256'])
+        self.compare(model, g, record['vectors'])
 
     def test_current_models_and_no_variable_branches(self):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
@@ -94,9 +107,22 @@ class CAssemblyTests(unittest.TestCase):
             t = m.topology
             for omega, setting in (([0.], [0]), ([np.nan], [0]), ([1e9], [6]), ([1e9], [True])):
                 with self.assertRaises(ValueError): t.node_admittance(values, omega, setting)
-            bad = x.copy(); bad[model.schema.n_inductors + model.schema.n_fixed] = 2.
-            with self.assertRaises(CircuitNumericalError) as caught: m.evaluator(g).evaluate(bad)
-            self.assertEqual(caught.exception.code, 'mutual_not_spd')
+            for k in (2., 1. - 1e-13):  # non-SPD and SPD-but-below-conditioning-threshold
+                bad = x.copy()
+                bad[model.schema.n_inductors + model.schema.n_fixed] = k
+                # Isolate one coupled pair to make the threshold case explicit.
+                first = model.schema.n_inductors + model.schema.n_fixed
+                bad[first:first + model.schema.n_coupling] = 0.
+                bad[first] = k
+                with self.assertRaises(CircuitNumericalError) as caught: m.evaluator(g).evaluate(bad)
+                self.assertEqual(caught.exception.code, 'mutual_not_spd')
+            huge = replace(values, capacitors_pf_by_setting=tuple(
+                tuple(1e308 for _ in row) for row in values.capacitors_pf_by_setting))
+            with np.errstate(over='ignore', invalid='ignore'):
+                with self.assertRaises(CircuitNumericalError) as caught:
+                    t.node_admittance(huge, [1e15], [0])
+            self.assertEqual(caught.exception.code, 'node_nonfinite')
+            self.assertEqual(caught.exception.sample_index, 0)
             rows = list(values.capacitors_pf_by_setting)
             rows[1] = (rows[1][0] + .1,) + rows[1][1:]
             with self.assertRaisesRegex(ValueError, 'differ by setting'):
