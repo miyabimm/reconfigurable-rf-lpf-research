@@ -1,17 +1,18 @@
-# data/：実験管理台帳と移行途中の旧データ
+# data/：実験番号台帳と互換パス
 
-**正式RF入力の正本は[rf/constraints/registry.json](../rf/constraints/registry.json)、[rf/bands.csv](../rf/bands.csv)、[rf/parasitics/](../rf/parasitics/)です。** `data/constraints/`・`data/bands.csv`・`data/parasitics/`の互換リンクは現役callerを確認した後に削減の可否を判断します。
+**正式RF数値の正本は[rf/constraints/registry.json](../rf/constraints/registry.json)、[rf/bands.csv](../rf/bands.csv)、[固定S2P](../rf/parasitics/)です。** `data/constraints/`・`data/bands.csv`・`data/parasitics/`・`data/design_constraints.json`は履歴互換symlinkであり、現役RFの独立した正本ではありません。
 
-## 維持する原則
+## 残す現役データ
 
-- `experiment_index.csv`・`experiment_number_registry.csv`：正式EXPの実行／検証状態とG0中央番号予約に必要な台帳。新規EXP保存ゲートG0〜G5は維持します。
-- 現行探索・RF評価・正式実験記録に必要な機械入力、選抜候補、独立検証根拠：実際の依存関係と将来の利用価値で選別します。
-- `validation/`、`repository_reviews/`、`pareto_snapshots/`、`catalog/`、旧補助索引やZIP等：**移行途中の歴史資産**であり、恒久保管を約束しません。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で知見を[methods](../project/methods.md)・[results](../project/results.md)へ抽出し、不要なら実際に削除します。
+- [experiment_number_registry.csv](experiment_number_registry.csv)：新規正式EXPの**main事前番号予約（G0）**。
+- [experiment_index.csv](experiment_index.csv)：実行状態と検証状態の中央索引。旧EXPの行と元manifestは勝手に書き換えない。
+- 候補登録、研究条件・外部S2Pの機械入力、保存容量規則など、現役監査・将来の研究判断に必要なデータ。消去可否はcallerと科学的価値から判定する。
+- EXP-050以降の保存は[保存ポリシー](../project/experiment_storage_policy.md)と[各EXP原本](../experiments/README.md)を使用する。未実行・未収束・数値検証・独立検証・保存完了を分離する。
 
-RF-T008 rev3の旧コスト別Pareto資料はIssue #397の第2バッチで整理しました。EXP-058/059のSHA登録済み6件は[当該EXP配下](../experiments/chatgpt_topology_search/runs/)へバイト同一移動し、派生集計7件を削除しました。PR間比較の専用スクリプトと旧curation用4スクリプトも退役し、現行treeの過去データ復元・再レビュー専用の依存を解消しました。研究結論は[results](../project/results.md)・[methods](../project/methods.md)、保存選抜候補とMNAは各EXPで確認できます。旧資料は整理前の[固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/762b58d8de97717e3ab651da8ec47ee6daa868c7/data/pareto_snapshots)に残ります。
+## 整理済みの旧資産（Issue #397）
 
-`data/validation/`の旧182件は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で用途を選別しました。旧RF-F001/F002/T003/T004の中間計算、復旧・並列・座標診断は知見を[results](../project/results.md#旧datavalidationの整理とrf-f002の教訓issue-397)・[methods](../project/methods.md#旧rf-f002のsolvermanager設計の教訓issue-397)へ統合したため**182件・4,351,659 bytesを削除**。EXP-047の元manifestと選抜証拠はEXP配下に維持し、索引は元manifestの固定Git blob SHAから最小の履歴表示を構成して照合します。元の182件は[削減前の固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)から参照可能ですが、現行treeで旧runが完全復元できるとは主張しません。17件（EXP-025〜041）の固定旧EXP manifestは不変更で、履歴索引監査だけ欠損を扱い、新規EXPのSHA保存ゲートは維持します。
+- RF-T008の派生Paretoは[PR #403](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/403)で削減。SHA登録済み6件はEXP-058/059配下へ同一blob移動。
+- 旧`data/validation/`の**182件・4,351,659 bytesは全削除**（[PR #407](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/407)）。EXP-047の旧索引用overlayと専用adapterも退役した。元の非標準manifestは固定Git blob SHAでindex-only照合し、現存証拠SHAと新規EXPの厳格監査を維持する。
+- 旧実験の知見は[methods](../project/methods.md)／[results](../project/results.md)に統合。削減前の原文は[固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/validation)から参照できるが、現行treeで旧runを完全再現できるとは主張しない。
 
-歴史的な原SHA、旧manifestのpath登録、過去の数値証拠という理由だけでは保管を継続しません。ただし旧データを使う現行コード／テスト／CIがあれば、科学的機能を保って依存を解消してから削除します。元manifestを残す場合は当時の内容を遡及改竄せず、旧証拠が現行treeに揃わなくなったことを明記します。
-
-**過去全実験の原バイト・探索履歴の再現と、今後のEXPの必要な再現性は別です。** 現行RFの条件・全6設定／28区間・H2/H3・独立MNA・SPD・受動性／電力、現行EXPの保存SHA検査は省略しません。整理前の情報が必要な場合はGit履歴・旧Issueを参照しますが、それだけで数値的な再現PASSとは扱いません。
+今後の削減は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)で管理。RF正本・正式EXP原本・重要checkpoint・新規G0〜G5を保護し、現在作業中の`project/diagnostics/`には触れない。
