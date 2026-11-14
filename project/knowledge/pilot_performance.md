@@ -56,6 +56,14 @@
 
 固定候補比較は全S／IL/APL／両RL／mandatory_g全42点順序込みでatol1e−9/rtol1e−11内だが**ビット非一致**。代表3 vector×全70点×3案で独立MNA・受動性／電力を検証。正式モデル群・0可変枝・異Q並列・非SPD/非有限・Schur/Y→S/power異常STOPも回帰。Solver 88runは全て100 nfevで**未収束**、旧新で最終vectorが変わるため、Solver比較を固定候補列比較へ読み替えない。正式RF-F003の速度・全候補独立MNA・極端値すべてのSTOP発生位置・連続帯域・EM/SRF/Q(f)/公差/実測は未検証。診断opt-in以外の`src/`変更はなく、本番採用はDraft PR独立レビュー後の別判断。
 
+## six-matmul採用後mainのRF forward内訳（Issue #417）
+
+[詳細報告と再現条件](../diagnostics/issue417_report.md)／[全24runのraw集計](../diagnostics/issue417_forward_timing.json)。PR #416反映後HEAD `523f3ab8d0d89323fd521c9b6738728f8babc54b`、RF-T008 rev3 **trial opt-in**／`full_lpf`／effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、#410から再照合した固定100 vector、6設定・28別区間・70 samples/forward・固定S2P。plain 12子processの中央値49.140ms/100 forward（48.167–51.819）。
+
+同HEADのdeep inclusive中央値ms/100 forward：power_response 12.705、port 21.084/node 12.566（port−nodeのrun別差中央値8.590）、decode 7.186、matrices 6.338、node−matrices 6.228、cascade2回合計5.130、Y→S solve 2.523、encode 0.799。包含区間は合算不可。inclusive関数計時・response digest／mandatory g照合はplain timingより外れ値と負荷の影響が大きく、plainとの差中央値は+5.955ms/100（範囲+1.474～+20.298）。deep値をplain性能と呼ばない。
+
+次候補は**power_responseを第一候補**（最大の独立inclusive領域）、Schur/port側とdecodeを次の調査候補とするが、2/3位は範囲が重なるため未確定。matrices/node残余も近い。全応答・mandatory gのdigestはplain/deepで完全一致し、24 runともforward STOPなし。既存RF Core／branch-current MNA／#415 production-stamp回帰を実行。速度改善実装・Solver測定・正式RF性能一般化・全100vector独立MNAは行っていない。
+
 ## MinimalWorker性能診断（Issue #401）
 
 [PR #402](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/402)・[原報告とrawの固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)。RF-T008 rev3 **trial** / full_lpf、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定・28別区間・70 samples/forward、seed1002・100 nfev、Plan `8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e`、grid `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。計測前HEAD `f5bd7dbb0d5ccc580999633b76116eb7356b80db`、port変更後詳細HEAD `6908e52149de9f59c51c859f291ba6f4cd8de72c` と `124a55c5b1cda68b17a41daeeede7447d70b0437`。単一thread・共有host、外部固定S2Pを含む有限格子。

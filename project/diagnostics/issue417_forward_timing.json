@@ -1,0 +1,1229 @@
+{
+  "comparisons": {
+    "deep_mandatory_g_stable": true,
+    "deep_response_stable": true,
+    "plain_deep_mandatory_g_equal": true,
+    "plain_deep_response_equal": true,
+    "plain_mandatory_g_stable": true,
+    "plain_response_stable": true,
+    "source_identity_stable": true
+  },
+  "driver_sha256": "bb861deeeea169cdd8f5dc0a3409725adf3c6652bf1d1cea4a21ab16c57ee3cc",
+  "environment": {
+    "affinity": [
+      2
+    ],
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.15",
+    "scipy": "1.18.1",
+    "threads": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "evaluation_grid": {
+    "individual_vector_sha_entries_verified_per_run": 100,
+    "mandatory_g_values_per_vector": 42,
+    "samples_per_forward": 70,
+    "separate_intervals": 28,
+    "settings": 6,
+    "system": "full_lpf; includes both fixed external-port S2P cascades",
+    "vectors": 100
+  },
+  "failed_runs": [],
+  "fixed_inputs": {
+    "config_path": "project/diagnostics/issue377/baseline.yaml",
+    "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+    "objective": "full_lpf",
+    "plan_sha256": "8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e",
+    "policy_effective_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "policy_id": "RF-T008",
+    "rf_input_fingerprints": {
+      "bands": {
+        "path": "rf/bands.csv",
+        "sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe"
+      },
+      "definition": {
+        "path": "project/diagnostics/issue361/definition.json",
+        "sha256": "e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6"
+      },
+      "formal_constraint": {
+        "path": "rf/constraints/formal/RF-F003.json",
+        "sha256": "95d114ed828ded92f69d252164454b7a55e99f08f7d401d5d4399e4dbf7dc48c"
+      },
+      "input_s2p": {
+        "path": "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
+        "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"
+      },
+      "output_s2p": {
+        "path": "rf/parasitics/circuit2_poc_through_0_6ghz.s2p",
+        "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      },
+      "registry": {
+        "path": "rf/constraints/registry.json",
+        "sha256": "ca69c27d360e81cb19cdc59c1444efec2cb38c2e08b795cab6d00a148e788dde"
+      },
+      "trial_constraint": {
+        "path": "rf/constraints/trial/RF-T008.json",
+        "sha256": "d005a8070ac79f48aa97cac444df6690d8ad227c895ffb7bdba481915eef226c"
+      }
+    },
+    "starts_file_sha256": "63b671ea269656843df118230b7d920e91515188235809b6dd0efd667ac997ab",
+    "starts_path": "project/diagnostics/issue401_starts_1002.json",
+    "vector_file_path": "project/diagnostics/issue410_equivalence.json",
+    "vector_file_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+    "vector_sequence_sha256": "3e3adfc5c2b3f0c18c04cffd447fa64734dca7154a325c31261b6968a9fac693"
+  },
+  "formal_condition_not_measured": {
+    "effective_sha256": "e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86",
+    "id": "RF-F003"
+  },
+  "input_suite_sha256_before_consolidation": [
+    {
+      "sha256": "2cb177f2129993748cc52bf80236f8abc80eebe8431c654a5211ebd557b5c024",
+      "suite": 1
+    },
+    {
+      "sha256": "55f520dae6aa55a0f9b5799d92066a6abf3570ebd21d83a45ba8d6a082da6c60",
+      "suite": 2,
+      "temporary_path": "/tmp/issue417-forward-repeat.json"
+    }
+  ],
+  "kind": "issue417_forward_timing_suite_v1",
+  "measurement_head": "523f3ab8d0d89323fd521c9b6738728f8babc54b",
+  "run_status": "all 24 measured runs completed; no RF exceptions/STOPs",
+  "runs": [
+    {
+      "batch": 0,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 51248404,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 51243630,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 246214670,
+      "setup_wall_ns": 253706204,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 0,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 53965700,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 53959983,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 243340147,
+      "setup_wall_ns": 250096657,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 24915.425,
+          "wall_ns": 4983085
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 69085.09,
+          "wall_ns": 6908509
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7245.63,
+          "wall_ns": 724563
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 60008.06,
+          "wall_ns": 6000806
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 121025.3,
+          "wall_ns": 12102530
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 207380.21,
+          "wall_ns": 20738021
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 126096.24,
+          "wall_ns": 12609624
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 23999.7,
+          "wall_ns": 2399970
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 534008.91,
+          "wall_ns": 53400891
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 1,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 55383763,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 55377524,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 242800155,
+      "setup_wall_ns": 249502250,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 26170.99,
+          "wall_ns": 5234198
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 72385.34,
+          "wall_ns": 7238534
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7307.82,
+          "wall_ns": 730782
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 63243.47,
+          "wall_ns": 6324347
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 125740.13,
+          "wall_ns": 12574013
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 212252.13,
+          "wall_ns": 21225213
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 126710.84,
+          "wall_ns": 12671084
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 25362.92,
+          "wall_ns": 2536292
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 547621.61,
+          "wall_ns": 54762161
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 1,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 50853269,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 50848654,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 241719285,
+      "setup_wall_ns": 248489925,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 2,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 48735442,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 48755972,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 239336608,
+      "setup_wall_ns": 246175369,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 2,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 54667751,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 54661898,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 243505679,
+      "setup_wall_ns": 250359522,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 24846.695,
+          "wall_ns": 4969339
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 71208.33,
+          "wall_ns": 7120833
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7953.47,
+          "wall_ns": 795347
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 61789.41,
+          "wall_ns": 6178941
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 122976.37,
+          "wall_ns": 12297637
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 206460.0,
+          "wall_ns": 20646000
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 126787.3,
+          "wall_ns": 12678730
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 25134.09,
+          "wall_ns": 2513409
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 540220.36,
+          "wall_ns": 54022036
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 3,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 59726795,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 59762342,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 258075484,
+      "setup_wall_ns": 265615016,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 26461.555,
+          "wall_ns": 5292311
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 76251.01,
+          "wall_ns": 7625101
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 9298.64,
+          "wall_ns": 929864
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 69143.39,
+          "wall_ns": 6914339
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 140468.06,
+          "wall_ns": 14046806
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 229173.69,
+          "wall_ns": 22917369
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 137129.73,
+          "wall_ns": 13712973
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 28486.9,
+          "wall_ns": 2848690
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 590882.45,
+          "wall_ns": 59088245
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 3,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 49207433,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 49201715,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 281485664,
+      "setup_wall_ns": 288464828,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 4,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 51170295,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 51160742,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 241656734,
+      "setup_wall_ns": 248827101,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 4,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 54599202,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 54592687,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 248968400,
+      "setup_wall_ns": 256435077,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 24614.545,
+          "wall_ns": 4922909
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 71337.27,
+          "wall_ns": 7133727
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7441.27,
+          "wall_ns": 744127
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 63524.44,
+          "wall_ns": 6352444
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 125588.83,
+          "wall_ns": 12558883
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 209147.19,
+          "wall_ns": 20914719
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 126194.52,
+          "wall_ns": 12619452
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 25785.61,
+          "wall_ns": 2578561
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 538139.52,
+          "wall_ns": 53813952
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 5,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 60035113,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 60030064,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 240898738,
+      "setup_wall_ns": 248307948,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 27155.85,
+          "wall_ns": 5431170
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 77826.21,
+          "wall_ns": 7782621
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 8136.9,
+          "wall_ns": 813690
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 68565.27,
+          "wall_ns": 6856527
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 136497.35,
+          "wall_ns": 13649735
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 230645.19,
+          "wall_ns": 23064519
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 140672.62,
+          "wall_ns": 14067262
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 26042.94,
+          "wall_ns": 2604294
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 593201.68,
+          "wall_ns": 59320168
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 5,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 48454030,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 48447124,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 239208027,
+      "setup_wall_ns": 245761189,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 1,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 0,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 48587313,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 48584267,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 258672977,
+      "setup_wall_ns": 267217206,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 0,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 55722898,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 55717880,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 242180124,
+      "setup_wall_ns": 248952741,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 26162.065,
+          "wall_ns": 5232413
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 72411.31,
+          "wall_ns": 7241131
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 9246.01,
+          "wall_ns": 924601
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 64065.89,
+          "wall_ns": 6406589
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 127579.32,
+          "wall_ns": 12757932
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 213032.12,
+          "wall_ns": 21303212
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 127973.75,
+          "wall_ns": 12797375
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 25322.27,
+          "wall_ns": 2532227
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 551474.94,
+          "wall_ns": 55147494
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 1,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 71006897,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 71004144,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 245518081,
+      "setup_wall_ns": 252375004,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 29817.955,
+          "wall_ns": 5963591
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 84537.93,
+          "wall_ns": 8453793
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 14872.64,
+          "wall_ns": 1487264
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 87480.03,
+          "wall_ns": 8748003
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 167347.61,
+          "wall_ns": 16734761
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 269381.97,
+          "wall_ns": 26938197
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 180996.3,
+          "wall_ns": 18099630
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 28528.39,
+          "wall_ns": 2852839
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 702128.12,
+          "wall_ns": 70212812
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 1,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 50709839,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 50706547,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 243693372,
+      "setup_wall_ns": 250456025,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 2,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 49005857,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 49001411,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 283663093,
+      "setup_wall_ns": 291415334,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 2,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 53867854,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 53865072,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 242098555,
+      "setup_wall_ns": 249091486,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 24813.875,
+          "wall_ns": 4962775
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 68549.63,
+          "wall_ns": 6854963
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 8016.54,
+          "wall_ns": 801654
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 62857.45,
+          "wall_ns": 6285745
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 124288.56,
+          "wall_ns": 12428856
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 209430.47,
+          "wall_ns": 20943047
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 123761.94,
+          "wall_ns": 12376194
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 24411.61,
+          "wall_ns": 2441161
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 532835.69,
+          "wall_ns": 53283569
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 3,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 54202580,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 54170351,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 273794755,
+      "setup_wall_ns": 280160805,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 25169.05,
+          "wall_ns": 5033810
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 67943.73,
+          "wall_ns": 6794373
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 8033.86,
+          "wall_ns": 803386
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 62698.39,
+          "wall_ns": 6269839
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 124681.87,
+          "wall_ns": 12468187
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 208347.56,
+          "wall_ns": 20834756
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 127320.5,
+          "wall_ns": 12732050
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 24316.67,
+          "wall_ns": 2431667
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 536061.82,
+          "wall_ns": 53606182
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 3,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 48170210,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 48167089,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 297753885,
+      "setup_wall_ns": 304359909,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 4,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 51761029,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 51819261,
+      "mode": "plain",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 239432027,
+      "setup_wall_ns": 246514080,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 4,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 53296926,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 53293698,
+      "mode": "deep",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 241121708,
+      "setup_wall_ns": 248060436,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 24549.485,
+          "wall_ns": 4909897
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 68485.4,
+          "wall_ns": 6848540
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7488.67,
+          "wall_ns": 748867
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 61603.34,
+          "wall_ns": 6160334
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 122640.49,
+          "wall_ns": 12264049
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 204174.61,
+          "wall_ns": 20417461
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 126273.83,
+          "wall_ns": 12627383
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 23993.52,
+          "wall_ns": 2399352
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 527155.21,
+          "wall_ns": 52715521
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 5,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 58343607,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 58337292,
+      "mode": "deep",
+      "position": 0,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 242622691,
+      "setup_wall_ns": 250001321,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {
+        "l3_cascade": {
+          "count": 200,
+          "failed": 0,
+          "mean_wall_ns": 26130.435,
+          "wall_ns": 5226087
+        },
+        "l3_decode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 76448.38,
+          "wall_ns": 7644838
+        },
+        "l3_encode": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 7752.14,
+          "wall_ns": 775214
+        },
+        "l3_matrices": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 69569.78,
+          "wall_ns": 6956978
+        },
+        "l3_node_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 137035.87,
+          "wall_ns": 13703587
+        },
+        "l3_port_admittance": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 224779.45,
+          "wall_ns": 22477945
+        },
+        "l3_power_response": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 137588.86,
+          "wall_ns": 13758886
+        },
+        "l3_y_to_s_solve": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 25131.93,
+          "wall_ns": 2513193
+        },
+        "rf_forward": {
+          "count": 100,
+          "failed": 0,
+          "mean_wall_ns": 577299.0,
+          "wall_ns": 57729900
+        }
+      },
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    },
+    {
+      "batch": 5,
+      "git_status_at_run": "?? project/diagnostics/issue417_forward_timing.json\n?? project/diagnostics/issue417_forward_timing.py\n",
+      "mandatory_g_sha256": "f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33",
+      "measured_cpu_ns": 49083130,
+      "measured_forward_count": 100,
+      "measured_wall_ns": 49078580,
+      "mode": "plain",
+      "position": 1,
+      "requested_measured_samples": 7000,
+      "response_sha256": "f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07",
+      "setup_cpu_ns": 241881822,
+      "setup_wall_ns": 248830193,
+      "stop_status": "all 100 forwards completed; no exception/STOP",
+      "suite": 2,
+      "timers": {},
+      "warmup_forward_count": 100,
+      "warmup_response_sha256": "de22b5128b1337d377a6cb8188d300fe1b6488ea338a599fa94e1281600423c1"
+    }
+  ],
+  "sampling": {
+    "inclusive_timer_caveat": true,
+    "measured_forward_count_per_process": 100,
+    "order": "within each suite: plain/deep, deep/plain alternating",
+    "pair_count": 12,
+    "pairs_per_suite": 6,
+    "run_count": 24,
+    "suites": 2,
+    "timing_boundary": "only the ordered 100 calls to RFEvaluator.evaluate; fixed S2P preparation, warmup, response digest and mandatory requirements are outside",
+    "warmup_forward_count_per_process": 100
+  },
+  "source_identity_dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_identity_head": "523f3ab8d0d89323fd521c9b6738728f8babc54b",
+  "source_identity_sha256": "b701aee50fa2a506eaef942109fb93a96fe8405e7c0b1e7715b539f6293e467e"
+}

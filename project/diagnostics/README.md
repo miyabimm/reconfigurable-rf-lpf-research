@@ -17,6 +17,10 @@
 
 [報告・全runへのリンク・再現方法](issue413_report.md)、[明示opt-in試作](issue413_probe.py)、[限定診断driver](issue413_benchmark.py)。固定100 vectorの実RF forwardで3案、Solver plainで上位2案を旧新交互・2batch比較。six-matmulをレビュー第一候補とするが本番未採用。 大容量測定raw5件は現役treeから整理し、報告中の固定commitリンクで全run原本を参照する（数値同値性rawは現役treeに保持）。全S／全指標／mandatoryを許容差内で保持し、代表全70点独立MNA・異常STOPを回帰。ビット非一致、Solver経路差、全Solver未収束、正式RFへの一般化不可を区別する。
 
+### Issue #417：six-matmul採用後mainのRF forward内訳
+
+[報告・再現条件](issue417_report.md)、[全24runのcompact raw](issue417_forward_timing.json)、[固定vector plain/deep診断driver](issue417_forward_timing.py)。#416後main `523f3ab8`、RF-T008 rev3 trial opt-in／full_lpfに限定。plain固定100-forward中央値49.140ms、deep inclusive計測はtimer負荷を伴う。power_responseが第一候補、Schur/decode/matricesは相対順位未確定。応答・mandatory g digest一致と既存科学回帰PASS。新しいSolver runや高速化実装なし。正式RF-F003・RF合格・連続保証ではない。
+
 ## 分類と用途
 
 分類は現存資料の用途を示すもので、保存ポリシーのA/B/C判定ではない。過去の正式証拠・現役機能とは別に旧専用診断を退役させる。
