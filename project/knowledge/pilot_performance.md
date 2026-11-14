@@ -48,6 +48,14 @@
 
 同じ100候補を再評価するとS全4要素最大差1.870e−14、IL/APL/両RL/全mandatory_g順序込みは許容差内だが**ビット非一致**。有限差分Solverの最終vectorは変わるため、同じstart/seed/nfevでも同じ候補軌道と呼ばない。固定2候補と0可変枝は独立branch-current MNA・受動性／電力を検証。全77runは未収束。100候補全点の独立MNA、連続帯域・EM・SRF・Q(f)・公差・実測は未検証。試作は診断専用で、公開RFResponse・SPD・S2P・異常STOP・保存／Solver契約は本番コードで変更していない。
 
+## 枝Qスタンプ前計算と小行列縮約（Issue #413）
+
+[報告・全run・再現コマンド](../diagnostics/issue413_report.md)。RF-T008 rev3 **trial opt-in** / full_lpf、実効SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、seed1002、25変数・6設定・28別区間・固定S2P・70点、計測HEAD `fd0f420c7c0323f3745f1411bd59399b202f7386`。
+
+#410の固定／可変分離ではなく、トポロジー/Qだけで決まる枝stamp外積をsetupで準備し、候補Cを毎forwardで掛ける3案を比較。**six-matmulを独立レビュー第一候補**、direct-matmulも同等候補とし、**本番未採用**。固定100 vectorの実RF forwardでは、旧新各10子process×2batchの対応差中央値がA −6.910/−8.547ms、B −9.347/−7.868ms、six-einsum-no-opt −7.451/−8.078ms。上位A/Bのplain `worker.solve()`も対応差A −8.605/−8.899ms、B −9.014/−10.719msで改善方向を再観測した。共有hostの外れ値を全保持し、A/Bの微小順位差・汎用加速率は認定しない。小行列ではpath探索・枝係数／incidence再構築の負荷削減が、演算数削減だけより重要になり得る。
+
+固定候補比較は全S／IL/APL／両RL／mandatory_g全42点順序込みでatol1e−9/rtol1e−11内だが**ビット非一致**。代表3 vector×全70点×3案で独立MNA・受動性／電力を検証。正式モデル群・0可変枝・異Q並列・非SPD/非有限・Schur/Y→S/power異常STOPも回帰。Solver 88runは全て100 nfevで**未収束**、旧新で最終vectorが変わるため、Solver比較を固定候補列比較へ読み替えない。正式RF-F003の速度・全候補独立MNA・極端値すべてのSTOP発生位置・連続帯域・EM/SRF/Q(f)/公差/実測は未検証。診断opt-in以外の`src/`変更はなく、本番採用はDraft PR独立レビュー後の別判断。
+
 ## MinimalWorker性能診断（Issue #401）
 
 [PR #402](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/402)・[原報告とrawの固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)。RF-T008 rev3 **trial** / full_lpf、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定・28別区間・70 samples/forward、seed1002・100 nfev、Plan `8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e`、grid `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。計測前HEAD `f5bd7dbb0d5ccc580999633b76116eb7356b80db`、port変更後詳細HEAD `6908e52149de9f59c51c859f291ba6f4cd8de72c` と `124a55c5b1cda68b17a41daeeede7447d70b0437`。単一thread・共有host、外部固定S2Pを含む有限格子。

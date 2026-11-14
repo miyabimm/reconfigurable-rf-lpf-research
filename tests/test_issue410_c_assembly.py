@@ -38,16 +38,18 @@ def fixture():
 
 
 class CAssemblyTests(unittest.TestCase):
+    probe = probe
+    variants = ('six', 'split')
     def compare(self, model, g, vectors, *, independent=False):
         req = prepare_requirements(compile_requirements(model.resolved_policy,
             rf_input_file(ROOT, model.resolved_policy['bands_file']), 'full_lpf'), g)
         baseline = model.evaluator(g)
-        candidates = {v: probe.probe_model(model, v) for v in ('six', 'split')}
+        candidates = {v: self.probe.probe_model(model, v) for v in self.variants}
         evaluators = {v: m.evaluator(g) for v, m in candidates.items()}
         for x in vectors:
             old = baseline.evaluate(x)
             old_g = evaluate_requirements(old, req)
-            for variant in ('six', 'split'):
+            for variant in self.variants:
                 with self.subTest(variant=variant):
                     new_model = candidates[variant]
                     new = evaluators[variant].evaluate(x)
@@ -64,7 +66,7 @@ class CAssemblyTests(unittest.TestCase):
                     self.assertAlmostEqual(old_g['worst_il_db'], new_g['worst_il_db'], places=9)
                     if independent:
                         # Independent branch-current solver must not call the probe.
-                        with patch.object(probe.ProbeTopology, 'node_admittance', side_effect=AssertionError('forward reused')):
+                        with patch.object(self.probe.ProbeTopology, 'node_admittance', side_effect=AssertionError('forward reused')):
                             report = validate_response(new_model, x, new)
                         self.assertTrue(report['independent_mna_checked'])
                         self.assertEqual(report['samples_checked'], len(g.setting))
@@ -102,8 +104,8 @@ class CAssemblyTests(unittest.TestCase):
     def test_bad_sampling_spd_and_external_values_keep_stop(self):
         _, model, g, x = fixture()
         values = model.decode(x)
-        for variant in ('baseline', 'six', 'split'):
-            m = probe.probe_model(model, variant)
+        for variant in ('baseline', *self.variants):
+            m = self.probe.probe_model(model, variant)
             t = m.topology
             for omega, setting in (([0.], [0]), ([np.nan], [0]), ([1e9], [6]), ([1e9], [True])):
                 with self.assertRaises(ValueError): t.node_admittance(values, omega, setting)
@@ -133,8 +135,8 @@ class CAssemblyTests(unittest.TestCase):
     def test_numerical_stop_and_zero_transmission_unchanged(self):
         # Same existing zero/singular Y boundary, all full response metrics kept.
         _, model, g, x = fixture()
-        for variant in ('baseline', 'six', 'split'):
-            m = probe.probe_model(model, variant)
+        for variant in ('baseline', *self.variants):
+            m = self.probe.probe_model(model, variant)
             evaluator = m.evaluator(g)
             for sign in (1., -1.):
                 y = np.broadcast_to(sign*np.eye(2)/50, (len(g.setting), 2, 2)).copy().astype(complex)
