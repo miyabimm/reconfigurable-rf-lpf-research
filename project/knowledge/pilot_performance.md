@@ -40,6 +40,14 @@
 
 **再現性／削減境界：** 実行時のPlan・source・grid・seed/vector・環境・raw SHAの逐語原文は[整理前の固定Git tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/504058c52b360e02e37649f509d257dea139ad64/project/diagnostics)で確認できる。#372/#375の全rawは**Git外のローカル原本**を前提とし、その将来可用性は未確認。#391の生計時rawもGit外、#393の生JSONは削減対象。原文・再実行可能性の削減は**科学的結果の変更ではない**。現在の性能計測用`issue391_benchmark.py`は後続[#394比較](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/main/project/diagnostics/issue394_ab)でも利用しており保持するが、当時の実測値を最新の性能と呼ばない。新しいRF評価・Pilot/EXP・本番ベンチはこの整理で実行していない。
 
+## 完全RFResponse維持のC組立て診断（Issue #410）
+
+[報告・原記録・再現方法](../diagnostics/issue410_report.md)。RF-T008 rev3 trial／full_lpf、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定・28別区間・70点、seed1002、100 nfev/restarts0、測定HEAD `9e9c3f13ef0fe0dca218ef0d7b3bdd1bc9c42415`。
+
+固定C共通D＋可変C設定別Dの分離は、2回の小einsum・抽出・加算費用が勝り、交互plain各10回のsolve中央値旧73.254→新80.615ms、対応差中央値+8.244msで**不採用**。全6設定D先行は旧73.381→新71.281msだが再測定で対応差中央値−2.040→+0.865msと符号が反転し、**効果未確定・本番不採用**。局所node microの改善を全体速度としない。現行も70点を一括einsumで処理しており、単純な70→6 Pythonループ削減ではない。
+
+同じ100候補を再評価するとS全4要素最大差1.870e−14、IL/APL/両RL/全mandatory_g順序込みは許容差内だが**ビット非一致**。有限差分Solverの最終vectorは変わるため、同じstart/seed/nfevでも同じ候補軌道と呼ばない。固定2候補と0可変枝は独立branch-current MNA・受動性／電力を検証。全77runは未収束。100候補全点の独立MNA、連続帯域・EM・SRF・Q(f)・公差・実測は未検証。試作は診断専用で、公開RFResponse・SPD・S2P・異常STOP・保存／Solver契約は本番コードで変更していない。
+
 ## MinimalWorker性能診断（Issue #401）
 
 [PR #402](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/402)・[原報告とrawの固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)。RF-T008 rev3 **trial** / full_lpf、effective SHA `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`、6設定・28別区間・70 samples/forward、seed1002・100 nfev、Plan `8ac7bab9567918ae5c656fd449807ad2c38c1e1cad9e39c8ed217b95a569043e`、grid `6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26`。計測前HEAD `f5bd7dbb0d5ccc580999633b76116eb7356b80db`、port変更後詳細HEAD `6908e52149de9f59c51c859f291ba6f4cd8de72c` と `124a55c5b1cda68b17a41daeeede7447d70b0437`。単一thread・共有host、外部固定S2Pを含む有限格子。

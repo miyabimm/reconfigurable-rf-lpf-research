@@ -9,6 +9,10 @@
 
 [単一ベンチ入口](../../scripts/benchmark_minimal_worker.py)のplain/timed/deep、[操作・出力境界](../../scripts/README.md#minimalworker開発ベンチ)、[#401の方法](../methods.md#minimalworker性能診断の運用401408)・[結果](../results.md#minimalworker性能診断issue-401)。固定入力 [starts](issue401_starts_1002.json) と [baseline](issue377/baseline.yaml) は保持。#401専用raw・報告・単発driverは[PR #402時点の固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)にあり、現役treeへ移動・複製しない。他Issueの歴史診断はこの整理の対象外。
 
+### Issue #410：完全RFResponse維持のC組立て診断
+
+[報告・再現方法](issue410_report.md)、[明示opt-in試作](issue410_probe.py)、[全A/B・deep原記録](issue410_ab.json)、[固定100候補の同値性・micro原記録](issue410_equivalence.json)。固定C分離は遅く不採用、全6設定先行もplain再測定で効果未確定につき本番不採用。`src/`とRF契約は未変更。少数の固定候補は独立MNAを実行、全Solver runは未収束。汎用fast-path／正式RF適合の認定ではない。
+
 ## 分類と用途
 
 分類は現存資料の用途を示すもので、保存ポリシーのA/B/C判定ではない。過去の正式証拠・現役機能とは別に旧専用診断を退役させる。

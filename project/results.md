@@ -31,6 +31,10 @@
 ### EXP-042、046/047の原本と訂正
 [旧RF条件の成果・出典・訂正記録](knowledge/legacy_evidence.md) — 旧RF-F001/F002/T003/R2の代表結果、EXP-017/042/046/047の訂正・原本境界。
 
+## 完全RFResponse維持の行列組立て診断（Issue #410）
+
+[非EXP性能診断の知見](knowledge/pilot_performance.md#完全rfresponse維持のc組立て診断issue-410)・[詳細と原記録](diagnostics/issue410_report.md)。固定C分離は遅く不採用、全6設定先行はplain再測定で効果未確定・本番不採用。全S／IL/APL／両RLを保持し、固定100候補で許容差内だがビット非一致・Solver軌道差を確認。正式RF適合・収束の認定ではない。
+
 ## MinimalWorker性能診断（Issue #401）
 [非EXP PilotとMinimalWorkerの性能計測](knowledge/pilot_performance.md) — 未収束Pilot、測定契約・inclusiveタイマー、#401の実測・限界（正式EXPではない）。
 
