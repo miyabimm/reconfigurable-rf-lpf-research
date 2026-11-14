@@ -15,7 +15,7 @@
 
 ### Issue #423：dB異常値検査の集約
 
-[報告・再現方法・全run](issue423_report.md)。固定100 vectorで数値・STOPは一致したが、実RF forwardの改善は共有hostの外乱を超えると判定できず本番不採用。`src/`は変更しない。
+[報告・再現方法・全run](issue423_report.md)。当初は実RF forwardの外乱により本番不採用と判断。その後のユーザー方針更新により、保存済み局所plain A/Bを根拠として検査1行を本番実装。最新mainでの追加比較と科学・STOP回帰は報告の追記参照。完全forwardの改善率は未確定。
 
 ### Issue #413：枝Qスタンプ前計算の3方式
 

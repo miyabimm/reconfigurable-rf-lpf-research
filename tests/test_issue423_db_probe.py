@@ -7,14 +7,13 @@ from unittest.mock import patch
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'project/diagnostics'))
-import issue419_probe as base
-import issue423_probe as probe
+import issue423_current_probe as probe
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 
 
 class DBCheckTests(unittest.TestCase):
     def setUp(self):
-        self.funcs = (base.ORIGINAL, probe.candidate())
+        self.funcs = (probe.old_power_response(), probe.PRODUCTION)
 
     def outcome(self, func, s, zs=50, zl=50):
         try:
