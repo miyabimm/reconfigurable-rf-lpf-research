@@ -13,6 +13,10 @@
 
 [報告・再現方法](issue410_report.md)、[明示opt-in試作](issue410_probe.py)、[全A/B・deep原記録](issue410_ab.json)、[固定100候補の同値性・micro原記録](issue410_equivalence.json)。固定C分離は遅く不採用、全6設定先行もplain再測定で効果未確定につき本番不採用。`src/`とRF契約は未変更。少数の固定候補は独立MNAを実行、全Solver runは未収束。汎用fast-path／正式RF適合の認定ではない。
 
+### Issue #423：dB異常値検査の集約
+
+[報告・再現方法・全run](issue423_report.md)。当初は実RF forwardの外乱により本番不採用と判断。その後のユーザー方針更新により、保存済み局所plain A/Bを根拠として検査1行を本番実装。最新mainでの追加比較と科学・STOP回帰は報告の追記参照。完全forwardの改善率は未確定。
+
 ### Issue #413：枝Qスタンプ前計算の3方式
 
 [報告・全runへのリンク・再現方法](issue413_report.md)、[明示opt-in試作](issue413_probe.py)、[限定診断driver](issue413_benchmark.py)。固定100 vectorの実RF forwardで3案、Solver plainで上位2案を旧新交互・2batch比較。six-matmulをレビュー第一候補とするが本番未採用。 大容量測定raw5件は現役treeから整理し、報告中の固定commitリンクで全run原本を参照する（数値同値性rawは現役treeに保持）。全S／全指標／mandatoryを許容差内で保持し、代表全70点独立MNA・異常STOPを回帰。ビット非一致、Solver経路差、全Solver未収束、正式RFへの一般化不可を区別する。

@@ -1,0 +1,3135 @@
+{
+  "runs": [
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 0,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011563325999999985,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.735583048,
+        "setup_wall_s": 0.7363930820138194,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011563612992176786,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 0,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00970274900000001,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.689703953,
+        "setup_wall_s": 0.6897606319980696,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009704417025204748,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 1,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.020223345000000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.699837664,
+        "setup_wall_s": 0.7000289200223051,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.020308061997639015,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 1,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.012873567999999835,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.792332028,
+        "setup_wall_s": 0.7924589989997912,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012873782980022952,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 2,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011761833999999971,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7422211679999999,
+        "setup_wall_s": 0.7426084640028421,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.01176164299249649,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 2,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00983991900000003,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.693425969,
+        "setup_wall_s": 0.6997574649867602,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009840218001045287,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 3,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.010324350999999954,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.700081042,
+        "setup_wall_s": 0.7003378460067324,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.010323218011762947,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 3,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011577210000000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.693967504,
+        "setup_wall_s": 0.6939882329897955,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011577297991607338,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 4,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011430804000000072,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.6937103099999999,
+        "setup_wall_s": 0.6938758750038687,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011431150982389227,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 4,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.009777792000000063,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.698113237,
+        "setup_wall_s": 0.698328844999196,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009779009997146204,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 5,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00965247299999994,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.694114774,
+        "setup_wall_s": 0.6943508740223479,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009653600980527699,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 5,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011622145000000028,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7346794560000001,
+        "setup_wall_s": 0.7377839620166924,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011621348006883636,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 6,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011660172999999996,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.696945204,
+        "setup_wall_s": 0.697110530018108,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011660740012302995,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 6,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.009782199999999963,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7463091099999999,
+        "setup_wall_s": 0.7485577460029162,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.00978355499682948,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 7,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011348995999999945,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.692170806,
+        "setup_wall_s": 0.6923194319824688,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011350540997227654,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 7,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.014768227000000023,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.737669319,
+        "setup_wall_s": 0.7394924039836042,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.014766958018299192,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 8,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011912518000000039,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.698070169,
+        "setup_wall_s": 0.6983090509893373,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011912332993233576,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 8,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00978969399999996,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7179109379999999,
+        "setup_wall_s": 0.719674785999814,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.00979080400429666,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 9,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.012052253000000013,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.6970381019999999,
+        "setup_wall_s": 0.6971870860143099,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012048396019963548,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 9,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.012448746999999982,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.741116633,
+        "setup_wall_s": 0.7427831089880783,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012448522000340745,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 10,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011598343000000066,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7008065,
+        "setup_wall_s": 0.7010612660087645,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011598854005569592,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 10,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.009958766000000008,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.733014463,
+        "setup_wall_s": 0.7332944500085432,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009959175979020074,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 11,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00967284199999996,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.69718666,
+        "setup_wall_s": 0.6974264879827388,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009674253000412136,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 11,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011535091999999914,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.752195123,
+        "setup_wall_s": 0.7525458369927946,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011535903991898522,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 12,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.012331997999999955,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7083807200000001,
+        "setup_wall_s": 0.7086158999882173,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012363230984192342,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 12,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011377456999999924,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7205248790000001,
+        "setup_wall_s": 0.7206265189743135,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011459152010502294,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 13,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.009897928999999972,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.693927422,
+        "setup_wall_s": 0.6941179339773953,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.00989891099743545,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 13,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011892461999999937,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.694328477,
+        "setup_wall_s": 0.6943874010175932,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011892270005773753,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 14,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.01207640199999993,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.688454632,
+        "setup_wall_s": 0.6886749109835364,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012076521990820765,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 14,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.009839138000000025,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.700279654,
+        "setup_wall_s": 0.7003761760133784,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009839508013101295,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 15,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.010162222000000054,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.732152812,
+        "setup_wall_s": 0.7325761249812786,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.010161632002564147,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 15,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.019396190000000035,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.822710095,
+        "setup_wall_s": 0.8228266009828076,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.019396735006012022,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 16,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.012631065999999969,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.756829235,
+        "setup_wall_s": 0.7570452830113936,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012627835996681824,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 16,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.013991392000000102,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.9941107870000001,
+        "setup_wall_s": 0.9949704899918288,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.01398987098946236,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 17,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.01150714900000005,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.911793982,
+        "setup_wall_s": 0.9120439190010075,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011503984977025539,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 17,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.015866191999999946,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.8566929640000001,
+        "setup_wall_s": 0.8570510730205569,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.015866867994191125,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 18,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.01202324499999996,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.731370563,
+        "setup_wall_s": 0.7315767370164394,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.012021846981951967,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 18,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.00962075200000001,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.8172432190000001,
+        "setup_wall_s": 0.8176164030155633,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.009622175013646483,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 19,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.010141322000000064,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7011630050000001,
+        "setup_wall_s": 0.7013946899969596,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.01014076400315389,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "local"
+      ],
+      "mode": "local",
+      "pair": 19,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.011757090000000026,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7417221169999999,
+        "setup_wall_s": 0.7421466069936287,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.011756380001315847,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 0,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.049538294000000094,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7353466839999999,
+        "setup_wall_s": 0.7355210690002423,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.04953930000192486,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 0,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05122177200000011,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.924923181,
+        "setup_wall_s": 0.9253701630223077,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.051221047004219145,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 1,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.09093527299999993,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.792766895,
+        "setup_wall_s": 0.7939328929933254,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.09116216900292784,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 1,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05083207199999995,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.801071054,
+        "setup_wall_s": 0.8012421390158124,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05083304498111829,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 2,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05269660200000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.743935396,
+        "setup_wall_s": 0.7446133109915536,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05269662302453071,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 2,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.04811575700000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.728633828,
+        "setup_wall_s": 0.7289142090012319,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.04811356699792668,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 3,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05677512699999987,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.767483019,
+        "setup_wall_s": 0.7685838940087706,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.056774348980979994,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 3,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05322045800000019,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.832427762,
+        "setup_wall_s": 0.8326273479906376,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.053222524002194405,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 4,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.06046065699999992,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.842309191,
+        "setup_wall_s": 0.8434615730075166,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0604595469776541,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 4,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.049662753000000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.741022758,
+        "setup_wall_s": 0.7412011419946793,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.049663788988254964,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 5,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.04792409200000003,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.735293073,
+        "setup_wall_s": 0.7354292229865678,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.04792448700754903,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 5,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05181732899999991,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7663409369999999,
+        "setup_wall_s": 0.7666182169923559,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0518378549895715,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 6,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05086706800000007,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.8466437069999999,
+        "setup_wall_s": 0.8467971129866783,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05093568901065737,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 6,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.056749889,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.837348023,
+        "setup_wall_s": 0.838581655989401,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.056749353010673076,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 7,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05488908999999986,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.864954935,
+        "setup_wall_s": 0.8651831799943466,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05489076700177975,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 7,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.056391583000000134,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.9176944739999999,
+        "setup_wall_s": 0.918841334991157,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.056393564998870715,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 8,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05910305800000004,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.845317965,
+        "setup_wall_s": 0.8457593320054002,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05910641798982397,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 8,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.057078754000000176,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.8534405939999998,
+        "setup_wall_s": 0.8543487720016856,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05707881401758641,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 9,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.054130709000000055,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.9050894150000001,
+        "setup_wall_s": 0.9068935200048145,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05409590498311445,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 9,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.06932404200000009,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.837020198,
+        "setup_wall_s": 0.8376759010134265,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.06935030402382836,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 10,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.050547094000000126,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.814911733,
+        "setup_wall_s": 0.815068383992184,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05058862501755357,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 10,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.054159766000000054,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7646642220000001,
+        "setup_wall_s": 0.7722954189812299,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05416310398140922,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 11,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.049796117999999945,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7287162650000001,
+        "setup_wall_s": 0.7289843519974966,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.04979382801684551,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 11,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.050477985999999975,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.785757663,
+        "setup_wall_s": 0.7866286179923918,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.050474124000174925,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 12,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05583493399999995,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.8620405990000001,
+        "setup_wall_s": 0.8622508299886249,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0558339309936855,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 12,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05049377399999999,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.873407305,
+        "setup_wall_s": 0.8742781649925746,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.050518214993644506,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 13,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.04838396700000003,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.724482839,
+        "setup_wall_s": 0.7245788569853175,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.048405940004158765,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 13,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.06763637799999989,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.738227729,
+        "setup_wall_s": 0.7384622779791243,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.06763370701810345,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 14,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.06376127099999995,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.770145788,
+        "setup_wall_s": 0.7702358179958537,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0637636269966606,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 14,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05565031300000012,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.827895741,
+        "setup_wall_s": 0.8285693899961188,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05565065602422692,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 15,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.06413317700000021,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.989133128,
+        "setup_wall_s": 0.9895993959798943,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0641331989900209,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 15,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.055185832000000046,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.804595466,
+        "setup_wall_s": 0.8051935239927843,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05518679300439544,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 16,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.0625451079999999,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.828438314,
+        "setup_wall_s": 0.8286328469985165,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.0625445080222562,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 16,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.049232076000000013,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.865515888,
+        "setup_wall_s": 0.8662603170087095,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.049255914986133575,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 17,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.04828734800000001,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.729081393,
+        "setup_wall_s": 0.7292150120192673,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.048316143976990134,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 17,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.054956869000000075,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7674733579999999,
+        "setup_wall_s": 0.7679170379997231,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.05495891202008352,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 18,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05546201500000003,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.7414598939999999,
+        "setup_wall_s": 0.7415778139838949,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.055459853989304975,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 18,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.060654297000000135,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.84573432,
+        "setup_wall_s": 0.8461808239808306,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.060656483983621,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 19,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.07749192300000018,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.799005255,
+        "setup_wall_s": 0.7991423200001009,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.07758066200767644,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "old",
+        "--mode",
+        "forward"
+      ],
+      "mode": "forward",
+      "pair": 19,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "cpu_s": 0.05170865499999999,
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.725441617,
+        "setup_wall_s": 0.7261671480082441,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timers_ns": {},
+        "wall_s": 0.051708223996683955,
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "old"
+    },
+    {
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/.venv/bin/python",
+        "/home/user/src/reconfigurable-rf-lpf-issue423/project/diagnostics/issue423_probe.py",
+        "--child",
+        "new",
+        "--mode",
+        "equivalence"
+      ],
+      "mode": "equivalence",
+      "pair": 0,
+      "report": {
+        "affinity": [
+          0
+        ],
+        "bit_equal": {
+          "apl_db": true,
+          "il_db": true,
+          "in_rl_db": true,
+          "mandatory_g": true,
+          "out_rl_db": true,
+          "s": true,
+          "worst_il_db": true
+        },
+        "head": "b068858fe8294212230be31435828712809042d1",
+        "independent": [
+          {
+            "absolute_tolerance": 1e-09,
+            "continuous_band_proven": false,
+            "independent_mna_checked": true,
+            "index": 0,
+            "max_abs_error": 2.213340621892712e-12,
+            "rf_compliance_certified": false,
+            "samples_checked": 70
+          },
+          {
+            "absolute_tolerance": 1e-09,
+            "continuous_band_proven": false,
+            "independent_mna_checked": true,
+            "index": 49,
+            "max_abs_error": 2.859934511434403e-13,
+            "rf_compliance_certified": false,
+            "samples_checked": 70
+          },
+          {
+            "absolute_tolerance": 1e-09,
+            "continuous_band_proven": false,
+            "independent_mna_checked": true,
+            "index": 99,
+            "max_abs_error": 4.1389114358025836e-13,
+            "rf_compliance_certified": false,
+            "samples_checked": 70
+          }
+        ],
+        "max_abs": {
+          "apl_db": 0,
+          "il_db": 0,
+          "in_rl_db": 0,
+          "mandatory_g": 0,
+          "out_rl_db": 0,
+          "s": 0,
+          "worst_il_db": 0
+        },
+        "max_relative": {
+          "apl_db": 0,
+          "il_db": 0,
+          "in_rl_db": 0,
+          "mandatory_g": 0,
+          "out_rl_db": 0,
+          "s": 0,
+          "worst_il_db": 0
+        },
+        "numpy": "2.5.4",
+        "python": "3.12.15",
+        "replay_sha256": "e87355eb364073a5743062e8e4ee7c90c3012cbfb5e38bef6283860381736ba0",
+        "setup_cpu_s": 0.758016703,
+        "setup_wall_s": 0.7583634239854291,
+        "threads": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "waves_sha256": "1512e77f269a1524727c1bd8d9e420a541714ccdb9caae3f00b2b9da2713bb02"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "variant": "new"
+    }
+  ]
+}
