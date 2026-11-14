@@ -268,11 +268,13 @@ class CoupledLCTopology:
         Y = self.node_admittance(values, omega_rad_s, setting_indices)
         ports = (self.inductor_tree.source_node, self.inductor_tree.load_node)
         middle = tuple(i for i in range(self.inductor_tree.node_count) if i not in ports)
-        R = Y[:, ports, :][:, :, ports]
+        order = np.asarray(ports + middle)
+        reordered = Y[:, order[:, None], order]
+        R = reordered[:, :2, :2]
         if middle:
-            U = Y[:, ports, :][:, :, middle]
-            V = Y[:, middle, :][:, :, ports]
-            E = Y[:, middle, :][:, :, middle]
+            U = reordered[:, :2, 2:]
+            V = reordered[:, 2:, :2]
+            E = reordered[:, 2:, 2:]
             try:
                 R = R - U @ np.linalg.solve(E, V)
             except np.linalg.LinAlgError as exc:
