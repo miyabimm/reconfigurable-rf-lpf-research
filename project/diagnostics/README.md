@@ -13,6 +13,10 @@
 
 [報告・再現方法](issue410_report.md)、[明示opt-in試作](issue410_probe.py)、[全A/B・deep原記録](issue410_ab.json)、[固定100候補の同値性・micro原記録](issue410_equivalence.json)。固定C分離は遅く不採用、全6設定先行もplain再測定で効果未確定につき本番不採用。`src/`とRF契約は未変更。少数の固定候補は独立MNAを実行、全Solver runは未収束。汎用fast-path／正式RF適合の認定ではない。
 
+### Issue #413：枝Qスタンプ前計算の3方式
+
+[報告・全runへのリンク・再現方法](issue413_report.md)、[明示opt-in試作](issue413_probe.py)、[限定診断driver](issue413_benchmark.py)。固定100 vectorの実RF forwardで3案、Solver plainで上位2案を旧新交互・2batch比較。six-matmulをレビュー第一候補とするが本番未採用。全S／全指標／mandatoryを許容差内で保持し、代表全70点独立MNA・異常STOPを回帰。ビット非一致、Solver経路差、全Solver未収束、正式RFへの一般化不可を区別する。
+
 ## 分類と用途
 
 分類は現存資料の用途を示すもので、保存ポリシーのA/B/C判定ではない。過去の正式証拠・現役機能とは別に旧専用診断を退役させる。
