@@ -13,7 +13,7 @@
 
 fresh processごとに100回warmup後、同じ100 vectorをdecode単独は20周、完全`RFEvaluator.evaluate`は1周まとめてwall/CPU計時。各方式warmup process 1個は集計外、10 pair、順序交互。計器付き内部区間を速度換算していない。CPU affinity 2、BLAS/OMP/MKL各1、WSL2共有host Ryzen 7 PRO 4750G、Python 3.12.15、NumPy 2.5.4。専有・温度・周辺負荷・電源制御なし。
 
-下表はms/100 vector、pair差は新−旧、warmup除外。CPUも同傾向だが完全なwall/CPU各run、warmup、順序、外れ値、環境は[初回](issue425_runs.json)、[再測定](issue425_repeat.json)、[3回目](issue425_third.json)に全て保存。選別していない。
+下表はms/100 vector、pair差は新−旧、warmup除外。CPUも同傾向だが**全3スイートの138run（各46run）**のwall/CPU、setup、warmup、旧新実行順序、全外れ値、ソース・入力指紋および同値性のshape/max差/bit一致は[統合compact原記録](issue425_timing_compact.json)に保存。選別していない。共通メタ情報だけを1回格納し、各runの実測値は元のfull rawと同じ値を保持。
 
 | 回 | 経路 | 旧/新wall中央値 | pair差中央値 [最小,最大] | 新が速い |
 |---|---|---:|---:|---:|
@@ -44,4 +44,6 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   uv run --frozen python -m unittest discover -s tests -p test_issue309_rf_core.py -v
 ```
 
-出力は未存在のパスを指定し、affinity CPU 2が利用可能であること。driver SHA `69889a05496276f53d40d5db437a59ed29ffed5c83ce44629d8f21a148c04da2`。raw SHA（初回/2/3）`ab4788fdeb14e5bc7fb11ebdca579dec16496f3c7bdc7708e5a6d7302a54e010` / `93c22379ac4df38e46f72c31eedbeba46d12a0677648bfb02246a626145abb0a` / `da6b99be4e7e89b88a8b601af8a1f2ad4462dfc983e2d6bfc3afb757626df0e9`。
+出力は未存在のパスを指定し、affinity CPU 2が利用可能であること。driver SHA `69889a05496276f53d40d5db437a59ed29ffed5c83ce44629d8f21a148c04da2`。
+
+**保存形式の整理（測定・RF実装・結果は変更なし）：** 旧full raw 3ファイル（計3,214,921 bytes／各46run）は共通provenanceの毎run反復を除き、1個の[compact JSON](issue425_timing_compact.json)（108,804 bytes／全138run）に統合。旧rawとcompactの対応はrun単位のwall/CPU、setup、warmup、順序・失敗状態、MNA、同値性について照合済み。統合後SHA256 **`be83b75da0a9b00133b01b29cf966d32f9b112099045ff76702db2015e1c4862`**。元のfull rawは本PRの修正前commit `dff19bc2db8c8ea33d7a6eddad2db2372321def7` のGit履歴から追跡可能。元raw SHA256（初回/2/3）は `ab4788fdeb14e5bc7fb11ebdca579dec16496f3c7bdc7708e5a6d7302a54e010` / `93c22379ac4df38e46f72c31eedbeba46d12a0677648bfb02246a626145abb0a` / `da6b99be4e7e89b88a8b601af8a1f2ad4462dfc983e2d6bfc3afb757626df0e9`。元提出HEADのGitHub Actions smoke [run 43581771669](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/43581771669) はPASS。
