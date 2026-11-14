@@ -12,6 +12,12 @@ C six-einsum-no-optも固定RF forwardは改善したが上位2案より中央�
 今回の旧新plainでは固定100 vector forwardとSolverの両方で改善方向が2batch継続した。
 ただし共有hostの長い外れ値があり、全runで速い／一般的な改善率／Aが唯一最速とは主張しない。
 
+## 測定rawの現役tree整理（PR #414）
+
+固定forward初回・再測定、Solver初回・再測定、計測内訳の**5件の大容量raw JSON**は、内容・SHA256を変更せず[測定原本を含む固定commit](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_forward.json)（`19a86a30ac15b1de1255af8e67a89ed85d652448`）に残し、現役treeからは除外する。本PRは**通常のmerge commit方式でマージしてこの原本commitをmainの履歴に残す**。以下の各rawリンクは削除前の固定commitを直接参照する。
+
+現役treeには本レポート（条件・代表値・分布・全消費・再現コマンド・原raw SHA256）、現役KBへの要約、比較driver・試作・回帰テスト、比較的小さい`issue413_equivalence.json`（数値同値性・独立検証結果）を保持する。削除は現役参照のみであり、原記録の破棄・測定の再実行・科学的数値の変更ではない。詳細な全run値と外れ値を再集計するときは固定commitのrawを使用する。
+
 ## 基準・科学入力・再現性
 
 - main `b97f0fa2`（#412マージ済み）から分岐。最新instructions、registry active、bands、#401/#410/#413、#412報告、roadmap/KBを確認。
@@ -36,7 +42,7 @@ C six-einsum-no-optも固定RF forwardは改善したが上位2案より中央�
 - **C six-einsum-no-opt**: `einsum('sb,bij->sij', C, T, optimize=False)` → `D[setting]`。
 - 全案で `Y=K/(ω 1e-9)+ωD`。完全L行列SPD・Q、Schur、Y→S、固定S2P cascade、power_response、全S／IL/APL／両RL、不変公開配列はそのまま。
 
-[detail原記録](issue413_detail.json)：各方式別processで3回、各100 vector。以下は区間合計の中央値ms/100 vector（setupはµs）。**計器付きの算術内訳でありplain RF速度ではない**。baselineも70点を一括einsumで処理し、70回のPythonループではない。
+[detail原記録](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_detail.json)：各方式別processで3回、各100 vector。以下は区間合計の中央値ms/100 vector（setupはµs）。**計器付きの算術内訳でありplain RF速度ではない**。baselineも70点を一括einsumで処理し、70回のPythonループではない。
 
 | 方式 | C変換 | C gather | branch Q＋incidence | 縮約 | D gather | Y合成 | probe setup µs |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -52,7 +58,7 @@ setupは追加トポロジー構築／検査も含む。固定S2P・evaluator等
 
 ## 固定100 vectorの実RF forward plain
 
-[初回raw](issue413_forward.json)／[再測定raw](issue413_forward_repeat.json)。各候補につき旧新各warmup1子process後、旧新新旧の釣り合った順序で各10子process。各子processでも同じ100 vectorをwarmup評価後に100 vectorを固定順で再評価。
+[初回raw](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_forward.json)／[再測定raw](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_forward_repeat.json)。各候補につき旧新各warmup1子process後、旧新新旧の釣り合った順序で各10子process。各子processでも同じ100 vectorをwarmup評価後に100 vectorを固定順で再評価。
 タイミング区間は完全`evaluator.evaluate`ループのみ。requirements、同値性比較、digest、タイマーwrapperは含まない。CPU・wallを区間全体で測り、全sample・全公開指標を生成する。
 外れ値除外なし。表はms/100 forward、CPU欄は旧→新の中央値（CPUの範囲・全個別値もrawに保持）。
 
@@ -70,7 +76,7 @@ setupは追加トポロジー構築／検査も含む。固定S2P・evaluator等
 
 ## Solver plain（同じ軌道ではない）
 
-[初回raw](issue413_solver.json)／[再測定raw](issue413_solver_repeat.json)。上位A/Bのみ、各batch旧新warmup各1＋各10run、新process・交互順。`benchmark_minimal_worker.py`の無計器`worker.solve()`をそのまま使用。
+[初回raw](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_solver.json)／[再測定raw](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/19a86a30ac15b1de1255af8e67a89ed85d652448/project/diagnostics/issue413_solver_repeat.json)。上位A/Bのみ、各batch旧新warmup各1＋各10run、新process・交互順。`benchmark_minimal_worker.py`の無計器`worker.solve()`をそのまま使用。
 単位ms/100 nfev。後段観察（best_xの追加1 forward）は時間・消費とも別。setupをsolveへ混ぜない。
 
 | batch | 案 | 旧solve 中央値[min,max] | 新solve 中央値[min,max] | pair新−旧 中央値[min,max] | 新が速いpair | CPU旧→新 | setup旧→新 |
