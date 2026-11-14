@@ -40,6 +40,7 @@ class RFCoreTests(unittest.TestCase):
             rows = tuple((3.,) + tuple(float(v) for v in x[5+nv*s:5+nv*(s+1)])
                          + (5., .5) for s in range(6))
             self.assertEqual(values, CircuitValues((1., 2.), (4.,), rows))
+            self.assertTrue(all(type(v) is float for v in values.inductances_nh + values.coupling_k))
             self.assertTrue(all(type(v) is float for row in values.capacitors_pf_by_setting for v in row))
             np.testing.assert_array_equal(schema.encode(values), x)
             self.assertEqual(schema.decode(x.tolist()), values)
@@ -55,6 +56,13 @@ class RFCoreTests(unittest.TestCase):
                 encode.assert_not_called()
             direct_response = evaluator.evaluate(values)
             np.testing.assert_array_equal(vector_response.s, direct_response.s)
+            ints = np.ones(len(x), dtype=int)
+            k0 = model.schema.n_inductors + model.schema.n_fixed
+            ints[k0:k0 + model.schema.n_coupling] = 0
+            np.testing.assert_array_equal(evaluator.evaluate(ints).s,
+                                          evaluator.evaluate(ints.tolist()).s)
+            np.testing.assert_array_equal(evaluator.evaluate(ints).s,
+                                          evaluator.evaluate(ints.astype(float)).s)
             # Verify each invariant independently, including the constant's
             # absolute value even when all six rows agree.
             indices = [0]
@@ -74,6 +82,9 @@ class RFCoreTests(unittest.TestCase):
                     evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k, rows))
             with self.assertRaises(ValueError):
                 evaluator.evaluate(CircuitValues(values.inductances_nh[:-1], values.coupling_k,
+                                                 values.capacitors_pf_by_setting))
+            with self.assertRaises(ValueError):
+                evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k[:-1],
                                                  values.capacitors_pf_by_setting))
             with self.assertRaises(ValueError):
                 evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k,
