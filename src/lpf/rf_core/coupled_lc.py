@@ -8,7 +8,7 @@ Units: L nH, C pF, omega rad/s, zero-based hot nodes, ground -1.
 The parametric vector schema is explicit and is deliberately distinct
 from the RF policy's admissible component ranges and topology restrictions.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -158,6 +158,7 @@ class CoupledLCTopology:
     inductor_q: tuple[float, ...]
     capacitor_edges: tuple[tuple[int, int], ...]
     capacitor_q: tuple[float, ...]
+    _capacitor_stamps_flat: np.ndarray = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.inductor_tree, InductorTree):
@@ -169,7 +170,7 @@ class CoupledLCTopology:
             raise ValueError("Inductor/capacitor Q count mismatch")
         # Reuse shared checked endpoint routine without changing orientation.
         cap_edges = tuple(tuple(pair) for pair in self.capacitor_edges)
-        incidence_matrix(cap_edges, self.inductor_tree.node_count)
+        cap_incidence = incidence_matrix(cap_edges, self.inductor_tree.node_count).T
         pairs = tuple(tuple(pair) for pair in self.coupling_pairs)
         if (any(len(pair) != 2 or type(pair[0]) is not int or
                 type(pair[1]) is not int or pair[0] == pair[1] or
@@ -180,6 +181,14 @@ class CoupledLCTopology:
         object.__setattr__(self, "coupling_pairs", pairs)
         object.__setattr__(self, "inductor_q", lq)
         object.__setattr__(self, "capacitor_q", cq)
+        # Each branch retains its own Q, including parallel and ground branches.
+        stamps = (1e-12 / (1 / np.asarray(cq) - 1j))[:, None, None] * (
+            cap_incidence[:, :, None] * cap_incidence[:, None, :]
+        )
+        flat = np.frombuffer(stamps.tobytes(), dtype=complex).reshape(
+            len(cap_edges), self.inductor_tree.node_count ** 2
+        )
+        object.__setattr__(self, "_capacitor_stamps_flat", flat)
 
     def matrices(self, values):
         """Return the coupled L admittance numerator and signed M matrix."""
@@ -241,13 +250,10 @@ class CoupledLCTopology:
             K, (omega.size, self.inductor_tree.node_count,
                 self.inductor_tree.node_count)
         ).copy() / (omega[:, None, None] * 1e-9)
-        C = np.asarray(values.capacitors_pf_by_setting, dtype=float)[setting]
-        yc = omega[:, None] * 1e-12 * C / (
-            1 / np.asarray(self.capacitor_q)[None, :] - 1j
-        )
-        Bc = incidence_matrix(self.capacitor_edges,
-                              self.inductor_tree.node_count)
-        Y += np.einsum("fb,ib,jb->fij", yc, Bc, Bc, optimize=True)
+        C = np.asarray(values.capacitors_pf_by_setting, dtype=float)
+        n = self.inductor_tree.node_count
+        D = (C @ self._capacitor_stamps_flat).reshape(len(CASES), n, n)[setting]
+        Y += omega[:, None, None] * D
         if not np.all(np.isfinite(Y)):
             raise CircuitNumericalError(
                 "node_nonfinite", "Non-finite nodal admittance",
