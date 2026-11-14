@@ -5,7 +5,9 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT / 'src'), str(ROOT / 'scripts'), str(ROOT / 'tests'), str(ROOT / 'project/diagnostics')]
+from issue421_benchmark import old_port
 from lpf.rf_core.coupled_lc import CircuitValues, CoupledLCTopology
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 from lpf.topology_management import InductorTree
@@ -40,16 +42,18 @@ class SchurTests(unittest.TestCase):
         t = self.topology(4, 3, 0)
         y = np.broadcast_to(np.eye(4, dtype=complex), (3,4,4)).copy()
         y[1,1:3,1:3] = 0
-        with patch.object(CoupledLCTopology, 'node_admittance', return_value=y):
-            with self.assertRaises(CircuitNumericalError) as caught:
-                t.port_admittance(None, None, None)
-        self.assertEqual(caught.exception.code, 'schur_solve_failed')
+        for method in (old_port, CoupledLCTopology.port_admittance):
+            with patch.object(CoupledLCTopology, 'node_admittance', return_value=y):
+                with self.assertRaises(CircuitNumericalError) as caught:
+                    method(t, None, None, None)
+            self.assertEqual((caught.exception.code, caught.exception.sample_index), ('schur_solve_failed', None))
         y[1,1:3,1:3] = np.eye(2)
         y[1,3,3] = np.nan
-        with patch.object(CoupledLCTopology, 'node_admittance', return_value=y):
-            with self.assertRaises(CircuitNumericalError) as caught:
-                t.port_admittance(None, None, None)
-        self.assertEqual((caught.exception.code, caught.exception.sample_index), ('schur_nonfinite', 1))
+        for method in (old_port, CoupledLCTopology.port_admittance):
+            with patch.object(CoupledLCTopology, 'node_admittance', return_value=y):
+                with self.assertRaises(CircuitNumericalError) as caught:
+                    method(t, None, None, None)
+            self.assertEqual((caught.exception.code, caught.exception.sample_index), ('schur_nonfinite', 1))
 
     def test_real_tree_ground_parallel_different_q_zero_c(self):
         t = CoupledLCTopology(InductorTree(4, ((0,1),(1,2),(1,3)), 3, 0), (),
