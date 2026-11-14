@@ -78,7 +78,7 @@ TimerCollectorの1run集計から、ms/100 forwardの中央値と全12runの[最
 
 - 全24測定runで応答配列digestが完全一致：`f4fc7c5d02eca231999210ad1987245f39196f20c34f2dcd6311293b52e2bc07`。複素S全4要素、IL/APL/両RL、100 vector順序を含む。mandatory g全42要素/vector digestも全run一致：`f74012842588209da721ab387e1c0b30ea74dd16fddec8ed9c6aed690853da33`。plainとdeepの配列digest・mandatory_g digestは一致。ビット一致するのは**同じHEADで計器を付け外ししたこの比較**であり、旧mainとの比較や全候補の独立MNAではない。
 - 全24runで100/100 forward完了、計測中RF STOP/例外0。timer wrapperがRF例外を握りつぶす経路はなく、既存`test_issue401_timing.py` failure propagationを実行。
-- 検証PASS：`uv sync --frozen`、`test_issue401_timing.py` 7件、`test_issue415_production_stamps.py` 3件、`test_issue309_rf_core.py` 7件、`test_phase2_branch_mna.py` 6件、`test_phase2_numeric_diagnostics.py` 3件、`git diff --check`。これらは独立MNA／科学回帰を確認するが、100候補すべてのMNAを意味しない。CIは未実行。
+- 検証PASS：`uv sync --frozen`、`test_issue401_timing.py` 7件、`test_issue415_production_stamps.py` 3件、`test_issue309_rf_core.py` 7件、`test_phase2_branch_mna.py` 6件、`test_phase2_numeric_diagnostics.py` 3件、`git diff --check`。これらは独立MNA／科学回帰を確認するが、100候補すべてのMNAを意味しない。測定時点ではCI未実行。提出HEAD `42714418ecabe94fa7c08e77327b4c542c2c64ce` のGitHub Actions smoke run [43553183855](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/43553183855) はFULLテスト選択でPASS。
 - 12 plain + 12 deep process、それぞれwarmup 100 + measured 100。**測定forward 2,400／168,000 requested samples**、warmup 2,400／168,000 samples。Solver runは0。RF応答digestとmandatory_g集計は計測区間の外。
 - 初回driver bring-upでpolicy辞書の直接SHA fieldを読む誤りによりsetupで停止したが、RF forwardは0件。`constraint_fingerprint()`照合に修正してから本計測し、未計測失敗をraw run数へ混ぜていない。
 
@@ -88,12 +88,21 @@ TimerCollectorの1run集計から、ms/100 forwardの中央値と全12runの[最
 
 再現（出力先は未存在であること）：
 
+計測driverは`EXPECTED_HEAD=523f3ab8...`を照合するため、**PR #418ブランチ上で直接実行してもHEAD不一致で停止する**。元の計測と同じ本番ソースを使うには、固定した#416マージコミットをdetach checkoutし、PRのdriverだけをそこへ未追跡ファイルとして置く。これによりRFのtrackedソースを変更せず再現できる（別worktree名・出力先は適宜変える）。
+
 ```bash
+# リポジトリルートから実行。必要なら先にPR #418のcommitをfetchする。
+git worktree add --detach /tmp/rf-lpf-issue417-profile 523f3ab8d0d89323fd521c9b6738728f8babc54b
+git show 42714418ecabe94fa7c08e77327b4c542c2c64ce:project/diagnostics/issue417_forward_timing.py \
+  > /tmp/rf-lpf-issue417-profile/project/diagnostics/issue417_forward_timing.py
+cd /tmp/rf-lpf-issue417-profile
 uv sync --frozen
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 taskset -c 2 \
   uv run --frozen python project/diagnostics/issue417_forward_timing.py \
-  --suite --pairs 6 --output <未存在の出力.json>
-# 同じコマンドを別の未存在出力先で再測定する。
+  --suite --pairs 6 --output /tmp/issue417-profile-replay-1.json
+# 別の未存在の出力名で再測定する。
 ```
+
+計測driver自体は本PRで変更しない。再現時のgit statusに未追跡driverが見えることは想定内で、RFソース変更と区別する。
 
 両run suiteの出力は測定完了まで一時記録として保存し、全runを単一raw JSONへ統合した。再測定用`/tmp/issue417-forward-repeat.json`は統合とSHA記録後に削除済み。別worktree `/home/user/src/reconfigurable-rf-lpf-issue417` を作成し、Draft PR作業用として維持する。
