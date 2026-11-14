@@ -31,6 +31,10 @@
 ### EXP-042、046/047の原本と訂正
 [旧RF条件の成果・出典・訂正記録](knowledge/legacy_evidence.md) — 旧RF-F001/F002/T003/R2の代表結果、EXP-017/042/046/047の訂正・原本境界。
 
+## 電力波変換の局所診断（Issue #419）
+
+[診断記録](diagnostics/issue419_report.md)。RF-T008 rev3 trial／full_lpf固定100 vectorのpower-response代数整理案は改善不明、2×2直接解案は改善方向を観測したが、両方とも有限極端値で既存STOPとの差があるため**本番不採用**。代表3 vector×70点は独立MNAと照合。正式RFへの一般化や連続帯域保証ではない。
+
 ## 枝スタンプ前計算の3方式比較（Issue #413）
 
 [現役KB](knowledge/pilot_performance.md#枝qスタンプ前計算と小行列縮約issue-413)・[報告と原記録](diagnostics/issue413_report.md)。RF-T008 rev3 trial／full_lpf・70点に限定した開発診断。事前枝Qスタンプのsix-matmul／direct-matmulは固定100 vectorの完全RF forwardとSolver plainで2batch改善方向を観測。six-matmulを独立レビュー第一候補とするが**本番未採用**。全S／全指標／mandatoryの許容差内一致・代表全70点独立MNAとSTOP回帰を確認、ビット非一致・Solver経路差・全88 Solver run未収束。正式RF適合や汎用速度率を認定しない。
