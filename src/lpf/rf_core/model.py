@@ -166,8 +166,11 @@ class RFEvaluator:
 
     def evaluate(self, x):
         m, g = self.model, self.grid
-        values = x if isinstance(x, CircuitValues) else m.decode(x)
-        m.encode(values)
+        if isinstance(x, CircuitValues):
+            m.encode(x)  # Validate dimensions and setting-invariant capacitors.
+            values = x
+        else:
+            values = m.decode(x)
         r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
         eye = np.eye(2)
         try:
