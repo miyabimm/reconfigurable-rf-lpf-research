@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 from test_issue410_c_assembly import fixture
 from lpf.topology_management.circuit_layout import incidence_matrix
+from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 
 
 class ProductionStampTests(unittest.TestCase):
@@ -23,6 +24,16 @@ class ProductionStampTests(unittest.TestCase):
             t._capacitor_stamps_flat = stamps
         changed = replace(t, capacitor_q=tuple(q * 2 for q in t.capacitor_q))
         self.assertFalse(np.array_equal(changed._capacitor_stamps_flat, t._capacitor_stamps_flat))
+
+    def test_nonfinite_reports_first_bad_sample(self):
+        _, model, _, x = fixture()
+        values = model.decode(x)
+        values = replace(values, capacitors_pf_by_setting=tuple(
+            tuple(1e300 for _ in row) for row in values.capacitors_pf_by_setting))
+        with np.errstate(over='ignore', invalid='ignore'):
+            with self.assertRaises(CircuitNumericalError) as caught:
+                model.topology.node_admittance(values, [1e9, 1e30, 1e31], [0, 1, 2])
+        self.assertEqual((caught.exception.code, caught.exception.sample_index), ('node_nonfinite', 1))
 
     def test_empty_capacitor_branches(self):
         _, model, g, x = fixture()
