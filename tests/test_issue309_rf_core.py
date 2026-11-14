@@ -15,7 +15,7 @@ import numpy as np
 from test_issue307_constraints import make
 from lpf.constraint_versions import load_constraint, rf_input_file
 from lpf.rf_core._grid import validated_band_segments
-from lpf.rf_core.coupled_lc import CoupledLCTopology
+from lpf.rf_core.coupled_lc import CoupledLCTopology, CircuitValues, ParameterVectorSchema
 from lpf.rf_core import build_rf_model, EvaluationGrid
 from lpf.rf_core.model import power_response, _cascade
 from lpf.rf_core.independent import validate_response, evaluate_independent_response
@@ -32,6 +32,71 @@ def grid(policy):
 
 
 class RFCoreTests(unittest.TestCase):
+    def test_vector_schema_roundtrip_and_validation_paths(self):
+        for nv in (0, 2):
+            schema = ParameterVectorSchema(2, 1, 1, 1, nv, (.5,))
+            x = np.arange(1, schema.vector_length + 1, dtype=int)
+            values = schema.decode(x)
+            rows = tuple((3.,) + tuple(float(v) for v in x[5+nv*s:5+nv*(s+1)])
+                         + (5., .5) for s in range(6))
+            self.assertEqual(values, CircuitValues((1., 2.), (4.,), rows))
+            self.assertTrue(all(type(v) is float for v in values.inductances_nh + values.coupling_k))
+            self.assertTrue(all(type(v) is float for row in values.capacitors_pf_by_setting for v in row))
+            np.testing.assert_array_equal(schema.encode(values), x)
+            self.assertEqual(schema.decode(x.tolist()), values)
+            self.assertEqual(schema.decode(x.astype(float)), values)
+
+        for cid in ('RF-T007', 'RF-T008'):
+            p, _, model, _, x = make(cid)
+            evaluator = model.evaluator(EvaluationGrid([1e9], [0], [0]))
+            values = model.decode(x)
+            with patch.object(ParameterVectorSchema, 'encode', autospec=True,
+                              wraps=ParameterVectorSchema.encode) as encode:
+                vector_response = evaluator.evaluate(x)
+                encode.assert_not_called()
+            direct_response = evaluator.evaluate(values)
+            np.testing.assert_array_equal(vector_response.s, direct_response.s)
+            ints = np.ones(len(x), dtype=int)
+            k0 = model.schema.n_inductors + model.schema.n_fixed
+            ints[k0:k0 + model.schema.n_coupling] = 0
+            np.testing.assert_array_equal(evaluator.evaluate(ints).s,
+                                          evaluator.evaluate(ints.tolist()).s)
+            np.testing.assert_array_equal(evaluator.evaluate(ints).s,
+                                          evaluator.evaluate(ints.astype(float)).s)
+            # Verify each invariant independently, including the constant's
+            # absolute value even when all six rows agree.
+            indices = [0]
+            if model.schema.n_ic_fixed:
+                indices.append(model.schema.n_fixed + model.schema.n_variable)
+            if model.schema.constant_caps_pf:
+                indices.append(model.schema.capacitor_count - 1)
+            for index in indices:
+                rows = [list(row) for row in values.capacitors_pf_by_setting]
+                rows[1][index] += .1
+                with self.subTest(cid=cid, index=index), self.assertRaises(ValueError):
+                    evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k, rows))
+            if model.schema.constant_caps_pf:
+                rows = [list(row) for row in values.capacitors_pf_by_setting]
+                for row in rows: row[-1] += .1
+                with self.assertRaises(ValueError):
+                    evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k, rows))
+            with self.assertRaises(ValueError):
+                evaluator.evaluate(CircuitValues(values.inductances_nh[:-1], values.coupling_k,
+                                                 values.capacitors_pf_by_setting))
+            with self.assertRaises(ValueError):
+                evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k[:-1],
+                                                 values.capacitors_pf_by_setting))
+            with self.assertRaises(ValueError):
+                evaluator.evaluate(CircuitValues(values.inductances_nh, values.coupling_k,
+                                                 [row[:-1] for row in values.capacitors_pf_by_setting]))
+            for bad in ([True]*len(x), [str(v) for v in x], np.asarray(x, complex),
+                        x[:-1], x.reshape(1, -1)):
+                with self.assertRaises(ValueError): evaluator.evaluate(bad)
+            for index, value in ((0, 0.), (0, -1.), (0, np.nan), (0, np.inf),
+                                 (model.schema.n_inductors, -1.)):
+                bad = x.copy(); bad[index] = value
+                with self.assertRaises(ValueError): evaluator.evaluate(bad)
+
     def test_all_models_frozen_baseline_and_independent_mna(self):
         # Captured on main before D1. This is regression evidence, NOT an
         # independent oracle: the independent check below uses branch currents.

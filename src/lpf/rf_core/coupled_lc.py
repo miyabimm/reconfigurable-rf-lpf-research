@@ -104,7 +104,7 @@ class ParameterVectorSchema:
         pos = 0
         def take(count):
             nonlocal pos
-            v = tuple(map(float, x[pos:pos + count]))
+            v = tuple(x[pos:pos + count])
             pos += count
             return v
         L = take(self.n_inductors)
