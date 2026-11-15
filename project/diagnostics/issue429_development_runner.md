@@ -31,4 +31,5 @@ uv run --frozen python scripts/run_development_worker.py \
 - `python -m unittest discover -s tests -p 'test_issue429_development_runner.py' -v`：3 PASS。RF-T008の2 step別gridで直接Worker・CLI・Runner戻り値／保存結果を完全比較、selection/terminal・独立検証、checkpoint通番/grid/vector SHA・直接出力とのバイト一致、既存出力保護、seed/arm/SHA不一致、Git内拒否、Worker例外、input/result保存失敗・非再試行。
 - `test_issue427_development_worker.py`：9 PASS。`test_issue389_minimal_worker.py`：4 PASS。`test_issue317_fixed_worker.py`：30 PASS。
 - `python scripts/audit_new_experiment_storage.py audit`：終了0。監査出力の個別stage/validationはそれぞれの状態のままであり、一括で科学的PASSとはしない。
-- GitHub CIとChatGPT独立レビューはPR上で確認する。開発runnerには費用予約・G0〜G5・正式raw契約がなく本番入口ではない。
+- GitHub CI：PR HEAD `ebafe7f3fd9ddceebe1951928518b3b9b3316bd6` の[Phase 2 smoke](https://github.com/miyabimm/reconfigurable-rf-lpf-research/actions/runs/43679303496) PASS（manual追加topology scienceは未実行）。この行を記録した後のHEADの状態はPR上で確認する。
+- ChatGPT独立レビュー待ち。開発runnerには費用予約・G0〜G5・正式raw契約がなく本番入口ではない。
