@@ -3,7 +3,6 @@ import json
 import os
 from pathlib import Path
 import platform
-import statistics
 import sys
 import tempfile
 from time import perf_counter
@@ -38,7 +37,7 @@ def main():
             t = perf_counter()
             args = (plan, definition, policy, 'hybrid', 1002, start['vector'], start['vector_sha256'])
             worker = (MinimalWorker(*args, root=ROOT) if kind == 'minimal' else
-                      DevelopmentWorker(*args, root=ROOT, checkpoint=Path(tmp)/f'{index}.json'))
+                      DevelopmentWorker(*args, root=ROOT, checkpoint=Path(tmp)/f'{index}-checkpoints'))
             ready = perf_counter()
             clock = {'solver': 0., 'checkpoint_io': 0., 'writes': 0}
             real_solver, real_save = _worker_next.hybrid_minimize, _development_worker._save_checkpoint

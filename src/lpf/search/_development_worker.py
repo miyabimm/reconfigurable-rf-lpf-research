@@ -1,4 +1,5 @@
 """Gate-free, single-process development worker; not a formal Job or resume API."""
+import os
 from pathlib import Path
 import tempfile
 
@@ -11,21 +12,39 @@ from .component_constraints import validate_search_box, validate_values
 from .evaluation import raw_numbers
 from .performance import (evaluate_requirements, grid_fingerprint, prepare_requirements,
                           summarize_mandatory)
-from .storage import atomic, plain, vector_sha
+from .storage import canonical, plain, vector_sha
 from .validation import rank_candidates
 from .worker import _development_options
 
 
 def _save_checkpoint(path, payload):
-    """Atomically save a temporary best; exceptions propagate to stop the job."""
-    atomic(path, raw_numbers(payload))
+    """Atomically publish a new event without replacing any existing path."""
+    data = (canonical(raw_numbers(payload)) + '\n').encode()
+    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # link is an atomic no-replace publication even if a path appears after
+        # initialization. Both names are on the same temporary filesystem.
+        os.link(name, path)
+        os.unlink(name)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
 
 
 class DevelopmentWorker(MinimalWorker):
     """Execute a frozen Plan without formal storage, reservations, or recovery.
 
-    The checkpoint is a single experimental best snapshot, not a solver state.
-    A fresh path in the system temporary directory is required.
+    The checkpoint is an append-only experimental best history, not solver state.
+    A fresh directory in the system temporary directory is required.
     """
     @staticmethod
     def _validate_arm(chosen):
@@ -58,6 +77,8 @@ class DevelopmentWorker(MinimalWorker):
                     len(set(indices)) != len(indices) or any(type(i) is not int or i < 0 or
                     i >= len(plan.requested_grid(stage).frequency_hz) for i in indices)):
                 raise ValueError('Invalid independent spot checks')
+        self.path.mkdir(exist_ok=False)
+        self.checkpoint_sequence = 0
 
     def _activate(self, stage):
         if stage not in self._grids:
@@ -92,14 +113,16 @@ class DevelopmentWorker(MinimalWorker):
         return response, assessment
 
     def _save_best(self):
+        sequence = self.checkpoint_sequence + 1
         payload = dict(kind='development_temporary_best_v1', job_id=f'development-{self.arm}-{self.seed}',
-                       arm=self.arm, step=self.step['name'], seed=self.seed,
+                       sequence=sequence, arm=self.arm, step=self.step['name'], seed=self.seed,
                        plan_sha256=self.plan.sha256, policy_id=self.model.policy_id,
                        policy_fingerprint=self.model.policy_fingerprint,
                        rf_inputs=self.plan.data['rf_inputs'], grid_sha256=grid_fingerprint(self.grid),
                        requirements_fingerprint=self.requirements.fingerprint,
                        forward_count=self.forward_count, best=self.best)
-        _save_checkpoint(self.path, payload)
+        _save_checkpoint(self.path / f'{sequence:06d}.json', payload)
+        self.checkpoint_sequence = sequence
         self.saved_sha, self.saved_count = self.best['vector_sha256'], self.forward_count
 
     def _objective(self, vector, *, square_root):
@@ -191,8 +214,12 @@ class DevelopmentWorker(MinimalWorker):
             response, _ = self.evaluate(vector)
             selection['forward_count'] += 1
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            assessed.append(dict(vector=vector, vector_sha256=digest, model=self.model, assessment=assessment,
+            keys = ('status', 'policy_id', 'policy_fingerprint', 'mode', 'requirements_fingerprint',
+                    'grid_fingerprint', 'strict_feasible', 'worst_il_db', 'max_violation_db', 'sum_violation_db')
+            compact = {key: assessment[key] for key in keys}
+            assessed.append(dict(vector=vector, vector_sha256=digest, model=self.model, assessment=compact,
                                  independent=self._audit(vector, response, 'selection')))
+            del assessment, response
         ranked = rank_candidates(assessed)
         selection['ranked'] = [raw_numbers({k: v for k, v in r.items() if k != 'model'}) for r in ranked['ranked']]
         selection['excluded'].extend(raw_numbers(ranked['excluded']))
