@@ -1,0 +1,352 @@
+{
+  "plan_sha": "c72c912436d5d61d7ca9fa07112840faadff59a9880ff6a3950d2570b40ca114",
+  "costs": {
+    "anytime_fixed_reservation": 0,
+    "anytime_one_forward": 84,
+    "max_requested_samples": 1400560,
+    "runtime_reserved_samples": 560,
+    "selection_one_forward": 84,
+    "selection_upper_reservation": 84,
+    "stages": {
+      "search": {
+        "one_forward_samples": 70,
+        "reserved_after_step": 560,
+        "solver_max_evaluations": 20000,
+        "status": "not_run",
+        "upper_reservation": 1400000
+      }
+    },
+    "status": "not_run",
+    "terminal_fixed_reservation": 476,
+    "terminal_one_forward": 476,
+    "total_upper_reservation": 1400560
+  },
+  "inputs": {
+    "A": {
+      "box_byte_sha": "18aa6d577ce658bff4aa645aa53b9ee345163310d261aab500f5d6e4480b4ef8",
+      "box_canonical_sha": "65f8912a976f975547dc71673b6fd8c0a973ab8a77033123b5c8040e50d56783",
+      "starts_byte_sha": "686c35fecff2fb26bede420fa4faec5910472056c451f1553da37c4d8970b0c1",
+      "start_sha": "a3927e5f43eb5b912e1bcebb4a9c497d3bdafe62a49b046c4d35e9db65611da5",
+      "dof": 12
+    },
+    "B": {
+      "box_byte_sha": "fba8565be87491a83dfcd918caabcb76cce36ec36f04f60373e3d8660876e0d7",
+      "box_canonical_sha": "73e67d9077ec615da8be09baf1ca7efd0a24ec333f24aa1f52c27e4a33dbc298",
+      "starts_byte_sha": "f6da1a0516635a83c9eddbb88e298938aafb5248140da64671095a90f80b80f5",
+      "start_sha": "ab8a974680bc787d33bf6835693b2769a7563c7fe89c591164cc026f1d6b2743",
+      "dof": 19
+    },
+    "C": {
+      "box_byte_sha": "6d991998f7712b927e9236315f9b887eb76d4640dd43676eddeeb48e8f1d6532",
+      "box_canonical_sha": "f0cdcab6ef7d70441b1e488e13b204263cfdff1951677ffe666cf7d7d387b4e4",
+      "starts_byte_sha": "5d4c57353cae8a2a9b7bbdf4925ad4a4b44cd171d6b1a6bd66c458aef90a0c2b",
+      "start_sha": "d957b121e10ab9a409e0a41443a5071842a6d65656bf9f296ee3a008e734512c",
+      "dof": 25
+    }
+  },
+  "baseline70": {
+    "strict_feasible": true,
+    "worst_il_db": 0.8278411484628502,
+    "max_violation_db": 0.0,
+    "sum_violation_db": 0.0,
+    "vector_sha256": "4131fa4e677afd364c8e448325d2971f05214284047c349bf2f794585668313c",
+    "samples": 70,
+    "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+    "min_h2_db": 30.004999999866513,
+    "min_h3_db": 30.004999999938367,
+    "objective_j": 0.2792115161039812,
+    "il_term": 0.2786162780105807,
+    "harmonic_term": 0.0005952380934005133,
+    "harmonic_target_30_01": false,
+    "physical": {
+      "component_policy_pass": true,
+      "constraint_id": "RF-T008",
+      "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "checked_settings": 6,
+      "installed_variable_c_branches": 2,
+      "installed_shunt_parasites": 0,
+      "min_L_eigenvalue_H": 2.3262911741104303e-09,
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "unsupported_role_indices": [],
+        "physical_layout_checked": false,
+        "branches": [
+          {
+            "edge": [
+              0,
+              3
+            ],
+            "declared_role": "bridge",
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals",
+            "declared_role_supported_by_l_tree": true
+          },
+          {
+            "edge": [
+              1,
+              2
+            ],
+            "declared_role": "bridge",
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals",
+            "declared_role_supported_by_l_tree": true
+          }
+        ]
+      },
+      "connection_role_evidence_incomplete": false,
+      "candidate_promotion_blocked": true,
+      "promotion_blockers": [
+        "independent_mna_not_checked",
+        "dense_rf_not_checked"
+      ],
+      "rf_performance_checked": false,
+      "independent_mna_checked": false,
+      "physical_q_srf_em_checked": false
+    }
+  },
+  "baseline17": {
+    "strict_feasible": true,
+    "worst_il_db": 0.8278411484628502,
+    "max_violation_db": 0.0,
+    "sum_violation_db": 0.0,
+    "vector_sha256": "4131fa4e677afd364c8e448325d2971f05214284047c349bf2f794585668313c",
+    "samples": 476,
+    "grid_sha256": "28ee5b630e4842b183a7c36fd610cc32e2509c0044c6a5848ce2fbd147a22e29",
+    "min_h2_db": 30.004999999866513,
+    "min_h3_db": 30.004999999930703,
+    "objective_j": 0.278731824229035,
+    "il_term": 0.2786162780105807,
+    "harmonic_term": 0.00011554621845428486,
+    "harmonic_target_30_01": false,
+    "physical": {
+      "component_policy_pass": true,
+      "constraint_id": "RF-T008",
+      "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "checked_settings": 6,
+      "installed_variable_c_branches": 2,
+      "installed_shunt_parasites": 0,
+      "min_L_eigenvalue_H": 2.3262911741104303e-09,
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "unsupported_role_indices": [],
+        "physical_layout_checked": false,
+        "branches": [
+          {
+            "edge": [
+              0,
+              3
+            ],
+            "declared_role": "bridge",
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals",
+            "declared_role_supported_by_l_tree": true
+          },
+          {
+            "edge": [
+              1,
+              2
+            ],
+            "declared_role": "bridge",
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals",
+            "declared_role_supported_by_l_tree": true
+          }
+        ]
+      },
+      "connection_role_evidence_incomplete": false,
+      "candidate_promotion_blocked": true,
+      "promotion_blockers": [
+        "independent_mna_not_checked",
+        "dense_rf_not_checked"
+      ],
+      "rf_performance_checked": false,
+      "independent_mna_checked": false,
+      "physical_q_srf_em_checked": false
+    }
+  },
+  "starts70": {
+    "A": {
+      "strict_feasible": false,
+      "worst_il_db": 0.8373871356992068,
+      "max_violation_db": 3.1186783345702622,
+      "sum_violation_db": 12.204982463287713,
+      "vector_sha256": "a3927e5f43eb5b912e1bcebb4a9c497d3bdafe62a49b046c4d35e9db65611da5",
+      "samples": 70,
+      "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+      "min_h2_db": 26.881321665429738,
+      "min_h3_db": 27.884789413930385,
+      "objective_j": 67.83487720131012,
+      "il_term": 0.28878493361499774,
+      "harmonic_term": 67.54609226769513,
+      "harmonic_target_30_01": false,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 2.3262911741104303e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    "B": {
+      "strict_feasible": false,
+      "worst_il_db": 0.8546150764406607,
+      "max_violation_db": 4.498316053886221,
+      "sum_violation_db": 29.675871175106852,
+      "vector_sha256": "ab8a974680bc787d33bf6835693b2769a7563c7fe89c591164cc026f1d6b2743",
+      "samples": 70,
+      "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+      "min_h2_db": 25.68273047115138,
+      "min_h3_db": 25.50168394611378,
+      "objective_j": 284.9976507194869,
+      "il_term": 0.30759788301528,
+      "harmonic_term": 284.69005283647164,
+      "harmonic_target_30_01": false,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 2.3867777922940285e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    "C": {
+      "strict_feasible": false,
+      "worst_il_db": 0.8592783459466118,
+      "max_violation_db": 7.5516435417425996,
+      "sum_violation_db": 48.26042638545787,
+      "vector_sha256": "d957b121e10ab9a409e0a41443a5071842a6d65656bf9f296ee3a008e734512c",
+      "samples": 70,
+      "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+      "min_h2_db": 24.69433631969238,
+      "min_h3_db": 22.4483564582574,
+      "objective_j": 714.3710154973653,
+      "il_term": 0.3127922682447779,
+      "harmonic_term": 714.0582232291205,
+      "harmonic_target_30_01": false,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 2.3867777922940285e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    }
+  },
+  "primary_samples": 756,
+  "checkpoint_byte_sha": "4fbd86e8b46ad7bcb550ba327672b0983e8b58e9ce4b2a9364f8c6557a812b4b",
+  "config_byte_sha": "b09f8bf582cb8a5eeba390fdcb1c08abe78fb62839536ecaf96054b284acdf1a"
+}
