@@ -49,25 +49,37 @@ def parse_time(path: Path):
         "Maximum resident set size (kbytes)": "max_rss_kib",
         "Exit status": "gnu_time_exit_status",
     }
-    for line in text.splitlines():
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
         for label, key in labels.items():
             if line.startswith(label + ":"):
                 value = line.split(":", 1)[1].strip()
                 out[key] = int(value) if key in ("max_rss_kib", "gnu_time_exit_status") else float(value)
         if line.startswith("Elapsed (wall clock) time"):
-            out["elapsed_wall"] = line.split(":", 1)[1].strip()
+            elapsed = line.rsplit(": ", 1)[1].strip()
+            out["elapsed_wall"] = elapsed
+            parts = elapsed.split(":")
+            out["elapsed_wall_seconds"] = (float(parts[0])*60+float(parts[1]) if len(parts)==2
+                                            else float(parts[0])*3600+float(parts[1])*60+float(parts[2]))
     return out
 
 
-def validate_completed(preflight, seed, output: Path, rc: int):
+def validate_completed(preflight, seed, output: Path, rc: int, checkout: Path):
     inp_path, result_path = output / "input.json", output / "result.json"
     if not inp_path.is_file():
         raise RuntimeError("Worker did not persist input.json; reservation/unknown must be retained")
     inp = json.loads(inp_path.read_text())
     expected = preflight["per_seed"][str(seed)]
+    expected_source = dict(preflight["source_identity"])
+    expected_source["files"] = dict(expected_source["files"])
+    # The Runner adds its CLI script hash after the shared source_identity helper.
+    source_script_sha = hashlib.sha256((checkout / "scripts/run_development_worker.py").read_bytes()).hexdigest()
+    expected_source["files"]["scripts/run_development_worker.py"] = source_script_sha
+    source_sha256 = hashlib.sha256(json.dumps(inp.get("source"), sort_keys=True, ensure_ascii=False,
+                                                   separators=(",", ":"), allow_nan=False).encode()).hexdigest()
     if (inp.get("kind") != "development_worker_input_v1" or inp.get("seed") != seed
             or inp.get("source", {}).get("head") != MAIN
-            or inp.get("source") != preflight["source_identity"]
+            or inp.get("source") != expected_source or inp.get("source_sha256") != source_sha256
             or inp.get("policy_id") != "RF-T008"
             or inp.get("policy_fingerprint") != preflight["rf"]["effective_sha256"]
             or inp.get("plan_sha256") != expected["plan_sha256"]
@@ -123,7 +135,9 @@ def validate_completed(preflight, seed, output: Path, rc: int):
     if checkpoint_records[-1]["best_vector_sha256"] != best["vector_sha256"]:
         raise RuntimeError("Final checkpoint differs from best-J result")
     return dict(input_sha256=digest(inp_path), result_sha256=digest(result_path),
-                plan_sha256=inp["plan_sha256"], status=result["status"], exit_code=rc,
+                plan_sha256=inp["plan_sha256"], source_sha256=hashlib.sha256(
+                    json.dumps(inp["source"], sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
+                status=result["status"], exit_code=rc,
                 stop_reason=step["stop_reason"], nfev=step["solver_result"]["nfev"],
                 nit=step["solver_result"]["runs"][0]["nit"],
                 converged=step["converged"], search_requested_samples=costs["search_requested_samples"],
@@ -148,11 +162,28 @@ def main():
     if preflight["source_head"] != MAIN or preflight["per_seed"][str(seed)]["status"] != "legal":
         raise SystemExit("STOP: seed/source is not in the frozen legal preflight")
     log = load_log()
-    expected_next = next((row["seed"] for row in preflight["starts"]
-                          if row["status"] == "legal" and
-                          not any(existing["seed"] == row["seed"] for existing in log["rows"])), None)
+    source_provenance = json.loads((ROOT / "project/diagnostics/issue439/source_provenance.json").read_text())
+    if source_provenance["source_head"] != MAIN:
+        raise SystemExit("STOP: source provenance is not pinned to main")
+    log["source_provenance_sha256"] = digest(ROOT / "project/diagnostics/issue439/source_provenance.json")
+    if any(existing["status"] != "complete" for existing in log["rows"]):
+        raise SystemExit("STOP: a prior job is unknown or incomplete; do not continue/retry")
+    completed_ids = {existing["seed"] for existing in log["rows"]}
+    legal_ids = [row["seed"] for row in preflight["starts"] if row["status"] == "legal"]
+    expected_next = next((candidate for candidate in legal_ids if candidate not in completed_ids), None)
     if expected_next != seed:
         raise SystemExit(f"STOP: fixed sequential order requires seed {expected_next}, not {seed}")
+    initial_samples = initial["primary_requested_completed_samples"]
+    actual_jobs = sum((r.get("summary") or {}).get("search_requested_samples", 0) +
+                      (r.get("summary") or {}).get("selection_requested_samples", 0) +
+                      (r.get("summary") or {}).get("terminal_requested_samples", 0)
+                      for r in log["rows"])
+    actual_search = sum((r.get("summary") or {}).get("nfev", 0) for r in log["rows"])
+    remaining = len(legal_ids) - len(completed_ids)
+    primary_with_reservations = initial_samples + actual_jobs + remaining * 10_500_560 + 5 * (28_028 + 84)
+    search_with_reservations = actual_search + remaining * 150_000
+    if primary_with_reservations > 211_000_000 or search_with_reservations > 3_000_000:
+        raise SystemExit("STOP: next-job worst-case reservation would exceed Issue #439 budget")
     checkout = args.checkout.resolve()
     output = args.output.resolve()
     if output.exists() or not output.parent.is_dir():
@@ -184,6 +215,14 @@ def main():
                checkout_head=head, config_sha256=preflight["per_seed"][str(seed)]["config_sha256"],
                starts_sha256=preflight["per_seed"][str(seed)]["starts_sha256"],
                vector_sha256=preflight["per_seed"][str(seed)]["vector_sha256"],
+               source_identity_sha256=source_provenance["source_identity_sha256"],
+               budget_reservation_before=dict(remaining_legal_jobs=remaining,
+                   actual_primary_samples=initial_samples+actual_jobs,
+                   remaining_search_forward_reservation=remaining*150_000,
+                   remaining_job_primary_reservation=remaining*10_500_560,
+                   max_5_dense_primary_reservation=5*(28_028+84),
+                   total_primary_reserved=primary_with_reservations,
+                   actual_plus_remaining_search_reservation=search_with_reservations),
                max_search_forwards=150000, max_search_samples=10_500_000,
                started_at_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     log["rows"].append(row)
@@ -210,7 +249,7 @@ def main():
     wall = time.monotonic() - start
     resources = parse_time(time_path)
     try:
-        summary = validate_completed(preflight, seed, output, completed.returncode)
+        summary = validate_completed(preflight, seed, output, completed.returncode, checkout)
         status = "complete"
         validation_error = None
     except Exception as exc:
@@ -224,11 +263,11 @@ def main():
                summary=summary, validation_error=validation_error,
                completed_at_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     log["primary_samples_jobs"] = sum(
-        r.get("summary", {}).get("search_requested_samples", 0) +
-        r.get("summary", {}).get("selection_requested_samples", 0) +
-        r.get("summary", {}).get("terminal_requested_samples", 0)
+        (r.get("summary") or {}).get("search_requested_samples", 0) +
+        (r.get("summary") or {}).get("selection_requested_samples", 0) +
+        (r.get("summary") or {}).get("terminal_requested_samples", 0)
         for r in log["rows"])
-    log["search_forwards_completed"] = sum(r.get("summary", {}).get("nfev", 0) for r in log["rows"])
+    log["search_forwards_completed"] = sum((r.get("summary") or {}).get("nfev", 0) for r in log["rows"])
     log["primary_samples_accounted_so_far"] = initial["primary_requested_completed_samples"] + log["primary_samples_jobs"]
     log["primary_samples_cap_with_max_5_dense_reserved"] = log["primary_samples_accounted_so_far"] + 5 * (28028 + 84)
     log["search_forward_cap"] = 3_000_000
@@ -238,7 +277,13 @@ def main():
         row["validation_error"] = "Accounted/reserved samples exceed Issue #439 cap"
     atomic_json(LOG, log)
     print(json.dumps(dict(seed=seed, status=status, exit_code=completed.returncode,
-                          summary=summary, resources=resources,
+                          nfev=(summary or {}).get("nfev"), nit=(summary or {}).get("nit"),
+                          stop_reason=(summary or {}).get("stop_reason"),
+                          search_requested_samples=(summary or {}).get("search_requested_samples"),
+                          terminal_strict=(summary or {}).get("terminal_strict"),
+                          terminal_worst_il_db=(summary or {}).get("terminal_worst_il_db"),
+                          measured_wall_seconds=wall,
+                          max_rss_kib=resources.get("max_rss_kib"),
                           validation_error=row["validation_error"]), indent=2, allow_nan=False))
     if status != "complete":
         raise SystemExit(2)

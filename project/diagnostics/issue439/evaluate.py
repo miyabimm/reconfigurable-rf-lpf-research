@@ -148,12 +148,30 @@ def finalize(execution_path: Path):
     pre, policy, model, req, grids = context()
     initial_data = json.loads((OUT / "initial_evaluations.json").read_text())
     execution = json.loads(execution_path.read_text())
-    if execution["source_head"] != pre["source_head"] or execution["preflight_sha256"] != file_sha(PRE):
-        raise SystemExit("STOP: execution/preflight identity mismatch")
+    if (execution["source_head"] != pre["source_head"]
+            or execution["preflight_sha256"] != file_sha(PRE)
+            or execution.get("source_provenance_sha256") != file_sha(OUT / "source_provenance.json")):
+        raise SystemExit("STOP: execution/preflight/source provenance identity mismatch")
     initial_by_seed = {row["seed"]: row for row in initial_data["rows"]}
+    legal_count = sum(row["status"] == "legal" for row in pre["starts"])
+    if (len(execution["rows"]) != legal_count
+            or any(row["status"] != "complete" for row in execution["rows"])):
+        raise SystemExit("STOP: do not start post-search RF validation while a seed is unknown/not run")
+    booked_jobs = sum(row["summary"]["search_requested_samples"] +
+                      row["summary"]["selection_requested_samples"] +
+                      row["summary"]["terminal_requested_samples"] for row in execution["rows"])
+    booked_search = sum(row["summary"]["nfev"] for row in execution["rows"])
+    booked_mna_spots = sum(len(row["summary"]["terminal_independent"].get("sample_indices", []))
+                           for row in execution["rows"])
+    projected_primary = (initial_data["primary_requested_completed_samples"] + booked_jobs
+                         + legal_count*70 + 5*(28_028+84))
+    if (booked_search > 3_000_000 or projected_primary > 211_000_000
+            or booked_mna_spots + 5*84 > 460):
+        raise SystemExit("STOP: post-search RF/MNA validation reservation exceeds Issue #439 cap")
     records, eligible = [], []
     total_job_primary = 0
     total_search = 0
+    final70_primary = 0
     mna_spot_samples = 0
     for seed_info in pre["starts"]:
         seed = seed_info["seed"]
@@ -176,6 +194,11 @@ def finalize(execution_path: Path):
         assessment = terminal["assessment"]
         minima = _terminal_harmonic_minima(assessment)
         init = initial_by_seed[seed]["metrics"]
+        final70 = score(best["vector"], policy, model, req, grids["search70"])
+        if (abs(final70["objective_j"]-best["objective_j"]) > 1e-9
+                or abs(final70["worst_il_db"]-best["worst_il_db"]) > 1e-9
+                or final70["vector_sha256"] != best["vector_sha256"]):
+            raise SystemExit(f"STOP: best-J 70-sample independent readback mismatch at seed {seed}")
         strict = bool(assessment["strict_feasible"])
         il = float(assessment["worst_il_db"])
         row = dict(seed=seed, status=raw["status"], converged=bool(step["converged"]),
@@ -185,9 +208,15 @@ def finalize(execution_path: Path):
                    nit=step["solver_result"]["runs"][0]["nit"],
                    start_vector_sha256=seed_info["vector_sha256"], initial_metrics=init,
                    best_j=best["objective_j"], best_vector=best["vector"],
-                   best_vector_sha256=best["vector_sha256"], best_metrics_70=dict(
-                       worst_il_db=best["worst_il_db"], max_violation_db=best["max_violation_db"],
-                       sum_violation_db=best["sum_violation_db"]),
+                   best_vector_sha256=best["vector_sha256"],
+                   best_metrics_70={k:v for k,v in final70.items() if k not in ("response", "assessment")},
+                   initial_to_best_j_delta=final70["objective_j"]-init["objective_j"],
+                   solver_endpoint=dict(vector=step["solver_result"]["runs"][0]["end_x"],
+                       vector_sha256=(vector_sha(step["solver_result"]["runs"][0]["end_x"])
+                                      if step["solver_result"]["runs"][0]["end_x"] is not None else None),
+                       objective_j=step["solver_result"]["runs"][0]["end_fun"],
+                       matches_search_best=(vector_sha(step["solver_result"]["runs"][0]["end_x"]) == best["vector_sha256"]
+                                            if step["solver_result"]["runs"][0]["end_x"] is not None else False)),
                    terminal_vector_sha256=terminal["vector_sha256"], terminal_strict30=strict,
                    terminal_worst_il_db=il, terminal_min_harmonics=minima,
                    terminal_max_violation_db=assessment["max_violation_db"],
@@ -199,13 +228,17 @@ def finalize(execution_path: Path):
                    converged_strict_plus_0_02=bool(step["converged"] and strict and il <= BASE_IL+0.02),
                    requested_samples=raw["costs"], output=str(output),
                    input_sha256=run["summary"]["input_sha256"], result_sha256=run["summary"]["result_sha256"],
+                   source_identity_sha256=run["summary"]["source_sha256"],
+                   stdout_sha256=run["stdout_sha256"], resources_sha256=run["resources_sha256"],
                    checkpoints=run["summary"]["checkpoints"], wall_seconds=run["measured_wall_seconds"],
+                   gnu_time_wall_seconds=run["resources"].get("elapsed_wall_seconds"),
                    cpu_user_seconds=run["resources"].get("user_seconds"),
                    cpu_system_seconds=run["resources"].get("system_seconds"),
                    max_rss_kib=run["resources"].get("max_rss_kib"), plan_sha256=input_record["plan_sha256"])
         records.append(row)
         total_job_primary += sum(raw["costs"][key] for key in ("search_requested_samples", "selection_requested_samples", "terminal_requested_samples"))
         total_search += row["nfev"]
+        final70_primary += 70
         mna_spot_samples += sum(raw["costs"]["independent_mna_samples_by_stage"].values())
         if strict:
             eligible.append((il, terminal["vector_sha256"], seed, row))
@@ -219,20 +252,24 @@ def finalize(execution_path: Path):
         dense = score(vector, policy, model, req, grids["dense28028"])
         mna_eval = score(vector, policy, model, req, grids["selection84"])
         mna = validate_response(model, vector, mna_eval["response"])
+        if (not mna.get("independent_mna_checked") or mna.get("samples_checked") != 84
+                or mna.get("max_abs_error", float("inf")) > mna.get("absolute_tolerance", 0.0)):
+            raise SystemExit(f"STOP: independent 84-point MNA contract failed for seed {seed}")
         if vector_sha(vector) != vector_digest:
             raise SystemExit("STOP: selected vector SHA mismatch")
         if dense["strict_feasible"] is not None and not isinstance(dense["strict_feasible"], bool):
             raise SystemExit("STOP: malformed dense strict result")
         dense_results.append(dict(seed=seed, vector_sha256=vector_digest,
                                   terminal_worst_il_db=il, dense1001={k:v for k,v in dense.items() if k not in ("response", "assessment")},
-                                  independent_mna84=mna,
+                                  independent_mna84=dict(status="pass", passivity="pass_at_all_84_samples",
+                                                         power_balance="pass_at_all_84_samples", **mna),
                                   independent_mna_samples=84,
                                   validation_limitations="finite 1001-point-per-interval grid and 84 independent MNA samples only"))
         dense_primary += 28028 + 84
         dense_mna += 84
 
     initial_primary = initial_data["primary_requested_completed_samples"]
-    primary_total = initial_primary + total_job_primary + dense_primary
+    primary_total = initial_primary + total_job_primary + final70_primary + dense_primary
     if total_search > 3_000_000 or primary_total > 211_000_000 or mna_spot_samples + dense_mna > 460:
         raise SystemExit("STOP: Issue #439 forward/sample budget exceeded")
     converged = [r for r in records if r.get("converged")]
@@ -258,6 +295,7 @@ def finalize(execution_path: Path):
                              median=(float(np.median([r["nfev"] for r in executed])) if executed else None),
                              max=(max(r["nfev"] for r in executed) if executed else None), cap=3_000_000),
         samples=dict(primary_initial=initial_primary, primary_jobs=total_job_primary,
+                     primary_best_70_readbacks=final70_primary,
                      primary_dense_and_mna_comparisons=dense_primary, primary_total=primary_total,
                      primary_cap=211_000_000, independent_mna_spot_samples=mna_spot_samples,
                      independent_mna_dense84_samples=dense_mna, independent_mna_total=mna_spot_samples+dense_mna,
