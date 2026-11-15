@@ -7,12 +7,25 @@
 | 用途 | スクリプト／扱い |
 |---|---|
 | schema2固定definitionの開発CLI | [run_rf_search.py](run_rf_search.py)、詳細は[project README](../project/README.md#開発用固定definition-cli)。正式EXPへ自動昇格しない |
+| 単一JobのDevelopmentWorker開発CLI | [run_development_worker.py](run_development_worker.py)：1 seed × 1 arm、形式ゲート・費用台帳・resumeなし |
 | RF評価・保存済み候補の監査 | [audit_results.py](audit_results.py)。旧EXP-047非標準manifestは[experiment_manifest.py](../src/lpf/experiment_manifest.py)のSHA固定index-only viewで索引照合。**削除済み専用adapterは使わない** |
 | 候補の台帳照合 | [audit_research_catalog.py](audit_research_catalog.py)、[report_research_pareto.py](report_research_pareto.py)。同条件・同格子・同検証深度のみ比較 |
 | 新規EXP番号の予約・照合 | [reserve_experiment_number.py](reserve_experiment_number.py)、[experiment_id_registry.py](experiment_id_registry.py) |
 | 新規EXP保存ゲート | [audit_new_experiment_storage.py](audit_new_experiment_storage.py)、[experiment_manifests.py](experiment_manifests.py) |
 | CI差分・選択回帰 | [classify_storage_ci.py](classify_storage_ci.py)、[select_ci_tests.py](select_ci_tests.py)、[audit.yml](../.github/workflows/audit.yml) |
 | 一時的なMinimalWorker開発ベンチ | [benchmark_minimal_worker.py](benchmark_minimal_worker.py)。非EXP・RF性能認定外 |
+
+## 単一Job DevelopmentWorker（正式EXPではない）
+
+```bash
+uv run --frozen python scripts/run_development_worker.py \
+  --config project/diagnostics/issue377/baseline.yaml \
+  --starts project/diagnostics/issue401_starts_1002.json \
+  --seed 1002 --arm hybrid --output /tmp/未存在のjob \
+  --spot-checks '{"terminal":[0,111]}'
+```
+
+出力はcheckout外のsystem temp内に限り、既存のディレクトリを上書きしない。`input.json`をWorker前に保存し、Workerの追記型`checkpoints/`と`result.json`を残す。失敗・中断後も再試行／resumeしない。`--checkpoint-interval`は正整数、`--spot-checks`はstage名→sample index配列のJSON。終了コード0はsolver収束、4は完走・未収束、2は例外・中断。いずれもRF適合の認定ではない。Workerの結果には有限格子・独立MNA等の実際の検証深度が記載される。本番・正式EXP用のG0〜G5や費用保護はない。
 
 ## 開発ベンチ（正式EXPではない）
 
