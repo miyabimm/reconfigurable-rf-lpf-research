@@ -48,7 +48,7 @@ Seed 1008はL-BFGS-B `success=false`, status 2, message `ABNORMAL`, 166 iteratio
 - 17点Terminal strict30 PASSはseed 1012のみ：`min H2=30.0069741341`, `min H3=30.0097857234 dB`。**30.01 dB search marginは未達**、H2/H3の35 dB nominalも未達。全20 seedで30.01 targetおよび35 dB nominal H2/H3は0件。
 - seed 1012は同じ70点格子でstart J `37,243.138163` → search best J `0.886783301`。既知解の70点J `0.2792115161`より大きく、既知性能には再到達していない。17点ILは基準より+0.4138346568 dB。strict30 PASSかつ+0.02 dB以内は0/20、+0.05 dB以内も0/20、収束∧strict30∧+0.02 dB以内も0/20。
 - search best-J とSolver endpointはSHA一致3/20のみ。端点をbest候補やTerminal結果へ読み替えず、全best/endpoint vector・Jを[`results.json`](results.json)に分けて記録。
-- 17点strict PASS候補は1件だけだったためseed 1012をdense選抜。1001点/区間（28,028点）でもstrict30 PASS、worst IL `1.2416758053 dB`、min H2/H3は同値。84点独立branch-current MNAはS/IL/APL/RL比較、受動性・電力収支をPASS、最大絶対誤差 `7.32e−13`（許容`1e−9`）。これは1候補・有限格子の検証であり、連続周波数保証ではない。
+- 元の#437/EXP-062良好候補は既存[`issue437/report.md`](../issue437/report.md)の1001点/区間でstrict30 PASS、worst IL `0.8278411484628502 dB`、min H3 `30.004736913098142 dB`。今回これをdense再計算したとは扱わない。seed 1012の新規denseは同じ1001点/区間でstrict30 PASS、worst IL `1.2416758053 dB`、min H2/H3 `30.0069741341 / 30.0097857234 dB`。既知候補dense記録との保存済み比較では、ILが `+0.4138346568 dB`悪い一方、双方strict30 PASS。84点独立branch-current MNAはS/IL/APL/RL比較、受動性・電力収支をPASS、最大絶対誤差 `7.32e−13`（許容`1e−9`）。これは各々の既存/今回の有限格子結果の比較で、連続周波数保証ではない。
 - 各Terminalで独立MNA spot `[0,111]` は20×2=40 sample PASS。密候補MNA84を合わせ独立MNA total 124 / 460 sample上限。全28区間/6設定のTerminal要件ごとの要約は`results.json`にあり、strict候補のinterval詳細も保持。
 
 ## 実費用・保存・再現性
