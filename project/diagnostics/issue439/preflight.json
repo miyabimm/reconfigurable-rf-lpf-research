@@ -1,0 +1,3210 @@
+{
+  "issue": 439,
+  "purpose": "development_limited_random_start_weighted_hybrid",
+  "source_head": "79789f2f3a4b8a9feece9a4cc9a212b4c086f1ed",
+  "preparation_head": "79789f2f3a4b8a9feece9a4cc9a212b4c086f1ed",
+  "preparation_script_sha256": "0ec11dee3f79966a950b1e1adec275abbe19448b9c7ca1f4d0110e7144ef6415",
+  "source_identity": {
+    "head": "79789f2f3a4b8a9feece9a4cc9a212b4c086f1ed",
+    "files": {
+      "src/lpf/__init__.py": "1256622e4cf3fdbccad23ce3588baf6fad550206c36f5bbb9893fb9ee46d8eae",
+      "src/lpf/checkpoint_io.py": "07fdb2c141bf699195ebe89a5b357e13fc29f0f3a037f39ff193828723b82804",
+      "src/lpf/circuit.py": "5819c1b39e29f0edf8f8f25996a15e16ef81a795c8280d97e927960de71f3162",
+      "src/lpf/configuration.py": "21248740d3c8ec2c5c42aac21aae516ee2e2d07429e9667f35824a7c3aa7feb9",
+      "src/lpf/constraint_history.py": "19101c8d111cb5bf510bb60d683a1dc82c51dac6b7633d852e5bd9631a9f3b6b",
+      "src/lpf/constraint_versions.py": "278f8ea32568d34b7659b49c638a784a12f161be819cc7a3aad01089243c84c4",
+      "src/lpf/constraints.py": "a7edd70fe3c37cc840361bb0ae1b9bed9d199f9462794f7cbdc6b752a1a86067",
+      "src/lpf/evaluate.py": "7b954b2a5c35c1791d3ce0ab555e87a490f41b6c3da3e79dcf7a4be7073975f2",
+      "src/lpf/experiment_manifest.py": "ba0439f76923136c8c658be436dabf9a6ebfaa345caac614f384056f37c62777",
+      "src/lpf/experiment_preservation.py": "ae57356f74f18539ed67d999537854c5d5691a2fe0bf0838c62fa7f839ec8060",
+      "src/lpf/independent.py": "cbd5523a89c79eee195e76c2841ddce537b5705fdfea3e49f2db64dfb8754ad7",
+      "src/lpf/legacy_graph_builder.py": "a08d0c27dfb689681c1c460eae7576979f2d335c2c485e37f9690f868773e9af",
+      "src/lpf/legacy_graph_search.py": "a4e37231c7c9eccb1de0c93dd9584fafe52d236b666dbc871a57fcae389cfd39",
+      "src/lpf/lqp02_series.py": "4f23b931abc1883d4beab8d9b388d35d60256a5a5cf57ffd7e8658a005468dba",
+      "src/lpf/metrics.py": "18a40a2e0faf1fa21ac5d216ee8a90b69cd5b68dbda13e7a8bca3c41f2483f6e",
+      "src/lpf/optimizers/__init__.py": "c91788855441b7d80dc3b36c6afb3ebae5967c8d15e00e2953441b03e7d98e24",
+      "src/lpf/optimizers/_objectives.py": "f145af310fbe54362e3916eca2e92e3420d9436148e89e229be45d7808b251c2",
+      "src/lpf/optimizers/hybrid.py": "8ecb367b08f553df18b8eff908d938c8aeba19a1e10057eba0d1dacb0b3998ee",
+      "src/lpf/optimizers/pipeline.py": "040dfbef72f7a6da2732a4e14dd9a2977d8407a0557182fe49a7c436255b49f3",
+      "src/lpf/optimizers/slp.py": "3fda5da498f5582e047a269bfbebb5f4df24e7ff46f8ee4bbb750b64d5bb1386",
+      "src/lpf/optimizers/slsqp.py": "39e3b78cf04b0eaaf697ac9c05c3d1e906aeb953725d74359406711779d4bbde",
+      "src/lpf/policy_schema.py": "dd0eda1e77afc1d4123099b4b547539166c32ce569f1f659f0c9dbcc8ec91dd7",
+      "src/lpf/rf_core/__init__.py": "1bb811c81530cc0126c8986d2bbfbcf5bf5989b555945dadef614dbe0ba548f1",
+      "src/lpf/rf_core/_grid.py": "06aa1ab299d9f95b6c45398f284196cdb3dd0ca694dd5e279704baea91f50a90",
+      "src/lpf/rf_core/branch_mna.py": "55997e961d2d737545d63ce43bd27f33e92d73c73632f070dfe0265736210bd6",
+      "src/lpf/rf_core/coupled_lc.py": "a993891e3dcbf9007e83eb846e6c59cad190635441190bf5447466c2ec0071e9",
+      "src/lpf/rf_core/independent.py": "c6e9f8f55275f8e6452681af93ef4224acb7cee2a30656f7ab8d9dd661704142",
+      "src/lpf/rf_core/independent_rf.py": "460dc9b0c43ff30e8f7b6af243081725073f735de09acf0f3c96cd838fc51e5e",
+      "src/lpf/rf_core/model.py": "79fa818e1dba5a48b44b46bba2dc6405b78c4c701c542667642c2e17431396eb",
+      "src/lpf/rf_core/nominal_inductors.py": "7173ce8885d80499553d7bcb5048002b099c7ffde4c599bdd589abafab82ff53",
+      "src/lpf/rf_core/nominal_parts.py": "ad0d3e3a665469de48c87cff43393c536c92c994c1157a95b3b082fad7f7e443",
+      "src/lpf/rf_core/numerical_diagnostics.py": "a9b584aa8ba794c486a0c405eb285d48dc4e99b05f1827dc213623f582322ef4",
+      "src/lpf/rf_core/port_parasitics.py": "fbcc2544ed8b1b70c9546a2c0c8fd1e911c087440af4f7b53952986193487490",
+      "src/lpf/rf_core/rft008_layout.py": "024299cda951fc656f9eb11c3aea554eea10d5224f6b117d0685282b057d8ef3",
+      "src/lpf/search/__init__.py": "aa60b2dd51760f9ff56b97316b9fb714db1de7bb5b9038b29b00fa3fb98aafdd",
+      "src/lpf/search/_development_runner.py": "dd1e4dc5ad3c4153a914faf62686ab372b9aa300b9f28db8cb75283865bd90f1",
+      "src/lpf/search/_development_worker.py": "d5acb998fe2be5cb4836bc79c10a95858975ae197e733068ce86a4940c40c6f2",
+      "src/lpf/search/_forward_window.py": "26f94c4494b1bd56c9ac2fe9d3836ab48f7508ca2ea915d5eda5b68897cc7103",
+      "src/lpf/search/_job_evaluation.py": "58dd4ae3c5c1323286ede320c997484c6044f74c83dbfd11a7b05529ecc2eae1",
+      "src/lpf/search/_minimal_worker_timing.py": "a17f691143e762eb321a84ba36ba43bf117c8539144b7af6f0974a52911268e4",
+      "src/lpf/search/_profile_child.py": "219b4b9f02b802e5a0df15e6839dd5a4192f7c17e44cc46e30623caf5c23f5bc",
+      "src/lpf/search/_window_evaluation.py": "63757ce60cc6381fd808954141ed777bed8d6d8563e431b2b19d6f847819f130",
+      "src/lpf/search/_window_readback.py": "326d1dcbd5cd0d2fcb9f3128d9b401cd1592efcfdd70c907558ebefa9406ff02",
+      "src/lpf/search/_worker_next.py": "1de555145def6b6a5d24e38330bb46259f9cc7a3081887f7de4edc548bd1c52c",
+      "src/lpf/search/campaign.py": "240cd7f3d387221fde8cae1e960730929f15b76c394eeae606e2065674060f73",
+      "src/lpf/search/checkout.py": "af1edb2c9cbaddadfb4055642c4fa23dee479aaf12fee029126986f3fd08a8c4",
+      "src/lpf/search/component_constraints.py": "84ef5024142d4ac47ad901f3ceb8686fb3f371ce24d86906b604e425900822e0",
+      "src/lpf/search/controller.py": "a809576d2cbbe892ff121af540a7c33d563f0ce8a9991f13ec6a02d139308014",
+      "src/lpf/search/evaluation.py": "af961292ddab2bde5891e5d5e943b9d726948f30a31f8af07add1329e744b5d2",
+      "src/lpf/search/gates.py": "2e98df94f2255225d9246119344c5f70e17eaba98e77d80aa40a360d7bc80ec9",
+      "src/lpf/search/monitor.py": "946cc932786bc6531c0db9d1b11e28d3befa221258ccfb60bcb12179aa970b4e",
+      "src/lpf/search/performance.py": "7d10acc03ab9391c10ba016afbd9a2dfd17f4554ae15c4aeed2055622f629a66",
+      "src/lpf/search/plan.py": "bed287e56cd31fc546f8c9453bbc165f7541f708839e7f7ef97dc0a68ed7cc69",
+      "src/lpf/search/preflight.py": "195afffea3eacb6a72f1202dd4087097e9967065bc3baaa5e1f4a39f674b51d6",
+      "src/lpf/search/preservation.py": "d498c1a0218d5f8ee0fd321d1a70c081eda0f6115410df8af967154ead411a55",
+      "src/lpf/search/problem.py": "3a4cacc5aef3b6747e6d608d8defc48f5a75fd76604175e1cafcb335367824e1",
+      "src/lpf/search/proposals.py": "893c119a7ed3018879d2b4e9aa9eadf0fd3462f56aed19eb9be15e5b110e4f93",
+      "src/lpf/search/runner.py": "8c057c0a1a1ac5c050b1f178aeebb405e19be55c3394325b0dc105c02edcf803",
+      "src/lpf/search/starts.py": "5c6882dc7393222843c6436e10a39dabacf3b84bb4cb1641c170aa47d7b26ef3",
+      "src/lpf/search/storage.py": "773b9d2b2bcd6b3a659f4c16862f52bd3d829a0da9b8984b513074fca096c4b6",
+      "src/lpf/search/validation.py": "82875c8b98a4f8ffa1412291eaf2aeea7e6e77ba4a524eef891656ceaafc94c1",
+      "src/lpf/search/worker.py": "3d79be2206f4b7b5949beb53cac000a995a1a343ed88832262ae0dd96458dc11",
+      "src/lpf/slsqp_budget.py": "6fcded16ecffff03d0215740c553704816df8f4a62bee1cfba9094bf4a6d8658",
+      "src/lpf/timing.py": "97da05917918e0863a5e8452f190695ddcf7651cca418170dbd240f5a6fe9ce1",
+      "src/lpf/topology_management/__init__.py": "3970950b06ec8765f07db720bf6cd71f6f77af7f079b692158ab228cf10accbf",
+      "src/lpf/topology_management/bridge.py": "e112d2d6051f3e8e65683ed56ff4924bab74026c7c9235c0fdb93b34adfc67bd",
+      "src/lpf/topology_management/circuit_layout.py": "83528636c90e751e1f0a67392125a400b04ea16d94e6d97fb2728b15440db6bc",
+      "src/lpf/topology_management/definition.py": "a102e0e78094c96b8c0a3d6a7a1ab1c86a6559e5d28694d50c4d3538ef5a91dc",
+      "src/lpf/topology_management/enumeration.py": "b374aca94eb2e9793a824fbd9aa0be1315862ec1060ff73f25af54271b44b2a2",
+      "src/lpf/topology_management/role_audit.py": "4418806a23fb8e683dba06a863263f313dbf70a4cc706c33b06aa1262e5bdfc3",
+      "src/lpf/trial_ic_fixed_c.py": "156871b518d7307839f20346d115eace5657042aad4a0c3d708233d705898d78",
+      "src/lpf/trial_pcb_pattern_c.py": "7a9712d1124a918865a4e3a5bb070b7617ff41b7a390d59d935de32e756bbe7e",
+      "src/lpf/trial_shunt_dtc.py": "779a20fb83da1d585a9c6f69fa71bb94d2a3a8e9fd9b6e2361e25a849c9d6623",
+      "src/lpf/trial_stopband.py": "bb98b236dd2796255f927bb03f5051da6a3a2dd0e8775030ac1487f4df86275d",
+      "src/lpf/twoport_reduction.py": "b9231ecced1b9598870e99c267f2bbfa47cb0349f67d8a7521d5e64a0f28fffb",
+      "src/lpf/validate.py": "d64d51199a4a2cf19b2a3aac7c2a145a6c59585bb2486239bc8fda9e956f410b",
+      "src/lpf/validation.py": "1275abaa0acb96c2f3cb06581229830a20c196430c7dbb3b04392272721c8298",
+      "pyproject.toml": "c19ea7dc952b29a7ee9546e3fc28c16b5e826daa9627c382b9b1387b202700db",
+      "uv.lock": "52144cfd0dfc7249e78c24942bac69fddc8dc3ae088799d9cf31d0d90e824e0b",
+      "scripts/run_rf_search.py": "954ff75092bf6fd22ac1087c931340642730764e541592374d347c78d9bc97c7"
+    },
+    "environment": {
+      "python": "3.12.15",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      }
+    },
+    "dirty_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_identity_sha256": "fd02b321ee57125e79fde18d16d225158a28d194043a5d4ae55b7e016757f685",
+  "environment": {
+    "python": "3.12.15",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "threads": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "uv_lock_sha256": "52144cfd0dfc7249e78c24942bac69fddc8dc3ae088799d9cf31d0d90e824e0b"
+  },
+  "rf": {
+    "constraint_id": "RF-T008",
+    "allow_trial": true,
+    "objective": "full_lpf",
+    "effective_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+    "fixed_s2p_sha256": {
+      "rf/bands.csv": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+      "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945",
+      "rf/parasitics/circuit2_poc_through_0_6ghz.s2p": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+    }
+  },
+  "definition": {
+    "path": "project/diagnostics/issue361/definition.json",
+    "byte_sha256": "e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6",
+    "canonical_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068",
+    "vector_length": 25,
+    "vector_layout": {
+      "L_nH": [
+        0,
+        4
+      ],
+      "fixed_C_pf": [
+        4,
+        8
+      ],
+      "signed_k": [
+        8,
+        11
+      ],
+      "IC_fixed_C_pf": [
+        11,
+        13
+      ],
+      "variable_C_by_setting_pf": [
+        13,
+        25
+      ],
+      "variable_setting_order": [
+        "B71",
+        "B12",
+        "B28",
+        "B13+B14",
+        "B26",
+        "B8"
+      ]
+    },
+    "topology": "4L2C / same as EXP-062 A6"
+  },
+  "physical_model": {
+    "units_by_slice": {
+      "L_nH": [
+        0,
+        4
+      ],
+      "fixed_C_pf": [
+        4,
+        8
+      ],
+      "signed_k": [
+        8,
+        11
+      ],
+      "IC_fixed_C_pf": [
+        11,
+        13
+      ],
+      "variable_C_by_setting_pf": [
+        13,
+        25
+      ]
+    },
+    "complete_hard_bounds": [
+      [
+        0.4,
+        27.0
+      ],
+      [
+        0.4,
+        27.0
+      ],
+      [
+        0.4,
+        27.0
+      ],
+      [
+        0.4,
+        27.0
+      ],
+      [
+        0.1,
+        100.0
+      ],
+      [
+        0.1,
+        100.0
+      ],
+      [
+        0.1,
+        100.0
+      ],
+      [
+        0.02,
+        1.0
+      ],
+      [
+        -0.1,
+        0.1
+      ],
+      [
+        -0.1,
+        0.1
+      ],
+      [
+        -0.1,
+        0.1
+      ],
+      [
+        0.2,
+        3.0
+      ],
+      [
+        0.2,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ],
+      [
+        0.0,
+        3.0
+      ]
+    ],
+    "hard_bounds_sha256": "bf274caf1ff46fed4fead6af5dc2f151bdb7579f62117434c1507aed44aea521",
+    "variable_schema": {
+      "n_inductors": 4,
+      "n_fixed": 4,
+      "n_coupling": 3,
+      "n_ic_fixed": 2,
+      "n_variable": 2,
+      "constant_caps_pf": []
+    }
+  },
+  "base_config": {
+    "path": "project/diagnostics/issue433/hybrid.json",
+    "byte_sha256": "b09f8bf582cb8a5eeba390fdcb1c08abe78fb62839536ecaf96054b284acdf1a"
+  },
+  "frozen_solver": {
+    "mode": "weighted_violation",
+    "formula": "max(0, worst_pass_IL-0.30)^2 + 100*mean(max(0,30.01-H2/H3)^2)",
+    "strict_harmonic_db": 30.0,
+    "margin_db": 30.01,
+    "IL_weight": 1,
+    "H_weight": 100,
+    "solver": "Hybrid",
+    "aggregation": "sum",
+    "maxiter": 150000,
+    "max_evaluations": 150000,
+    "max_restarts": 0,
+    "restart_sigma": 0.1,
+    "search_points_per_interval": 2,
+    "stop_points_per_interval": 3,
+    "search_samples_per_forward": 70,
+    "selection_samples": 84,
+    "terminal_points_per_interval": 17,
+    "terminal_samples": 476,
+    "selection_top_k": 1,
+    "checkpoint_interval": 100,
+    "terminal_spot_indices": [
+      0,
+      111
+    ]
+  },
+  "seed_range": [
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019,
+    1020
+  ],
+  "generation_rule": "starts.generate_for_definition; scrambled Sobol; one point; index 0; entire 25-coordinate physical hard box; no repair/retry/clip",
+  "starts": [
+    {
+      "seed": 1001,
+      "status": "legal",
+      "vector": [
+        1.5707771157845856,
+        20.78666201326996,
+        15.695432519912721,
+        26.144858125410973,
+        18.61127917794511,
+        54.6949361790903,
+        0.1575678656809032,
+        0.8213384552113712,
+        0.032821678556501865,
+        -0.09385514426976443,
+        -0.03789173290133477,
+        1.5907210070639848,
+        0.5314290877431631,
+        0.0061416104435920715,
+        1.579316871240735,
+        2.5052460143342614,
+        0.9226843826472759,
+        0.7270395895466208,
+        0.18085417617112398,
+        1.422041941434145,
+        2.170035227201879,
+        2.830954184755683,
+        0.9693075260147452,
+        1.3944954313337803,
+        0.9081440940499306
+      ],
+      "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.56892805649937e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1002,
+      "status": "legal",
+      "vector": [
+        5.866908730752767,
+        2.5319133469834925,
+        13.44319006316364,
+        0.5256222466006876,
+        27.7493459221907,
+        33.65395816955716,
+        82.65964872958139,
+        0.04441127443686128,
+        0.04365011807531119,
+        -0.0026540752500295584,
+        -0.09736514575779438,
+        2.600353774428368,
+        2.0278523195534945,
+        1.4249520348384976,
+        2.8452871330082417,
+        0.7252642493695021,
+        0.994559814222157,
+        0.831558926962316,
+        1.737039813771844,
+        0.44604244641959667,
+        2.963063699193299,
+        2.5584669560194016,
+        2.9506961898878217,
+        1.2961079673841596,
+        0.4491940140724182
+      ],
+      "vector_sha256": "6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 5.204340157276986e-10,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1003,
+      "status": "legal",
+      "vector": [
+        11.665379182249309,
+        5.652502378076315,
+        12.060854494757951,
+        12.703630385361613,
+        45.76887647993863,
+        56.21672895578668,
+        23.782443811837588,
+        0.2814224525727332,
+        0.06953130327165127,
+        -0.04900691136717797,
+        0.07277288418263198,
+        0.6624060142785311,
+        1.3057256761938332,
+        2.9557206267490983,
+        0.07450219709426165,
+        0.6827349280938506,
+        2.505200531333685,
+        1.9363147728145123,
+        1.7230159984901547,
+        2.409662830643356,
+        2.3833516566082835,
+        1.9058518577367067,
+        2.3604530347511172,
+        0.9682122599333525,
+        2.978836596943438
+      ],
+      "vector_sha256": "6b20955686b727b0cc45ff6f1147126b45ab40e432df16a9082bd250f8cf86d4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 5.5755287953747875e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1004,
+      "status": "legal",
+      "vector": [
+        0.5701557049527765,
+        21.164194903895257,
+        6.692143183201552,
+        13.06805742122233,
+        69.4405312887393,
+        26.08526934171096,
+        40.31571072274819,
+        0.4924069681018591,
+        0.0806346394121647,
+        -0.011718138679862017,
+        -0.07340800296515226,
+        2.263946998491883,
+        0.9949583806097506,
+        0.8913491042330861,
+        0.916798803023994,
+        1.6467075292021036,
+        2.794521840289235,
+        2.326069417409599,
+        2.0921707497909665,
+        0.3836713945493102,
+        0.6340880133211613,
+        1.5483782580122352,
+        1.1122026918455958,
+        1.4465346587821841,
+        0.259599088691175
+      ],
+      "vector_sha256": "cadb69d4ef4c0cd64f81a17218d5c4c6b6eee4b034ce3a7e0065785b3692891a",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 5.663460897715432e-10,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1005,
+      "status": "legal",
+      "vector": [
+        10.023172380775215,
+        11.160054434649647,
+        22.03532083090395,
+        15.08367250263691,
+        5.6424357743933795,
+        40.791825699619956,
+        33.745930694229905,
+        0.6550694883428514,
+        0.03284987173974513,
+        -0.02645279336720706,
+        -0.029210177809000024,
+        1.9801009997725485,
+        1.959360173344612,
+        1.3603948568925261,
+        2.4685381511226296,
+        0.42838709615170956,
+        1.5252306098118424,
+        1.9480934534221888,
+        2.487955835647881,
+        2.3162552816793323,
+        0.8588546337559819,
+        1.4364760033786297,
+        1.4014290617778897,
+        2.3640005495399237,
+        0.4226312767714262
+      ],
+      "vector_sha256": "595eb88337fe22c5fa769caff1bd5a248d823b784ecaf7cb51f710d4bdc4bc16",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 9.923694840330756e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1006,
+      "status": "legal",
+      "vector": [
+        22.283650016225874,
+        15.82474904228002,
+        5.076223525591195,
+        1.6429102011024952,
+        18.881491406727584,
+        84.3909871082753,
+        14.648721715621651,
+        0.3065470063313842,
+        0.034942904487252235,
+        -0.02304561566561461,
+        -0.05223704613745213,
+        2.707604667171836,
+        0.29137945137918,
+        0.17981753312051296,
+        1.0056329732760787,
+        2.423536838963628,
+        1.338009551167488,
+        2.2652119360864162,
+        2.97484237421304,
+        0.07819432485848665,
+        0.9754592506214976,
+        0.37126752734184265,
+        2.958333497866988,
+        0.5294231940060854,
+        0.855712509714067
+      ],
+      "vector_sha256": "3b971ea37e023c1daae449dc3ede9475b03c0c7d35ed1ca87299829c5a87361f",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.6353220331474274e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1007,
+      "status": "legal",
+      "vector": [
+        20.090806635469196,
+        7.7720537345856435,
+        1.2765806840732694,
+        8.14245264288038,
+        97.46299992306157,
+        84.42563404114917,
+        18.765025681070984,
+        0.11484435005113483,
+        -0.02134566809982061,
+        0.04990525245666505,
+        0.062403468973934645,
+        1.5344792142510413,
+        2.296246771886945,
+        2.5192710030823946,
+        1.4916729480028152,
+        2.0655803130939603,
+        2.346369333565235,
+        1.3431101124733686,
+        2.7397302528843284,
+        1.0039315167814493,
+        2.5895480141043663,
+        1.4933253368362784,
+        0.5376831907778978,
+        0.6738932020962238,
+        1.4364641653373837
+      ],
+      "vector_sha256": "4abd1276d4040cf9ca46fd80389f97dea095ca84b12c8be090c8a29335847d95",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.2706693263507914e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1008,
+      "status": "legal",
+      "vector": [
+        10.922604416310788,
+        2.0968622345477343,
+        0.7460195718333126,
+        25.769579346477986,
+        35.768098957929766,
+        50.2666433707811,
+        69.31242534508928,
+        0.06325354181230068,
+        0.05850203484296798,
+        0.02446312233805656,
+        -0.09614651799201966,
+        2.0518271047621965,
+        1.5282677121460437,
+        2.921683967113495,
+        2.6067544296383858,
+        2.4850528752431273,
+        2.2535539995878935,
+        2.3798357639461756,
+        2.696151589974761,
+        2.516094102524221,
+        2.5792929707095027,
+        0.6101540308445692,
+        2.451575366780162,
+        2.1460811784490943,
+        1.3811982879415154
+      ],
+      "vector_sha256": "5a0ba8c5b2a3e87bd13775a3191825d15260302c73a9d057e7403fe1cda343a8",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 7.389128718244727e-10,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1009,
+      "status": "legal",
+      "vector": [
+        1.4199813293293118,
+        11.26280129980296,
+        18.24578445609659,
+        12.240217350423338,
+        56.07778172111139,
+        93.48667322844267,
+        71.39736347803846,
+        0.8735680804587901,
+        -0.014627847261726862,
+        -0.09093102291226388,
+        0.09879494700580835,
+        0.5350917242467403,
+        2.0820389136672017,
+        0.6400415925309062,
+        0.4544316530227661,
+        0.26997247338294983,
+        1.1007235050201416,
+        2.4656796539202332,
+        0.7170201307162642,
+        0.8102709632366896,
+        1.219491882249713,
+        2.713092011399567,
+        2.4302797643467784,
+        1.5230570510029793,
+        2.529534548521042
+      ],
+      "vector_sha256": "53992a8ce0e5977db37e9de7026006bf32555a467f7a9e0734a0b2f8dec91d8d",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.4196298621787606e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1010,
+      "status": "legal",
+      "vector": [
+        19.326536601968108,
+        7.051877881400288,
+        26.917246057651937,
+        17.53728388082236,
+        87.66566575290635,
+        24.395754747930916,
+        9.123706214874982,
+        0.9201917207613587,
+        0.060488748550415056,
+        0.09339820295572282,
+        -0.09038734864443541,
+        2.0702437087893486,
+        0.45836153328418733,
+        2.0461132116615772,
+        2.748720212839544,
+        1.70111611392349,
+        1.16459608823061,
+        2.9564664317294955,
+        2.9136771596968174,
+        2.6377716036513448,
+        1.1804476166144013,
+        2.488474133424461,
+        0.8525381740182638,
+        0.11369827296584845,
+        2.2287301272153854
+      ],
+      "vector_sha256": "4fbac994feffe2853888061ab52424fd193fe3090c0de43aa13db8a5de5c5df0",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 6.908350093133008e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1011,
+      "status": "legal",
+      "vector": [
+        12.574181623756887,
+        10.54095313306898,
+        3.163233078457415,
+        14.026927178911865,
+        53.18535320591182,
+        50.9058370471932,
+        97.76145529476926,
+        0.34380657333880665,
+        0.03498185910284518,
+        0.07162788826972247,
+        -0.03618787676095962,
+        1.5810825917869804,
+        1.636165430024266,
+        2.1522518126294017,
+        1.962332638911903,
+        2.1045894138514996,
+        0.6719276681542397,
+        2.8123406739905477,
+        0.03242485877126455,
+        1.128478853031993,
+        0.5545251779258251,
+        2.7032583067193627,
+        0.0931981997564435,
+        0.7520638396963477,
+        0.12451379466801882
+      ],
+      "vector_sha256": "0d01013a7f84bf4768ecd18f9c0be1b16f3b96ed306b22c969d03bfc1855fd65",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 3.157835967434832e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1012,
+      "status": "legal",
+      "vector": [
+        17.095506676472723,
+        10.07941079530865,
+        1.1521699698641896,
+        20.86527323573828,
+        65.36407011914999,
+        16.284048927295956,
+        78.67591323638335,
+        0.5175680014118552,
+        -0.021960440836846826,
+        0.07989111691713333,
+        0.013844003900885582,
+        0.22566288188099862,
+        0.5582645181566477,
+        1.723292819224298,
+        1.9835399212315679,
+        2.4651530301198363,
+        0.8364407038316131,
+        1.7508992068469524,
+        2.3547595907002687,
+        2.43707755766809,
+        2.1409263387322426,
+        2.330371948890388,
+        0.5040589207783341,
+        0.4404191058129072,
+        0.6292192926630378
+      ],
+      "vector_sha256": "e77612c8fe44ecef05083ff8d28068258f3e745c590e619cb02b0e76016caab4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.1519344481341894e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1013,
+      "status": "legal",
+      "vector": [
+        25.069460975006223,
+        19.794233663007617,
+        18.103064330108463,
+        12.416737582720817,
+        3.0299490544945002,
+        53.45506618674845,
+        51.1338349128142,
+        0.524605446178466,
+        -0.06054136622697115,
+        0.03272583335638046,
+        -0.006051441095769411,
+        2.593041021004319,
+        0.2148330044001341,
+        1.0259622763842344,
+        2.549306519329548,
+        2.876562693156302,
+        1.7550270175561309,
+        1.3270753724500537,
+        2.920755780301988,
+        2.074327968992293,
+        2.6108880657702684,
+        2.887052829377353,
+        1.6693790657445788,
+        2.0085713267326355,
+        2.5054074190557003
+      ],
+      "vector_sha256": "6e06d271e0ea54eecb547cfff045a6edda4850bfaa1f9c23bf9f3037ab867131",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.2379101466398332e-08,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1014,
+      "status": "legal",
+      "vector": [
+        19.17399435583502,
+        2.656394615210593,
+        14.87365291044116,
+        10.556580426916481,
+        43.48311302307994,
+        77.44666431145743,
+        2.5986902867443864,
+        0.11948694681748748,
+        0.0626337431371212,
+        0.026194842159748072,
+        0.03161521386355162,
+        0.9594977345317601,
+        1.6821241233497857,
+        1.9594580261036754,
+        2.5687470221892,
+        2.1134947892278433,
+        1.0206860890612006,
+        2.1728361546993256,
+        0.37107912730425596,
+        0.7955780848860741,
+        1.36760391946882,
+        0.21321890596300364,
+        2.388576108030975,
+        2.6633380400016904,
+        0.4639139100909233
+      ],
+      "vector_sha256": "ca35443fd86a9d03d33bf3618a69fef1df9476e9bb3381b318608ac2bca36e33",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 2.641873213912992e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1015,
+      "status": "legal",
+      "vector": [
+        18.306813731230793,
+        25.986277342215182,
+        20.958295587077735,
+        17.810156079009175,
+        88.1265059383586,
+        39.82803126173094,
+        50.09495092295111,
+        0.3586536768078804,
+        0.04846375640481709,
+        -0.08017285782843829,
+        0.025096973590552796,
+        0.30783730261027814,
+        1.5173626858741043,
+        0.7613784000277519,
+        0.280654264613986,
+        2.6582917626947165,
+        1.734585472382605,
+        1.985152630135417,
+        2.2282049115747213,
+        0.8582404078915715,
+        2.7181877195835114,
+        2.3183662751689553,
+        1.6256906194612384,
+        1.7913466868922114,
+        2.750429858453572
+      ],
+      "vector_sha256": "9c71c5f2e9362b1b17b09d3bdfe2f8ebbf2cb8f8a249322d004af6a6deacb0e4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.734707539209074e-08,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1016,
+      "status": "legal",
+      "vector": [
+        26.290011076815425,
+        10.253300908580423,
+        9.842550056613982,
+        18.207987717352808,
+        79.76116299517453,
+        35.90668306089938,
+        46.27009536661208,
+        0.8979051709547639,
+        -0.09169693272560836,
+        0.05123610924929381,
+        0.0563003109768033,
+        1.5975334126502274,
+        2.5976603612303735,
+        2.957789453677833,
+        0.8226197306066751,
+        1.1527856206521392,
+        0.2597660282626748,
+        2.4898757888004184,
+        2.5542402919381857,
+        2.2294273171573877,
+        2.0289807971566916,
+        2.303752329200506,
+        0.7419124692678452,
+        0.5205132840201259,
+        0.8557843426242471
+      ],
+      "vector_sha256": "7684f4ab576b0b8b0d0711331c72e8e2c188099588fc99f70816046c198ceebc",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 9.762107863297107e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1017,
+      "status": "legal",
+      "vector": [
+        16.408796937577424,
+        10.524543477408589,
+        14.858946138434113,
+        25.74993921853602,
+        10.207088957540691,
+        61.79087497610599,
+        76.39765785085038,
+        0.500421956051141,
+        0.04211497399955988,
+        0.014042281173169607,
+        0.0142117615789175,
+        0.9456896565854549,
+        2.5125949181616307,
+        2.9282723776996136,
+        1.3773485329002142,
+        1.6732304748147726,
+        0.03574957977980375,
+        0.7483482034876943,
+        1.8197392551228404,
+        1.568436797708273,
+        0.7782616345211864,
+        0.3086194172501564,
+        0.10152690298855305,
+        2.941448916681111,
+        2.5442489124834538
+      ],
+      "vector_sha256": "8e9e8b6c4ebbe7378765d29769ecdb51ae99d570e511f6cd07ad12904b647a01",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.0469470039464777e-08,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1018,
+      "status": "legal",
+      "vector": [
+        12.754899275116623,
+        2.6686398992314935,
+        4.358769254013897,
+        2.9158649686723948,
+        52.55201531900094,
+        64.64878634801134,
+        35.48715234007687,
+        0.8350726106390357,
+        -0.06328721940517426,
+        0.04288367088884115,
+        0.01617970727384091,
+        2.3617413084954024,
+        0.6508743908256291,
+        0.4281955836340785,
+        0.3930750209838152,
+        0.1500450661405921,
+        2.8848528172820807,
+        0.4903077380731702,
+        2.751622784882784,
+        1.5306276194751263,
+        0.3439689874649048,
+        0.7809814726933837,
+        0.72788096498698,
+        0.9156447574496269,
+        1.5721741961315274
+      ],
+      "vector_sha256": "5b477cf80037aa23be32ea98416d1c22959150d2343ecce2ced15e2c136df1f1",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 2.6083756763170795e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1019,
+      "status": "legal",
+      "vector": [
+        20.451222026348113,
+        10.677779991924764,
+        25.724198001250624,
+        18.09419184029102,
+        15.765026166662574,
+        80.45838173152879,
+        74.47256019068881,
+        0.5211175697296858,
+        0.022284074872732165,
+        0.06543430406600237,
+        -0.07438631374388933,
+        2.368315429985523,
+        2.8287926591932773,
+        2.413646408356726,
+        1.342627384699881,
+        2.7965423092246056,
+        1.5255905902013183,
+        1.7765386858955026,
+        0.9673246359452605,
+        2.6126190293580294,
+        0.7948422990739346,
+        1.9197585610672832,
+        2.268523874692619,
+        1.8123769322410226,
+        0.2819724390283227
+      ],
+      "vector_sha256": "ebe186df43438105f6b6ed8a616d17f23946bdac1e2b52b91edcc7349217ef52",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.05545760776009e-08,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    },
+    {
+      "seed": 1020,
+      "status": "legal",
+      "vector": [
+        24.389062327705325,
+        24.789076062105597,
+        22.71091853491962,
+        1.3345701165497303,
+        12.636593676079064,
+        39.27836318099872,
+        90.35044880416244,
+        0.37299702495336534,
+        0.06247195731848479,
+        -0.03505342602729798,
+        0.09256365522742271,
+        2.7218740113079547,
+        1.7798092566430568,
+        1.5836545396596193,
+        2.9991065030917525,
+        2.210240584798157,
+        2.8185259513556957,
+        1.6918242014944553,
+        2.126380912028253,
+        0.2785216933116317,
+        0.910844880156219,
+        0.14870990999042988,
+        2.447546185925603,
+        1.1653985129669309,
+        2.4555973978713155
+      ],
+      "vector_sha256": "efcfae8723207707bd9e19bcc7c5f367750161845b51755b4d7ed8658b488a0b",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "physical": {
+        "component_policy_pass": true,
+        "constraint_id": "RF-T008",
+        "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+        "checked_settings": 6,
+        "installed_variable_c_branches": 2,
+        "installed_shunt_parasites": 0,
+        "min_L_eigenvalue_H": 1.3206897662095986e-09,
+        "connection_role_audit": {
+          "all_declared_roles_supported_by_l_tree": true,
+          "unsupported_role_indices": [],
+          "physical_layout_checked": false,
+          "branches": [
+            {
+              "edge": [
+                0,
+                3
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            },
+            {
+              "edge": [
+                1,
+                2
+              ],
+              "declared_role": "bridge",
+              "electrical_class": "inductor_tree_chord",
+              "evidence": "verified_L_path_between_terminals",
+              "declared_role_supported_by_l_tree": true
+            }
+          ]
+        },
+        "connection_role_evidence_incomplete": false,
+        "candidate_promotion_blocked": true,
+        "promotion_blockers": [
+          "independent_mna_not_checked",
+          "dense_rf_not_checked"
+        ],
+        "rf_performance_checked": false,
+        "independent_mna_checked": false,
+        "physical_q_srf_em_checked": false
+      }
+    }
+  ],
+  "per_seed": {
+    "1001": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1001.yaml",
+      "config_sha256": "1f1119626e873efa5f0557da2234b53858d860353b046758a7a96c501a3d744e",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1001-starts.json",
+      "starts_sha256": "250c9440018157b8bf88bce03d1331700a70e6af4eab1b0fa95ee50e8a17ecb7",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1001.json",
+      "generated_sha256": "c56d743866c68386ed5f6b6fff176347fa42166b7637aeb68da95df2fd61f2e5",
+      "status": "legal",
+      "vector": [
+        1.5707771157845856,
+        20.78666201326996,
+        15.695432519912721,
+        26.144858125410973,
+        18.61127917794511,
+        54.6949361790903,
+        0.1575678656809032,
+        0.8213384552113712,
+        0.032821678556501865,
+        -0.09385514426976443,
+        -0.03789173290133477,
+        1.5907210070639848,
+        0.5314290877431631,
+        0.0061416104435920715,
+        1.579316871240735,
+        2.5052460143342614,
+        0.9226843826472759,
+        0.7270395895466208,
+        0.18085417617112398,
+        1.422041941434145,
+        2.170035227201879,
+        2.830954184755683,
+        0.9693075260147452,
+        1.3944954313337803,
+        0.9081440940499306
+      ],
+      "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "634d4a0c3d9bc3410eb5f624f94f4cc72efa3078f3591c0c6575e3a2ea1459b7",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1002": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1002.yaml",
+      "config_sha256": "a0f966ab244944754d4b624744e887cf7a5eee8ab5443c292cc6e91d35f83236",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1002-starts.json",
+      "starts_sha256": "ab005b87b05147e39185fd78cf6dd533f1a9977e4148eba898130e275cc21e15",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1002.json",
+      "generated_sha256": "b36844224c5f00d4e6e0e13adbfd5cfc0479786c9b16952168c2273f1bfd4c6c",
+      "status": "legal",
+      "vector": [
+        5.866908730752767,
+        2.5319133469834925,
+        13.44319006316364,
+        0.5256222466006876,
+        27.7493459221907,
+        33.65395816955716,
+        82.65964872958139,
+        0.04441127443686128,
+        0.04365011807531119,
+        -0.0026540752500295584,
+        -0.09736514575779438,
+        2.600353774428368,
+        2.0278523195534945,
+        1.4249520348384976,
+        2.8452871330082417,
+        0.7252642493695021,
+        0.994559814222157,
+        0.831558926962316,
+        1.737039813771844,
+        0.44604244641959667,
+        2.963063699193299,
+        2.5584669560194016,
+        2.9506961898878217,
+        1.2961079673841596,
+        0.4491940140724182
+      ],
+      "vector_sha256": "6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "251475e16c662386101a87a85f50561ab472c69927f07032aaee1c6f743aa9b4",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1003": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1003.yaml",
+      "config_sha256": "6fe9ed8c51d454a3d34e7c12b11292b2ef2ec9f2223dfe7efdd583d6602bb7bc",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1003-starts.json",
+      "starts_sha256": "6ebcee0ba821f174c772c3a51aa77bcc469f63a1e433cc2963215c0273b39877",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1003.json",
+      "generated_sha256": "01417c65c020347e981ef8a6e4de0891faca1dd783b8ccb9d91b5626217964b4",
+      "status": "legal",
+      "vector": [
+        11.665379182249309,
+        5.652502378076315,
+        12.060854494757951,
+        12.703630385361613,
+        45.76887647993863,
+        56.21672895578668,
+        23.782443811837588,
+        0.2814224525727332,
+        0.06953130327165127,
+        -0.04900691136717797,
+        0.07277288418263198,
+        0.6624060142785311,
+        1.3057256761938332,
+        2.9557206267490983,
+        0.07450219709426165,
+        0.6827349280938506,
+        2.505200531333685,
+        1.9363147728145123,
+        1.7230159984901547,
+        2.409662830643356,
+        2.3833516566082835,
+        1.9058518577367067,
+        2.3604530347511172,
+        0.9682122599333525,
+        2.978836596943438
+      ],
+      "vector_sha256": "6b20955686b727b0cc45ff6f1147126b45ab40e432df16a9082bd250f8cf86d4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "ca0de066e3edafea4e08cbbde7795c29081aeafe1d5819c971df6894ece0dbd6",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1004": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1004.yaml",
+      "config_sha256": "ec00d4ebc0739cc76f3fa9ab7b92182129c6659799dbb81adde045b601e1f641",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1004-starts.json",
+      "starts_sha256": "5859ecf8a67052f82fd615f08405e6f0eb6823d6097a25dee3e6e65252fa3dda",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1004.json",
+      "generated_sha256": "f984f670f7d7119700b77c0c2cd77915fc841543e0febacc417c85a020d53f05",
+      "status": "legal",
+      "vector": [
+        0.5701557049527765,
+        21.164194903895257,
+        6.692143183201552,
+        13.06805742122233,
+        69.4405312887393,
+        26.08526934171096,
+        40.31571072274819,
+        0.4924069681018591,
+        0.0806346394121647,
+        -0.011718138679862017,
+        -0.07340800296515226,
+        2.263946998491883,
+        0.9949583806097506,
+        0.8913491042330861,
+        0.916798803023994,
+        1.6467075292021036,
+        2.794521840289235,
+        2.326069417409599,
+        2.0921707497909665,
+        0.3836713945493102,
+        0.6340880133211613,
+        1.5483782580122352,
+        1.1122026918455958,
+        1.4465346587821841,
+        0.259599088691175
+      ],
+      "vector_sha256": "cadb69d4ef4c0cd64f81a17218d5c4c6b6eee4b034ce3a7e0065785b3692891a",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "49c4101be1f74be040104155c3a52a6a7f61edd18b40f72a3144ae419b102937",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1005": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1005.yaml",
+      "config_sha256": "5d805bd916346375b0f49d7b4b492f11058b204e34df861c287a9375e7519192",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1005-starts.json",
+      "starts_sha256": "aad573f0315587bc67598db00ed046cd959ec8c4dfdbb6085b44125fb406bd08",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1005.json",
+      "generated_sha256": "d6af4288871443a4cffbd250a9ed3479af5136389c6b10c43cba9ddc693781a4",
+      "status": "legal",
+      "vector": [
+        10.023172380775215,
+        11.160054434649647,
+        22.03532083090395,
+        15.08367250263691,
+        5.6424357743933795,
+        40.791825699619956,
+        33.745930694229905,
+        0.6550694883428514,
+        0.03284987173974513,
+        -0.02645279336720706,
+        -0.029210177809000024,
+        1.9801009997725485,
+        1.959360173344612,
+        1.3603948568925261,
+        2.4685381511226296,
+        0.42838709615170956,
+        1.5252306098118424,
+        1.9480934534221888,
+        2.487955835647881,
+        2.3162552816793323,
+        0.8588546337559819,
+        1.4364760033786297,
+        1.4014290617778897,
+        2.3640005495399237,
+        0.4226312767714262
+      ],
+      "vector_sha256": "595eb88337fe22c5fa769caff1bd5a248d823b784ecaf7cb51f710d4bdc4bc16",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "a8d68691c200ac7bbcac7718a1aac8dae0c69dc444b2ab0800ae280d95a177ad",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1006": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1006.yaml",
+      "config_sha256": "51fc1f69c48ef622171ca4e1a06609072d72bcbdcfe12c8e8767f05b44ab5a81",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1006-starts.json",
+      "starts_sha256": "7d8d3deb119f7db6252a0640356f009ab2cc7e85238f093a73956aa76145b6e9",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1006.json",
+      "generated_sha256": "dc7a15b8a60f196e44050766a6ed31bbac0d35bcdb4c6d0df623feca844a8407",
+      "status": "legal",
+      "vector": [
+        22.283650016225874,
+        15.82474904228002,
+        5.076223525591195,
+        1.6429102011024952,
+        18.881491406727584,
+        84.3909871082753,
+        14.648721715621651,
+        0.3065470063313842,
+        0.034942904487252235,
+        -0.02304561566561461,
+        -0.05223704613745213,
+        2.707604667171836,
+        0.29137945137918,
+        0.17981753312051296,
+        1.0056329732760787,
+        2.423536838963628,
+        1.338009551167488,
+        2.2652119360864162,
+        2.97484237421304,
+        0.07819432485848665,
+        0.9754592506214976,
+        0.37126752734184265,
+        2.958333497866988,
+        0.5294231940060854,
+        0.855712509714067
+      ],
+      "vector_sha256": "3b971ea37e023c1daae449dc3ede9475b03c0c7d35ed1ca87299829c5a87361f",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "6023fad8df2b0df75ccc45ae5884c793369bef5fcd72ca415fef051e7644f882",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1007": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1007.yaml",
+      "config_sha256": "b808190c177d4afc59d3f03f0f1179ecbaf2c497e9a14114cb12245bca774399",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1007-starts.json",
+      "starts_sha256": "56c2d94179e1f43ff9e79504e0a3697712351bdbf0ad290e646bfd871d34c122",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1007.json",
+      "generated_sha256": "09e864ad03a827eb2953658ca3061c5793cb8ad3a75bdf1ed3230d5f354fb48e",
+      "status": "legal",
+      "vector": [
+        20.090806635469196,
+        7.7720537345856435,
+        1.2765806840732694,
+        8.14245264288038,
+        97.46299992306157,
+        84.42563404114917,
+        18.765025681070984,
+        0.11484435005113483,
+        -0.02134566809982061,
+        0.04990525245666505,
+        0.062403468973934645,
+        1.5344792142510413,
+        2.296246771886945,
+        2.5192710030823946,
+        1.4916729480028152,
+        2.0655803130939603,
+        2.346369333565235,
+        1.3431101124733686,
+        2.7397302528843284,
+        1.0039315167814493,
+        2.5895480141043663,
+        1.4933253368362784,
+        0.5376831907778978,
+        0.6738932020962238,
+        1.4364641653373837
+      ],
+      "vector_sha256": "4abd1276d4040cf9ca46fd80389f97dea095ca84b12c8be090c8a29335847d95",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "bb10e4a53968ab61ced896fb7bca6296fafdd61d2331e749e2549abddab7c1a1",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1008": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1008.yaml",
+      "config_sha256": "3e014abe9dd758d5dbec38664ecf0f8f7dafb6aa459b46450a880f6ffb6f3f73",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1008-starts.json",
+      "starts_sha256": "ae741eb6a7b06f258952fea83c647cfb86cb845c78d15aed8819359d804295fe",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1008.json",
+      "generated_sha256": "f8500132f871b0870f94afa2a73b2ba8141d5a0f87c1cd7c8ac813a97a8c9fb9",
+      "status": "legal",
+      "vector": [
+        10.922604416310788,
+        2.0968622345477343,
+        0.7460195718333126,
+        25.769579346477986,
+        35.768098957929766,
+        50.2666433707811,
+        69.31242534508928,
+        0.06325354181230068,
+        0.05850203484296798,
+        0.02446312233805656,
+        -0.09614651799201966,
+        2.0518271047621965,
+        1.5282677121460437,
+        2.921683967113495,
+        2.6067544296383858,
+        2.4850528752431273,
+        2.2535539995878935,
+        2.3798357639461756,
+        2.696151589974761,
+        2.516094102524221,
+        2.5792929707095027,
+        0.6101540308445692,
+        2.451575366780162,
+        2.1460811784490943,
+        1.3811982879415154
+      ],
+      "vector_sha256": "5a0ba8c5b2a3e87bd13775a3191825d15260302c73a9d057e7403fe1cda343a8",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "c488bc7b03ed8a8947742020f63afa029f6f924459e9b98dd07aee7fc2fe5d38",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1009": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1009.yaml",
+      "config_sha256": "722872ea9b404b8566fedc889a98ac5a1a29733df5c2c430a3d8702de4c9092e",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1009-starts.json",
+      "starts_sha256": "9821791b409d60d7b7d3c47d3f01dc23e0eccc6c26fa077161c655511b802d40",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1009.json",
+      "generated_sha256": "81ecc24f1d14725395b15e950cc762561dae71686bb22e047b41058589536184",
+      "status": "legal",
+      "vector": [
+        1.4199813293293118,
+        11.26280129980296,
+        18.24578445609659,
+        12.240217350423338,
+        56.07778172111139,
+        93.48667322844267,
+        71.39736347803846,
+        0.8735680804587901,
+        -0.014627847261726862,
+        -0.09093102291226388,
+        0.09879494700580835,
+        0.5350917242467403,
+        2.0820389136672017,
+        0.6400415925309062,
+        0.4544316530227661,
+        0.26997247338294983,
+        1.1007235050201416,
+        2.4656796539202332,
+        0.7170201307162642,
+        0.8102709632366896,
+        1.219491882249713,
+        2.713092011399567,
+        2.4302797643467784,
+        1.5230570510029793,
+        2.529534548521042
+      ],
+      "vector_sha256": "53992a8ce0e5977db37e9de7026006bf32555a467f7a9e0734a0b2f8dec91d8d",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "c3173247e6a2228872daed861f53d3962dd50a322c2a6e9b7c8f289f8037b939",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1010": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1010.yaml",
+      "config_sha256": "8a5240313a919019d1a05e572a357a1b92fd7db334a42e7bc815676212c0de9b",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1010-starts.json",
+      "starts_sha256": "1b1adf03840f1a4afe55642debafa2bb88c94c50c10b5c8b5640c5bb12fe13ac",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1010.json",
+      "generated_sha256": "ba1e1eef752997e170bb8f8b4fa64cf3afc7ba606b6de1b8ffae719f8c5e0de5",
+      "status": "legal",
+      "vector": [
+        19.326536601968108,
+        7.051877881400288,
+        26.917246057651937,
+        17.53728388082236,
+        87.66566575290635,
+        24.395754747930916,
+        9.123706214874982,
+        0.9201917207613587,
+        0.060488748550415056,
+        0.09339820295572282,
+        -0.09038734864443541,
+        2.0702437087893486,
+        0.45836153328418733,
+        2.0461132116615772,
+        2.748720212839544,
+        1.70111611392349,
+        1.16459608823061,
+        2.9564664317294955,
+        2.9136771596968174,
+        2.6377716036513448,
+        1.1804476166144013,
+        2.488474133424461,
+        0.8525381740182638,
+        0.11369827296584845,
+        2.2287301272153854
+      ],
+      "vector_sha256": "4fbac994feffe2853888061ab52424fd193fe3090c0de43aa13db8a5de5c5df0",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "17a11de096b669f2695e2cb7818fab67fdb825e57c69220997ef960fedb5d3f7",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1011": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1011.yaml",
+      "config_sha256": "9483f3e91448081b27fb0ec35bf0ed040789bf0190a118a3e6a3dae607b0edae",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1011-starts.json",
+      "starts_sha256": "2af75c21aab958196e8c402ddff79ad966507d0ba7e12e24ea088b2fef9c5063",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1011.json",
+      "generated_sha256": "f3b880b4f4194dd3fedeed7b782d311e2dbfcb9e4bbd65a9af5e7ff34512ca6b",
+      "status": "legal",
+      "vector": [
+        12.574181623756887,
+        10.54095313306898,
+        3.163233078457415,
+        14.026927178911865,
+        53.18535320591182,
+        50.9058370471932,
+        97.76145529476926,
+        0.34380657333880665,
+        0.03498185910284518,
+        0.07162788826972247,
+        -0.03618787676095962,
+        1.5810825917869804,
+        1.636165430024266,
+        2.1522518126294017,
+        1.962332638911903,
+        2.1045894138514996,
+        0.6719276681542397,
+        2.8123406739905477,
+        0.03242485877126455,
+        1.128478853031993,
+        0.5545251779258251,
+        2.7032583067193627,
+        0.0931981997564435,
+        0.7520638396963477,
+        0.12451379466801882
+      ],
+      "vector_sha256": "0d01013a7f84bf4768ecd18f9c0be1b16f3b96ed306b22c969d03bfc1855fd65",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "82065adc8c2c45cec88f3311ab9e672db10f46b3edcf276a6c5bf95c0bffb461",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1012": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1012.yaml",
+      "config_sha256": "9ff76988615a7730c1915a3cb6fa579ff9bd6c800258ac72c3045f469ea6325a",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1012-starts.json",
+      "starts_sha256": "f5918ae955e1a2d9a42c6ac90c23d3b8f6c692fb24556fe6281e83d9c9952775",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1012.json",
+      "generated_sha256": "a619bc15cbcf288c9d74deccfc17611b54637ebed0fcc2c5dd02c55144742c6f",
+      "status": "legal",
+      "vector": [
+        17.095506676472723,
+        10.07941079530865,
+        1.1521699698641896,
+        20.86527323573828,
+        65.36407011914999,
+        16.284048927295956,
+        78.67591323638335,
+        0.5175680014118552,
+        -0.021960440836846826,
+        0.07989111691713333,
+        0.013844003900885582,
+        0.22566288188099862,
+        0.5582645181566477,
+        1.723292819224298,
+        1.9835399212315679,
+        2.4651530301198363,
+        0.8364407038316131,
+        1.7508992068469524,
+        2.3547595907002687,
+        2.43707755766809,
+        2.1409263387322426,
+        2.330371948890388,
+        0.5040589207783341,
+        0.4404191058129072,
+        0.6292192926630378
+      ],
+      "vector_sha256": "e77612c8fe44ecef05083ff8d28068258f3e745c590e619cb02b0e76016caab4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "79656beb5e2f24f16a7cd8dd88e1c14308750953c1c1183f032ea6cd1763e68f",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1013": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1013.yaml",
+      "config_sha256": "29e08779f952876ac40adb63a190111726e5f4ef8ed67405f5e37f6a2e3f160c",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1013-starts.json",
+      "starts_sha256": "78d88e249765ed0a10dafba05276f8eee9772731bfb33f65542685d2ab9b9e89",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1013.json",
+      "generated_sha256": "609f54784fd4f1abe72f9f6b37eb1f10e5cddde8c12b721f479b54c36fe01329",
+      "status": "legal",
+      "vector": [
+        25.069460975006223,
+        19.794233663007617,
+        18.103064330108463,
+        12.416737582720817,
+        3.0299490544945002,
+        53.45506618674845,
+        51.1338349128142,
+        0.524605446178466,
+        -0.06054136622697115,
+        0.03272583335638046,
+        -0.006051441095769411,
+        2.593041021004319,
+        0.2148330044001341,
+        1.0259622763842344,
+        2.549306519329548,
+        2.876562693156302,
+        1.7550270175561309,
+        1.3270753724500537,
+        2.920755780301988,
+        2.074327968992293,
+        2.6108880657702684,
+        2.887052829377353,
+        1.6693790657445788,
+        2.0085713267326355,
+        2.5054074190557003
+      ],
+      "vector_sha256": "6e06d271e0ea54eecb547cfff045a6edda4850bfaa1f9c23bf9f3037ab867131",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "e0280659b58dd458f72ee14f49040e08b3fb9cdbe4c968839899dbc76785535b",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1014": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1014.yaml",
+      "config_sha256": "1d3c045f33fabfddb2b0a377672b09e66a5059a00eb180eecdd6c8a13da3107f",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1014-starts.json",
+      "starts_sha256": "5313494f325aac593b2e55cd68dac12f0811bf766b85b48463b2674346b26017",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1014.json",
+      "generated_sha256": "52f9ebda64ef7d3ec96eb7fa1b8f208ce076e75adeab26d40be80755f007560a",
+      "status": "legal",
+      "vector": [
+        19.17399435583502,
+        2.656394615210593,
+        14.87365291044116,
+        10.556580426916481,
+        43.48311302307994,
+        77.44666431145743,
+        2.5986902867443864,
+        0.11948694681748748,
+        0.0626337431371212,
+        0.026194842159748072,
+        0.03161521386355162,
+        0.9594977345317601,
+        1.6821241233497857,
+        1.9594580261036754,
+        2.5687470221892,
+        2.1134947892278433,
+        1.0206860890612006,
+        2.1728361546993256,
+        0.37107912730425596,
+        0.7955780848860741,
+        1.36760391946882,
+        0.21321890596300364,
+        2.388576108030975,
+        2.6633380400016904,
+        0.4639139100909233
+      ],
+      "vector_sha256": "ca35443fd86a9d03d33bf3618a69fef1df9476e9bb3381b318608ac2bca36e33",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "52f91e75f8b1a88bde06970262fc766ff64a871efa9d7f148ee38f0b95c04041",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1015": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1015.yaml",
+      "config_sha256": "dfb9da4ccd395a05738fb75c2b9acd0810e357627a9170d9bfdd48f1982544ce",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1015-starts.json",
+      "starts_sha256": "ce5d4c41ea68c51ef6fca1d85f82f18756af4ff6b9fd6cfc5d0a889e2559f86a",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1015.json",
+      "generated_sha256": "ea66f026a9b957284410189c50ca6c8e39aec212f5ae5cddd304558452ace550",
+      "status": "legal",
+      "vector": [
+        18.306813731230793,
+        25.986277342215182,
+        20.958295587077735,
+        17.810156079009175,
+        88.1265059383586,
+        39.82803126173094,
+        50.09495092295111,
+        0.3586536768078804,
+        0.04846375640481709,
+        -0.08017285782843829,
+        0.025096973590552796,
+        0.30783730261027814,
+        1.5173626858741043,
+        0.7613784000277519,
+        0.280654264613986,
+        2.6582917626947165,
+        1.734585472382605,
+        1.985152630135417,
+        2.2282049115747213,
+        0.8582404078915715,
+        2.7181877195835114,
+        2.3183662751689553,
+        1.6256906194612384,
+        1.7913466868922114,
+        2.750429858453572
+      ],
+      "vector_sha256": "9c71c5f2e9362b1b17b09d3bdfe2f8ebbf2cb8f8a249322d004af6a6deacb0e4",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "b263569e353093b5d8a3bed051c4d6cd489cc3a9f1ba6ccc52c5eb779fdccbc0",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1016": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1016.yaml",
+      "config_sha256": "ace989ff45b87929eb0cd85c8c9d1db9271f7eea5dd53aa9a4d4f510a3fe56d5",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1016-starts.json",
+      "starts_sha256": "36095865432c4c1ffadc5e628de2b1f4e5ec9974658f88d265f5cee85937a2df",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1016.json",
+      "generated_sha256": "dbbf55c3e6fe5c21b48aaf120f8c39ea115d6f7975ea56a1b69480024451eda0",
+      "status": "legal",
+      "vector": [
+        26.290011076815425,
+        10.253300908580423,
+        9.842550056613982,
+        18.207987717352808,
+        79.76116299517453,
+        35.90668306089938,
+        46.27009536661208,
+        0.8979051709547639,
+        -0.09169693272560836,
+        0.05123610924929381,
+        0.0563003109768033,
+        1.5975334126502274,
+        2.5976603612303735,
+        2.957789453677833,
+        0.8226197306066751,
+        1.1527856206521392,
+        0.2597660282626748,
+        2.4898757888004184,
+        2.5542402919381857,
+        2.2294273171573877,
+        2.0289807971566916,
+        2.303752329200506,
+        0.7419124692678452,
+        0.5205132840201259,
+        0.8557843426242471
+      ],
+      "vector_sha256": "7684f4ab576b0b8b0d0711331c72e8e2c188099588fc99f70816046c198ceebc",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "f91d36e6a37b4f2c810f85dcaefdb46a6c005348f5f593e58ba9b080a493a7a7",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1017": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1017.yaml",
+      "config_sha256": "3bbad027f159161e0813ceda6072d7448cc88a3e2c627c8f27710914fb9aab18",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1017-starts.json",
+      "starts_sha256": "11f9a3c816c4eafe33b6e33235de167d7b868c958abecc723e22a5efabe182d8",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1017.json",
+      "generated_sha256": "409b5d31152f490cdf14f5c909f8bea5b93ab88afe9f4eb4eb7c6101cfe9496b",
+      "status": "legal",
+      "vector": [
+        16.408796937577424,
+        10.524543477408589,
+        14.858946138434113,
+        25.74993921853602,
+        10.207088957540691,
+        61.79087497610599,
+        76.39765785085038,
+        0.500421956051141,
+        0.04211497399955988,
+        0.014042281173169607,
+        0.0142117615789175,
+        0.9456896565854549,
+        2.5125949181616307,
+        2.9282723776996136,
+        1.3773485329002142,
+        1.6732304748147726,
+        0.03574957977980375,
+        0.7483482034876943,
+        1.8197392551228404,
+        1.568436797708273,
+        0.7782616345211864,
+        0.3086194172501564,
+        0.10152690298855305,
+        2.941448916681111,
+        2.5442489124834538
+      ],
+      "vector_sha256": "8e9e8b6c4ebbe7378765d29769ecdb51ae99d570e511f6cd07ad12904b647a01",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "70bd1cf46078659359cd7236c394e934b26a45e90540e6c88bcdd734181ac12e",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1018": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1018.yaml",
+      "config_sha256": "095e716b334e8ff36f278d3508c5bfcfe2049dcf3c3d12b56ea8a7600523d4b0",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1018-starts.json",
+      "starts_sha256": "3fc7f12bfe8071bd8b8a10505e86d87ae1266545456bb7b90e44977fa7369790",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1018.json",
+      "generated_sha256": "e1b30827e7f376fc506a071f31cc6edd8b0812fe30883ce8d7423d2f23bcd344",
+      "status": "legal",
+      "vector": [
+        12.754899275116623,
+        2.6686398992314935,
+        4.358769254013897,
+        2.9158649686723948,
+        52.55201531900094,
+        64.64878634801134,
+        35.48715234007687,
+        0.8350726106390357,
+        -0.06328721940517426,
+        0.04288367088884115,
+        0.01617970727384091,
+        2.3617413084954024,
+        0.6508743908256291,
+        0.4281955836340785,
+        0.3930750209838152,
+        0.1500450661405921,
+        2.8848528172820807,
+        0.4903077380731702,
+        2.751622784882784,
+        1.5306276194751263,
+        0.3439689874649048,
+        0.7809814726933837,
+        0.72788096498698,
+        0.9156447574496269,
+        1.5721741961315274
+      ],
+      "vector_sha256": "5b477cf80037aa23be32ea98416d1c22959150d2343ecce2ced15e2c136df1f1",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "e3128f58ca529a314c6f389be6d442c6d6eaffa01d946fcad8cf009877cfdf5c",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1019": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1019.yaml",
+      "config_sha256": "4b8a01b4828a831fc713e5f385015e0039cef35805f76a8ea95d8cd2e496a7cb",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1019-starts.json",
+      "starts_sha256": "a7cea51c1a02daeeb3d8d9e21046e332cba0275cd207cb3f85087fe3fabc287d",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1019.json",
+      "generated_sha256": "202688f2759dc7a55bdbeae144552ca0555877027103dbdbb6defd560425ce8f",
+      "status": "legal",
+      "vector": [
+        20.451222026348113,
+        10.677779991924764,
+        25.724198001250624,
+        18.09419184029102,
+        15.765026166662574,
+        80.45838173152879,
+        74.47256019068881,
+        0.5211175697296858,
+        0.022284074872732165,
+        0.06543430406600237,
+        -0.07438631374388933,
+        2.368315429985523,
+        2.8287926591932773,
+        2.413646408356726,
+        1.342627384699881,
+        2.7965423092246056,
+        1.5255905902013183,
+        1.7765386858955026,
+        0.9673246359452605,
+        2.6126190293580294,
+        0.7948422990739346,
+        1.9197585610672832,
+        2.268523874692619,
+        1.8123769322410226,
+        0.2819724390283227
+      ],
+      "vector_sha256": "ebe186df43438105f6b6ed8a616d17f23946bdac1e2b52b91edcc7349217ef52",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "12b716f53578c0fb6afbccb165aa8a84de04a9bd24dd1170b2ec7c97205f4f70",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    },
+    "1020": {
+      "config_path": "project/diagnostics/issue439/inputs/seed-1020.yaml",
+      "config_sha256": "e0ff77833d3cbe9de4a103125e177fc8df3d4ef8cdd1f0ecc3258e90c122e308",
+      "starts_path": "project/diagnostics/issue439/inputs/seed-1020-starts.json",
+      "starts_sha256": "ab1c8ce60b3136c2d24ee9bf7477a686cc8c9e08e580964dfe717b99224e8ccd",
+      "generated_path": "project/diagnostics/issue439/generated/seed-1020.json",
+      "generated_sha256": "5d8bfb5a67daecf25b2bbec5fa934e03ff50a172d3cabfe6d1841ce385d67375",
+      "status": "legal",
+      "vector": [
+        24.389062327705325,
+        24.789076062105597,
+        22.71091853491962,
+        1.3345701165497303,
+        12.636593676079064,
+        39.27836318099872,
+        90.35044880416244,
+        0.37299702495336534,
+        0.06247195731848479,
+        -0.03505342602729798,
+        0.09256365522742271,
+        2.7218740113079547,
+        1.7798092566430568,
+        1.5836545396596193,
+        2.9991065030917525,
+        2.210240584798157,
+        2.8185259513556957,
+        1.6918242014944553,
+        2.126380912028253,
+        0.2785216933116317,
+        0.910844880156219,
+        0.14870990999042988,
+        2.447546185925603,
+        1.1653985129669309,
+        2.4555973978713155
+      ],
+      "vector_sha256": "efcfae8723207707bd9e19bcc7c5f367750161845b51755b4d7ed8658b488a0b",
+      "reason": null,
+      "method": "scrambled_sobol_single_point",
+      "sobol_index": 0,
+      "plan_sha256": "86fbab935d313f98b1175f55ffd4884c7a386dc950dd8111e71a7bdaf4954fb1",
+      "static_costs": {
+        "anytime_fixed_reservation": 0,
+        "anytime_one_forward": 84,
+        "max_requested_samples": 10500560,
+        "runtime_reserved_samples": 560,
+        "selection_one_forward": 84,
+        "selection_upper_reservation": 84,
+        "stages": {
+          "search": {
+            "one_forward_samples": 70,
+            "reserved_after_step": 560,
+            "solver_max_evaluations": 150000,
+            "status": "not_run",
+            "upper_reservation": 10500000
+          }
+        },
+        "status": "not_run",
+        "terminal_fixed_reservation": 476,
+        "terminal_one_forward": 476,
+        "total_upper_reservation": 10500560
+      }
+    }
+  },
+  "totals": {
+    "proposed": 20,
+    "legal": 20,
+    "illegal": 0,
+    "search_forward_cap": 3000000,
+    "per_job_search_forward_cap": 150000,
+    "max_primary_samples": 210153160,
+    "authorized_primary_samples_cap": 211000000,
+    "maximum_independent_mna_samples": 460,
+    "dense_validation_candidates_max": 5,
+    "dense_points_per_interval": 1001,
+    "primary_samples_per_dense_candidate": 28028,
+    "primary_mna_comparison_samples_per_candidate": 84
+  }
+}

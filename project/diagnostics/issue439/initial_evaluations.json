@@ -1,0 +1,2497 @@
+{
+  "kind": "issue439_initial_read_only",
+  "rf_constraint_id": "RF-T008",
+  "rf_effective_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+  "samples_per_start": 70,
+  "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+  "rows": [
+    {
+      "seed": 1001,
+      "status": "completed",
+      "vector": [
+        1.5707771157845856,
+        20.78666201326996,
+        15.695432519912721,
+        26.144858125410973,
+        18.61127917794511,
+        54.6949361790903,
+        0.1575678656809032,
+        0.8213384552113712,
+        0.032821678556501865,
+        -0.09385514426976443,
+        -0.03789173290133477,
+        1.5907210070639848,
+        0.5314290877431631,
+        0.0061416104435920715,
+        1.579316871240735,
+        2.5052460143342614,
+        0.9226843826472759,
+        0.7270395895466208,
+        0.18085417617112398,
+        1.422041941434145,
+        2.170035227201879,
+        2.830954184755683,
+        0.9693075260147452,
+        1.3944954313337803,
+        0.9081440940499306
+      ],
+      "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+      "metrics": {
+        "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 24.999944738674145,
+        "max_violation_db": 25.22475440759184,
+        "sum_violation_db": 323.42721133455746,
+        "min_h2_db": 4.775245592408161,
+        "min_h3_db": 5.573160016047543,
+        "objective_j": 54194.55774791006,
+        "il_term": 610.0872700935565,
+        "harmonic_term": 53584.4704778165,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 22.121376996320823,
+            "min_h2_db": 5.0781709698091495,
+            "min_h3_db": 5.573160016047543
+          },
+          "B12": {
+            "worst_pass_il_db": 22.656830059351275,
+            "min_h2_db": 7.088384171364185,
+            "min_h3_db": 7.078103597818336
+          },
+          "B28": {
+            "worst_pass_il_db": 13.142545315040973,
+            "min_h2_db": 12.503081913937951,
+            "min_h3_db": 9.885833642461199
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 11.785504614273243,
+            "min_h2_db": 4.775245592408161,
+            "min_h3_db": 5.708638855547762
+          },
+          "B26": {
+            "worst_pass_il_db": 24.999944738674145,
+            "min_h2_db": 6.811543261655679,
+            "min_h3_db": 7.258525439929979
+          },
+          "B8": {
+            "worst_pass_il_db": 20.400218954699653,
+            "min_h2_db": 6.8730868022090865,
+            "min_h3_db": 7.392965699496515
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.56892805649937e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1002,
+      "status": "completed",
+      "vector": [
+        5.866908730752767,
+        2.5319133469834925,
+        13.44319006316364,
+        0.5256222466006876,
+        27.7493459221907,
+        33.65395816955716,
+        82.65964872958139,
+        0.04441127443686128,
+        0.04365011807531119,
+        -0.0026540752500295584,
+        -0.09736514575779438,
+        2.600353774428368,
+        2.0278523195534945,
+        1.4249520348384976,
+        2.8452871330082417,
+        0.7252642493695021,
+        0.994559814222157,
+        0.831558926962316,
+        1.737039813771844,
+        0.44604244641959667,
+        2.963063699193299,
+        2.5584669560194016,
+        2.9506961898878217,
+        1.2961079673841596,
+        0.4491940140724182
+      ],
+      "vector_sha256": "6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f",
+      "metrics": {
+        "vector_sha256": "6203467121a4e37baaa51c471aaecb3174f3374f9ab955d6fbf101f7b5ce935f",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 6.288802429156767,
+        "max_violation_db": 28.515552372264448,
+        "sum_violation_db": 388.4486298927284,
+        "min_h2_db": 1.4844476277355505,
+        "min_h3_db": 2.389924389863945,
+        "objective_j": 76911.02170261879,
+        "il_term": 35.86575453547399,
+        "harmonic_term": 76875.15594808331,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.5157450815910072,
+            "min_h2_db": 1.4844476277355505,
+            "min_h3_db": 2.389924389863945
+          },
+          "B12": {
+            "worst_pass_il_db": 4.663019190610978,
+            "min_h2_db": 1.5763229085761197,
+            "min_h3_db": 2.523804259159937
+          },
+          "B28": {
+            "worst_pass_il_db": 6.288802429156767,
+            "min_h2_db": 1.5844157709676483,
+            "min_h3_db": 2.5308702825200418
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 6.281744896070957,
+            "min_h2_db": 1.7712277206394031,
+            "min_h3_db": 2.7664504838461794
+          },
+          "B26": {
+            "worst_pass_il_db": 2.321016971487008,
+            "min_h2_db": 2.0764740738476375,
+            "min_h3_db": 2.8747635726624226
+          },
+          "B8": {
+            "worst_pass_il_db": 1.5291939113257025,
+            "min_h2_db": 2.299153775581319,
+            "min_h3_db": 3.073841378586348
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 5.204340157276986e-10,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1003,
+      "status": "completed",
+      "vector": [
+        11.665379182249309,
+        5.652502378076315,
+        12.060854494757951,
+        12.703630385361613,
+        45.76887647993863,
+        56.21672895578668,
+        23.782443811837588,
+        0.2814224525727332,
+        0.06953130327165127,
+        -0.04900691136717797,
+        0.07277288418263198,
+        0.6624060142785311,
+        1.3057256761938332,
+        2.9557206267490983,
+        0.07450219709426165,
+        0.6827349280938506,
+        2.505200531333685,
+        1.9363147728145123,
+        1.7230159984901547,
+        2.409662830643356,
+        2.3833516566082835,
+        1.9058518577367067,
+        2.3604530347511172,
+        0.9682122599333525,
+        2.978836596943438
+      ],
+      "vector_sha256": "6b20955686b727b0cc45ff6f1147126b45ab40e432df16a9082bd250f8cf86d4",
+      "metrics": {
+        "vector_sha256": "6b20955686b727b0cc45ff6f1147126b45ab40e432df16a9082bd250f8cf86d4",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 1.5973436074888983,
+        "max_violation_db": 28.405514282784903,
+        "sum_violation_db": 385.9955540433433,
+        "min_h2_db": 1.5944857172150981,
+        "min_h3_db": 2.6191683643396173,
+        "objective_j": 75849.04322260426,
+        "il_term": 1.6831004358923083,
+        "harmonic_term": 75847.36012216836,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.5973436074888983,
+            "min_h2_db": 1.5944857172150981,
+            "min_h3_db": 2.623252578712711
+          },
+          "B12": {
+            "worst_pass_il_db": 1.2663071243143134,
+            "min_h2_db": 1.9027743170500846,
+            "min_h3_db": 2.6191683643396173
+          },
+          "B28": {
+            "worst_pass_il_db": 1.2761782114037006,
+            "min_h2_db": 1.7045135800083706,
+            "min_h3_db": 2.76009196873251
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 1.2043806828967472,
+            "min_h2_db": 1.9241912627230884,
+            "min_h3_db": 3.068363716546643
+          },
+          "B26": {
+            "worst_pass_il_db": 1.1660005739582264,
+            "min_h2_db": 2.02226495421372,
+            "min_h3_db": 3.19471446137438
+          },
+          "B8": {
+            "worst_pass_il_db": 1.1933625267838548,
+            "min_h2_db": 2.1471973656954373,
+            "min_h3_db": 3.373313955349732
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 5.5755287953747875e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1004,
+      "status": "completed",
+      "vector": [
+        0.5701557049527765,
+        21.164194903895257,
+        6.692143183201552,
+        13.06805742122233,
+        69.4405312887393,
+        26.08526934171096,
+        40.31571072274819,
+        0.4924069681018591,
+        0.0806346394121647,
+        -0.011718138679862017,
+        -0.07340800296515226,
+        2.263946998491883,
+        0.9949583806097506,
+        0.8913491042330861,
+        0.916798803023994,
+        1.6467075292021036,
+        2.794521840289235,
+        2.326069417409599,
+        2.0921707497909665,
+        0.3836713945493102,
+        0.6340880133211613,
+        1.5483782580122352,
+        1.1122026918455958,
+        1.4465346587821841,
+        0.259599088691175
+      ],
+      "vector_sha256": "cadb69d4ef4c0cd64f81a17218d5c4c6b6eee4b034ce3a7e0065785b3692891a",
+      "metrics": {
+        "vector_sha256": "cadb69d4ef4c0cd64f81a17218d5c4c6b6eee4b034ce3a7e0065785b3692891a",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 7.099708114334314,
+        "max_violation_db": 28.791854968017983,
+        "sum_violation_db": 391.1209661666544,
+        "min_h2_db": 1.208145031982018,
+        "min_h3_db": 2.193783463128095,
+        "objective_j": 77921.48182388657,
+        "il_term": 46.236030440143914,
+        "harmonic_term": 77875.24579344643,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 7.099708114334314,
+            "min_h2_db": 1.208145031982018,
+            "min_h3_db": 2.193783463128095
+          },
+          "B12": {
+            "worst_pass_il_db": 5.282435953412521,
+            "min_h2_db": 1.266509925794546,
+            "min_h3_db": 2.3958513176077774
+          },
+          "B28": {
+            "worst_pass_il_db": 6.284839062804806,
+            "min_h2_db": 1.2801634766539678,
+            "min_h3_db": 2.4299211841284087
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 5.243082794137153,
+            "min_h2_db": 1.4507003776988285,
+            "min_h3_db": 2.7531670137115363
+          },
+          "B26": {
+            "worst_pass_il_db": 6.902624068362782,
+            "min_h2_db": 1.5827989918544265,
+            "min_h3_db": 2.965987877373478
+          },
+          "B8": {
+            "worst_pass_il_db": 3.699354500037646,
+            "min_h2_db": 1.8051519448060112,
+            "min_h3_db": 3.258289544703239
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 5.663460897715432e-10,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1005,
+      "status": "completed",
+      "vector": [
+        10.023172380775215,
+        11.160054434649647,
+        22.03532083090395,
+        15.08367250263691,
+        5.6424357743933795,
+        40.791825699619956,
+        33.745930694229905,
+        0.6550694883428514,
+        0.03284987173974513,
+        -0.02645279336720706,
+        -0.029210177809000024,
+        1.9801009997725485,
+        1.959360173344612,
+        1.3603948568925261,
+        2.4685381511226296,
+        0.42838709615170956,
+        1.5252306098118424,
+        1.9480934534221888,
+        2.487955835647881,
+        2.3162552816793323,
+        0.8588546337559819,
+        1.4364760033786297,
+        1.4014290617778897,
+        2.3640005495399237,
+        0.4226312767714262
+      ],
+      "vector_sha256": "595eb88337fe22c5fa769caff1bd5a248d823b784ecaf7cb51f710d4bdc4bc16",
+      "metrics": {
+        "vector_sha256": "595eb88337fe22c5fa769caff1bd5a248d823b784ecaf7cb51f710d4bdc4bc16",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 4.374843263792243,
+        "max_violation_db": 26.3319842691631,
+        "sum_violation_db": 360.8029242001595,
+        "min_h2_db": 3.6680157308369004,
+        "min_h3_db": 4.242377795069972,
+        "objective_j": 66325.92508767552,
+        "il_term": 16.604347624473025,
+        "harmonic_term": 66309.32074005106,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 2.015270350662576,
+            "min_h2_db": 3.810644931265706,
+            "min_h3_db": 4.242377795069972
+          },
+          "B12": {
+            "worst_pass_il_db": 2.375513332451793,
+            "min_h2_db": 3.6680157308369004,
+            "min_h3_db": 4.272543879153334
+          },
+          "B28": {
+            "worst_pass_il_db": 2.086739075701,
+            "min_h2_db": 3.8197949222145624,
+            "min_h3_db": 4.427110780129696
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 2.059319999810639,
+            "min_h2_db": 3.869722407495285,
+            "min_h3_db": 4.712283309463273
+          },
+          "B26": {
+            "worst_pass_il_db": 2.5349920324669064,
+            "min_h2_db": 3.858974314842788,
+            "min_h3_db": 4.781707369535754
+          },
+          "B8": {
+            "worst_pass_il_db": 4.374843263792243,
+            "min_h2_db": 4.051177200515573,
+            "min_h3_db": 5.050129407318091
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 9.923694840330756e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1006,
+      "status": "completed",
+      "vector": [
+        22.283650016225874,
+        15.82474904228002,
+        5.076223525591195,
+        1.6429102011024952,
+        18.881491406727584,
+        84.3909871082753,
+        14.648721715621651,
+        0.3065470063313842,
+        0.034942904487252235,
+        -0.02304561566561461,
+        -0.05223704613745213,
+        2.707604667171836,
+        0.29137945137918,
+        0.17981753312051296,
+        1.0056329732760787,
+        2.423536838963628,
+        1.338009551167488,
+        2.2652119360864162,
+        2.97484237421304,
+        0.07819432485848665,
+        0.9754592506214976,
+        0.37126752734184265,
+        2.958333497866988,
+        0.5294231940060854,
+        0.855712509714067
+      ],
+      "vector_sha256": "3b971ea37e023c1daae449dc3ede9475b03c0c7d35ed1ca87299829c5a87361f",
+      "metrics": {
+        "vector_sha256": "3b971ea37e023c1daae449dc3ede9475b03c0c7d35ed1ca87299829c5a87361f",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 8.584835425281419,
+        "max_violation_db": 28.474005343027812,
+        "sum_violation_db": 391.37351573470403,
+        "min_h2_db": 1.5259946569721872,
+        "min_h3_db": 2.0074275263466443,
+        "objective_j": 78029.73410252071,
+        "il_term": 68.63849802399794,
+        "harmonic_term": 77961.09560449672,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 5.060933928666159,
+            "min_h2_db": 1.8074861529821373,
+            "min_h3_db": 2.0074275263466443
+          },
+          "B12": {
+            "worst_pass_il_db": 4.734191331156074,
+            "min_h2_db": 1.6946690629766727,
+            "min_h3_db": 2.178551714940187
+          },
+          "B28": {
+            "worst_pass_il_db": 4.682481432573481,
+            "min_h2_db": 1.5259946569721872,
+            "min_h3_db": 2.1602991790798978
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 7.404010016022261,
+            "min_h2_db": 1.6155758035140981,
+            "min_h3_db": 2.5248684128612715
+          },
+          "B26": {
+            "worst_pass_il_db": 7.695575515328711,
+            "min_h2_db": 1.5431456581495064,
+            "min_h3_db": 2.6595751243647427
+          },
+          "B8": {
+            "worst_pass_il_db": 8.584835425281419,
+            "min_h2_db": 1.7282805796967073,
+            "min_h3_db": 2.989901113756597
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.6353220331474274e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1007,
+      "status": "completed",
+      "vector": [
+        20.090806635469196,
+        7.7720537345856435,
+        1.2765806840732694,
+        8.14245264288038,
+        97.46299992306157,
+        84.42563404114917,
+        18.765025681070984,
+        0.11484435005113483,
+        -0.02134566809982061,
+        0.04990525245666505,
+        0.062403468973934645,
+        1.5344792142510413,
+        2.296246771886945,
+        2.5192710030823946,
+        1.4916729480028152,
+        2.0655803130939603,
+        2.346369333565235,
+        1.3431101124733686,
+        2.7397302528843284,
+        1.0039315167814493,
+        2.5895480141043663,
+        1.4933253368362784,
+        0.5376831907778978,
+        0.6738932020962238,
+        1.4364641653373837
+      ],
+      "vector_sha256": "4abd1276d4040cf9ca46fd80389f97dea095ca84b12c8be090c8a29335847d95",
+      "metrics": {
+        "vector_sha256": "4abd1276d4040cf9ca46fd80389f97dea095ca84b12c8be090c8a29335847d95",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 25.213110708668083,
+        "max_violation_db": 27.09750622372487,
+        "sum_violation_db": 331.0663911665197,
+        "min_h2_db": 6.703106110692012,
+        "min_h3_db": 2.902493776275131,
+        "objective_j": 56330.011282034124,
+        "il_term": 620.6630851823522,
+        "harmonic_term": 55709.34819685177,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 25.213110708668083,
+            "min_h2_db": 10.164141613311033,
+            "min_h3_db": 5.133239881417184
+          },
+          "B12": {
+            "worst_pass_il_db": 21.739655550570763,
+            "min_h2_db": 9.810467221389702,
+            "min_h3_db": 4.851382296167585
+          },
+          "B28": {
+            "worst_pass_il_db": 21.555409960423155,
+            "min_h2_db": 9.231880214814726,
+            "min_h3_db": 4.406691442851496
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 20.204082787863342,
+            "min_h2_db": 8.397027611753273,
+            "min_h3_db": 3.818921208281878
+          },
+          "B26": {
+            "worst_pass_il_db": 18.520426444762084,
+            "min_h2_db": 7.639425728101761,
+            "min_h3_db": 3.359930157176114
+          },
+          "B8": {
+            "worst_pass_il_db": 17.042587906665343,
+            "min_h2_db": 6.703106110692012,
+            "min_h3_db": 2.902493776275131
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.2706693263507914e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1008,
+      "status": "completed",
+      "vector": [
+        10.922604416310788,
+        2.0968622345477343,
+        0.7460195718333126,
+        25.769579346477986,
+        35.768098957929766,
+        50.2666433707811,
+        69.31242534508928,
+        0.06325354181230068,
+        0.05850203484296798,
+        0.02446312233805656,
+        -0.09614651799201966,
+        2.0518271047621965,
+        1.5282677121460437,
+        2.921683967113495,
+        2.6067544296383858,
+        2.4850528752431273,
+        2.2535539995878935,
+        2.3798357639461756,
+        2.696151589974761,
+        2.516094102524221,
+        2.5792929707095027,
+        0.6101540308445692,
+        2.451575366780162,
+        2.1460811784490943,
+        1.3811982879415154
+      ],
+      "vector_sha256": "5a0ba8c5b2a3e87bd13775a3191825d15260302c73a9d057e7403fe1cda343a8",
+      "metrics": {
+        "vector_sha256": "5a0ba8c5b2a3e87bd13775a3191825d15260302c73a9d057e7403fe1cda343a8",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 43.09324046163204,
+        "max_violation_db": 22.919986675668564,
+        "sum_violation_db": 244.0934100203384,
+        "min_h2_db": 13.836119245728009,
+        "min_h3_db": 7.080013324331436,
+        "objective_j": 32549.86385215956,
+        "il_term": 1831.261429207062,
+        "harmonic_term": 30718.6024229525,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 28.86164149944988,
+            "min_h2_db": 17.884300270258564,
+            "min_h3_db": 11.007176829507143
+          },
+          "B12": {
+            "worst_pass_il_db": 32.806347311891805,
+            "min_h2_db": 17.371904867553884,
+            "min_h3_db": 10.621848524591012
+          },
+          "B28": {
+            "worst_pass_il_db": 40.87412440236627,
+            "min_h2_db": 16.52816917621559,
+            "min_h3_db": 9.951073295699212
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 39.91856345961877,
+            "min_h2_db": 15.405158789469676,
+            "min_h3_db": 8.984752225402419
+          },
+          "B26": {
+            "worst_pass_il_db": 43.09324046163204,
+            "min_h2_db": 14.274786633814063,
+            "min_h3_db": 8.144619812030513
+          },
+          "B8": {
+            "worst_pass_il_db": 37.39906269573774,
+            "min_h2_db": 13.836119245728009,
+            "min_h3_db": 7.080013324331436
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 7.389128718244727e-10,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1009,
+      "status": "completed",
+      "vector": [
+        1.4199813293293118,
+        11.26280129980296,
+        18.24578445609659,
+        12.240217350423338,
+        56.07778172111139,
+        93.48667322844267,
+        71.39736347803846,
+        0.8735680804587901,
+        -0.014627847261726862,
+        -0.09093102291226388,
+        0.09879494700580835,
+        0.5350917242467403,
+        2.0820389136672017,
+        0.6400415925309062,
+        0.4544316530227661,
+        0.26997247338294983,
+        1.1007235050201416,
+        2.4656796539202332,
+        0.7170201307162642,
+        0.8102709632366896,
+        1.219491882249713,
+        2.713092011399567,
+        2.4302797643467784,
+        1.5230570510029793,
+        2.529534548521042
+      ],
+      "vector_sha256": "53992a8ce0e5977db37e9de7026006bf32555a467f7a9e0734a0b2f8dec91d8d",
+      "metrics": {
+        "vector_sha256": "53992a8ce0e5977db37e9de7026006bf32555a467f7a9e0734a0b2f8dec91d8d",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 5.272802154524879,
+        "max_violation_db": 28.38300574216482,
+        "sum_violation_db": 379.8680726562042,
+        "min_h2_db": 1.616994257835179,
+        "min_h3_db": 2.862555542467174,
+        "objective_j": 73474.9152028524,
+        "il_term": 24.728761268047275,
+        "harmonic_term": 73450.18644158434,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.5370759796940061,
+            "min_h2_db": 1.648101017758995,
+            "min_h3_db": 2.920785896365338
+          },
+          "B12": {
+            "worst_pass_il_db": 1.4468109542401795,
+            "min_h2_db": 1.616994257835179,
+            "min_h3_db": 2.862555542467174
+          },
+          "B28": {
+            "worst_pass_il_db": 4.886979881113714,
+            "min_h2_db": 2.254796214530087,
+            "min_h3_db": 3.5444402095229615
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 1.7153670397282264,
+            "min_h2_db": 2.194062304237137,
+            "min_h3_db": 3.5313638153869533
+          },
+          "B26": {
+            "worst_pass_il_db": 2.346818321540395,
+            "min_h2_db": 2.715125626021136,
+            "min_h3_db": 4.070233597141096
+          },
+          "B8": {
+            "worst_pass_il_db": 5.272802154524879,
+            "min_h2_db": 2.801335709413614,
+            "min_h3_db": 4.1553556755898216
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.4196298621787606e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1010,
+      "status": "completed",
+      "vector": [
+        19.326536601968108,
+        7.051877881400288,
+        26.917246057651937,
+        17.53728388082236,
+        87.66566575290635,
+        24.395754747930916,
+        9.123706214874982,
+        0.9201917207613587,
+        0.060488748550415056,
+        0.09339820295572282,
+        -0.09038734864443541,
+        2.0702437087893486,
+        0.45836153328418733,
+        2.0461132116615772,
+        2.748720212839544,
+        1.70111611392349,
+        1.16459608823061,
+        2.9564664317294955,
+        2.9136771596968174,
+        2.6377716036513448,
+        1.1804476166144013,
+        2.488474133424461,
+        0.8525381740182638,
+        0.11369827296584845,
+        2.2287301272153854
+      ],
+      "vector_sha256": "4fbac994feffe2853888061ab52424fd193fe3090c0de43aa13db8a5de5c5df0",
+      "metrics": {
+        "vector_sha256": "4fbac994feffe2853888061ab52424fd193fe3090c0de43aa13db8a5de5c5df0",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 4.828277013139425,
+        "max_violation_db": 27.208283961609247,
+        "sum_violation_db": 366.6473243867448,
+        "min_h2_db": 2.791716038390754,
+        "min_h3_db": 3.981805611994209,
+        "objective_j": 68428.46733736062,
+        "il_term": 20.50529270772691,
+        "harmonic_term": 68407.96204465289,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 2.4591836741652378,
+            "min_h2_db": 2.791716038390754,
+            "min_h3_db": 3.981805611994209
+          },
+          "B12": {
+            "worst_pass_il_db": 2.783714306059393,
+            "min_h2_db": 2.97886608026432,
+            "min_h3_db": 4.188278422155412
+          },
+          "B28": {
+            "worst_pass_il_db": 4.730063402626806,
+            "min_h2_db": 3.009395507195216,
+            "min_h3_db": 4.226105633052864
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 4.426259690775497,
+            "min_h2_db": 3.3520904831630354,
+            "min_h3_db": 4.602956800863756
+          },
+          "B26": {
+            "worst_pass_il_db": 4.828277013139425,
+            "min_h2_db": 3.4937932197904678,
+            "min_h3_db": 4.758302801922029
+          },
+          "B8": {
+            "worst_pass_il_db": 3.5185690778235252,
+            "min_h2_db": 3.3025534432062282,
+            "min_h3_db": 4.626691451208407
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 6.908350093133008e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1011,
+      "status": "completed",
+      "vector": [
+        12.574181623756887,
+        10.54095313306898,
+        3.163233078457415,
+        14.026927178911865,
+        53.18535320591182,
+        50.9058370471932,
+        97.76145529476926,
+        0.34380657333880665,
+        0.03498185910284518,
+        0.07162788826972247,
+        -0.03618787676095962,
+        1.5810825917869804,
+        1.636165430024266,
+        2.1522518126294017,
+        1.962332638911903,
+        2.1045894138514996,
+        0.6719276681542397,
+        2.8123406739905477,
+        0.03242485877126455,
+        1.128478853031993,
+        0.5545251779258251,
+        2.7032583067193627,
+        0.0931981997564435,
+        0.7520638396963477,
+        0.12451379466801882
+      ],
+      "vector_sha256": "0d01013a7f84bf4768ecd18f9c0be1b16f3b96ed306b22c969d03bfc1855fd65",
+      "metrics": {
+        "vector_sha256": "0d01013a7f84bf4768ecd18f9c0be1b16f3b96ed306b22c969d03bfc1855fd65",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 13.49926470337567,
+        "max_violation_db": 28.60841515743658,
+        "sum_violation_db": 395.3660827201979,
+        "min_h2_db": 1.3942459236948455,
+        "min_h3_db": 1.3915848425634207,
+        "objective_j": 79645.11716591431,
+        "il_term": 174.2205887097788,
+        "harmonic_term": 79470.89657720453,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 13.49926470337567,
+            "min_h2_db": 2.384013805855052,
+            "min_h3_db": 1.3915848425634207
+          },
+          "B12": {
+            "worst_pass_il_db": 10.887930325192446,
+            "min_h2_db": 2.2224240851232606,
+            "min_h3_db": 1.4574221037770658
+          },
+          "B28": {
+            "worst_pass_il_db": 11.10984102872795,
+            "min_h2_db": 1.9682524965310753,
+            "min_h3_db": 1.4693769034799387
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 9.719681630008012,
+            "min_h2_db": 1.701918596250871,
+            "min_h3_db": 1.6943814445186087
+          },
+          "B26": {
+            "worst_pass_il_db": 8.878022354196224,
+            "min_h2_db": 1.4984827159639955,
+            "min_h3_db": 1.8539850868181451
+          },
+          "B8": {
+            "worst_pass_il_db": 7.081976045473198,
+            "min_h2_db": 1.3942459236948455,
+            "min_h3_db": 2.1052867843357372
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 3.157835967434832e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1012,
+      "status": "completed",
+      "vector": [
+        17.095506676472723,
+        10.07941079530865,
+        1.1521699698641896,
+        20.86527323573828,
+        65.36407011914999,
+        16.284048927295956,
+        78.67591323638335,
+        0.5175680014118552,
+        -0.021960440836846826,
+        0.07989111691713333,
+        0.013844003900885582,
+        0.22566288188099862,
+        0.5582645181566477,
+        1.723292819224298,
+        1.9835399212315679,
+        2.4651530301198363,
+        0.8364407038316131,
+        1.7508992068469524,
+        2.3547595907002687,
+        2.43707755766809,
+        2.1409263387322426,
+        2.330371948890388,
+        0.5040589207783341,
+        0.4404191058129072,
+        0.6292192926630378
+      ],
+      "vector_sha256": "e77612c8fe44ecef05083ff8d28068258f3e745c590e619cb02b0e76016caab4",
+      "metrics": {
+        "vector_sha256": "e77612c8fe44ecef05083ff8d28068258f3e745c590e619cb02b0e76016caab4",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 21.485302352928855,
+        "max_violation_db": 25.851955461039584,
+        "sum_violation_db": 262.9230124072551,
+        "min_h2_db": 11.825637700697722,
+        "min_h3_db": 4.148044538960417,
+        "objective_j": 37243.13816306717,
+        "il_term": 448.8170357850128,
+        "harmonic_term": 36794.32112728216,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 13.660742643454732,
+            "min_h2_db": 20.61517382054742,
+            "min_h3_db": 8.302361537622229
+          },
+          "B12": {
+            "worst_pass_il_db": 14.695705465240021,
+            "min_h2_db": 19.353376327689176,
+            "min_h3_db": 7.726968300137768
+          },
+          "B28": {
+            "worst_pass_il_db": 16.155429321471537,
+            "min_h2_db": 17.55177697130662,
+            "min_h3_db": 6.920217211255537
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 15.944525609088064,
+            "min_h2_db": 15.222803589694859,
+            "min_h3_db": 5.704270392260056
+          },
+          "B26": {
+            "worst_pass_il_db": 18.680528915333042,
+            "min_h2_db": 13.348517687637775,
+            "min_h3_db": 4.733534647967185
+          },
+          "B8": {
+            "worst_pass_il_db": 21.485302352928855,
+            "min_h2_db": 11.825637700697722,
+            "min_h3_db": 4.148044538960417
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.1519344481341894e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1013,
+      "status": "completed",
+      "vector": [
+        25.069460975006223,
+        19.794233663007617,
+        18.103064330108463,
+        12.416737582720817,
+        3.0299490544945002,
+        53.45506618674845,
+        51.1338349128142,
+        0.524605446178466,
+        -0.06054136622697115,
+        0.03272583335638046,
+        -0.006051441095769411,
+        2.593041021004319,
+        0.2148330044001341,
+        1.0259622763842344,
+        2.549306519329548,
+        2.876562693156302,
+        1.7550270175561309,
+        1.3270753724500537,
+        2.920755780301988,
+        2.074327968992293,
+        2.6108880657702684,
+        2.887052829377353,
+        1.6693790657445788,
+        2.0085713267326355,
+        2.5054074190557003
+      ],
+      "vector_sha256": "6e06d271e0ea54eecb547cfff045a6edda4850bfaa1f9c23bf9f3037ab867131",
+      "metrics": {
+        "vector_sha256": "6e06d271e0ea54eecb547cfff045a6edda4850bfaa1f9c23bf9f3037ab867131",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 19.280575733700008,
+        "max_violation_db": 25.6518272919662,
+        "sum_violation_db": 353.7882127993943,
+        "min_h2_db": 4.3481727080338,
+        "min_h3_db": 4.71068528051777,
+        "objective_j": 64140.635658164305,
+        "il_term": 360.26225518272156,
+        "harmonic_term": 63780.37340298158,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 2.9034078387031403,
+            "min_h2_db": 4.360787196248049,
+            "min_h3_db": 4.71068528051777
+          },
+          "B12": {
+            "worst_pass_il_db": 4.70548186675164,
+            "min_h2_db": 4.401889068449501,
+            "min_h3_db": 4.883464222325012
+          },
+          "B28": {
+            "worst_pass_il_db": 5.751043765661223,
+            "min_h2_db": 4.3481727080338,
+            "min_h3_db": 4.8489154638620295
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 6.323637458757152,
+            "min_h2_db": 4.389616496139964,
+            "min_h3_db": 5.106566841570125
+          },
+          "B26": {
+            "worst_pass_il_db": 19.280575733700008,
+            "min_h2_db": 4.44927808837474,
+            "min_h3_db": 5.240329571150111
+          },
+          "B8": {
+            "worst_pass_il_db": 18.41287248458321,
+            "min_h2_db": 4.525597460244251,
+            "min_h3_db": 5.407298638621592
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.2379101466398332e-08,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1014,
+      "status": "completed",
+      "vector": [
+        19.17399435583502,
+        2.656394615210593,
+        14.87365291044116,
+        10.556580426916481,
+        43.48311302307994,
+        77.44666431145743,
+        2.5986902867443864,
+        0.11948694681748748,
+        0.0626337431371212,
+        0.026194842159748072,
+        0.03161521386355162,
+        0.9594977345317601,
+        1.6821241233497857,
+        1.9594580261036754,
+        2.5687470221892,
+        2.1134947892278433,
+        1.0206860890612006,
+        2.1728361546993256,
+        0.37107912730425596,
+        0.7955780848860741,
+        1.36760391946882,
+        0.21321890596300364,
+        2.388576108030975,
+        2.6633380400016904,
+        0.4639139100909233
+      ],
+      "vector_sha256": "ca35443fd86a9d03d33bf3618a69fef1df9476e9bb3381b318608ac2bca36e33",
+      "metrics": {
+        "vector_sha256": "ca35443fd86a9d03d33bf3618a69fef1df9476e9bb3381b318608ac2bca36e33",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 20.795363125555255,
+        "max_violation_db": 27.525314333300337,
+        "sum_violation_db": 374.03611127336484,
+        "min_h2_db": 2.474685666699664,
+        "min_h3_db": 3.1128488871495468,
+        "objective_j": 71695.39174929529,
+        "il_term": 420.05990964837,
+        "harmonic_term": 71275.33183964693,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 13.35779627055038,
+            "min_h2_db": 2.474685666699664,
+            "min_h3_db": 3.1128488871495468
+          },
+          "B12": {
+            "worst_pass_il_db": 14.471234869755156,
+            "min_h2_db": 2.9095360117167712,
+            "min_h3_db": 3.462380079399294
+          },
+          "B28": {
+            "worst_pass_il_db": 20.795363125555255,
+            "min_h2_db": 3.1728331211390923,
+            "min_h3_db": 3.624366779257837
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 7.401697516244914,
+            "min_h2_db": 2.9069383248384217,
+            "min_h3_db": 3.696031401370653
+          },
+          "B26": {
+            "worst_pass_il_db": 3.5575846064638412,
+            "min_h2_db": 2.7804710673509367,
+            "min_h3_db": 3.749951643217072
+          },
+          "B8": {
+            "worst_pass_il_db": 5.642616925866738,
+            "min_h2_db": 3.308250352004663,
+            "min_h3_db": 4.0960439128706625
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 2.641873213912992e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1015,
+      "status": "completed",
+      "vector": [
+        18.306813731230793,
+        25.986277342215182,
+        20.958295587077735,
+        17.810156079009175,
+        88.1265059383586,
+        39.82803126173094,
+        50.09495092295111,
+        0.3586536768078804,
+        0.04846375640481709,
+        -0.08017285782843829,
+        0.025096973590552796,
+        0.30783730261027814,
+        1.5173626858741043,
+        0.7613784000277519,
+        0.280654264613986,
+        2.6582917626947165,
+        1.734585472382605,
+        1.985152630135417,
+        2.2282049115747213,
+        0.8582404078915715,
+        2.7181877195835114,
+        2.3183662751689553,
+        1.6256906194612384,
+        1.7913466868922114,
+        2.750429858453572
+      ],
+      "vector_sha256": "9c71c5f2e9362b1b17b09d3bdfe2f8ebbf2cb8f8a249322d004af6a6deacb0e4",
+      "metrics": {
+        "vector_sha256": "9c71c5f2e9362b1b17b09d3bdfe2f8ebbf2cb8f8a249322d004af6a6deacb0e4",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 2.7225430042955843,
+        "max_violation_db": 28.16280875548816,
+        "sum_violation_db": 382.24092293175636,
+        "min_h2_db": 1.8371912445118375,
+        "min_h3_db": 2.803284665566114,
+        "objective_j": 74398.46034084781,
+        "il_term": 5.8687146076614765,
+        "harmonic_term": 74392.59162624016,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.1764596566133676,
+            "min_h2_db": 1.8371912445118375,
+            "min_h3_db": 2.803284665566114
+          },
+          "B12": {
+            "worst_pass_il_db": 1.080607863869232,
+            "min_h2_db": 2.0294048855340683,
+            "min_h3_db": 3.0437923995412177
+          },
+          "B28": {
+            "worst_pass_il_db": 1.134486694260414,
+            "min_h2_db": 2.027390971201925,
+            "min_h3_db": 3.0405988505763815
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 2.7225430042955843,
+            "min_h2_db": 2.1916731372866263,
+            "min_h3_db": 3.241871298646371
+          },
+          "B26": {
+            "worst_pass_il_db": 1.2558230675805226,
+            "min_h2_db": 2.375116916846704,
+            "min_h3_db": 3.458613609099668
+          },
+          "B8": {
+            "worst_pass_il_db": 1.3366385172005457,
+            "min_h2_db": 2.5525945093351283,
+            "min_h3_db": 3.652505745369754
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.734707539209074e-08,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1016,
+      "status": "completed",
+      "vector": [
+        26.290011076815425,
+        10.253300908580423,
+        9.842550056613982,
+        18.207987717352808,
+        79.76116299517453,
+        35.90668306089938,
+        46.27009536661208,
+        0.8979051709547639,
+        -0.09169693272560836,
+        0.05123610924929381,
+        0.0563003109768033,
+        1.5975334126502274,
+        2.5976603612303735,
+        2.957789453677833,
+        0.8226197306066751,
+        1.1527856206521392,
+        0.2597660282626748,
+        2.4898757888004184,
+        2.5542402919381857,
+        2.2294273171573877,
+        2.0289807971566916,
+        2.303752329200506,
+        0.7419124692678452,
+        0.5205132840201259,
+        0.8557843426242471
+      ],
+      "vector_sha256": "7684f4ab576b0b8b0d0711331c72e8e2c188099588fc99f70816046c198ceebc",
+      "metrics": {
+        "vector_sha256": "7684f4ab576b0b8b0d0711331c72e8e2c188099588fc99f70816046c198ceebc",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 6.586838965363787,
+        "max_violation_db": 28.37205686995114,
+        "sum_violation_db": 381.8783443436486,
+        "min_h2_db": 1.627943130048858,
+        "min_h3_db": 3.0299683718511834,
+        "objective_j": 74223.8336205632,
+        "il_term": 39.52434417641642,
+        "harmonic_term": 74184.30927638678,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 4.647475155995052,
+            "min_h2_db": 1.627943130048858,
+            "min_h3_db": 3.0299683718511834
+          },
+          "B12": {
+            "worst_pass_il_db": 1.6221010041006068,
+            "min_h2_db": 1.6690452203203667,
+            "min_h3_db": 3.0860552669858543
+          },
+          "B28": {
+            "worst_pass_il_db": 3.4237206648371368,
+            "min_h2_db": 1.7738459663491484,
+            "min_h3_db": 3.229243889312925
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 4.863256445491647,
+            "min_h2_db": 2.0790080555150436,
+            "min_h3_db": 3.60652361360738
+          },
+          "B26": {
+            "worst_pass_il_db": 1.6815728164633301,
+            "min_h2_db": 2.2453607176879666,
+            "min_h3_db": 3.7974657613598706
+          },
+          "B8": {
+            "worst_pass_il_db": 6.586838965363787,
+            "min_h2_db": 2.326026589849458,
+            "min_h3_db": 3.8628552962600615
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 9.762107863297107e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1017,
+      "status": "completed",
+      "vector": [
+        16.408796937577424,
+        10.524543477408589,
+        14.858946138434113,
+        25.74993921853602,
+        10.207088957540691,
+        61.79087497610599,
+        76.39765785085038,
+        0.500421956051141,
+        0.04211497399955988,
+        0.014042281173169607,
+        0.0142117615789175,
+        0.9456896565854549,
+        2.5125949181616307,
+        2.9282723776996136,
+        1.3773485329002142,
+        1.6732304748147726,
+        0.03574957977980375,
+        0.7483482034876943,
+        1.8197392551228404,
+        1.568436797708273,
+        0.7782616345211864,
+        0.3086194172501564,
+        0.10152690298855305,
+        2.941448916681111,
+        2.5442489124834538
+      ],
+      "vector_sha256": "8e9e8b6c4ebbe7378765d29769ecdb51ae99d570e511f6cd07ad12904b647a01",
+      "metrics": {
+        "vector_sha256": "8e9e8b6c4ebbe7378765d29769ecdb51ae99d570e511f6cd07ad12904b647a01",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 7.197075296939886,
+        "max_violation_db": 27.94668001881847,
+        "sum_violation_db": 378.46498911045,
+        "min_h2_db": 2.053319981181529,
+        "min_h3_db": 3.2487172982739843,
+        "objective_j": 72949.8291356652,
+        "il_term": 47.56964765165842,
+        "harmonic_term": 72902.25948801354,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.385789772096163,
+            "min_h2_db": 2.1337110848222447,
+            "min_h3_db": 3.2487172982739843
+          },
+          "B12": {
+            "worst_pass_il_db": 1.3135325636800885,
+            "min_h2_db": 2.186853237335943,
+            "min_h3_db": 3.3512354542360585
+          },
+          "B28": {
+            "worst_pass_il_db": 1.3630534530091083,
+            "min_h2_db": 2.053319981181529,
+            "min_h3_db": 3.264248031631984
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 1.4732443128860198,
+            "min_h2_db": 2.453863138505864,
+            "min_h3_db": 3.673033659696622
+          },
+          "B26": {
+            "worst_pass_il_db": 1.5845364767485004,
+            "min_h2_db": 2.3193294138285427,
+            "min_h3_db": 3.6336213692046444
+          },
+          "B8": {
+            "worst_pass_il_db": 7.197075296939886,
+            "min_h2_db": 2.8818155818395486,
+            "min_h3_db": 4.125606274746529
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.0469470039464777e-08,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1018,
+      "status": "completed",
+      "vector": [
+        12.754899275116623,
+        2.6686398992314935,
+        4.358769254013897,
+        2.9158649686723948,
+        52.55201531900094,
+        64.64878634801134,
+        35.48715234007687,
+        0.8350726106390357,
+        -0.06328721940517426,
+        0.04288367088884115,
+        0.01617970727384091,
+        2.3617413084954024,
+        0.6508743908256291,
+        0.4281955836340785,
+        0.3930750209838152,
+        0.1500450661405921,
+        2.8848528172820807,
+        0.4903077380731702,
+        2.751622784882784,
+        1.5306276194751263,
+        0.3439689874649048,
+        0.7809814726933837,
+        0.72788096498698,
+        0.9156447574496269,
+        1.5721741961315274
+      ],
+      "vector_sha256": "5b477cf80037aa23be32ea98416d1c22959150d2343ecce2ced15e2c136df1f1",
+      "metrics": {
+        "vector_sha256": "5b477cf80037aa23be32ea98416d1c22959150d2343ecce2ced15e2c136df1f1",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 9.08331407912241,
+        "max_violation_db": 28.45824274298492,
+        "sum_violation_db": 390.0747880702019,
+        "min_h2_db": 1.5417572570150804,
+        "min_h3_db": 1.7287903211666797,
+        "objective_j": 76712.86120985282,
+        "il_term": 77.14660621250994,
+        "harmonic_term": 76635.71460364031,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 9.08331407912241,
+            "min_h2_db": 1.5417572570150804,
+            "min_h3_db": 1.7287903211666797
+          },
+          "B12": {
+            "worst_pass_il_db": 6.706317477984482,
+            "min_h2_db": 1.6070827082747887,
+            "min_h3_db": 1.8319163715352902
+          },
+          "B28": {
+            "worst_pass_il_db": 6.6239101585271705,
+            "min_h2_db": 1.7776968041408727,
+            "min_h3_db": 1.905094473338524
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 5.833852845782777,
+            "min_h2_db": 2.051790124643204,
+            "min_h3_db": 2.523711526007398
+          },
+          "B26": {
+            "worst_pass_il_db": 4.674111018675165,
+            "min_h2_db": 2.693835804545967,
+            "min_h3_db": 2.64019502612558
+          },
+          "B8": {
+            "worst_pass_il_db": 3.7698007525647323,
+            "min_h2_db": 1.6039208031663175,
+            "min_h3_db": 3.0441136211320314
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 2.6083756763170795e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1019,
+      "status": "completed",
+      "vector": [
+        20.451222026348113,
+        10.677779991924764,
+        25.724198001250624,
+        18.09419184029102,
+        15.765026166662574,
+        80.45838173152879,
+        74.47256019068881,
+        0.5211175697296858,
+        0.022284074872732165,
+        0.06543430406600237,
+        -0.07438631374388933,
+        2.368315429985523,
+        2.8287926591932773,
+        2.413646408356726,
+        1.342627384699881,
+        2.7965423092246056,
+        1.5255905902013183,
+        1.7765386858955026,
+        0.9673246359452605,
+        2.6126190293580294,
+        0.7948422990739346,
+        1.9197585610672832,
+        2.268523874692619,
+        1.8123769322410226,
+        0.2819724390283227
+      ],
+      "vector_sha256": "ebe186df43438105f6b6ed8a616d17f23946bdac1e2b52b91edcc7349217ef52",
+      "metrics": {
+        "vector_sha256": "ebe186df43438105f6b6ed8a616d17f23946bdac1e2b52b91edcc7349217ef52",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 5.285799227149289,
+        "max_violation_db": 27.58469915085996,
+        "sum_violation_db": 374.2854072757209,
+        "min_h2_db": 2.4153008491400394,
+        "min_h3_db": 3.4329125172763195,
+        "objective_j": 71343.15657446432,
+        "il_term": 24.858193933442447,
+        "harmonic_term": 71318.29838053088,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 1.8086298859715817,
+            "min_h2_db": 2.4153008491400394,
+            "min_h3_db": 3.4329125172763195
+          },
+          "B12": {
+            "worst_pass_il_db": 4.372627928124263,
+            "min_h2_db": 2.539165849065979,
+            "min_h3_db": 3.589606632768378
+          },
+          "B28": {
+            "worst_pass_il_db": 4.469260982900453,
+            "min_h2_db": 2.528569508696731,
+            "min_h3_db": 3.5825273897454806
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 5.285799227149289,
+            "min_h2_db": 2.7854391558797627,
+            "min_h3_db": 3.8897860604601004
+          },
+          "B26": {
+            "worst_pass_il_db": 4.903536056335866,
+            "min_h2_db": 2.884291146405448,
+            "min_h3_db": 4.005671563597638
+          },
+          "B8": {
+            "worst_pass_il_db": 2.175423701620141,
+            "min_h2_db": 3.0852385124628494,
+            "min_h3_db": 4.225757538036643
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.05545760776009e-08,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    },
+    {
+      "seed": 1020,
+      "status": "completed",
+      "vector": [
+        24.389062327705325,
+        24.789076062105597,
+        22.71091853491962,
+        1.3345701165497303,
+        12.636593676079064,
+        39.27836318099872,
+        90.35044880416244,
+        0.37299702495336534,
+        0.06247195731848479,
+        -0.03505342602729798,
+        0.09256365522742271,
+        2.7218740113079547,
+        1.7798092566430568,
+        1.5836545396596193,
+        2.9991065030917525,
+        2.210240584798157,
+        2.8185259513556957,
+        1.6918242014944553,
+        2.126380912028253,
+        0.2785216933116317,
+        0.910844880156219,
+        0.14870990999042988,
+        2.447546185925603,
+        1.1653985129669309,
+        2.4555973978713155
+      ],
+      "vector_sha256": "efcfae8723207707bd9e19bcc7c5f367750161845b51755b4d7ed8658b488a0b",
+      "metrics": {
+        "vector_sha256": "efcfae8723207707bd9e19bcc7c5f367750161845b51755b4d7ed8658b488a0b",
+        "samples": 70,
+        "grid_sha256": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+        "strict_feasible": false,
+        "worst_il_db": 2.9851033592980665,
+        "max_violation_db": 27.722757057360585,
+        "sum_violation_db": 376.90072486001316,
+        "min_h2_db": 2.2772429426394156,
+        "min_h3_db": 3.2429835074051994,
+        "objective_j": 72335.31358528945,
+        "il_term": 7.209780050113762,
+        "harmonic_term": 72328.10380523934,
+        "target_30_01": false,
+        "settings": {
+          "B71": {
+            "worst_pass_il_db": 2.9851033592980665,
+            "min_h2_db": 2.2772429426394156,
+            "min_h3_db": 3.2429835074051994
+          },
+          "B12": {
+            "worst_pass_il_db": 1.481584800689748,
+            "min_h2_db": 2.394013870497371,
+            "min_h3_db": 3.391564379240009
+          },
+          "B28": {
+            "worst_pass_il_db": 1.5096404212399415,
+            "min_h2_db": 2.402163874477906,
+            "min_h3_db": 3.401783847808315
+          },
+          "B13+B14": {
+            "worst_pass_il_db": 1.5637483818461526,
+            "min_h2_db": 2.6056665524944074,
+            "min_h3_db": 3.6492468772866573
+          },
+          "B26": {
+            "worst_pass_il_db": 1.6013963323284661,
+            "min_h2_db": 2.7111210104361576,
+            "min_h3_db": 3.771412775728278
+          },
+          "B8": {
+            "worst_pass_il_db": 1.7094585090668677,
+            "min_h2_db": 2.9213239128841373,
+            "min_h3_db": 4.004795471866088
+          }
+        },
+        "physical": {
+          "component_policy_pass": true,
+          "constraint_id": "RF-T008",
+          "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+          "checked_settings": 6,
+          "installed_variable_c_branches": 2,
+          "installed_shunt_parasites": 0,
+          "min_L_eigenvalue_H": 1.3206897662095986e-09,
+          "connection_role_audit": {
+            "all_declared_roles_supported_by_l_tree": true,
+            "unsupported_role_indices": [],
+            "physical_layout_checked": false,
+            "branches": [
+              {
+                "edge": [
+                  0,
+                  3
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              },
+              {
+                "edge": [
+                  1,
+                  2
+                ],
+                "declared_role": "bridge",
+                "electrical_class": "inductor_tree_chord",
+                "evidence": "verified_L_path_between_terminals",
+                "declared_role_supported_by_l_tree": true
+              }
+            ]
+          },
+          "connection_role_evidence_incomplete": false,
+          "candidate_promotion_blocked": true,
+          "promotion_blockers": [
+            "independent_mna_not_checked",
+            "dense_rf_not_checked"
+          ],
+          "rf_performance_checked": false,
+          "independent_mna_checked": false,
+          "physical_q_srf_em_checked": false
+        }
+      }
+    }
+  ],
+  "proposed_seed_count": 20,
+  "legal_seed_count": 20,
+  "invalid_seed_count": 0,
+  "primary_requested_completed_samples": 1400,
+  "purpose": "same 70-sample grid J/IL/H2/H3 baseline before optimization; no solver",
+  "source_head": "79789f2f3a4b8a9feece9a4cc9a212b4c086f1ed",
+  "preflight_sha256": "c6c5d7d476e5ad2306309f0323c8bf93a0f379a4300637c0857227143e804879",
+  "metadata_link_note": "Preflight was enriched with explicit physical/SPD/role reports and the full hard-bound matrix after the 70-sample read-only start evaluations. All 20 vector SHAs, config/start byte SHAs, RF/grid fingerprints, and metrics were verified unchanged; no RF forwards were repeated."
+}

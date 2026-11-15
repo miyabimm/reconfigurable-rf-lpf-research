@@ -1,0 +1,79 @@
+{
+  "seed": 1019,
+  "method": "scrambled_sobol_single_point",
+  "sobol_index": 0,
+  "vector": [
+    20.451222026348113,
+    10.677779991924764,
+    25.724198001250624,
+    18.09419184029102,
+    15.765026166662574,
+    80.45838173152879,
+    74.47256019068881,
+    0.5211175697296858,
+    0.022284074872732165,
+    0.06543430406600237,
+    -0.07438631374388933,
+    2.368315429985523,
+    2.8287926591932773,
+    2.413646408356726,
+    1.342627384699881,
+    2.7965423092246056,
+    1.5255905902013183,
+    1.7765386858955026,
+    0.9673246359452605,
+    2.6126190293580294,
+    0.7948422990739346,
+    1.9197585610672832,
+    2.268523874692619,
+    1.8123769322410226,
+    0.2819724390283227
+  ],
+  "vector_sha256": "ebe186df43438105f6b6ed8a616d17f23946bdac1e2b52b91edcc7349217ef52",
+  "status": "legal",
+  "physical": {
+    "component_policy_pass": true,
+    "constraint_id": "RF-T008",
+    "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "checked_settings": 6,
+    "installed_variable_c_branches": 2,
+    "installed_shunt_parasites": 0,
+    "min_L_eigenvalue_H": 1.05545760776009e-08,
+    "connection_role_audit": {
+      "all_declared_roles_supported_by_l_tree": true,
+      "unsupported_role_indices": [],
+      "physical_layout_checked": false,
+      "branches": [
+        {
+          "edge": [
+            0,
+            3
+          ],
+          "declared_role": "bridge",
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals",
+          "declared_role_supported_by_l_tree": true
+        },
+        {
+          "edge": [
+            1,
+            2
+          ],
+          "declared_role": "bridge",
+          "electrical_class": "inductor_tree_chord",
+          "evidence": "verified_L_path_between_terminals",
+          "declared_role_supported_by_l_tree": true
+        }
+      ]
+    },
+    "connection_role_evidence_incomplete": false,
+    "candidate_promotion_blocked": true,
+    "promotion_blockers": [
+      "independent_mna_not_checked",
+      "dense_rf_not_checked"
+    ],
+    "rf_performance_checked": false,
+    "independent_mna_checked": false,
+    "physical_q_srf_em_checked": false
+  }
+}
