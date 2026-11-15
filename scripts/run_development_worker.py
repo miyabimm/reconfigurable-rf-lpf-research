@@ -18,11 +18,16 @@ def main(argv=None):
     parser.add_argument('--output', required=True)
     parser.add_argument('--checkpoint-interval', type=int, default=100)
     parser.add_argument('--spot-checks', help='JSON object mapping stage to sample-index list')
+    parser.add_argument('--search-bounds', help='JSON file with complete vector-order [lower, upper] pairs')
     args = parser.parse_args(argv)
     try:
+        bounds = json.loads(Path(args.search_bounds).read_text()) if args.search_bounds else None
+        if args.search_bounds and bounds is None:
+            raise ValueError('Search bounds file must contain numeric pairs, not null')
         result = run_development_worker(args.config, args.starts, args.seed, args.arm, args.output,
                                         checkpoint_interval=args.checkpoint_interval,
-                                        spot_checks=json.loads(args.spot_checks) if args.spot_checks else None)
+                                        spot_checks=json.loads(args.spot_checks) if args.spot_checks else None,
+                                        search_bounds=bounds)
         print(json.dumps({'status': result['status'], 'output': str(Path(args.output).resolve())}))
         return 0 if result['status'] == 'converged' else 4
     except (Exception, KeyboardInterrupt) as exc:

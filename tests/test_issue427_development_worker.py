@@ -153,6 +153,81 @@ class DevelopmentWorkerTests(unittest.TestCase):
         for path, data in prior.items():
             self.assertEqual(path.read_bytes(), data)
 
+    def test_25_coordinate_box_all_three_solvers(self):
+        from lpf.constraint_versions import load_constraint
+        from lpf.rf_core import build_rf_model
+        from lpf.search.component_constraints import physical_bounds
+        from lpf.topology_management import CircuitDefinition
+        from lpf.topology_management.circuit_layout import InductorTree, CapacitorPlacement
+        p = load_constraint('RF-T008', allow_trial=True)
+        var = ((0, -1), (1, 2))
+        d = CircuitDefinition(InductorTree(5, ((0, 1), (1, 3), (1, 4), (1, 2))),
+            ('LQP02HV',) * 4, (0, 1, 2, 3), ((0, 1), (0, 2), (1, 2), (2, 3)),
+            CapacitorPlacement(5, ((0, 1), (4, -1), (1, 2)), var, var),
+            ('GJM01',) * 3, ('shunt_to_ground', 'bridge'))
+        model = build_rf_model(d, p)
+        hard = physical_bounds(d, model.schema, p)
+        x = np.mean(hard, axis=1)
+        x[7:11] = 0.0  # SPD regardless of the four coupling slots
+        self.assertEqual(len(x), 25)
+        def configure(c):
+            first = c['arms'][0]['steps'][0]
+            first.update(solver='hybrid', aggregation='sum', max_requested_samples=168,
+                         options=dict(maxiter=2, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+            for name, solver in (('fine', 'slsqp'), ('last', 'slp')):
+                step = copy.deepcopy(first)
+                step.update(name=name, solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
+                            options=dict(max_iterations=2, max_evaluations=3))
+                c['arms'][0]['steps'].append(step)
+        with patch.object(fixtures, 'make', return_value=(p, d, model, hard, x)):
+            plan, d, p, x = self.setup_model('RF-T008', mutate=configure)
+        box = [[float(v), float(v)] for v in x]
+        box[0] = [x[0] - .1, x[0] + .1]
+        w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                              checkpoint=Path(self.raw.name)/'25-box', search_bounds=box)
+        self.assertEqual(w._physical_bounds, hard)
+        seen = []
+        def observe(fn):
+            def call(callback, start, bounds, **kw):
+                seen.append([list(pair) for pair in bounds])
+                return fn(callback, start, bounds, **kw)
+            return call
+        with patch('lpf.search._worker_next.hybrid_minimize', side_effect=observe(hybrid_minimize)), \
+             patch('lpf.search._development_worker.slsqp_minimize', side_effect=observe(slsqp_minimize)), \
+             patch('lpf.search._development_worker.slp_minimize', side_effect=observe(slp_minimize)):
+            result = w.run()
+        self.assertEqual(seen, [box] * 3)
+        for step in result['steps']:
+            for i in range(1, 25):
+                self.assertEqual(step['solver_result']['best_x' if step['solver'] == 'hybrid' else 'x'][i], x[i])
+                self.assertEqual(step['rf_best']['vector'][i], x[i])
+        for path in w.path.glob('*.json'):
+            self.assertEqual(json.loads(path.read_text())['best']['vector'][1:], x.tolist()[1:])
+
+    def test_invalid_search_boxes_stop_before_solver(self):
+        plan, d, p, x, existing = self.make_worker()
+        good = [list(pair) for pair in existing._physical_bounds]
+        cases = [[], good[:-1], [[1, 2, 3]] * len(good)]
+        for bad in (float('nan'), float('inf'), True, '1'):
+            box = copy.deepcopy(good); box[0][0] = bad; cases.append(box)
+        box = copy.deepcopy(good); box[0] = [good[0][1], good[0][0]]; cases.append(box)
+        box = copy.deepcopy(good); box[0][0] -= 1; cases.append(box)
+        box = copy.deepcopy(good); box[0] = [good[0][0], float(x[0]) - .1]; cases.append(box)
+        with patch('lpf.search._worker_next.hybrid_minimize') as solver:
+            for i, box in enumerate(cases):
+                with self.subTest(i=i), self.assertRaises(ValueError):
+                    DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                                      checkpoint=Path(self.raw.name)/f'bad-box-{i}', search_bounds=box)
+            solver.assert_not_called()
+            with self.assertRaisesRegex(ValueError, 'SHA'):
+                DevelopmentWorker(plan, d, p, 'demo', 23, x, '0'*64, root=ROOT,
+                                  checkpoint=Path(self.raw.name)/'bad-sha', search_bounds=good)
+            illegal = x.copy(); illegal[0] = good[0][0] - 1
+            with self.assertRaises(ValueError):
+                DevelopmentWorker(plan, d, p, 'demo', 23, illegal, vector_sha(illegal), root=ROOT,
+                                  checkpoint=Path(self.raw.name)/'bad-physical', search_bounds=good)
+            solver.assert_not_called()
+
     def test_checkpoint_schedule(self):
         _, _, _, x, w = self.make_worker(interval=3)
         w.step = w.steps[0]

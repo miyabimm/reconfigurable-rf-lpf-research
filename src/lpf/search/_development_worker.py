@@ -1,5 +1,6 @@
 """Gate-free, single-process development worker; not a formal Job or resume API."""
 import os
+from numbers import Real
 from pathlib import Path
 import tempfile
 
@@ -8,7 +9,7 @@ import numpy as np
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.slp import slp_minimize
 from ._worker_next import MinimalWorker
-from .component_constraints import validate_search_box, validate_values
+from .component_constraints import _check_vector_box, validate_search_box, validate_values
 from .evaluation import raw_numbers
 from .performance import (evaluate_requirements, grid_fingerprint, prepare_requirements,
                           summarize_mandatory)
@@ -40,6 +41,21 @@ def _save_checkpoint(path, payload):
             os.unlink(name)
 
 
+def _normalize_search_bounds(bounds):
+    """Copy numeric pairs without accepting bools, strings, or ragged input."""
+    try:
+        box = np.asarray(bounds, dtype=object)
+        if (box.ndim != 2 or box.shape[1] != 2 or
+                any(isinstance(v, (bool, np.bool_)) or not isinstance(v, Real) for v in box.flat)):
+            raise ValueError('Search bounds must be numeric pairs')
+        box = np.asarray(box, dtype=float)
+    except (TypeError, OverflowError) as exc:
+        raise ValueError('Search bounds must be numeric pairs') from exc
+    if not np.all(np.isfinite(box)):
+        raise ValueError('Search bounds must be finite')
+    return tuple(tuple(row) for row in box.tolist())
+
+
 class DevelopmentWorker(MinimalWorker):
     """Execute a frozen Plan without formal storage, reservations, or recovery.
 
@@ -52,7 +68,7 @@ class DevelopmentWorker(MinimalWorker):
             raise ValueError('Plan arm with steps required')
 
     def __init__(self, plan, definition, policy, arm, seed, vector, expected_vector_sha,
-                 *, root, checkpoint, checkpoint_interval=100, spot_checks=None):
+                 *, root, checkpoint, checkpoint_interval=100, spot_checks=None, search_bounds=None):
         self.path = Path(checkpoint).resolve()
         root = Path(root).resolve()
         if (not self.path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
@@ -68,6 +84,11 @@ class DevelopmentWorker(MinimalWorker):
         self._running = False
         self._started = False
         super().__init__(plan, definition, policy, arm, seed, vector, expected_vector_sha, root=root)
+        if search_bounds is not None:
+            box = _normalize_search_bounds(search_bounds)
+            validate_search_box(box, self._physical_bounds)
+            _check_vector_box(self.x, box)
+            self.bounds = box
         self.steps = next(a['steps'] for a in plan.data['config']['arms'] if a['name'] == arm)
         self._grids = {f"{arm}/{self.step['name']}":
                        (self.grid, self.evaluator, self.prepared_requirements)}
@@ -91,6 +112,8 @@ class DevelopmentWorker(MinimalWorker):
         self.grid, self.evaluator, self.prepared_requirements = self._grids[stage]
 
     def _evaluate(self, vector):
+        if self.bounds is not self._physical_bounds:
+            _check_vector_box(vector, self.bounds)
         response, assessment = super()._evaluate(vector)
         if self._running:
             self.forward_count += 1
@@ -154,6 +177,7 @@ class DevelopmentWorker(MinimalWorker):
             raise RuntimeError('Worker cannot retry or resume')
         self._started = True
         validate_search_box(self.bounds, self._physical_bounds)
+        _check_vector_box(self.x, self.bounds)
         x = self.x.copy()
         candidates, steps, invalid = [], [], []
         cfg = self.plan.data['config']
@@ -190,11 +214,13 @@ class DevelopmentWorker(MinimalWorker):
                     raise ValueError('No solver output; no implicit retry')
                 for v in found:
                     try:
+                        _check_vector_box(v, self.bounds)
                         validate_values(self.definition, self.model.schema, v, self.policy, frozen_model=self.model)
                     except ValueError as exc:
                         invalid.append(dict(vector=plain(v), status='invalid', reason=str(exc)))
                         continue
                     candidates.append(plain(v))
+                _check_vector_box(next_x, self.bounds)
                 validate_values(self.definition, self.model.schema, next_x, self.policy, frozen_model=self.model)
                 if self.best is not None and self.best['vector_sha256'] != self.saved_sha:
                     self._save_best()
