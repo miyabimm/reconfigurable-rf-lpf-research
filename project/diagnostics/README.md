@@ -39,6 +39,7 @@
 | 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md)、[D2](issue343_d2.md)、[D3](issue343_d3_cleanup.md)、[D4](issue343_d4_cleanup.md)、[E1](issue343_e1_cleanup.md)、[E2](issue343_e2_cleanup.md) | 構造正本・保存ゲートの旧caller分離、科学回帰の現役API化、旧入口・候補・RF wrapper撤去と歴史資料の隔離。D4の残存matching旧layoutと未検証範囲に注意 |
 | 限定実証・レビュー証拠 | [#330報告](issue330_real_scipy.md)・[再現コード](issue330_real_scipy.py) | 実SciPy callback非EXP検証、旧実行との差、source/import制限。再現コードはRF計算を行うので文書確認時に起動しない |
 | 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md)、[#369開発用100-forward予約](issue369_forward_window.md) | 中断・未照合費用・原本所在不明、時間診断とmock限定の保存比較。Pilot再実行の指示ではない |
+| 限定実証・レビュー証拠 | [#433 既知4L2C近傍比較](issue433/report.md) | RF-T008試験条件・1 seed×6 Job、基準再評価・有限格子strictとsolver収束を区別。第2段階の実行指示ではない |
 | 歴史的開発診断（知見統合済み） | [#372/#375の結果と限界](../results.md#開発pilotの未収束と限定性能診断2026-11)・[探索の教訓](../methods.md#開発pilotの未収束と性能計測の教訓rf-t008-schema2issue-372375389391393) | 非EXPの二つのPilotとwindow100固定vector照合。専用入力・派生summary・旧診断コードを#397で削減、逐語原文は[整理前Git](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/504058c52b360e02e37649f509d257dea139ad64/project/diagnostics) |
 | 開発ツール・限定検証 | [#387 checkpoint境界](issue387_checkpoint.md) | 非active切替の限定修正、非RF旧新比較・異常注入 |
 | 開発ツール・限定検証 | [#378 共通監視](issue378_monitor.md)、[#381 py-spy](issue381/README.md)、[#383 内部タイマー](issue383_timing.md)・[非RFベンチマーク](issue383_benchmark.py)、[#385 短時間実RF内訳](issue385_timing.md) | 開発CLI監視・限定合成負荷・短時間実RF内訳。#381の子起動と#383の内部計時は別モード |
