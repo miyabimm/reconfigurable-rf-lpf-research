@@ -27,6 +27,14 @@ uv run --frozen python scripts/run_development_worker.py \
 
 任意の `--search-bounds PATH.json` は完全vector順 `[[lower, upper], ...]` の有限数値の閉区間（固定座標も可）。物理hard boundsの内側で、元の完全start vectorを含む必要がある。clip・修復はしない。未指定は物理全域。`input.json` の `search_bounds` は実際にsolverに渡す正規化済みbox、`search_bounds_sha256` はそのcanonical JSON SHA-256（未指定は両方null、modeは `physical_full`）。これはRF物理制約ではなく開発用設定。
 
+### Issue #435 の単一目的モード（明示 opt-in）
+
+`--objective-mode weighted_violation --max-search-forwards N` を併用する。Nは正整数で、探索callbackだけの上限。例えば上記CLIと同様に `--config`, `--starts`, `--seed`, `--arm`, `--output` を指定し、この2引数を追加する。設定はRF-T008 trial opt-in／full_lpf、1 seed・1 arm・1 Hybrid/sum step、anytimeなし、search pass 2点・H2/H3 3点、selection 3点、terminal 17点/区間に限定する。基になるschema2設定例は `project/diagnostics/issue433/hybrid.json`（実行例ではなく旧条件の入力例）。このmodeではstepの `options` と `max_requested_samples`、arm/trialの `max_requested_samples`、validationの `max_requested_samples` は省略可能で、指定されていても凍結前に導出し直す。selectionの候補上限/top_kは1へ固定する。その他のschema2項目は必要。
+
+Hybridは `max_evaluations=maxiter=N`, `max_restarts=0`, `restart_sigma=0.1`。Planは探索 `N×70`、selection `1×84`、terminal `1×476` を静的予約し、独立denseは別枠で予約のみ・実行しない。preflightの既存selection rule名は互換性のため残るが、このモードではランキングを行わず、探索の最小J vectorだけをselection/terminalで再評価する。独立MNA spotは別費用で、実行sample数をstage別に記録。実績と予約、Plan・grid・目的のSHAはinput/resultで照合できる。失敗時のcheckpointは最後の保存時点であり、例外時に未保存の改善を保証しない。
+
+目的は `J=max(0, worst_pass_IL−0.30)^2 + 100×mean(max(0, 30.01−H2/H3 attenuation)^2)`、探索70点全6設定・28区間から1 callback/1 RF forwardで計算する。30.01 dBは探索余裕のみ、元のmandatory 30 dB・nominal 35 dBを変更しない。重み・余裕達成・収束の性能妥当性は未検証。WorkerはJの厳密比較、同値は最小vector SHA；Hybridは同値で最初のvectorを保持するため、完全同値の場合のみ両vectorが異なり得る（JとHybrid先着vectorは照合）。Terminalの詳細RF結果と独立spotは別判定であり、有限格子strict PASSも連続周波数・物理実装・実測の保証ではない。
+
 出力はcheckout外のsystem temp内に限り、既存のディレクトリを上書きしない。`input.json`をWorker前に保存し、Workerの追記型`checkpoints/`と`result.json`を残す。失敗・中断後も再試行／resumeしない。`--checkpoint-interval`は正整数、`--spot-checks`はstage名→sample index配列のJSON。終了コード0はsolver収束、4は完走・未収束、2は例外・中断。いずれもRF適合の認定ではない。Workerの結果には有限格子・独立MNA等の実際の検証深度が記載される。本番・正式EXP用のG0〜G5や費用保護はない。
 
 ## 開発ベンチ（正式EXPではない）
