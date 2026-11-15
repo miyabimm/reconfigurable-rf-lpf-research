@@ -30,8 +30,7 @@ class MinimalWorker:
         if type(seed) is not int or seed not in cfg['seeds'] or vector_sha(vector) != expected_vector_sha:
             raise ValueError('Seed/start SHA mismatch')
         chosen = next((a for a in cfg['arms'] if a['name'] == arm), None)
-        if chosen is None or len(chosen['steps']) != 1 or chosen['steps'][0]['solver'] != 'hybrid':
-            raise ValueError('Exactly one Hybrid step required')
+        self._validate_arm(chosen)
         self.step = chosen['steps'][0]
         self.definition, self.policy, self.seed = definition, policy, seed
         self.model = build_rf_model(definition, policy)
@@ -48,6 +47,11 @@ class MinimalWorker:
                                      frozen_model=self.model)
         self.x = np.array(vector, dtype=float, copy=True)
         self.evaluator = self.model.evaluator(self.grid)
+
+    @staticmethod
+    def _validate_arm(chosen):
+        if chosen is None or len(chosen['steps']) != 1 or chosen['steps'][0]['solver'] != 'hybrid':
+            raise ValueError('Exactly one Hybrid step required')
 
     def _check_box(self, vector):
         return _check_vector_box(vector, self._physical_bounds)
