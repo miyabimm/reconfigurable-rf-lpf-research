@@ -25,6 +25,8 @@ uv run --frozen python scripts/run_development_worker.py \
   --spot-checks '{"terminal":[0,111]}'
 ```
 
+任意の `--search-bounds PATH.json` は完全vector順 `[[lower, upper], ...]` の有限数値の閉区間（固定座標も可）。物理hard boundsの内側で、元の完全start vectorを含む必要がある。clip・修復はしない。未指定は物理全域。`input.json` の `search_bounds` は実際にsolverに渡す正規化済みbox、`search_bounds_sha256` はそのcanonical JSON SHA-256（未指定は両方null、modeは `physical_full`）。これはRF物理制約ではなく開発用設定。
+
 出力はcheckout外のsystem temp内に限り、既存のディレクトリを上書きしない。`input.json`をWorker前に保存し、Workerの追記型`checkpoints/`と`result.json`を残す。失敗・中断後も再試行／resumeしない。`--checkpoint-interval`は正整数、`--spot-checks`はstage名→sample index配列のJSON。終了コード0はsolver収束、4は完走・未収束、2は例外・中断。いずれもRF適合の認定ではない。Workerの結果には有限格子・独立MNA等の実際の検証深度が記載される。本番・正式EXP用のG0〜G5や費用保護はない。
 
 ## 開発ベンチ（正式EXPではない）

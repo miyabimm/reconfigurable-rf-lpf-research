@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint
-from ._development_worker import DevelopmentWorker, _save_checkpoint
+from ._development_worker import DevelopmentWorker, _normalize_search_bounds, _save_checkpoint
 from ._job_evaluation import source_identity
 from .plan import ROOT, load_preflight
 from .proposals import definition_from_data
@@ -16,7 +16,7 @@ from .storage import canonical, sha, vector_sha
 
 
 def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
-                           checkpoint_interval=100, spot_checks=None):
+                           checkpoint_interval=100, spot_checks=None, search_bounds=None):
     """Run exactly one seed/arm, preserving input and append-only Worker events.
 
     No budget ledger, retry, resume, or formal experiment protection is provided.
@@ -47,6 +47,7 @@ def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
     start = entries[seed]
     if not isinstance(start, dict) or set(start) != {'vector', 'vector_sha256'} or vector_sha(start['vector']) != start['vector_sha256']:
         raise ValueError('Explicit start vector/SHA mismatch')
+    box = None if search_bounds is None else _normalize_search_bounds(search_bounds)
     source = source_identity(root)
     script = root / 'scripts/run_development_worker.py'
     source['files']['scripts/run_development_worker.py'] = hashlib.sha256(script.read_bytes()).hexdigest()
@@ -54,13 +55,17 @@ def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
                   definition=asdict(definition), definition_sha256=sha(asdict(definition)),
                   policy_id=cfg['rf']['constraint_id'], policy_fingerprint=constraint_fingerprint(policy),
                   seed=seed, arm=arm, start=start, checkpoint_interval=checkpoint_interval,
-                  spot_checks=spot_checks, source=source, source_sha256=sha(source))
+                  spot_checks=spot_checks, search_bounds=box,
+                  search_bounds_sha256=None if box is None else sha(box),
+                  search_bounds_mode='physical_full' if box is None else 'specified',
+                  source=source, source_sha256=sha(source))
     # mkdir itself is exclusive: neither an existing job nor its files are touched.
     output.mkdir(exist_ok=False)
     _save_checkpoint(output / 'input.json', record)
     worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
                                root=root, checkpoint=output / 'checkpoints',
-                               checkpoint_interval=checkpoint_interval, spot_checks=spot_checks)
+                               checkpoint_interval=checkpoint_interval, spot_checks=spot_checks,
+                               search_bounds=box)
     result = worker.run()
     _save_checkpoint(output / 'result.json', result)
     if canonical(json.loads((output / 'result.json').read_text())) != canonical(result):
