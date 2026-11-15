@@ -1,22 +1,70 @@
 """One development-only Worker invocation; not a production or EXP runner."""
 from dataclasses import asdict
+import copy
 import hashlib
 import json
 from pathlib import Path
 import subprocess
 import tempfile
 
-from lpf.constraint_versions import constraint_fingerprint, load_constraint
+import yaml
+
+from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_input_file
 from ._development_worker import DevelopmentWorker, _normalize_search_bounds, _save_checkpoint
 from ._job_evaluation import source_identity
-from .plan import ROOT, load_preflight
+from .plan import ROOT, Loader, Plan, load_preflight
+from .preflight import freeze
+from .performance import build_evaluation_grid, compile_requirements
 from .proposals import definition_from_data
 from .starts import load_explicit
 from .storage import canonical, sha, vector_sha
 
 
+def _weighted_plan(config, root, arm, n):
+    """Derive the existing Plan format before freezing; never alter formal preflight."""
+    if type(n) is not int or n < 1 or n > (2**63 - 1) // 1_000_000:
+        raise ValueError('max_search_forwards must be a bounded positive integer')
+    with Path(config).open() as stream:
+        cfg = copy.deepcopy(yaml.load(stream, Loader=Loader))
+    if (not isinstance(cfg, dict) or cfg.get('rf') != {'constraint_id': 'RF-T008', 'allow_trial': True}
+            or cfg.get('objective') != 'full_lpf' or len(cfg.get('arms', [])) != 1
+            or cfg['arms'][0].get('name') != arm or len(cfg['arms'][0].get('steps', [])) != 1
+            or len(cfg.get('seeds', [])) != 1 or cfg.get('anytime_samples') != []):
+        raise ValueError('Weighted mode requires RF-T008/full_lpf, one arm, seed and step, no anytime')
+    step = cfg['arms'][0]['steps'][0]
+    if step.get('solver') != 'hybrid' or step.get('aggregation') != 'sum':
+        raise ValueError('Weighted mode requires Hybrid/sum')
+    policy = load_constraint('RF-T008', root=root, allow_trial=True)
+    req = compile_requirements(policy, rf_input_file(root, policy['bands_file']), 'full_lpf')
+    grid = build_evaluation_grid(req, step['points_per_interval'], step.get('stop_points_per_interval'))
+    selection = cfg['selection']
+    terminal = cfg['validation']
+    if (step['points_per_interval'] != 2 or step.get('stop_points_per_interval') != 3 or
+            len(grid.frequency_hz) != 70 or selection['points_per_interval'] != 3 or
+            terminal['terminal_points'] != 17):
+        raise ValueError('Weighted mode requires 70/84/476 search/selection/terminal samples')
+    step['options'] = dict(maxiter=n, max_restarts=0, max_evaluations=n, restart_sigma=0.1)
+    step['max_requested_samples'] = n * len(grid.frequency_hz)
+    selection['max_candidates'] = selection['top_k'] = 1
+    total = step['max_requested_samples'] + 84 + 476
+    if total > 2**63 - 1:
+        raise ValueError('Sample reservation overflow')
+    cfg['arms'][0]['max_requested_samples'] = cfg['max_trial_requested_samples'] = total
+    # Dense is independent and not run by this worker; preflight still reserves its cap.
+    dense = build_evaluation_grid(req, terminal['dense_points'])
+    terminal['max_requested_samples'] = terminal['max_candidates'] * len(dense.frequency_hz)
+    frozen = freeze(cfg, root)
+    costs = frozen['costs']['jobs'][arm]
+    if (costs['stages'][step['name']]['upper_reservation'] != n * len(grid.frequency_hz) or
+            costs['selection_upper_reservation'] != 84 or costs['terminal_fixed_reservation'] != 476 or
+            costs['total_upper_reservation'] != total):
+        raise ValueError('Weighted budget arithmetic mismatch')
+    return Plan(canonical(frozen), sha(frozen))
+
+
 def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
-                           checkpoint_interval=100, spot_checks=None, search_bounds=None):
+                           checkpoint_interval=100, spot_checks=None, search_bounds=None,
+                           objective_mode=None, max_search_forwards=None):
     """Run exactly one seed/arm, preserving input and append-only Worker events.
 
     No budget ledger, retry, resume, or formal experiment protection is provided.
@@ -31,7 +79,12 @@ def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if probe.returncode == 0:
         raise ValueError('Output must be outside Git checkouts')
-    plan = load_preflight(config, root=root)
+    if objective_mode is None and max_search_forwards is None:
+        plan = load_preflight(config, root=root)
+    elif objective_mode == 'weighted_violation' and max_search_forwards is not None:
+        plan = _weighted_plan(config, root, arm, max_search_forwards)
+    else:
+        raise ValueError('Specify weighted_violation and max_search_forwards together')
     cfg = plan.data['config']
     ref = cfg['definition']
     if ref is None:
@@ -59,13 +112,20 @@ def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
                   search_bounds_sha256=None if box is None else sha(box),
                   search_bounds_mode='physical_full' if box is None else 'specified',
                   source=source, source_sha256=sha(source))
+    if objective_mode:
+        from ._development_worker import WEIGHTED_OBJECTIVE
+        record['weighted_objective'] = WEIGHTED_OBJECTIVE
+        record['weighted_objective_sha256'] = sha(WEIGHTED_OBJECTIVE)
+        record['max_search_forwards'] = max_search_forwards
     # mkdir itself is exclusive: neither an existing job nor its files are touched.
     output.mkdir(exist_ok=False)
     _save_checkpoint(output / 'input.json', record)
+    if objective_mode and canonical(json.loads((output / 'input.json').read_text())) != canonical(record):
+        raise ValueError('Input readback mismatch')
     worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
                                root=root, checkpoint=output / 'checkpoints',
                                checkpoint_interval=checkpoint_interval, spot_checks=spot_checks,
-                               search_bounds=box)
+                               search_bounds=box, objective_mode=objective_mode)
     result = worker.run()
     _save_checkpoint(output / 'result.json', result)
     if canonical(json.loads((output / 'result.json').read_text())) != canonical(result):
