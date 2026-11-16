@@ -616,6 +616,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
                     solver['best_fun'] != best['objective_j'] or
                     len(selected) != 1 or len(terminal) != 1 or
                     vector_sha(best['vector']) != best['vector_sha256'] or
+                    vector_sha(selected[0]['vector']) != best['vector_sha256'] or
                     selected[0]['vector_sha256'] != best['vector_sha256'] or
                     terminal[0]['vector_sha256'] != best['vector_sha256']):
                 raise ValueError('Job best/selection/terminal mismatch')

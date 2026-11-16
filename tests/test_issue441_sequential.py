@@ -17,7 +17,7 @@ from lpf.search._development_worker import DevelopmentWorker
 from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
 from lpf.search.runner import run_weighted_development, _weighted_strict_winner
-from lpf.search.storage import vector_sha
+from lpf.search.storage import canonical, vector_sha
 from lpf.optimizers.hybrid import HybridResult, LocalRun
 from lpf.search.starts import generate_for_definition
 from lpf.rf_core import build_rf_model
@@ -103,6 +103,21 @@ class SequentialTests(unittest.TestCase):
         self.assertIn('byte mismatch', summary['exit_reason'])
         self.assertEqual(summary['jobs'][0]['reserved'], 2*70+84+476)
         self.assertEqual(summary['jobs'][1]['status'], 'not_started')
+
+    def test_selection_vector_mismatch_stops_even_with_matching_file(self):
+        from lpf.search._development_runner import run_prepared_weighted_job
+        plan, d, p, x, box, starts = self.prepared(2)
+        output = Path(self.raw.name)/'bad-selection'
+        def tamper(*args, **kwargs):
+            result = run_prepared_weighted_job(*args, **kwargs)
+            result['selection']['ranked'][0]['vector'][0] += .01
+            (Path(args[6])/'result.json').write_text(canonical(result) + '\n')
+            return result
+        with patch('lpf.search._development_runner.run_prepared_weighted_job', side_effect=tamper):
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
+        self.assertEqual(summary['status'], 'unknown')
+        self.assertIn('best/selection/terminal mismatch', summary['exit_reason'])
+        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+84+476)
 
     def test_exact_multiple_and_interruption_preserve_checkpoint(self):
         plan, d, p, x, box, starts = self.prepared(1000)
