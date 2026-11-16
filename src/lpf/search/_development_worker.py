@@ -114,12 +114,10 @@ class DevelopmentWorker(MinimalWorker):
             raise ValueError('Plan arm with steps required')
 
     def __init__(self, plan, definition, policy, arm, seed, vector, expected_vector_sha,
-                 *, root, checkpoint, checkpoint_interval=100, spot_checks=None, search_bounds=None,
+                 *, root, checkpoint, checkpoint_interval=1000, spot_checks=None, search_bounds=None,
                  objective_mode=None, budget_restarts=False):
         if type(budget_restarts) is not bool or (budget_restarts and objective_mode != 'weighted_violation'):
             raise ValueError('Budget restarts require weighted development mode')
-        if budget_restarts and checkpoint_interval != 1000:
-            raise ValueError('Budget restart checkpoints require interval 1000')
         self.budget_restarts = budget_restarts
         self.local_run_index = 0
         self.path = Path(checkpoint).resolve()
@@ -171,7 +169,7 @@ class DevelopmentWorker(MinimalWorker):
             if budget_restarts:
                 mode = plan.data.get('development_weighted_restart', {})
                 expected = dict(max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
-                                checkpoint_interval=1000, search_bounds=plain(self.bounds),
+                                checkpoint_interval_forwards=checkpoint_interval, search_bounds=plain(self.bounds),
                                 search_bounds_sha256=sha(self.bounds), objective='weighted_violation',
                                 start_method=mode.get('start_method'))
                 if mode != expected or mode['start_method'] not in ('explicit', 'scrambled_sobol_single_point'):

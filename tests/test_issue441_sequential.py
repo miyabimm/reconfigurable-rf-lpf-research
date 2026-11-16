@@ -52,14 +52,38 @@ class SequentialTests(unittest.TestCase):
         self.assertEqual([r['seed'] for r in summary['jobs']], [23, 24])
         for row in summary['jobs']:
             self.assertEqual(row['requested'], 3*70+84+476)
-            self.assertEqual(len(row['local_runs']), 3)
+            self.assertEqual(row['local_run_count'], 3)
+            self.assertNotIn('local_runs', row)
             job = output/row['raw_path']
+            self.assertEqual(len(json.loads((job/'result.json').read_text())['steps'][0]['solver_result']['runs']), 3)
             checkpoint = json.loads((job/'checkpoints'/'000001.json').read_text())
             self.assertEqual(checkpoint['forward_count'], 3)
             self.assertEqual(checkpoint['restart_count'], 2)
             self.assertEqual(row['terminal']['independent']['status'], 'pass')
         with self.assertRaises(ValueError):
             run_weighted_development(plan, d, p, starts, output, root=ROOT)
+
+    def test_configurable_checkpoint_interval_is_frozen_and_saved(self):
+        plan, d, p, x, box, starts = self.prepared(5)
+        config = Path(self.sources.name)/'plan.yaml'
+        plan = _weighted_plan(config, ROOT, 'demo', 5, budget_restarts=True,
+                              search_bounds=box, checkpoint_interval_forwards=2)
+        self.assertEqual(plan.data['development_weighted_restart']['checkpoint_interval_forwards'], 2)
+        def early(fun, z, **kwargs):
+            value = fun(z)
+            return SimpleNamespace(x=z, fun=value, success=True, status=0, message='success', nit=0)
+        output = Path(self.raw.name)/'interval'
+        with patch('lpf.optimizers.hybrid.minimize', side_effect=early):
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
+        self.assertEqual(summary['status'], 'completed', summary.get('exit_reason'))
+        job = output/summary['jobs'][0]['raw_path']
+        rows = [json.loads(p.read_text()) for p in sorted((job/'checkpoints').glob('*.json'))]
+        self.assertEqual([r['forward_count'] for r in rows], [2, 4, 5])
+        self.assertEqual(json.loads((job/'input.json').read_text())['checkpoint_interval_forwards'], 2)
+        for invalid in (0, -1, True, 1.5):
+            with self.assertRaises(ValueError):
+                _weighted_plan(config, ROOT, 'demo', 5, budget_restarts=True,
+                               search_bounds=box, checkpoint_interval_forwards=invalid)
 
     def test_terminal_strict_then_il_not_j(self):
         def row(name, strict, il, j):
@@ -81,12 +105,16 @@ class SequentialTests(unittest.TestCase):
         proc = subprocess.run([sys.executable, str(ROOT/'scripts/run_rf_search.py'), 'develop',
                                '--config', str(config), '--output', str(output), '--starts', str(start_file),
                                '--objective-mode', 'weighted_violation', '--max-search-forwards', '2',
+                               '--checkpoint-interval-forwards', '1',
                                '--search-bounds', str(box_file)], capture_output=True, text=True)
         self.assertEqual(proc.returncode, 4, proc.stderr)
         summary = json.loads((output/'summary.json').read_text())
         self.assertEqual(summary['status'], 'completed')
         self.assertEqual([r['seed'] for r in summary['jobs']], [23, 24])
         self.assertEqual(summary['jobs'][0]['start']['vector_sha256'], vector_sha(x))
+        job = output/summary['jobs'][0]['raw_path']
+        self.assertEqual([json.loads(p.read_text())['forward_count']
+                          for p in sorted((job/'checkpoints').glob('*.json'))], [1, 2])
 
     def test_worker_readback_tampering_stops_with_unknown(self):
         from lpf.search._development_runner import run_prepared_weighted_job

@@ -20,8 +20,11 @@ from .starts import load_explicit
 from .storage import canonical, sha, vector_sha
 
 
-def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds=None, start_method='explicit'):
+def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds=None, start_method='explicit',
+                   checkpoint_interval_forwards=1000):
     """Derive the existing Plan format before freezing; never alter formal preflight."""
+    if type(checkpoint_interval_forwards) is not int or checkpoint_interval_forwards < 1:
+        raise ValueError('checkpoint_interval_forwards must be a positive integer')
     if type(n) is not int or n < 1 or n > (2**63 - 1) // 1_000_000:
         raise ValueError('max_search_forwards must be a bounded positive integer')
     with Path(config).open() as stream:
@@ -65,7 +68,7 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
             raise ValueError('Unknown start method')
         frozen['development_weighted_restart'] = dict(
             max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
-            checkpoint_interval=1000, search_bounds=search_bounds, start_method=start_method,
+            checkpoint_interval_forwards=checkpoint_interval_forwards, search_bounds=search_bounds, start_method=start_method,
             search_bounds_sha256=sha(search_bounds), objective='weighted_violation')
     return Plan(canonical(frozen), sha(frozen))
 
@@ -77,11 +80,12 @@ def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output
     output, root = Path(output), Path(root)
     if source_identity(root) != source:
         raise ValueError('Source changed before Job')
+    checkpoint_interval = plan.data['development_weighted_restart']['checkpoint_interval_forwards']
     record = dict(kind='development_weighted_restart_input_v1', plan=plan.data,
                   plan_sha256=plan.sha256, definition=asdict(definition),
                   definition_sha256=sha(asdict(definition)), policy_id=policy['active_constraint_id'],
                   policy_fingerprint=constraint_fingerprint(policy), seed=seed, arm=arm,
-                  start=start, checkpoint_interval=1000, spot_checks=spot_checks,
+                  start=start, checkpoint_interval_forwards=checkpoint_interval, spot_checks=spot_checks,
                   search_bounds=search_bounds, search_bounds_sha256=sha(search_bounds),
                   weighted_objective=WEIGHTED_OBJECTIVE, weighted_objective_sha256=sha(WEIGHTED_OBJECTIVE),
                   source=source, source_sha256=sha(source))
@@ -91,7 +95,7 @@ def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output
         raise ValueError('Input readback mismatch')
     try:
         worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
-                                   root=root, checkpoint=output / 'checkpoints', checkpoint_interval=1000,
+                                   root=root, checkpoint=output / 'checkpoints', checkpoint_interval=checkpoint_interval,
                                    spot_checks=spot_checks, search_bounds=search_bounds,
                                    objective_mode='weighted_violation', budget_restarts=True)
         result = worker.run()
@@ -110,7 +114,7 @@ def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output
 
 
 def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
-                           checkpoint_interval=100, spot_checks=None, search_bounds=None,
+                           checkpoint_interval=1000, spot_checks=None, search_bounds=None,
                            objective_mode=None, max_search_forwards=None):
     """Run exactly one seed/arm, preserving input and append-only Worker events.
 

@@ -35,7 +35,11 @@ Hybridは `max_evaluations=maxiter=N`, `max_restarts=0`, `restart_sigma=0.1`。P
 
 目的は `J=max(0, worst_pass_IL−0.30)^2 + 100×mean(max(0, 30.01−H2/H3 attenuation)^2)`、探索70点全6設定・28区間から1 callback/1 RF forwardで計算する。30.01 dBは探索余裕のみ、元のmandatory 30 dB・nominal 35 dBを変更しない。重み・余裕達成・収束の性能妥当性は未検証。WorkerはJの厳密比較、同値は最小vector SHA；Hybridは同値で最初のvectorを保持するため、完全同値の場合のみ両vectorが異なり得る（JとHybrid先着vectorは照合）。Terminalの詳細RF結果と独立spotは別判定であり、有限格子strict PASSも連続周波数・物理実装・実測の保証ではない。
 
-出力はcheckout外のsystem temp内に限り、既存のディレクトリを上書きしない。`input.json`をWorker前に保存し、Workerの追記型`checkpoints/`と`result.json`を残す。失敗・中断後も再試行／resumeしない。`--checkpoint-interval`は正整数、`--spot-checks`はstage名→sample index配列のJSON。終了コード0はsolver収束、4は完走・未収束、2は例外・中断。いずれもRF適合の認定ではない。Workerの結果には有限格子・独立MNA等の実際の検証深度が記載される。本番・正式EXP用のG0〜G5や費用保護はない。
+出力はcheckout外のsystem temp内に限り、既存のディレクトリを上書きしない。`input.json`をWorker前に保存し、Workerの追記型`checkpoints/`と`result.json`を残す。失敗・中断後も再試行／resumeしない。`--checkpoint-interval`は正整数（既定1000）、`--spot-checks`はstage名→sample index配列のJSON。終了コード0はsolver収束、4は完走・未収束、2は例外・中断。いずれもRF適合の認定ではない。Workerの結果には有限格子・独立MNA等の実際の検証深度が記載される。本番・正式EXP用のG0〜G5や費用保護はない。
+
+## 複数seed weighted開発のcheckpoint
+
+`scripts/run_rf_search.py develop --objective-mode weighted_violation` では `--checkpoint-interval-forwards` に正整数を指定でき、既定は1000。探索forward通算の指定間隔と末尾にbestを保存し、間隔はPlanとJob入力に凍結する。これは保存頻度であり、forward実行前の親台帳による費用予約とは別である。親台帳の局所run件数と成功・失敗件数は要約であり、各runの詳細はJob `result.json`を参照する。
 
 ## 開発ベンチ（正式EXPではない）
 

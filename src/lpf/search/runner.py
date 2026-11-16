@@ -596,6 +596,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
                     job_input['source'] != source or job_input['source_sha256'] != sha(source) or
                     job_input['start'] != row['start'] or job_input['seed'] != row['seed'] or
                     job_input['arm'] != arm or job_input['search_bounds'] != box or
+                    job_input['checkpoint_interval_forwards'] != mode['checkpoint_interval_forwards'] or
                     job_input['search_bounds_sha256'] != sha(box)):
                 raise ValueError('Job input/Plan/source readback mismatch')
             costs = result['costs']
@@ -643,9 +644,9 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
                            completed=requested, reserved=0, released=cap-requested,
                            independent_requested=count, independent_completed=count,
                            result_sha256=hashlib.sha256(raw).hexdigest(), best=best,
-                           terminal=terminal[0], local_runs=result['steps'][0]['solver_result']['runs'])
-            updated['local_solver_success_count'] = sum(r['success'] for r in updated['local_runs'])
-            updated['local_solver_failure_count'] = len(updated['local_runs']) - updated['local_solver_success_count']
+                           terminal=terminal[0], local_run_count=len(solver['runs']))
+            updated['local_solver_success_count'] = sum(r['success'] for r in solver['runs'])
+            updated['local_solver_failure_count'] = updated['local_run_count'] - updated['local_solver_success_count']
             if type(assessed['strict_feasible']) is not bool:
                 raise ValueError('Invalid terminal strict feasibility')
             candidate['status'] = 'completed' if index == len(rows)-1 else 'running'

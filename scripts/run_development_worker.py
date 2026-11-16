@@ -16,7 +16,7 @@ def main(argv=None):
     parser.add_argument('--seed', type=int, required=True)
     parser.add_argument('--arm', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--checkpoint-interval', type=int, default=100)
+    parser.add_argument('--checkpoint-interval', type=int, default=1000)
     parser.add_argument('--spot-checks', help='JSON object mapping stage to sample-index list')
     parser.add_argument('--search-bounds', help='JSON file with complete vector-order [lower, upper] pairs')
     parser.add_argument('--objective-mode', choices=['weighted_violation'])
