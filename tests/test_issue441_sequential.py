@@ -54,6 +54,8 @@ class SequentialTests(unittest.TestCase):
             self.assertEqual(row['requested'], 3*70+84+476)
             self.assertEqual(row['local_run_count'], 3)
             self.assertNotIn('local_runs', row)
+            self.assertEqual(set(row['best']), {'vector_sha256', 'objective_j'})
+            self.assertEqual(set(row['terminal']['assessment']), {'strict_feasible', 'worst_il_db'})
             job = output/row['raw_path']
             self.assertEqual(len(json.loads((job/'result.json').read_text())['steps'][0]['solver_result']['runs']), 3)
             checkpoint = json.loads((job/'checkpoints'/'000001.json').read_text())
@@ -62,6 +64,16 @@ class SequentialTests(unittest.TestCase):
             self.assertEqual(row['terminal']['independent']['status'], 'pass')
         with self.assertRaises(ValueError):
             run_weighted_development(plan, d, p, starts, output, root=ROOT)
+
+    def test_weighted_plan_rejects_old_solver_options(self):
+        plan, d, p, x, box, starts = self.prepared(3)
+        config = Path(self.sources.name)/'plan.yaml'
+        c = yaml.safe_load(config.read_text())
+        c['arms'][0]['steps'][0]['options'] = dict(maxiter=3, max_restarts=0,
+                                                   max_evaluations=3, restart_sigma=.1)
+        config.write_text(yaml.safe_dump(c))
+        with self.assertRaisesRegex(ValueError, 'omit step options'):
+            _weighted_plan(config, ROOT, 'demo', 3, budget_restarts=True, search_bounds=box)
 
     def test_configurable_checkpoint_interval_is_frozen_and_saved(self):
         plan, d, p, x, box, starts = self.prepared(5)
@@ -164,7 +176,7 @@ class SequentialTests(unittest.TestCase):
                 score = float(np.sum(residual * residual))
                 run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
                 return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
-                                    23, 1000, None, 1000, .1)
+                                    23, 1000, 1000, .1)
             with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
                 if interrupted:
                     with self.assertRaisesRegex(RuntimeError, 'interrupted'):

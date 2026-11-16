@@ -13,8 +13,7 @@ from lpf.optimizers.hybrid import hybrid_minimize
 
 class HybridTests(unittest.TestCase):
     def run_hybrid(self, residuals, x0, bounds, **kwargs):
-        options = dict(seed=4, maxiter=100, max_restarts=0,
-                       max_evaluations=1000, restart_sigma=0.7)
+        options = dict(seed=4, max_evaluations=1000, restart_sigma=0.7)
         options.update(kwargs)
         return hybrid_minimize(residuals, x0, bounds, **options)
 
@@ -29,9 +28,8 @@ class HybridTests(unittest.TestCase):
                     self.assertEqual(result.best_fun, expected)
                     self.assertEqual(result.runs[0].start_fun, expected)
                     self.assertEqual(result.aggregation, mode)
-        default = self.run_hybrid(residual, [0.2], [(0, 1)], max_restarts=2)
-        explicit = self.run_hybrid(residual, [0.2], [(0, 1)], max_restarts=2,
-                                   aggregation='sum')
+        default = self.run_hybrid(residual, [0.2], [(0, 1)])
+        explicit = self.run_hybrid(residual, [0.2], [(0, 1)], aggregation='sum')
         self.assertEqual(asdict(default), asdict(explicit))
 
     def test_sum_and_max_have_distinct_best_found(self):
@@ -77,10 +75,8 @@ class HybridTests(unittest.TestCase):
         self.assertIsNone(invalid.best_fun)
         with self.assertRaises(ValueError):
             self.run_hybrid(lambda x: [1], [2], [(0, 1)], **options)
-        a = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)],
-                            max_restarts=2, **options)
-        b = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)],
-                            max_restarts=2, **options)
+        a = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)], **options)
+        b = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)], **options)
         self.assertEqual(asdict(a), asdict(b))
 
     def test_weighted_unimodal_and_fixed_coordinates(self):
@@ -108,11 +104,11 @@ class HybridTests(unittest.TestCase):
         def residual(x):
             seen.append(x.copy())
             return [x[0] ** 2 - 1]
-        options = dict(seed=11, max_restarts=10, restart_sigma=0.8)
+        options = dict(seed=11, restart_sigma=0.8)
         a = self.run_hybrid(residual, [0.8], [(-2, 2)], **options)
         b = self.run_hybrid(residual, [0.8], [(-2, 2)], **options)
         self.assertEqual(asdict(a), asdict(b))
-        self.assertEqual(a.stop_reason, 'restarts_exhausted')
+        self.assertEqual(a.stop_reason, 'evaluation_budget_exhausted')
         ends = [r.end_x[0] for r in a.runs if r.success]
         self.assertTrue(any(x < -0.9 for x in ends))
         self.assertTrue(any(x > 0.9 for x in ends))
@@ -134,16 +130,14 @@ class HybridTests(unittest.TestCase):
 
     def test_failure_status_does_not_hide_best(self):
         result = self.run_hybrid(lambda x: [10 * (x[1] - x[0]**2), 1 - x[0]],
-                                 [-1.2, 1], [(-2, 2), (-1, 3)], maxiter=1)
+                                 [-1.2, 1], [(-2, 2), (-1, 3)], max_evaluations=5)
         self.assertFalse(result.runs[0].success)
-        self.assertIsInstance(result.runs[0].status, int)
         self.assertTrue(result.runs[0].message)
-        self.assertEqual(result.runs[0].nit, 1)
         self.assertIsNotNone(result.best_x)
-        self.assertEqual(result.stop_reason, 'restarts_exhausted')
+        self.assertEqual(result.stop_reason, 'evaluation_budget_exhausted')
 
     def test_fixed_box_and_invalid_residuals(self):
-        result = self.run_hybrid(lambda x: [x[0] - 1], [2], [(2, 2)], max_restarts=5)
+        result = self.run_hybrid(lambda x: [x[0] - 1], [2], [(2, 2)])
         self.assertEqual(result.stop_reason, 'all_coordinates_fixed')
         self.assertEqual(result.nfev, 1)
         self.assertTrue(result.runs[0].success)
@@ -167,8 +161,6 @@ class HybridTests(unittest.TestCase):
     def test_invalid_input(self):
         invalid = [([2], [(0, 1)], {}), ([0], [(1, 0)], {}),
                    ([0], [(0, np.inf)], {}), ([], [], {}),
-                   ([0], [(0, 1)], {'maxiter': 0}),
-                   ([0], [(0, 1)], {'max_restarts': -1}),
                    ([0], [(0, 1)], {'max_evaluations': 0}),
                    ([0], [(0, 1)], {'restart_sigma': 0}),
                    ([0], [(0, 1)], {'weights': [-1]}),

@@ -38,6 +38,8 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
     step = cfg['arms'][0]['steps'][0]
     if step.get('solver') != 'hybrid' or step.get('aggregation') != 'sum':
         raise ValueError('Weighted mode requires Hybrid/sum')
+    if step.get('options') not in (None, {}):
+        raise ValueError('Weighted development takes its search budget from --max-search-forwards; omit step options')
     policy = load_constraint('RF-T008', root=root, allow_trial=True)
     req = compile_requirements(policy, rf_input_file(root, policy['bands_file']), 'full_lpf')
     grid = build_evaluation_grid(req, step['points_per_interval'], step.get('stop_points_per_interval'))
@@ -47,7 +49,7 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
             len(grid.frequency_hz) != 70 or selection['points_per_interval'] != 3 or
             terminal['terminal_points'] != 17):
         raise ValueError('Weighted mode requires 70/84/476 search/selection/terminal samples')
-    step['options'] = dict(maxiter=n, max_restarts=0, max_evaluations=n, restart_sigma=0.1)
+    step['options'] = dict(max_search_forwards=n)
     step['max_requested_samples'] = n * len(grid.frequency_hz)
     selection['max_candidates'] = selection['top_k'] = 1
     total = step['max_requested_samples'] + 84 + 476
@@ -67,7 +69,6 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
         if start_method not in ('explicit', 'scrambled_sobol_single_point'):
             raise ValueError('Unknown start method')
         frozen['development_weighted_restart'] = dict(
-            max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
             checkpoint_interval_forwards=checkpoint_interval_forwards, search_bounds=search_bounds, start_method=start_method,
             search_bounds_sha256=sha(search_bounds), objective='weighted_violation')
     return Plan(canonical(frozen), sha(frozen))

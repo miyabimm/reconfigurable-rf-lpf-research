@@ -3,6 +3,14 @@ import numpy as np
 from lpf.timing import timed_method
 
 
+def hybrid_residuals(assessment):
+    """Shared fixed-step Hybrid objective; RF assessment remains the caller's responsibility."""
+    il = assessment['worst_il_db']
+    if not np.isfinite(il) or il < 0:
+        raise ValueError('Hybrid requires finite nonnegative IL; no floor')
+    return np.r_[np.sqrt(il), np.maximum(0., -np.asarray(assessment['mandatory_g']))]
+
+
 class Problem:
     def __init__(self, evaluation):
         self.evaluation = evaluation

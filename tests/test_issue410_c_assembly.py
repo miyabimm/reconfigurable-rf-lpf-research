@@ -8,12 +8,15 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+import yaml
 from test_issue307_constraints import make
 from lpf.rf_core import build_rf_model
 from lpf.rf_core.coupled_lc import CoupledLCTopology
 from lpf.rf_core.independent import validate_response
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
-from lpf.search.plan import load_preflight
+from lpf.search.plan import Plan
+from lpf.search.preflight import freeze
+from lpf.search.storage import canonical, sha
 from lpf.search.proposals import definition_from_data
 from lpf.search.performance import (compile_requirements, prepare_requirements,
                                     evaluate_requirements, build_evaluation_grid)
@@ -26,8 +29,17 @@ sys.modules[spec.name] = probe
 spec.loader.exec_module(probe)
 
 
+def fixture_plan():
+    # This fixture tests RF evaluation, not replay of the historical solver Plan.
+    # Keep the saved input immutable and build a new test Plan in memory.
+    config = yaml.safe_load((ROOT/'project/diagnostics/issue377/baseline.yaml').read_text())
+    config['arms'][0]['steps'][0]['options'] = {'max_search_forwards': 100}
+    frozen = freeze(config, ROOT)
+    return Plan(canonical(frozen), sha(frozen))
+
+
 def fixture():
-    plan = load_preflight(ROOT/'project/diagnostics/issue377/baseline.yaml')
+    plan = fixture_plan()
     p = load_constraint('RF-T008', allow_trial=True)
     d = definition_from_data(json.loads((ROOT/plan.data['config']['definition']['path']).read_text()))
     model = build_rf_model(d, p)

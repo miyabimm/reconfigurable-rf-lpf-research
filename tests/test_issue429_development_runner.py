@@ -22,7 +22,7 @@ class RunnerTests(unittest.TestCase):
         def configure(c):
             first = c['arms'][0]['steps'][0]
             first.update(solver='hybrid', aggregation='sum', max_requested_samples=168,
-                         options=dict(maxiter=2, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+                         options=dict(max_search_forwards=3))
             second = copy.deepcopy(first)
             second.update(name='fine', solver='slsqp', points_per_interval=3, max_requested_samples=252,
                           options=dict(max_iterations=2, max_evaluations=3))

@@ -149,7 +149,7 @@ class DevelopmentWorker(MinimalWorker):
             step = self.steps[0]
             opts = step['options']
             costs = plan.data['costs']['jobs'][arm]
-            n = opts['max_evaluations']
+            n = opts['max_search_forwards']
             if (len(plan.data['config']['arms']) != 1 or
                     (not budget_restarts and len(plan.data['config']['seeds']) != 1) or
                     plan.data['config']['anytime_samples'] != [] or
@@ -158,7 +158,6 @@ class DevelopmentWorker(MinimalWorker):
                     costs['total_upper_reservation'] != n * 70 + 84 + 476 or
                     plan.data['config']['rf'] != {'constraint_id': 'RF-T008', 'allow_trial': True} or
                     len(self.steps) != 1 or step['solver'] != 'hybrid' or step['aggregation'] != 'sum' or
-                    opts['maxiter'] != n or opts['max_restarts'] != 0 or
                     step['points_per_interval'] != 2 or step.get('stop_points_per_interval') != 3 or
                     len(self.grid.frequency_hz) != 70 or
                     plan.data['config']['selection']['max_candidates'] != 1 or
@@ -168,8 +167,7 @@ class DevelopmentWorker(MinimalWorker):
                 raise ValueError('Invalid weighted development Plan')
             if budget_restarts:
                 mode = plan.data.get('development_weighted_restart', {})
-                expected = dict(max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
-                                checkpoint_interval_forwards=checkpoint_interval, search_bounds=plain(self.bounds),
+                expected = dict(checkpoint_interval_forwards=checkpoint_interval, search_bounds=plain(self.bounds),
                                 search_bounds_sha256=sha(self.bounds), objective='weighted_violation',
                                 start_method=mode.get('start_method'))
                 if mode != expected or mode['start_method'] not in ('explicit', 'scrambled_sobol_single_point'):
@@ -308,7 +306,6 @@ class DevelopmentWorker(MinimalWorker):
                     from . import _worker_next
                     extra = {}
                     if self.budget_restarts:
-                        opts['max_restarts'] = None
                         extra['run_callback'] = lambda index: setattr(self, 'local_run_index', index)
                     out = _worker_next.hybrid_minimize(self._solver_residuals, x, self.bounds,
                             seed=self.seed, aggregation=step['aggregation'], **opts, **extra)

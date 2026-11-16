@@ -19,8 +19,7 @@ class SharedObjectiveTest(unittest.TestCase):
         slp = slp_minimize(fun, [0], [(0, 0)], aggregation=mode, weights=weights,
                            max_iterations=2, max_evaluations=10)
         hybrid = hybrid_minimize(fun, [0], [(0, 0)], aggregation=mode, weights=weights,
-                                 seed=0, maxiter=2, max_restarts=0,
-                                 max_evaluations=10, restart_sigma=.1)
+                                 seed=0, max_evaluations=10, restart_sigma=.1)
         slsqp = slsqp_minimize(fun, [0], [(0, 0)], aggregation=mode, weights=weights,
                                max_iterations=2, max_evaluations=10)
         return slp, hybrid, slsqp
@@ -48,7 +47,7 @@ class SharedObjectiveTest(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         self.solve([1], weights, mode)
                     for solver in (hybrid_minimize, slsqp_minimize):
-                        kwargs = (dict(seed=0, maxiter=2, max_restarts=0, max_evaluations=10,
+                        kwargs = (dict(seed=0, max_evaluations=10,
                                        restart_sigma=.1) if solver is hybrid_minimize else
                                   dict(max_iterations=2, max_evaluations=10))
                         with self.assertRaises(ValueError):
@@ -61,8 +60,7 @@ class SharedObjectiveTest(unittest.TestCase):
                 solver(lambda x: [1, 2], [0], [(0, 0)], weights=[1],
                        max_iterations=2, max_evaluations=10)
         hybrid = hybrid_minimize(lambda x: [1, 2], [0], [(0, 0)], weights=[1],
-                                 seed=0, maxiter=2, max_restarts=0,
-                                 max_evaluations=10, restart_sigma=.1)
+                                 seed=0, max_evaluations=10, restart_sigma=.1)
         self.assertEqual(hybrid.stop_reason, 'invalid_residual')
 
     def test_overflow_keeps_solver_failure_contracts(self):
@@ -73,8 +71,8 @@ class SharedObjectiveTest(unittest.TestCase):
                         and np.isfinite(slsqp.fun))
         with self.assertRaises(ValueError):
             slp_minimize(lambda x: residual, [0], [(0, 0)], max_iterations=2, max_evaluations=10)
-        hybrid = hybrid_minimize(lambda x: residual, [0], [(0, 0)], seed=0, maxiter=2,
-                                 max_restarts=0, max_evaluations=10, restart_sigma=.1)
+        hybrid = hybrid_minimize(lambda x: residual, [0], [(0, 0)], seed=0,
+                                 max_evaluations=10, restart_sigma=.1)
         slsqp = slsqp_minimize(lambda x: residual, [0], [(0, 0)], max_iterations=2,
                                max_evaluations=10)
         self.assertEqual(hybrid.stop_reason, 'invalid_residual')
@@ -87,8 +85,7 @@ class SharedObjectiveTest(unittest.TestCase):
                     slp_minimize(lambda x: [1e300], [0], [(0, 0)], aggregation=mode,
                                  max_iterations=2, max_evaluations=10)
                 hybrid = hybrid_minimize(lambda x: [1e300], [0], [(0, 0)], aggregation=mode,
-                                         seed=0, maxiter=2, max_restarts=0,
-                                         max_evaluations=10, restart_sigma=.1)
+                                         seed=0, max_evaluations=10, restart_sigma=.1)
                 slsqp = slsqp_minimize(lambda x: [1e300], [0], [(0, 0)], aggregation=mode,
                                        max_iterations=2, max_evaluations=10)
                 self.assertEqual(hybrid.stop_reason, 'invalid_residual')

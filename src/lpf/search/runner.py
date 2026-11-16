@@ -546,6 +546,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
     cfg = plan.data['config']
     mode = plan.data['development_weighted_restart']
     box = mode['search_bounds']
+    max_search_forwards = cfg['arms'][0]['steps'][0]['options']['max_search_forwards']
     if (sha(plan.data) != plan.sha256 or sha(box) != mode['search_bounds_sha256'] or
             not isinstance(starts, dict) or set(starts) != set(cfg['seeds'])):
         raise ValueError('Frozen Plan/box/starts mismatch')
@@ -602,7 +603,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             costs = result['costs']
             n = costs['search_forwards']
             if (result['status'] != 'search_budget_exhausted' or type(n) is not int or
-                    n != mode['max_search_forwards'] or costs['search_requested_samples'] != n * 70 or
+                    n != max_search_forwards or costs['search_requested_samples'] != n * 70 or
                     costs['search_completed_samples'] != n * 70 or
                     costs['selection_requested_samples'] != 84 or costs['terminal_requested_samples'] != 476 or
                     result['plan_sha256'] != plan.sha256 or result['steps'][0]['forward_count'] != n):
@@ -612,7 +613,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             best = result['steps'][0]['rf_best']
             solver = result['steps'][0]['solver_result']
             if (solver['nfev'] != n or sum(r['nfev'] for r in solver['runs']) != n or
-                    solver['max_restarts'] is not None or solver['max_evaluations'] != n or
+                    solver['max_evaluations'] != n or solver['maxiter'] != n or
                     solver['stop_reason'] != 'evaluation_budget_exhausted' or
                     solver['best_fun'] != best['objective_j'] or
                     len(selected) != 1 or len(terminal) != 1 or
@@ -640,11 +641,17 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             requested = n * 70 + 84 + 476
             candidate = copy.deepcopy(state)
             updated = candidate['jobs'][index]
+            best_summary = {key: best[key] for key in ('vector_sha256', 'objective_j')}
+            terminal_summary = dict(vector_sha256=terminal[0]['vector_sha256'],
+                assessment={key: assessed[key] for key in ('strict_feasible', 'worst_il_db')},
+                independent=terminal[0]['independent'],
+                min_harmonic_attenuation_db=terminal[0]['min_harmonic_attenuation_db'],
+                target_30_01=terminal[0]['target_30_01'])
             updated.update(status='completed', worker_status=result['status'], requested=requested,
                            completed=requested, reserved=0, released=cap-requested,
                            independent_requested=count, independent_completed=count,
-                           result_sha256=hashlib.sha256(raw).hexdigest(), best=best,
-                           terminal=terminal[0], local_run_count=len(solver['runs']))
+                           result_sha256=hashlib.sha256(raw).hexdigest(), best=best_summary,
+                           terminal=terminal_summary, local_run_count=len(solver['runs']))
             updated['local_solver_success_count'] = sum(r['success'] for r in solver['runs'])
             updated['local_solver_failure_count'] = updated['local_run_count'] - updated['local_solver_success_count']
             if type(assessed['strict_feasible']) is not bool:

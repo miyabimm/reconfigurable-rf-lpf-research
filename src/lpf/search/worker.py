@@ -120,6 +120,8 @@ def _campaign_job_envelope(plan, spot_checks, context, binding):
 
 def _development_options(step):
     # Freeze generic numerical defaults as well as explicitly configured budgets.
+    if step['solver'] == 'hybrid':
+        return dict(max_evaluations=step['options']['max_search_forwards'], restart_sigma=0.1)
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
                             tolerance=1e-7, constraint_tolerance=1e-7), 'hybrid': {}}
@@ -155,7 +157,7 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
     from pathlib import Path
     import numpy as np
     from .plan import ROOT, Plan
-    from .problem import Problem
+    from .problem import Problem, hybrid_residuals
     from .component_constraints import validate_values
     from .evaluation import raw_numbers
     from .validation import rank_candidates
@@ -215,10 +217,7 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
             opts = d['solver_options'][i]
             if step['solver'] == 'hybrid':
                 def residuals(v):
-                    a = meter.evaluate(v)['assessment']
-                    if not np.isfinite(a['worst_il_db']) or a['worst_il_db'] < 0:
-                        raise ValueError('Hybrid requires finite nonnegative IL; no floor')
-                    return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
+                    return hybrid_residuals(meter.evaluate(v)['assessment'])
                 if timer is not None:
                     unmeasured_residuals = residuals
                     def residuals(v):

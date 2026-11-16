@@ -19,7 +19,7 @@
 
 ```bash
 uv run --frozen python scripts/run_development_worker.py \
-  --config project/diagnostics/issue377/baseline.yaml \
+  --config <新形式のschema2-plan.yaml> \
   --starts project/diagnostics/issue401_starts_1002.json \
   --seed 1002 --arm hybrid --output /tmp/未存在のjob \
   --spot-checks '{"terminal":[0,111]}'
@@ -29,9 +29,9 @@ uv run --frozen python scripts/run_development_worker.py \
 
 ### Issue #435 の単一目的モード（明示 opt-in）
 
-`--objective-mode weighted_violation --max-search-forwards N` を併用する。Nは正整数で、探索callbackだけの上限。例えば上記CLIと同様に `--config`, `--starts`, `--seed`, `--arm`, `--output` を指定し、この2引数を追加する。設定はRF-T008 trial opt-in／full_lpf、1 seed・1 arm・1 Hybrid/sum step、anytimeなし、search pass 2点・H2/H3 3点、selection 3点、terminal 17点/区間に限定する。基になるschema2設定例は `project/diagnostics/issue433/hybrid.json`（実行例ではなく旧条件の入力例）。このmodeではstepの `options` と `max_requested_samples`、arm/trialの `max_requested_samples`、validationの `max_requested_samples` は省略可能で、指定されていても凍結前に導出し直す。selectionの候補上限/top_kは1へ固定する。その他のschema2項目は必要。
+`--objective-mode weighted_violation --max-search-forwards N` を併用する。Nは正整数で、探索callbackだけの上限。設定はRF-T008 trial opt-in／full_lpf、1 seed・1 arm・1 Hybrid/sum step、anytimeなし、search pass 2点・H2/H3 3点、selection 3点、terminal 17点/区間に限定する。stepの `options` は省略し、CLIで予算を指定する。`max_requested_samples` は凍結前に導出し直し、selectionの候補上限/top_kは1へ固定する。その他のschema2項目は必要。旧 `project/diagnostics/issue433/hybrid.json` と `issue377/baseline.yaml` は履歴入力であり、旧solver設定を含むため新入口では拒否される。原本を変更しない。
 
-Hybridは `max_evaluations=maxiter=N`, `max_restarts=0`, `restart_sigma=0.1`。Planは探索 `N×70`、selection `1×84`、terminal `1×476` を静的予約し、独立denseは別枠で予約のみ・実行しない。preflightの既存selection rule名は互換性のため残るが、このモードではランキングを行わず、探索の最小J vectorだけをselection/terminalで再評価する。独立MNA spotは別費用で、実行sample数をstage別に記録。実績と予約、Plan・grid・目的のSHAはinput/resultで照合できる。失敗時のcheckpointは最後の保存時点であり、例外時に未保存の改善を保証しない。
+HybridのPlan設定は `max_search_forwards=N` のみで、solver内部では `max_evaluations=maxiter=N`、`restart_sigma=0.1` を導出する。局所終了後も残予算があれば再始動するため、旧 `max_restarts=0` の単発実行とは探索挙動が異なる。旧固定Hybrid Planは自動変換せず拒否し、歴史的再生には旧ソースが必要。Planは探索 `N×70`、selection `1×84`、terminal `1×476` を静的予約し、独立denseは別枠で予約のみ・実行しない。preflightの既存selection rule名は互換性のため残るが、このモードではランキングを行わず、探索の最小J vectorだけをselection/terminalで再評価する。独立MNA spotは別費用で、実行sample数をstage別に記録。実績と予約、Plan・grid・目的のSHAはinput/resultで照合できる。失敗時のcheckpointは最後の保存時点であり、例外時に未保存の改善を保証しない。
 
 目的は `J=max(0, worst_pass_IL−0.30)^2 + 100×mean(max(0, 30.01−H2/H3 attenuation)^2)`、探索70点全6設定・28区間から1 callback/1 RF forwardで計算する。30.01 dBは探索余裕のみ、元のmandatory 30 dB・nominal 35 dBを変更しない。重み・余裕達成・収束の性能妥当性は未検証。WorkerはJの厳密比較、同値は最小vector SHA；Hybridは同値で最初のvectorを保持するため、完全同値の場合のみ両vectorが異なり得る（JとHybrid先着vectorは照合）。Terminalの詳細RF結果と独立spotは別判定であり、有限格子strict PASSも連続周波数・物理実装・実測の保証ではない。
 
@@ -46,7 +46,7 @@ Hybridは `max_evaluations=maxiter=N`, `max_restarts=0`, `restart_sigma=0.1`。P
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   uv run --frozen python scripts/benchmark_minimal_worker.py \
-  --config project/diagnostics/issue377/baseline.yaml \
+  --config <新形式のschema2-plan.yaml> \
   --starts project/diagnostics/issue401_starts_1002.json \
   --arm hybrid --seed 1002 --mode plain > result.json
 ```

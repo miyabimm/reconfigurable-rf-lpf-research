@@ -31,7 +31,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
         def configure(c):
             step = c['arms'][0]['steps'][0]
             step.update(solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum')
-            step['options'] = (dict(maxiter=2, max_restarts=0, max_evaluations=3, restart_sigma=.1)
+            step['options'] = (dict(max_search_forwards=3)
                                if solver == 'hybrid' else dict(max_iterations=2, max_evaluations=3))
         plan, d, p, x = self.setup_model('RF-T008', mutate=configure)
         path = Path(self.raw.name) / f'{solver}-checkpoints'
@@ -110,7 +110,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
         def configure(c):
             first = c['arms'][0]['steps'][0]
             first.update(solver='hybrid', aggregation='sum', max_requested_samples=168,
-                         options=dict(maxiter=2, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+                         options=dict(max_search_forwards=3))
             second = copy.deepcopy(first)
             second.update(name='fine', solver='slsqp', points_per_interval=3, max_requested_samples=252,
                           options=dict(max_iterations=2, max_evaluations=3))
@@ -173,7 +173,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
         def configure(c):
             first = c['arms'][0]['steps'][0]
             first.update(solver='hybrid', aggregation='sum', max_requested_samples=168,
-                         options=dict(maxiter=2, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+                         options=dict(max_search_forwards=3))
             for name, solver in (('fine', 'slsqp'), ('last', 'slp')):
                 step = copy.deepcopy(first)
                 step.update(name=name, solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
@@ -277,7 +277,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             callback(x); callback(y)
             run = LocalRun(x.tolist(), 1., y.tolist(), 1., False, 1, 'fixture', 0, 2)
             return HybridResult([run], y.tolist(), 1., 2, 'evaluation_budget_exhausted',
-                                23, 2, 0, 3, .1)
+                                23, 3, 3, .1)
         summaries = iter([dict(strict_feasible=False, max_violation_db=v, sum_violation_db=v)
                           for v in (2., 1.)])
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
@@ -313,7 +313,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             runs = [LocalRun(v.tolist(), 1., v.tolist(), 1., False, 1, 'fixture', 0, 1)
                     for v in vectors[:2]]
             return HybridResult(runs, vectors[2].tolist(), 1., 1, 'evaluation_budget_exhausted',
-                                23, 2, 0, 3, .1)
+                                23, 3, 3, .1)
         seen = []
         def rank(rows):
             seen.extend(rows)

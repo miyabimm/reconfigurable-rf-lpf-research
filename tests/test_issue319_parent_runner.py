@@ -221,7 +221,7 @@ class ParentRunnerTests(unittest.TestCase):
             c['anytime_samples'] = []
             step = c['arms'][0]['steps'][0]
             step.update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=2, max_restarts=0, max_evaluations=4, restart_sigma=0.1))
+                options=dict(max_search_forwards=4))
         plan, d, p, x = self.setup_model(mutate=config)
         starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
         output = Path(self.raw.name)/'window-hybrid'

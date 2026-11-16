@@ -2,7 +2,6 @@
 from dataclasses import asdict
 import hashlib
 import json
-import math
 
 from lpf.constraint_versions import load_constraint, rf_input_file
 from .performance import compile_requirements, build_evaluation_grid, grid_fingerprint
@@ -42,12 +41,8 @@ def _solver(step):
     from .plan import fields, positive
     solver, agg, options = step['solver'], step['aggregation'], step['options']
     if solver == 'hybrid':
-        fields(options, 'maxiter max_restarts max_evaluations restart_sigma')
-        positive(options['maxiter'])
-        nonnegative(options['max_restarts'])
-        sigma = options['restart_sigma']
-        if type(sigma) not in (int, float) or not math.isfinite(sigma) or not 0 < sigma <= 1:
-            raise ValueError('Invalid restart sigma')
+        fields(options, 'max_search_forwards')
+        positive(options['max_search_forwards'])
     elif solver in ('slsqp', 'slp'):
         fields(options, 'max_iterations max_evaluations')
         positive(options['max_iterations'])
@@ -55,7 +50,8 @@ def _solver(step):
         raise ValueError('Unknown solver')
     if agg not in (('signed_max',) if solver == 'slp' else ('sum', 'max')):
         raise ValueError('Unknown solver aggregation')
-    positive(options['max_evaluations'])
+    if solver != 'hybrid':
+        positive(options['max_evaluations'])
 
 
 def freeze(d, root):
@@ -211,7 +207,8 @@ def freeze(d, root):
                              job_reserved=0, trial_reserved=0)
             stages[sname] = dict(one_forward_samples=one,
                                  upper_reservation=step['max_requested_samples'],
-                                 solver_max_evaluations=step['options']['max_evaluations'],
+                                 solver_max_evaluations=step['options'][
+                                     'max_search_forwards' if step['solver'] == 'hybrid' else 'max_evaluations'],
                                  status='not_run')
         terminal = selection['top_k']*terminal_one
         anytime = len(milestones)*anytime_one

@@ -68,7 +68,7 @@ class WeightedTests(unittest.TestCase):
                                         max_search_forwards=3, spot_checks={'terminal': [0, 111]})
         record = json.loads((output/'input.json').read_text())
         plan = record['plan']; step = plan['config']['arms'][0]['steps'][0]
-        self.assertEqual(step['options'], dict(maxiter=3, max_evaluations=3, max_restarts=0, restart_sigma=.1))
+        self.assertEqual(step['options'], dict(max_search_forwards=3))
         self.assertEqual(step['max_requested_samples'], 210)
         costs = plan['costs']['jobs']['demo']
         self.assertEqual((costs['selection_upper_reservation'], costs['terminal_fixed_reservation'],
@@ -105,7 +105,7 @@ class WeightedTests(unittest.TestCase):
         def solver(callback, start, bounds, **kw):
             a, b = callback(x), callback(y)
             run = LocalRun(x.tolist(), float(a@a), x.tolist(), float(a@a), False, 1, 'fixture', 0, 2)
-            return HybridResult([run], y.tolist(), float(b@b), 2, 'evaluation_budget_exhausted', 23, 3, 0, 3, .1)
+            return HybridResult([run], y.tolist(), float(b@b), 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
         # Each callback computes the same score once for best and once for solver.
         def score(*args):
             return next(evaluations_twice)
@@ -141,7 +141,7 @@ class WeightedTests(unittest.TestCase):
         def solver(callback, start, bounds, **kw):
             callback(first); callback(second)
             run = LocalRun(first.tolist(), 1., first.tolist(), 1., False, 1, 'fixture', 0, 2)
-            return HybridResult([run], first.tolist(), 1., 2, 'evaluation_budget_exhausted', 23, 3, 0, 3, .1)
+            return HybridResult([run], first.tolist(), 1., 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                               checkpoint=Path(self.raw.name)/'ties', objective_mode='weighted_violation')
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
@@ -173,7 +173,7 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(result['steps'][0]['forward_count'], 1)
         worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                                    checkpoint=Path(self.raw.name)/'no-best', objective_mode='weighted_violation')
-        out = HybridResult([], None, None, 0, 'evaluation_budget_exhausted', 23, 3, 0, 3, .1)
+        out = HybridResult([], None, None, 0, 'evaluation_budget_exhausted', 23, 3, 3, .1)
         with patch('lpf.search._worker_next.hybrid_minimize', return_value=out):
             with self.assertRaisesRegex(ValueError, 'No weighted best'):
                 worker.run()

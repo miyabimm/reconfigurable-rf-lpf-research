@@ -79,17 +79,16 @@ class MinimalWorker:
 
     @staticmethod
     def _residuals(evaluation):
-        _, a = evaluation
-        if not np.isfinite(a['worst_il_db']) or a['worst_il_db'] < 0:
-            raise ValueError('Hybrid requires finite nonnegative IL; no floor')
-        return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
+        from .problem import hybrid_residuals
+        return hybrid_residuals(evaluation[1])
 
     def solve(self):
         # Check the solver box at the boundary, not at every callback.
         validate_search_box(self.bounds, self._physical_bounds)
         self._check_box(self.x)
+        from .worker import _development_options
         result = hybrid_minimize(self._solver_residuals, self.x, self.bounds, seed=self.seed,
-                                 aggregation=self.step['aggregation'], **self.step['options'])
+                                 aggregation=self.step['aggregation'], **_development_options(self.step))
         for vector in [result.best_x, *(run.end_x for run in result.runs)]:
             if vector is not None:
                 self._check_box(vector)

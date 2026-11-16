@@ -141,6 +141,22 @@ class PreflightTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_preflight(p)
 
+    def test_legacy_hybrid_options_fail_closed_without_plan_migration(self):
+        d = self.config()
+        step = d['arms'][0]['steps'][0]
+        step.update(solver='hybrid', options=dict(maxiter=3, max_restarts=0,
+                                                max_evaluations=8, restart_sigma=.1))
+        with self.assertRaises(ValueError):
+            self.load(d)
+        step['options'] = dict(max_search_forwards=8)
+        plan = self.load(d)
+        self.assertEqual(plan.data['config']['arms'][0]['steps'][0]['options'],
+                         {'max_search_forwards': 8})
+        for invalid in (0, True, 1.5):
+            step['options'] = dict(max_search_forwards=invalid)
+            with self.assertRaises(ValueError):
+                self.load(d)
+
     def test_full_batch_boundary_and_reservation_release(self):
         kw = dict(step_remaining=56, job_remaining=336, trial_remaining=500,
                   job_reserved=280, trial_reserved=444)
@@ -155,8 +171,7 @@ class PreflightTests(unittest.TestCase):
     def test_multiple_stages_jobs_and_solver_caps(self):
         d = self.config()
         first = d['arms'][0]['steps'][0]
-        first.update(solver='hybrid', options=dict(maxiter=3, max_restarts=0,
-                                                 max_evaluations=8, restart_sigma=.2))
+        first.update(solver='hybrid', options=dict(max_search_forwards=8))
         second = copy.deepcopy(first)
         second.update(name='fine', solver='slp', aggregation='signed_max',
                       points_per_interval=5,

@@ -210,7 +210,7 @@ with open(out, 'w') as f:
         def solver(objective, x, **kwargs):
             value = objective(x)
             return OptimizeResult(x=np.array(x), fun=value, success=True, status=0, message='ok', nit=0)
-        options = dict(seed=1, maxiter=1, max_restarts=99, max_evaluations=1000, restart_sigma=.1)
+        options = dict(seed=1, max_evaluations=100, restart_sigma=.1)
         with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
             out = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **options)
         self.assertEqual(len(out.runs), 100)
@@ -237,7 +237,7 @@ with open(out, 'w') as f:
         self.assertEqual(asdict(out), asdict(baseline_many))
         self.assertEqual(asdict(out), asdict(failed_callback))
         events.clear()
-        budget_options = dict(seed=1, maxiter=2, max_restarts=1, max_evaluations=1, restart_sigma=.1)
+        budget_options = dict(seed=1, max_evaluations=1, restart_sigma=.1)
         baseline = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], **budget_options)
         observed = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **budget_options)
         from dataclasses import asdict

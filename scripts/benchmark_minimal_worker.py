@@ -64,8 +64,8 @@ def main():
         raise ValueError('Starts file changed during setup')
     worker = MinimalWorker(plan, definition, policy, args.arm, args.seed, initial['vector'], initial['vector_sha256'], root=ROOT)
     options = worker.step['options']
-    if options['max_evaluations'] > 100 or options['max_restarts'] != 0:
-        raise ValueError('Benchmark limited to <=100 evaluations and zero restarts')
+    if options['max_search_forwards'] > 100:
+        raise ValueError('Benchmark limited to <=100 search forwards')
     timer = TimerCollector() if args.mode != 'plain' else None
     ready, cpu_ready = perf_counter(), process_time()
     with instrument(worker, timer, deep=args.mode == 'deep') if timer else nullcontext():

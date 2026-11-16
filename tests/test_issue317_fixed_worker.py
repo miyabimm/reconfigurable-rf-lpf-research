@@ -381,7 +381,7 @@ class FixedWorkerTests(unittest.TestCase):
             c['anytime_samples'] = []
             step = c['arms'][0]['steps'][0]
             step.update(solver='hybrid', aggregation='sum', max_requested_samples=102*56,
-                        options=dict(maxiter=2, max_restarts=0, max_evaluations=102, restart_sigma=0.1))
+                        options=dict(max_search_forwards=102))
             c['arms'][0]['max_requested_samples'] = c['max_trial_requested_samples'] = 9000
         _, path, plan, d, p, x = self.job(configure)
         spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100', debug_forward_history=True)
@@ -620,7 +620,7 @@ class FixedWorkerTests(unittest.TestCase):
     def test_hybrid_slp_adapters_invalid_endpoint_and_top_k(self):
         def change(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=1, max_restarts=0, max_evaluations=2, restart_sigma=.1))
+                options=dict(max_search_forwards=2))
             c['arms'][0]['steps'][1].update(solver='slp', aggregation='signed_max')
             c['selection']['top_k'] = 2
         spec, path, *_, x = self.job(change)
@@ -643,7 +643,7 @@ class FixedWorkerTests(unittest.TestCase):
     def test_hybrid_worker_writes_monitor_events_without_rf(self):
         def change(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=1, max_restarts=0, max_evaluations=2, restart_sigma=.1))
+                options=dict(max_search_forwards=2))
         spec, path, *_ = self.job(change)
         events = Path(self.raw.name) / 'events.jsonl'
 
@@ -670,7 +670,7 @@ class FixedWorkerTests(unittest.TestCase):
     def test_empty_solver_no_observation_or_implicit_retry(self):
         def change(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=1, max_restarts=0, max_evaluations=2, restart_sigma=.1))
+                options=dict(max_search_forwards=2))
         spec, path, *_ = self.job(change)
         with patch('lpf.search.worker.hybrid_minimize', return_value=FixtureHybrid([], None)):
             result = execute_development_job(spec, path, solver_kind='fixture')
