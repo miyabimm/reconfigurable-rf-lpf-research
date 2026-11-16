@@ -20,7 +20,7 @@ from .starts import load_explicit
 from .storage import canonical, sha, vector_sha
 
 
-def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds=None, start_method='explicit',
+def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='explicit',
                    checkpoint_interval_forwards=1000):
     """Derive the existing Plan format before freezing; never alter formal preflight."""
     if type(checkpoint_interval_forwards) is not int or checkpoint_interval_forwards < 1:
@@ -32,7 +32,7 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
     if (not isinstance(cfg, dict) or cfg.get('rf') != {'constraint_id': 'RF-T008', 'allow_trial': True}
             or cfg.get('objective') != 'full_lpf' or len(cfg.get('arms', [])) != 1
             or cfg['arms'][0].get('name') != arm or len(cfg['arms'][0].get('steps', [])) != 1
-            or (not budget_restarts and len(cfg.get('seeds', [])) != 1)
+            or (search_bounds is None and len(cfg.get('seeds', [])) != 1)
             or cfg.get('anytime_samples') != []):
         raise ValueError('Weighted mode requires RF-T008/full_lpf, one arm, seed and step, no anytime')
     step = cfg['arms'][0]['steps'][0]
@@ -65,7 +65,7 @@ def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds
             costs['selection_upper_reservation'] != 84 or costs['terminal_fixed_reservation'] != 476 or
             costs['total_upper_reservation'] != total):
         raise ValueError('Weighted budget arithmetic mismatch')
-    if budget_restarts:
+    if search_bounds is not None:
         if start_method not in ('explicit', 'scrambled_sobol_single_point'):
             raise ValueError('Unknown start method')
         frozen['development_weighted_restart'] = dict(
@@ -98,7 +98,7 @@ def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output
         worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
                                    root=root, checkpoint=output / 'checkpoints', checkpoint_interval=checkpoint_interval,
                                    spot_checks=spot_checks, search_bounds=search_bounds,
-                                   objective_mode='weighted_violation', budget_restarts=True)
+                                   objective_mode='weighted_violation')
         result = worker.run()
         if source_identity(root) != source:
             raise ValueError('Source changed during Job')

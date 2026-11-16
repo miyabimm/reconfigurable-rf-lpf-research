@@ -108,7 +108,7 @@ def main(argv=None):
             box = [list(pair) for pair in box]
             arm = config['arms'][0]['name']
             plan = _weighted_plan(args.config, ROOT, arm, args.max_search_forwards,
-                                  budget_restarts=True, search_bounds=box,
+                                  search_bounds=box,
                                   checkpoint_interval_forwards=(1000 if args.checkpoint_interval_forwards is None
                                                                 else args.checkpoint_interval_forwards),
                                   start_method='scrambled_sobol_single_point' if args.sobol else 'explicit')

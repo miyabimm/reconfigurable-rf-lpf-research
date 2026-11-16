@@ -35,7 +35,7 @@ class SequentialTests(unittest.TestCase):
         config.write_text(yaml.safe_dump(c))
         model = build_rf_model(definition, policy)
         box = [list(pair) for pair in physical_bounds(definition, model.schema, policy)]
-        plan = _weighted_plan(config, ROOT, 'demo', n, budget_restarts=True, search_bounds=box)
+        plan = _weighted_plan(config, ROOT, 'demo', n, search_bounds=box)
         starts = {seed: dict(vector=x.tolist(), vector_sha256=vector_sha(x)) for seed in c['seeds']}
         return plan, definition, policy, x, box, starts
 
@@ -73,12 +73,12 @@ class SequentialTests(unittest.TestCase):
                                                    max_evaluations=3, restart_sigma=.1)
         config.write_text(yaml.safe_dump(c))
         with self.assertRaisesRegex(ValueError, 'omit step options'):
-            _weighted_plan(config, ROOT, 'demo', 3, budget_restarts=True, search_bounds=box)
+            _weighted_plan(config, ROOT, 'demo', 3, search_bounds=box)
 
     def test_configurable_checkpoint_interval_is_frozen_and_saved(self):
         plan, d, p, x, box, starts = self.prepared(5)
         config = Path(self.sources.name)/'plan.yaml'
-        plan = _weighted_plan(config, ROOT, 'demo', 5, budget_restarts=True,
+        plan = _weighted_plan(config, ROOT, 'demo', 5,
                               search_bounds=box, checkpoint_interval_forwards=2)
         self.assertEqual(plan.data['development_weighted_restart']['checkpoint_interval_forwards'], 2)
         def early(fun, z, **kwargs):
@@ -94,7 +94,7 @@ class SequentialTests(unittest.TestCase):
         self.assertEqual(json.loads((job/'input.json').read_text())['checkpoint_interval_forwards'], 2)
         for invalid in (0, -1, True, 1.5):
             with self.assertRaises(ValueError):
-                _weighted_plan(config, ROOT, 'demo', 5, budget_restarts=True,
+                _weighted_plan(config, ROOT, 'demo', 5,
                                search_bounds=box, checkpoint_interval_forwards=invalid)
 
     def test_terminal_strict_then_il_not_j(self):
@@ -165,7 +165,7 @@ class SequentialTests(unittest.TestCase):
             path = Path(self.raw.name)/('interrupt' if interrupted else 'exact')
             worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                 checkpoint=path, checkpoint_interval=1000, search_bounds=box,
-                objective_mode='weighted_violation', budget_restarts=True)
+                objective_mode='weighted_violation')
             evaluation = worker.evaluate(x)
             def solver(callback, start, bounds, **kw):
                 with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
@@ -229,7 +229,7 @@ class SequentialTests(unittest.TestCase):
         worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                                    checkpoint=Path(self.raw.name)/'checkpoints',
                                    checkpoint_interval=1000, search_bounds=box,
-                                   objective_mode='weighted_violation', budget_restarts=True)
+                                   objective_mode='weighted_violation')
         worker._activate('demo/' + worker.step['name'])
         evaluation = worker.evaluate(x)
         worker._running = True
