@@ -43,16 +43,16 @@ class MonitorTests(unittest.TestCase):
         script = ROOT/'scripts/run_rf_search.py'
         with tempfile.TemporaryDirectory(prefix='issue378-cli-') as tmp:
             logs = Path(tmp)/'logs'
-            args = [sys.executable, str(script), 'develop', '--config', 'missing', '--mode', 'production']
+            args = [sys.executable, str(script), 'develop', '--config', 'missing']
             plain = subprocess.run(args, capture_output=True, text=True)
             monitored = subprocess.run(args + ['--monitor-dir', str(logs)], capture_output=True, text=True)
-            self.assertEqual((plain.returncode, monitored.returncode), (3, 3))
-            self.assertIn('production_not_authorized', (logs/'stderr.txt').read_text())
-            self.assertEqual(json.loads((logs/'monitor-summary.json').read_text())['exit_code'], 3)
+            self.assertEqual((plain.returncode, monitored.returncode), (2, 2))
+            self.assertIn('STOP:', (logs/'stderr.txt').read_text())
+            self.assertEqual(json.loads((logs/'monitor-summary.json').read_text())['exit_code'], 2)
             abbreviated = Path(tmp)/'abbreviated'
             result = subprocess.run(args + [f'--monitor-d={abbreviated}'], capture_output=True, text=True, timeout=15)
-            self.assertEqual(result.returncode, 3)
-            self.assertEqual(json.loads((abbreviated/'monitor-summary.json').read_text())['exit_code'], 3)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads((abbreviated/'monitor-summary.json').read_text())['exit_code'], 2)
             invalid = subprocess.run(args + ['--profile'], capture_output=True, text=True)
             self.assertEqual(invalid.returncode, 2)
             self.assertIn('--profile requires --monitor-dir', invalid.stderr)
@@ -210,7 +210,7 @@ with open(out, 'w') as f:
         def solver(objective, x, **kwargs):
             value = objective(x)
             return OptimizeResult(x=np.array(x), fun=value, success=True, status=0, message='ok', nit=0)
-        options = dict(seed=1, maxiter=1, max_restarts=99, max_evaluations=1000, restart_sigma=.1)
+        options = dict(seed=1, max_evaluations=100, restart_sigma=.1)
         with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
             out = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **options)
         self.assertEqual(len(out.runs), 100)
@@ -237,7 +237,7 @@ with open(out, 'w') as f:
         self.assertEqual(asdict(out), asdict(baseline_many))
         self.assertEqual(asdict(out), asdict(failed_callback))
         events.clear()
-        budget_options = dict(seed=1, maxiter=2, max_restarts=1, max_evaluations=1, restart_sigma=.1)
+        budget_options = dict(seed=1, max_evaluations=1, restart_sigma=.1)
         baseline = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], **budget_options)
         observed = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **budget_options)
         from dataclasses import asdict

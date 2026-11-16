@@ -77,13 +77,15 @@ class TimingIntegrationTests(unittest.TestCase):
                     timer.add(e['event'], round(e['wall_s'] * 1e9))
             options = {} if timer is None else {'event_callback': event}
             result = hybrid_minimize(residual, [.8, .1], [(0, 1), (0, 1)], seed=12,
-                                     maxiter=20, max_restarts=3, max_evaluations=200,
+                                     max_evaluations=200,
                                      restart_sigma=.2, **options)
             return asdict(result), calls
         timer = TimerCollector()
-        self.assertEqual(run(None), run(timer))
-        self.assertEqual(timer.snapshot()['local_run_end']['count'], 4)
-        self.assertEqual(timer.snapshot()['restart_start_generated']['count'], 3)
+        plain = run(None)
+        self.assertEqual(plain, run(timer))
+        self.assertGreater(len(plain[0]['runs']), 1)
+        self.assertEqual(timer.snapshot()['local_run_end']['count'], len(plain[0]['runs']))
+        self.assertEqual(timer.snapshot()['restart_start_generated']['count'], len(plain[0]['runs']) - 1)
 
     def test_hybrid_worker_mock_restart_and_raw_same(self):
         from lpf.search.worker import freeze_development_job, execute_development_job
@@ -91,7 +93,7 @@ class TimingIntegrationTests(unittest.TestCase):
         def config(c):
             c['anytime_samples'] = []
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum', max_requested_samples=224,
-                options=dict(maxiter=2, max_restarts=1, max_evaluations=2, restart_sigma=.1))
+                options=dict(max_search_forwards=2))
             slp = copy.deepcopy(c['arms'][0]['steps'][0])
             slp.update(name='fine', solver='slp', aggregation='signed_max',
                        options=dict(max_iterations=2, max_evaluations=2))

@@ -27,7 +27,7 @@ class PhysicalPathTests(unittest.TestCase):
     def prepare(self):
         def configure(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=3, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+                options=dict(max_search_forwards=3))
         plan, d, p, x = self.setup_model('RF-T008', mutate=configure)
         with patch('lpf.search._worker_next.physical_bounds', wraps=__import__(
                 'lpf.search.component_constraints', fromlist=['physical_bounds']).physical_bounds) as bounds:

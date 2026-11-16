@@ -38,7 +38,7 @@ uv run --frozen python scripts/run_rf_search.py develop \
 - `--starts`はseedから完全vector/SHAへの入力。自動clip・補充・別トポロジーへの単純投影はしない。
 - RF-T008 trial / `full_lpf` のみ、`--objective-mode weighted_violation --max-search-forwards N --search-bounds <box.json>` と `--starts` または `--sobol` のいずれかで、固定seed順に予算内restartを実行できる。各Jobの探索上限はN、checkpoint間隔は1000 forward。Selection/Terminal/独立MNAは別会計。出力の `run.json` は親台帳、`summary.json` は有限格子でstrict適合した候補のIL順位。budget終了は収束やRF認証を意味しない。正式EXP入口ではない。
 - 4L2C向けbox例は [`diagnostics/issue441/recommended_box.json`](diagnostics/issue441/recommended_box.json)。これは指定definition／RF-T008向けの完全vector順（L: nH、C/Cv: pF、k: 無次元）の探索部分箱であり、物理hard boundsの変更ではない。Sobol違法点は修復・再抽選せずSTOP。
-- 終了コードは0=実行完走＋solver収束、4=照合済み未収束／予算切れ、2=不正・中断状態等、3=production不可。**終了0だけでRF適合とはしない**。
+- 終了コードは0=実行完走＋solver収束、4=照合済み未収束／予算切れ、2=不正・中断状態等。正式production入口はこのCLIにない。**終了0だけでRF適合とはしない**。
 - 開発Campaignの**1件ずつproposal提出**と正式CampaignのG0〜G5は[操作ガイド](campaign_workflow.md)で区別する。
 
 ## 廃止済み旧探索入口

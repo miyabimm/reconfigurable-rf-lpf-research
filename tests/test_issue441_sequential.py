@@ -35,7 +35,7 @@ class SequentialTests(unittest.TestCase):
         config.write_text(yaml.safe_dump(c))
         model = build_rf_model(definition, policy)
         box = [list(pair) for pair in physical_bounds(definition, model.schema, policy)]
-        plan = _weighted_plan(config, ROOT, 'demo', n, budget_restarts=True, search_bounds=box)
+        plan = _weighted_plan(config, ROOT, 'demo', n, search_bounds=box)
         starts = {seed: dict(vector=x.tolist(), vector_sha256=vector_sha(x)) for seed in c['seeds']}
         return plan, definition, policy, x, box, starts
 
@@ -51,15 +51,71 @@ class SequentialTests(unittest.TestCase):
         self.assertEqual(summary['status'], 'completed', summary.get('exit_reason'))
         self.assertEqual([r['seed'] for r in summary['jobs']], [23, 24])
         for row in summary['jobs']:
-            self.assertEqual(row['requested'], 3*70+84+476)
-            self.assertEqual(len(row['local_runs']), 3)
+            self.assertEqual(row['requested'], 3*70+476)
+            self.assertEqual(row['local_run_count'], 3)
+            self.assertNotIn('local_runs', row)
+            self.assertEqual(set(row['best']), {'vector_sha256', 'objective_j'})
+            self.assertEqual(set(row['terminal']['assessment']), {'strict_feasible', 'worst_il_db'})
             job = output/row['raw_path']
+            self.assertEqual(len(json.loads((job/'result.json').read_text())['steps'][0]['solver_result']['runs']), 3)
             checkpoint = json.loads((job/'checkpoints'/'000001.json').read_text())
             self.assertEqual(checkpoint['forward_count'], 3)
             self.assertEqual(checkpoint['restart_count'], 2)
             self.assertEqual(row['terminal']['independent']['status'], 'pass')
         with self.assertRaises(ValueError):
             run_weighted_development(plan, d, p, starts, output, root=ROOT)
+
+    def test_weighted_plan_rejects_old_solver_options(self):
+        plan, d, p, x, box, starts = self.prepared(3)
+        config = Path(self.sources.name)/'plan.yaml'
+        c = yaml.safe_load(config.read_text())
+        c['arms'][0]['steps'][0]['options'] = dict(maxiter=3, max_restarts=0,
+                                                   max_evaluations=3, restart_sigma=.1)
+        config.write_text(yaml.safe_dump(c))
+        with self.assertRaisesRegex(ValueError, 'omit step options'):
+            _weighted_plan(config, ROOT, 'demo', 3, search_bounds=box)
+
+    def test_configurable_checkpoint_interval_is_frozen_and_saved(self):
+        plan, d, p, x, box, starts = self.prepared(5)
+        config = Path(self.sources.name)/'plan.yaml'
+        plan = _weighted_plan(config, ROOT, 'demo', 5,
+                              search_bounds=box, checkpoint_interval_forwards=2)
+        self.assertEqual(plan.data['development_weighted_restart']['checkpoint_interval_forwards'], 2)
+        def early(fun, z, **kwargs):
+            value = fun(z)
+            return SimpleNamespace(x=z, fun=value, success=True, status=0, message='success', nit=0)
+        output = Path(self.raw.name)/'interval'
+        with patch('lpf.optimizers.hybrid.minimize', side_effect=early):
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
+        self.assertEqual(summary['status'], 'completed', summary.get('exit_reason'))
+        job = output/summary['jobs'][0]['raw_path']
+        rows = [json.loads(p.read_text()) for p in sorted((job/'checkpoints').glob('*.json'))]
+        self.assertEqual([r['forward_count'] for r in rows], [2, 4, 5])
+        self.assertEqual(json.loads((job/'input.json').read_text())['checkpoint_interval_forwards'], 2)
+        for invalid in (0, -1, True, 1.5):
+            with self.assertRaises(ValueError):
+                _weighted_plan(config, ROOT, 'demo', 5,
+                               search_bounds=box, checkpoint_interval_forwards=invalid)
+
+    def test_weighted_search_goes_directly_to_terminal(self):
+        plan, d, p, x, box, starts = self.prepared(3)
+        self.assertNotIn('selection', plan.data['config'])
+        self.assertNotIn('selection', plan.data['grids'])
+        costs = plan.data['costs']['jobs']['demo']
+        self.assertNotIn('selection_upper_reservation', costs)
+        self.assertEqual(costs['total_upper_reservation'], 3*70+476)
+        output = Path(self.raw.name)/'two-stage'
+        summary = run_weighted_development(plan, d, p, starts, output, root=ROOT,
+                                           spot_checks={'terminal': [0, 111]})
+        self.assertEqual(summary['status'], 'completed', summary.get('exit_reason'))
+        for row in summary['jobs']:
+            self.assertEqual(row['requested'], 3*70+476)
+            result = json.loads((output/row['raw_path']/'result.json').read_text())
+            self.assertNotIn('selection', result)
+            self.assertNotIn('selection_requested_samples', result['costs'])
+            self.assertEqual(result['steps'][-1]['rf_best']['vector_sha256'],
+                             result['terminal']['candidates'][0]['vector_sha256'])
+            self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
 
     def test_terminal_strict_then_il_not_j(self):
         def row(name, strict, il, j):
@@ -81,12 +137,16 @@ class SequentialTests(unittest.TestCase):
         proc = subprocess.run([sys.executable, str(ROOT/'scripts/run_rf_search.py'), 'develop',
                                '--config', str(config), '--output', str(output), '--starts', str(start_file),
                                '--objective-mode', 'weighted_violation', '--max-search-forwards', '2',
+                               '--checkpoint-interval-forwards', '1',
                                '--search-bounds', str(box_file)], capture_output=True, text=True)
         self.assertEqual(proc.returncode, 4, proc.stderr)
         summary = json.loads((output/'summary.json').read_text())
         self.assertEqual(summary['status'], 'completed')
         self.assertEqual([r['seed'] for r in summary['jobs']], [23, 24])
         self.assertEqual(summary['jobs'][0]['start']['vector_sha256'], vector_sha(x))
+        job = output/summary['jobs'][0]['raw_path']
+        self.assertEqual([json.loads(p.read_text())['forward_count']
+                          for p in sorted((job/'checkpoints').glob('*.json'))], [1, 2])
 
     def test_worker_readback_tampering_stops_with_unknown(self):
         from lpf.search._development_runner import run_prepared_weighted_job
@@ -101,23 +161,34 @@ class SequentialTests(unittest.TestCase):
             summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
         self.assertEqual(summary['status'], 'unknown')
         self.assertIn('byte mismatch', summary['exit_reason'])
-        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+84+476)
+        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+476)
         self.assertEqual(summary['jobs'][1]['status'], 'not_started')
 
-    def test_selection_vector_mismatch_stops_even_with_matching_file(self):
+    def test_terminal_mna_failure_stops_and_preserves_unknown_reservation(self):
+        plan, d, p, x, box, starts = self.prepared(2)
+        output = Path(self.raw.name)/'terminal-mna-fail'
+        with patch.object(DevelopmentWorker, '_audit', side_effect=ValueError('Independent MNA mismatch')):
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT,
+                                               spot_checks={'terminal': [0]})
+        self.assertEqual(summary['status'], 'unknown')
+        self.assertIn('Independent MNA mismatch', summary['exit_reason'])
+        self.assertEqual([r['status'] for r in summary['jobs']], ['unknown', 'not_started'])
+        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+476)
+
+    def test_terminal_vector_mismatch_stops_even_with_matching_file(self):
         from lpf.search._development_runner import run_prepared_weighted_job
         plan, d, p, x, box, starts = self.prepared(2)
-        output = Path(self.raw.name)/'bad-selection'
+        output = Path(self.raw.name)/'bad-terminal'
         def tamper(*args, **kwargs):
             result = run_prepared_weighted_job(*args, **kwargs)
-            result['selection']['ranked'][0]['vector'][0] += .01
+            result['terminal']['candidates'][0]['vector_sha256'] = '0'*64
             (Path(args[6])/'result.json').write_text(canonical(result) + '\n')
             return result
         with patch('lpf.search._development_runner.run_prepared_weighted_job', side_effect=tamper):
             summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
         self.assertEqual(summary['status'], 'unknown')
-        self.assertIn('best/selection/terminal mismatch', summary['exit_reason'])
-        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+84+476)
+        self.assertIn('best/terminal mismatch', summary['exit_reason'])
+        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+476)
 
     def test_exact_multiple_and_interruption_preserve_checkpoint(self):
         plan, d, p, x, box, starts = self.prepared(1000)
@@ -125,7 +196,7 @@ class SequentialTests(unittest.TestCase):
             path = Path(self.raw.name)/('interrupt' if interrupted else 'exact')
             worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                 checkpoint=path, checkpoint_interval=1000, search_bounds=box,
-                objective_mode='weighted_violation', budget_restarts=True)
+                objective_mode='weighted_violation')
             evaluation = worker.evaluate(x)
             def solver(callback, start, bounds, **kw):
                 with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
@@ -136,7 +207,7 @@ class SequentialTests(unittest.TestCase):
                 score = float(np.sum(residual * residual))
                 run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
                 return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
-                                    23, 1000, None, 1000, .1)
+                                    23, 1000, 1000, .1)
             with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
                 if interrupted:
                     with self.assertRaisesRegex(RuntimeError, 'interrupted'):
@@ -155,8 +226,8 @@ class SequentialTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
         self.assertEqual(summary['status'], 'unknown')
         self.assertEqual([r['status'] for r in summary['jobs']], ['unknown', 'not_started'])
-        self.assertEqual(summary['jobs'][0]['reserved'], 3*70+84+476)
-        self.assertEqual(summary['campaign']['unknown_cost_upper_bound'], 3*70+84+476)
+        self.assertEqual(summary['jobs'][0]['reserved'], 3*70+476)
+        self.assertEqual(summary['campaign']['unknown_cost_upper_bound'], 3*70+476)
         self.assertEqual(json.loads((output/'run.json').read_text())['status'], 'unknown')
 
     def test_sobol_subbox_and_illegal_box(self):
@@ -189,7 +260,7 @@ class SequentialTests(unittest.TestCase):
         worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                                    checkpoint=Path(self.raw.name)/'checkpoints',
                                    checkpoint_interval=1000, search_bounds=box,
-                                   objective_mode='weighted_violation', budget_restarts=True)
+                                   objective_mode='weighted_violation')
         worker._activate('demo/' + worker.step['name'])
         evaluation = worker.evaluate(x)
         worker._running = True

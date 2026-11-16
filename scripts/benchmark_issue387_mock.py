@@ -62,7 +62,7 @@ def main():
                 c['anytime_samples'] = []
                 step = c['arms'][0]['steps'][0]
                 step.update(solver='hybrid', aggregation='sum', max_requested_samples=100*56,
-                    options=dict(maxiter=2, max_restarts=0, max_evaluations=100, restart_sigma=0.1))
+                    options=dict(max_search_forwards=100))
         plan, definition, policy, x = case.setup_model(mutate=config)
         starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
         original_activate = WindowJobEvaluation.activate

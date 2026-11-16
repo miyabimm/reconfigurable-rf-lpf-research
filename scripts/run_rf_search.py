@@ -31,12 +31,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('develop',))
     parser.add_argument('--config', required=True)
-    parser.add_argument('--mode', choices=('fixture', 'production'), default='fixture')
     parser.add_argument('--output')
     parser.add_argument('--starts', help='JSON seed→{vector, vector_sha256}')
     parser.add_argument('--sobol', action='store_true', help='weighted development: one unmodified Sobol point per seed')
     parser.add_argument('--objective-mode', choices=('weighted_violation',))
     parser.add_argument('--max-search-forwards', type=int, help='weighted development per-Job search cap')
+    parser.add_argument('--checkpoint-interval-forwards', type=int,
+                        help='weighted development checkpoint interval (default: 1000 forwards)')
     parser.add_argument('--search-bounds', help='weighted development: complete vector-order JSON box')
     parser.add_argument('--spot-checks', help='JSON stage→sample-index list')
     parser.add_argument('--storage-mode', choices=('legacy', 'window100'), default='legacy',
@@ -78,16 +79,14 @@ def main(argv=None):
                     i += 1
             return supervise([sys.executable, str(Path(__file__).resolve()), *forwarded],
                              args.monitor_dir, args.output, profile=args.profile, root=ROOT)
-        if args.mode == 'production':
-            print('STOP: production_not_authorized: G0/G1 and G2-G5 not connected', file=sys.stderr)
-            return 3
         if args.objective_mode:
             if (not args.output or not args.max_search_forwards or bool(args.starts) == args.sobol or
                     args.storage_mode != 'legacy' or args.debug_forward_history or args.monitor_dir or args.timing_output):
                 raise ValueError('weighted development requires output, positive budget, exactly one of starts/Sobol, and legacy storage')
             import yaml
             from lpf.search.plan import Loader
-            from lpf.search._development_runner import _weighted_plan, _normalize_search_bounds
+            from lpf.search._development_runner import _weighted_plan
+            from lpf.search._development_worker import _normalize_search_bounds
             from lpf.search.proposals import definition_from_data
             from lpf.search.starts import generate_for_definition
             from lpf.search.component_constraints import physical_bounds
@@ -106,7 +105,9 @@ def main(argv=None):
             box = [list(pair) for pair in box]
             arm = config['arms'][0]['name']
             plan = _weighted_plan(args.config, ROOT, arm, args.max_search_forwards,
-                                  budget_restarts=True, search_bounds=box,
+                                  search_bounds=box,
+                                  checkpoint_interval_forwards=(1000 if args.checkpoint_interval_forwards is None
+                                                                else args.checkpoint_interval_forwards),
                                   start_method='scrambled_sobol_single_point' if args.sobol else 'explicit')
             if args.sobol:
                 generated = [generate_for_definition(definition, policy, seed, bounds=box)
@@ -118,8 +119,9 @@ def main(argv=None):
             summary = run_weighted_development(plan, definition, policy, starts, args.output, spot_checks=spots)
             print(canonical(summary))
             return 4 if summary['status'] == 'completed' else 2
-        if args.sobol or args.max_search_forwards is not None or args.search_bounds:
-            raise ValueError('Sobol, search bounds and forward budget require weighted objective mode')
+        if (args.sobol or args.max_search_forwards is not None or args.search_bounds or
+                args.checkpoint_interval_forwards is not None):
+            raise ValueError('Sobol, search bounds, forward budget and checkpoint interval require weighted objective mode')
         if not args.output or not args.starts:
             raise ValueError('develop requires --starts and a fresh system tmp --output')
         plan = load_preflight(args.config)

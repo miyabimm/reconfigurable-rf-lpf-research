@@ -25,7 +25,7 @@ class MinimalWorkerTests(unittest.TestCase):
     def prepare(self):
         def configure(c):
             c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                options=dict(maxiter=3, max_restarts=0, max_evaluations=3, restart_sigma=.1))
+                options=dict(max_search_forwards=3))
         plan, d, p, x = self.setup_model('RF-T008', mutate=configure)
         worker = MinimalWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT)
         return plan, d, p, x, worker
@@ -53,7 +53,9 @@ class MinimalWorkerTests(unittest.TestCase):
         def legacy(v):
             a = old.evaluate(v)['assessment']
             return np.r_[np.sqrt(a['worst_il_db']), np.maximum(0., -np.asarray(a['mandatory_g']))]
-        expected = hybrid_minimize(legacy, x, worker.bounds, seed=23, aggregation='sum', **worker.step['options'])
+        from lpf.search.worker import _development_options
+        expected = hybrid_minimize(legacy, x, worker.bounds, seed=23, aggregation='sum',
+                                   **_development_options(worker.step))
         with patch('builtins.open', side_effect=AssertionError('unexpected I/O')), \
              patch.object(Path, 'open', side_effect=AssertionError('unexpected I/O')):
             actual = worker.solve()
@@ -117,7 +119,7 @@ class SourceBoundaryTests(unittest.TestCase):
         @dataclass
         class Output:
             best_x: object = None
-        worker = SimpleNamespace(step={'name': 'coarse', 'options': {'max_evaluations': 1, 'max_restarts': 0}},
+        worker = SimpleNamespace(step={'name': 'coarse', 'options': {'max_search_forwards': 1}},
             model=SimpleNamespace(policy_id='fixture', policy_fingerprint='fixture'), solve=lambda: Output())
         plan = SimpleNamespace(data={'config': {'definition': {}, 'rf': {'constraint_id': 'fixture', 'allow_trial': True}},
             'rf_inputs': {}, 'grids': {'demo/coarse': {'sha256': 'grid'}}}, sha256='plan')

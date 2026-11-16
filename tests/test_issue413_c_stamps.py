@@ -23,10 +23,9 @@ class PrecomputedStampTests(previous.CAssemblyTests):
         from lpf.rf_core.model import power_response
         from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
         from lpf.search._worker_next import MinimalWorker
-        from lpf.search.plan import load_preflight
         from lpf.search.storage import vector_sha
         p, model, g, x = previous.fixture()
-        plan = load_preflight(ROOT/'project/diagnostics/issue377/baseline.yaml')
+        plan = previous.fixture_plan()
         for variant in ('baseline', *self.variants):
             m = probe.probe_model(model, variant)
             node = np.zeros((len(g.setting), m.topology.inductor_tree.node_count,

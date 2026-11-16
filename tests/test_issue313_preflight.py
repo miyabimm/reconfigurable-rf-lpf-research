@@ -112,6 +112,21 @@ class PreflightTests(unittest.TestCase):
         config = self.config(); config['arms'][0]['steps'][0]['options']['max_iterations'] = 4
         self.assertNotEqual(plan.sha256, self.load(config).sha256)
 
+    def test_two_stage_costs_use_frozen_grids_and_keep_other_reservations(self):
+        config = self.config()
+        del config['selection']
+        plan = self.load(config).data
+        cost = plan['costs']['jobs']['demo']
+        self.assertNotIn('selection', plan['grids'])
+        self.assertNotIn('selection_upper_reservation', cost)
+        self.assertEqual(cost['terminal_fixed_reservation'],
+                         plan['grids']['terminal']['requested_samples_per_forward'])
+        self.assertEqual(cost['total_upper_reservation'], 1000 + 112 + 168)
+        self.assertEqual(cost['stages']['coarse']['reserved_after_step'], 112 + 168)
+        config['selection'] = None
+        with self.assertRaisesRegex(ValueError, 'omitted, not null'):
+            self.load(config)
+
     def test_invalid_yaml_and_conflicting_caps_stop(self):
         mutations = [
             lambda d: d.pop('anytime_points_per_interval'),
@@ -141,6 +156,22 @@ class PreflightTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load_preflight(p)
 
+    def test_legacy_hybrid_options_fail_closed_without_plan_migration(self):
+        d = self.config()
+        step = d['arms'][0]['steps'][0]
+        step.update(solver='hybrid', options=dict(maxiter=3, max_restarts=0,
+                                                max_evaluations=8, restart_sigma=.1))
+        with self.assertRaises(ValueError):
+            self.load(d)
+        step['options'] = dict(max_search_forwards=8)
+        plan = self.load(d)
+        self.assertEqual(plan.data['config']['arms'][0]['steps'][0]['options'],
+                         {'max_search_forwards': 8})
+        for invalid in (0, True, 1.5):
+            step['options'] = dict(max_search_forwards=invalid)
+            with self.assertRaises(ValueError):
+                self.load(d)
+
     def test_full_batch_boundary_and_reservation_release(self):
         kw = dict(step_remaining=56, job_remaining=336, trial_remaining=500,
                   job_reserved=280, trial_reserved=444)
@@ -155,8 +186,7 @@ class PreflightTests(unittest.TestCase):
     def test_multiple_stages_jobs_and_solver_caps(self):
         d = self.config()
         first = d['arms'][0]['steps'][0]
-        first.update(solver='hybrid', options=dict(maxiter=3, max_restarts=0,
-                                                 max_evaluations=8, restart_sigma=.2))
+        first.update(solver='hybrid', options=dict(max_search_forwards=8))
         second = copy.deepcopy(first)
         second.update(name='fine', solver='slp', aggregation='signed_max',
                       points_per_interval=5,

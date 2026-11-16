@@ -100,7 +100,7 @@ class DevelopmentWorker(MinimalWorker):
     A fresh directory in the system temporary directory is required.
     """
     def _verify_plan(self, plan, root):
-        if not self.budget_restarts:
+        if not self.sequential_recording:
             return super()._verify_plan(plan, root)
         from .preflight import freeze
         data = plan.data
@@ -114,13 +114,12 @@ class DevelopmentWorker(MinimalWorker):
             raise ValueError('Plan arm with steps required')
 
     def __init__(self, plan, definition, policy, arm, seed, vector, expected_vector_sha,
-                 *, root, checkpoint, checkpoint_interval=100, spot_checks=None, search_bounds=None,
-                 objective_mode=None, budget_restarts=False):
-        if type(budget_restarts) is not bool or (budget_restarts and objective_mode != 'weighted_violation'):
-            raise ValueError('Budget restarts require weighted development mode')
-        if budget_restarts and checkpoint_interval != 1000:
-            raise ValueError('Budget restart checkpoints require interval 1000')
-        self.budget_restarts = budget_restarts
+                 *, root, checkpoint, checkpoint_interval=1000, spot_checks=None, search_bounds=None,
+                 objective_mode=None):
+        # Recording policy is frozen in the Plan; it does not control restarts.
+        self.sequential_recording = 'development_weighted_restart' in plan.data
+        if self.sequential_recording and objective_mode != 'weighted_violation':
+            raise ValueError('Sequential recording requires weighted development mode')
         self.local_run_index = 0
         self.path = Path(checkpoint).resolve()
         root = Path(root).resolve()
@@ -134,6 +133,8 @@ class DevelopmentWorker(MinimalWorker):
         if objective_mode not in (None, 'weighted_violation'):
             raise ValueError('Unknown development objective mode')
         self.objective_mode = objective_mode
+        if 'selection' not in plan.data['config'] and not objective_mode:
+            raise ValueError('Search→Terminal development currently requires weighted objective; fail closed')
         self.plan, self.arm = plan, arm
         self.checkpoint_interval = checkpoint_interval
         self.spot_checks = {} if spot_checks is None else dict(spot_checks)
@@ -151,34 +152,32 @@ class DevelopmentWorker(MinimalWorker):
             step = self.steps[0]
             opts = step['options']
             costs = plan.data['costs']['jobs'][arm]
-            n = opts['max_evaluations']
+            n = opts['max_search_forwards']
             if (len(plan.data['config']['arms']) != 1 or
-                    (not budget_restarts and len(plan.data['config']['seeds']) != 1) or
+                    (not self.sequential_recording and len(plan.data['config']['seeds']) != 1) or
                     plan.data['config']['anytime_samples'] != [] or
                     costs['stages'][step['name']]['upper_reservation'] != n * 70 or
-                    costs['selection_upper_reservation'] != 84 or costs['terminal_fixed_reservation'] != 476 or
-                    costs['total_upper_reservation'] != n * 70 + 84 + 476 or
+                    'selection_upper_reservation' in costs or costs['terminal_fixed_reservation'] != 476 or
+                    costs['total_upper_reservation'] != n * 70 + 476 or
                     plan.data['config']['rf'] != {'constraint_id': 'RF-T008', 'allow_trial': True} or
                     len(self.steps) != 1 or step['solver'] != 'hybrid' or step['aggregation'] != 'sum' or
-                    opts['maxiter'] != n or opts['max_restarts'] != 0 or
                     step['points_per_interval'] != 2 or step.get('stop_points_per_interval') != 3 or
                     len(self.grid.frequency_hz) != 70 or
-                    plan.data['config']['selection']['max_candidates'] != 1 or
-                    plan.data['config']['selection']['top_k'] != 1 or
-                    len(plan.requested_grid('selection').frequency_hz) != 84 or
+                    'selection' in plan.data['config'] or
                     len(plan.requested_grid('terminal').frequency_hz) != 476):
                 raise ValueError('Invalid weighted development Plan')
-            if budget_restarts:
+            if self.sequential_recording:
                 mode = plan.data.get('development_weighted_restart', {})
-                expected = dict(max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
-                                checkpoint_interval=1000, search_bounds=plain(self.bounds),
+                expected = dict(checkpoint_interval_forwards=checkpoint_interval, search_bounds=plain(self.bounds),
                                 search_bounds_sha256=sha(self.bounds), objective='weighted_violation',
                                 start_method=mode.get('start_method'))
                 if mode != expected or mode['start_method'] not in ('explicit', 'scrambled_sobol_single_point'):
                     raise ValueError('Budget restart settings/box do not match frozen Plan')
         self._grids = {f"{arm}/{self.step['name']}":
                        (self.grid, self.evaluator, self.prepared_requirements)}
-        valid = {f"{arm}/{s['name']}" for s in self.steps} | {'selection', 'terminal'}
+        valid = {f"{arm}/{s['name']}" for s in self.steps} | {'terminal'}
+        if 'selection' in plan.data['config']:
+            valid.add('selection')  # legacy fixed-step transition only
         for stage, indices in self.spot_checks.items():
             if (stage not in valid or not isinstance(indices, list) or not indices or
                     len(set(indices)) != len(indices) or any(type(i) is not int or i < 0 or
@@ -214,7 +213,7 @@ class DevelopmentWorker(MinimalWorker):
                 score = float(np.sum(residuals * residuals))
                 if not np.isfinite(score):
                     raise ValueError('Invalid weighted objective')
-                key = (score, digest)
+                key = score  # Hybrid retains the first exact tie.
                 if self.solver_best is None or score < self.solver_best[0]:
                     self.solver_best = (score, digest)
             else:
@@ -227,9 +226,9 @@ class DevelopmentWorker(MinimalWorker):
                                  worst_il_db=il, **metrics)
                 if self.objective_mode:
                     self.best['objective_j'] = score
-                if self.budget_restarts:
+                if self.sequential_recording:
                     self.best.update(_harmonic_margin(response, self.prepared_requirements))
-            if self.budget_restarts:
+            if self.sequential_recording:
                 if self.forward_count % self.checkpoint_interval == 0:
                     self._save_best()
             elif self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
@@ -246,7 +245,7 @@ class DevelopmentWorker(MinimalWorker):
                        rf_inputs=self.plan.data['rf_inputs'], grid_sha256=grid_fingerprint(self.grid),
                        requirements_fingerprint=self.requirements.fingerprint,
                        forward_count=self.forward_count, best=self.best)
-        if self.budget_restarts:
+        if self.sequential_recording:
             payload['local_run_index'] = self.local_run_index
             payload['restart_count'] = self.local_run_index
         target = self.path / f'{sequence:06d}.json'
@@ -309,8 +308,7 @@ class DevelopmentWorker(MinimalWorker):
                 if step['solver'] == 'hybrid':
                     from . import _worker_next
                     extra = {}
-                    if self.budget_restarts:
-                        opts['max_restarts'] = None
+                    if self.sequential_recording:
                         extra['run_callback'] = lambda index: setattr(self, 'local_run_index', index)
                     out = _worker_next.hybrid_minimize(self._solver_residuals, x, self.bounds,
                             seed=self.seed, aggregation=step['aggregation'], **opts, **extra)
@@ -353,7 +351,7 @@ class DevelopmentWorker(MinimalWorker):
                     candidates.append(plain(v))
                 _check_vector_box(next_x, self.bounds)
                 validate_values(self.definition, self.model.schema, next_x, self.policy, frozen_model=self.model)
-                if self.best is not None and (self.forward_count != self.saved_count if self.budget_restarts
+                if self.best is not None and (self.forward_count != self.saved_count if self.sequential_recording
                                               else self.best['vector_sha256'] != self.saved_sha):
                     self._save_best()
                 steps.append(dict(name=step['name'], solver=step['solver'], solver_result=raw_numbers(out),
@@ -362,6 +360,41 @@ class DevelopmentWorker(MinimalWorker):
                 x = np.asarray(next_x, dtype=float).copy()
             finally:
                 self._running = False
+        if 'selection' not in cfg:
+            # The last search step alone determines the terminal candidate.
+            # Never substitute an earlier step or a strict-ranked candidate.
+            if self.best is None:
+                raise ValueError('Final search step has no valid best')
+            vector = self.best['vector']
+            self._activate('terminal')
+            response, _ = self.evaluate(vector)
+            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
+            terminal_row = dict(vector_sha256=self.best['vector_sha256'], assessment=assessment,
+                                independent=self._audit(vector, response, 'terminal'))
+            if self.sequential_recording:
+                terminal_row.update(_harmonic_margin(response, self.prepared_requirements))
+            terminal = dict(status='completed', forward_count=1, candidates=[raw_numbers(terminal_row)])
+            result = dict(kind='development_only', status='converged' if all(s['converged'] for s in steps)
+                          else 'not_converged', steps=steps, terminal=terminal,
+                          forward_count=sum(s['forward_count'] for s in steps) + 1,
+                          finite_grid_only=True, continuous_band_proven=False, rf_compliance_certified=False,
+                          physical_q_srf_em_checked=False)
+            if self.sequential_recording:
+                result['status'] = ('search_budget_exhausted' if steps[0]['stop_reason'] == 'evaluation_budget_exhausted'
+                                    else 'incomplete')
+            if self.objective_mode:
+                search_samples = sum(s['forward_count'] * len(self.plan.requested_grid(
+                    f"{self.arm}/{s['name']}").frequency_hz) for s in steps)
+                result.update(weighted_objective=WEIGHTED_OBJECTIVE,
+                              weighted_objective_sha256=sha(WEIGHTED_OBJECTIVE),
+                              plan_sha256=self.plan.sha256,
+                              best_tie_policy='first exact J, matching Hybrid',
+                              costs=dict(search_forwards=sum(s['forward_count'] for s in steps),
+                                         search_requested_samples=search_samples,
+                                         search_completed_samples=search_samples,
+                                         terminal_requested_samples=len(self.grid.frequency_hz),
+                                         dense='not_run', independent_mna_samples_by_stage=self.audit_samples))
+            return result
         selection = dict(status='not_run', forward_count=0, ranked=[], excluded=invalid)
         assessed = []
         self._activate('selection')
@@ -369,7 +402,7 @@ class DevelopmentWorker(MinimalWorker):
             if i >= cfg['selection']['max_candidates']:
                 selection['excluded'].append(dict(vector_sha256=digest, status='unrun', reason='max_candidates'))
                 continue
-            response, prepared_assessment = self.evaluate(vector)
+            response, _ = self.evaluate(vector)
             selection['forward_count'] += 1
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             keys = ('status', 'policy_id', 'policy_fingerprint', 'mode', 'requirements_fingerprint',
@@ -377,13 +410,9 @@ class DevelopmentWorker(MinimalWorker):
             compact = {key: assessment[key] for key in keys}
             row = dict(vector=vector, vector_sha256=digest, model=self.model, assessment=compact,
                        independent=self._audit(vector, response, 'selection'))
-            if self.objective_mode:
-                residuals = _weighted_residuals(response, prepared_assessment, self.prepared_requirements)
-                row['objective_j'] = float(np.sum(residuals * residuals))
-                row['status'] = 'pass' if assessment['strict_feasible'] else 'fail'
             assessed.append(row)
             del assessment, response
-        ranked = ({'ranked': assessed, 'excluded': []} if self.objective_mode else rank_candidates(assessed))
+        ranked = rank_candidates(assessed)
         selection['ranked'] = [raw_numbers({k: v for k, v in r.items() if k != 'model'}) for r in ranked['ranked']]
         selection['excluded'].extend(raw_numbers(ranked['excluded']))
         if candidates:
@@ -396,8 +425,6 @@ class DevelopmentWorker(MinimalWorker):
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             terminal_row = dict(vector_sha256=row['vector_sha256'], assessment=assessment,
                                 independent=self._audit(row['vector'], response, 'terminal'))
-            if self.budget_restarts:
-                terminal_row.update(_harmonic_margin(response, self.prepared_requirements))
             terminal['candidates'].append(raw_numbers(terminal_row))
         if terminal['candidates']:
             terminal['status'] = 'completed'
@@ -406,19 +433,4 @@ class DevelopmentWorker(MinimalWorker):
                     forward_count=sum(s['forward_count'] for s in steps) + selection['forward_count'] + terminal['forward_count'],
                     finite_grid_only=True, continuous_band_proven=False, rf_compliance_certified=False,
                     physical_q_srf_em_checked=False)
-        if self.budget_restarts:
-            result['status'] = ('search_budget_exhausted' if steps[0]['stop_reason'] == 'evaluation_budget_exhausted'
-                                else 'incomplete')
-        if self.objective_mode:
-            search_samples = steps[0]['forward_count'] * len(self.plan.requested_grid(f"{self.arm}/{self.step['name']}").frequency_hz)
-            result['weighted_objective'] = WEIGHTED_OBJECTIVE
-            result['weighted_objective_sha256'] = sha(WEIGHTED_OBJECTIVE)
-            result['plan_sha256'] = self.plan.sha256
-            result['best_tie_policy'] = ('exact J; Worker uses smallest SHA, Hybrid keeps first; '
-                                         'different vectors are possible only for an exact tie')
-            result['costs'] = dict(search_forwards=steps[0]['forward_count'], search_requested_samples=search_samples,
-                                   search_completed_samples=search_samples,
-                                   selection_requested_samples=selection['forward_count'] * 84,
-                                   terminal_requested_samples=terminal['forward_count'] * 476,
-                                   dense='not_run', independent_mna_samples_by_stage=self.audit_samples)
         return result
