@@ -1,23 +1,18 @@
 """One development-only Worker invocation; not a production or EXP runner."""
 from dataclasses import asdict
 import copy
-import hashlib
 import json
 from pathlib import Path
-import subprocess
-import tempfile
 
 import yaml
 
 from lpf.constraint_versions import constraint_fingerprint, load_constraint, rf_input_file
-from ._development_worker import DevelopmentWorker, _normalize_search_bounds, _save_checkpoint
+from ._development_worker import DevelopmentWorker, _save_checkpoint
 from ._job_evaluation import source_identity
-from .plan import ROOT, Loader, Plan, load_preflight
+from .plan import Loader, Plan
 from .preflight import freeze
 from .performance import build_evaluation_grid, compile_requirements
-from .proposals import definition_from_data
-from .starts import load_explicit
-from .storage import canonical, sha, vector_sha
+from .storage import canonical, sha
 
 
 def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='explicit',
@@ -112,74 +107,3 @@ def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output
         except Exception:
             pass  # preserve the original failure; never retry a checkpoint
         raise
-
-
-def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,
-                           checkpoint_interval=1000, spot_checks=None, search_bounds=None,
-                           objective_mode=None, max_search_forwards=None):
-    """Run exactly one seed/arm, preserving input and append-only Worker events.
-
-    No budget ledger, retry, resume, or formal experiment protection is provided.
-    Exceptions propagate, including failures to save or read back the result.
-    """
-    root = Path(root).resolve()
-    output = Path(output).expanduser().resolve()
-    if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
-            output.is_relative_to(root) or not output.parent.is_dir()):
-        raise ValueError('Fresh system temporary output outside Git checkout required')
-    probe = subprocess.run(['git', '-C', str(output.parent), 'rev-parse', '--is-inside-work-tree'],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    if probe.returncode == 0:
-        raise ValueError('Output must be outside Git checkouts')
-    if objective_mode is None and max_search_forwards is None:
-        plan = load_preflight(config, root=root)
-    elif objective_mode == 'weighted_violation' and max_search_forwards is not None:
-        plan = _weighted_plan(config, root, arm, max_search_forwards)
-    else:
-        raise ValueError('Specify weighted_violation and max_search_forwards together')
-    cfg = plan.data['config']
-    ref = cfg['definition']
-    if ref is None:
-        raise ValueError('Explicit complete definition required')
-    data = ref if 'inductor_tree' in ref else json.loads((root / ref['path']).read_bytes())
-    definition = definition_from_data(data)
-    policy = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
-    entries = load_explicit(starts)
-    if type(seed) is not int or seed not in cfg['seeds'] or seed not in entries:
-        raise ValueError('Seed must occur in Plan and explicit starts')
-    if not any(a['name'] == arm for a in cfg['arms']):
-        raise ValueError('Arm must occur in Plan')
-    start = entries[seed]
-    if not isinstance(start, dict) or set(start) != {'vector', 'vector_sha256'} or vector_sha(start['vector']) != start['vector_sha256']:
-        raise ValueError('Explicit start vector/SHA mismatch')
-    box = None if search_bounds is None else _normalize_search_bounds(search_bounds)
-    source = source_identity(root)
-    script = root / 'scripts/run_development_worker.py'
-    source['files']['scripts/run_development_worker.py'] = hashlib.sha256(script.read_bytes()).hexdigest()
-    record = dict(kind='development_worker_input_v1', plan=plan.data, plan_sha256=plan.sha256,
-                  definition=asdict(definition), definition_sha256=sha(asdict(definition)),
-                  policy_id=cfg['rf']['constraint_id'], policy_fingerprint=constraint_fingerprint(policy),
-                  seed=seed, arm=arm, start=start, checkpoint_interval=checkpoint_interval,
-                  spot_checks=spot_checks, search_bounds=box,
-                  search_bounds_sha256=None if box is None else sha(box),
-                  search_bounds_mode='physical_full' if box is None else 'specified',
-                  source=source, source_sha256=sha(source))
-    if objective_mode:
-        from ._development_worker import WEIGHTED_OBJECTIVE
-        record['weighted_objective'] = WEIGHTED_OBJECTIVE
-        record['weighted_objective_sha256'] = sha(WEIGHTED_OBJECTIVE)
-        record['max_search_forwards'] = max_search_forwards
-    # mkdir itself is exclusive: neither an existing job nor its files are touched.
-    output.mkdir(exist_ok=False)
-    _save_checkpoint(output / 'input.json', record)
-    if objective_mode and canonical(json.loads((output / 'input.json').read_text())) != canonical(record):
-        raise ValueError('Input readback mismatch')
-    worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
-                               root=root, checkpoint=output / 'checkpoints',
-                               checkpoint_interval=checkpoint_interval, spot_checks=spot_checks,
-                               search_bounds=box, objective_mode=objective_mode)
-    result = worker.run()
-    _save_checkpoint(output / 'result.json', result)
-    if canonical(json.loads((output / 'result.json').read_text())) != canonical(result):
-        raise ValueError('Result readback mismatch')
-    return result

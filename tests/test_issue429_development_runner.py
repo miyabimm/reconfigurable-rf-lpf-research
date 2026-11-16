@@ -1,4 +1,4 @@
-"""Single-job development runner contract; no formal EXP."""
+"""Single-seed development uses the same parent ledger as multiple seeds."""
 import copy
 import json
 from pathlib import Path
@@ -7,196 +7,98 @@ import sys
 import unittest
 from unittest.mock import patch
 
-import test_issue315_fixed_stage as fixtures
-from lpf.search._development_runner import run_development_worker
-from lpf.search._development_worker import DevelopmentWorker, _save_checkpoint
+import test_issue435_weighted_development as fixtures
+from lpf.search._development_runner import _weighted_plan
+from lpf.search._development_worker import DevelopmentWorker
+from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
+from lpf.search.runner import run_weighted_development
 from lpf.search.storage import sha, vector_sha
+from lpf.rf_core import build_rf_model
 
 
 class RunnerTests(unittest.TestCase):
-    setUp = fixtures.FixedStageTests.setUp
-    setup_model = fixtures.FixedStageTests.setup_model
+    setUp = fixtures.WeightedTests.setUp
+    setup_model = fixtures.WeightedTests.setup_model
+    inputs = fixtures.WeightedTests.inputs
 
-    def inputs(self):
-        def configure(c):
-            first = c['arms'][0]['steps'][0]
-            first.update(solver='hybrid', aggregation='sum', max_requested_samples=168,
-                         options=dict(max_search_forwards=3))
-            second = copy.deepcopy(first)
-            second.update(name='fine', solver='slsqp', points_per_interval=3, max_requested_samples=252,
-                          options=dict(max_iterations=2, max_evaluations=3))
-            c['arms'][0]['steps'].append(second)
-        plan, d, policy, x = self.setup_model('RF-T008', mutate=configure)
-        starts = Path(self.raw.name) / 'starts.json'
-        starts.write_text(json.dumps({'23': {'vector': x.tolist(), 'vector_sha256': vector_sha(x)}}))
-        return plan, d, policy, x, starts, Path(self.sources.name) / 'plan.yaml'
+    def prepared(self):
+        config, starts_file, definition, policy, x = self.inputs()
+        box = [list(pair) for pair in physical_bounds(
+            definition, build_rf_model(definition, policy).schema, policy)]
+        plan = _weighted_plan(config, ROOT, 'demo', 3, search_bounds=box)
+        starts = {23: dict(vector=x.tolist(), vector_sha256=vector_sha(x))}
+        return config, starts_file, definition, policy, x, box, plan, starts
 
-    def test_direct_cli_and_checkpoints(self):
-        plan, d, policy, x, starts, config = self.inputs()
-        spots = {'terminal': [0, 111]}
-        direct_path = Path(self.raw.name) / 'direct'
-        direct = DevelopmentWorker(plan, d, policy, 'demo', 23, x, vector_sha(x), root=ROOT,
-                                   checkpoint=direct_path, spot_checks=spots).run()
-        output = Path(self.raw.name) / 'job'
-        p = subprocess.run([sys.executable, str(ROOT/'scripts/run_development_worker.py'),
-                            '--config', str(config), '--starts', str(starts), '--seed', '23',
-                            '--arm', 'demo', '--output', str(output), '--spot-checks', json.dumps(spots)],
-                           capture_output=True, text=True)
-        self.assertEqual(p.returncode, 4 if direct['status'] == 'not_converged' else 0, p.stderr)
-        self.assertEqual(json.loads((output/'result.json').read_text()), direct)
-        api_output = Path(self.raw.name) / 'api-job'
-        returned = run_development_worker(config, starts, 23, 'demo', api_output, spot_checks=spots)
-        self.assertEqual(returned, direct)
-        self.assertEqual(json.loads((api_output/'result.json').read_text()), returned)
-        record = json.loads((output/'input.json').read_text())
-        self.assertEqual(record['plan_sha256'], plan.sha256)
-        self.assertEqual(record['plan'], plan.data)
+    def test_single_seed_cli_uses_parent_and_keeps_original_job(self):
+        config, starts_file, _, _, x, box, _, _ = self.prepared()
+        output = Path(self.raw.name)/'single-parent'
+        process = subprocess.run([sys.executable, str(ROOT/'scripts/run_rf_search.py'), 'develop',
+            '--config', str(config), '--starts', str(starts_file), '--output', str(output),
+            '--objective-mode', 'weighted_violation', '--max-search-forwards', '3',
+            '--spot-checks', '{"terminal":[0,111]}'], capture_output=True, text=True)
+        self.assertEqual(process.returncode, 4, process.stderr)
+        parent = json.loads((output/'run.json').read_text())
+        summary = json.loads((output/'summary.json').read_text())
+        self.assertEqual(summary['status'], 'completed')
+        self.assertEqual(len(parent['jobs']), 1)
+        row = parent['jobs'][0]
+        job = output/row['raw_path']
+        record = json.loads((job/'input.json').read_text())
+        result = json.loads((job/'result.json').read_text())
+        self.assertEqual(record['plan_sha256'], sha(record['plan']))
         self.assertEqual(record['start']['vector_sha256'], vector_sha(x))
-        self.assertEqual(record['start']['vector'], x.tolist())
-        self.assertEqual(record['policy_id'], 'RF-T008')
-        self.assertEqual(record['spot_checks'], spots)
-        self.assertEqual((record['search_bounds_mode'], record['search_bounds'], record['search_bounds_sha256']),
-                         ('physical_full', None, None))
-        paths = sorted((output/'checkpoints').glob('*.json'))
-        self.assertGreaterEqual(len(paths), 2)
-        for i, path in enumerate(paths, 1):
-            row = json.loads(path.read_text())
-            self.assertEqual(path.name, f'{i:06d}.json')
-            self.assertEqual(row['sequence'], i)
-            self.assertEqual(row['grid_sha256'], plan.data['grids'][f"demo/{row['step']}"]['sha256'])
-            self.assertEqual(row['best']['vector_sha256'], vector_sha(row['best']['vector']))
-            self.assertEqual(path.read_bytes(), (direct_path/path.name).read_bytes())
-        self.assertEqual(direct['terminal']['candidates'][0]['independent']['status'], 'pass')
+        self.assertEqual(record['search_bounds'], box)
+        self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
+        self.assertEqual(result['steps'][0]['forward_count'], 3)
         before = {p: p.read_bytes() for p in output.rglob('*.json')}
-        with self.assertRaises(FileExistsError):
-            run_development_worker(config, starts, 23, 'demo', output)
+        second = subprocess.run(process.args, capture_output=True, text=True)
+        self.assertEqual(second.returncode, 2)
         self.assertEqual(before, {p: p.read_bytes() for p in output.rglob('*.json')})
 
-    def test_search_bounds_runner_record_and_cli(self):
-        _, _, _, x, starts, config = self.inputs()
-        from lpf.optimizers.hybrid import hybrid_minimize
-        from lpf.optimizers.slsqp import slsqp_minimize
-        from lpf.search.component_constraints import physical_bounds
-        from lpf.rf_core import build_rf_model
-        from test_issue307_constraints import make
-        p, d, _, _, _ = make('RF-T008')
-        box = [list(pair) for pair in physical_bounds(d, build_rf_model(d, p).schema, p)]
-        box[0] = [x[0], x[0]]
-        box[1] = [x[1] - .01, x[1] + .01]
-        output = Path(self.raw.name)/'boxed'
-        seen = []
-        def observe(fn):
-            def call(callback, start, bounds, **kw):
-                seen.append((start.copy(), copy.deepcopy(bounds)))
-                return fn(callback, start, bounds, **kw)
-            return call
-        with patch('lpf.search._worker_next.hybrid_minimize', side_effect=observe(hybrid_minimize)), \
-             patch('lpf.search._development_worker.slsqp_minimize', side_effect=observe(slsqp_minimize)):
-            result = run_development_worker(config, starts, 23, 'demo', output, search_bounds=box)
-        record = json.loads((output/'input.json').read_text())
-        self.assertEqual(record['search_bounds_mode'], 'specified')
-        self.assertEqual(record['search_bounds'], box)
-        self.assertEqual(record['search_bounds_sha256'], sha(box))
-        self.assertEqual(len(seen), 2)
-        for start, applied in seen:
-            self.assertEqual([list(row) for row in applied], record['search_bounds'])
-            self.assertEqual(start[0], x[0])
-        for step in result['steps']:
-            self.assertEqual(step['rf_best']['vector'][0], x[0])
-        for path in (output/'checkpoints').glob('*.json'):
-            self.assertEqual(json.loads(path.read_text())['best']['vector'][0], x[0])
-        bounds_file = Path(self.raw.name)/'box.json'
-        bounds_file.write_text(json.dumps(box))
-        cli_output = Path(self.raw.name)/'cli-boxed'
-        cli = subprocess.run([sys.executable, str(ROOT/'scripts/run_development_worker.py'),
-                              '--config', str(config), '--starts', str(starts), '--seed', '23',
-                              '--arm', 'demo', '--output', str(cli_output), '--search-bounds', str(bounds_file)],
-                             capture_output=True, text=True)
-        self.assertIn(cli.returncode, (0, 4), cli.stderr)
-        self.assertEqual(json.loads((cli_output/'input.json').read_text())['search_bounds'], box)
-        self.assertEqual(json.loads((cli_output/'result.json').read_text()), result)
+    def test_parent_and_direct_worker_match_for_same_frozen_job(self):
+        _, _, d, p, x, box, plan, starts = self.prepared()
+        spots = {'terminal': [0, 111]}
+        direct_path = Path(self.raw.name)/'direct'
+        direct = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+            checkpoint=direct_path, search_bounds=box, objective_mode='weighted_violation',
+            spot_checks=spots).run()
+        output = Path(self.raw.name)/'parent'
+        summary = run_weighted_development(plan, d, p, starts, output, root=ROOT, spot_checks=spots)
+        self.assertEqual(summary['status'], 'completed', summary.get('exit_reason'))
+        job = output/summary['jobs'][0]['raw_path']
+        self.assertEqual(json.loads((job/'result.json').read_text()), direct)
+        for checkpoint in direct_path.glob('*.json'):
+            self.assertEqual(checkpoint.read_bytes(), (job/'checkpoints'/checkpoint.name).read_bytes())
 
-    def test_full_box_matches_default_and_box_stop_preserves_input(self):
-        _, d, p, x, starts, config = self.inputs()
-        from lpf.rf_core import build_rf_model
-        from lpf.search.component_constraints import physical_bounds
-        box = [list(pair) for pair in physical_bounds(d, build_rf_model(d, p).schema, p)]
-        default = Path(self.raw.name)/'default-full'
-        explicit = Path(self.raw.name)/'explicit-full'
-        self.assertEqual(run_development_worker(config, starts, 23, 'demo', default),
-                         run_development_worker(config, starts, 23, 'demo', explicit, search_bounds=box))
-        for path in (default/'checkpoints').glob('*.json'):
-            self.assertEqual(path.read_bytes(), (explicit/'checkpoints'/path.name).read_bytes())
-        bad = copy.deepcopy(box); bad[0] = [box[0][0], float(x[0]) - .1]
-        stopped = Path(self.raw.name)/'boxed-stop'
-        with patch('lpf.search._worker_next.hybrid_minimize') as solver:
-            with self.assertRaises(ValueError):
-                run_development_worker(config, starts, 23, 'demo', stopped, search_bounds=bad)
-            solver.assert_not_called()
-        before = (stopped/'input.json').read_bytes()
-        self.assertEqual(json.loads(before)['search_bounds_sha256'], sha(bad))
-        self.assertFalse((stopped/'result.json').exists())
-        with self.assertRaises(FileExistsError):
-            run_development_worker(config, starts, 23, 'demo', stopped, search_bounds=box)
-        self.assertEqual((stopped/'input.json').read_bytes(), before)
-
-    def test_rejections_and_failure_preservation(self):
-        plan, d, policy, x, starts, config = self.inputs()
-        for seed, arm in ((24, 'demo'), (23, 'absent')):
-            with self.assertRaises(ValueError):
-                run_development_worker(config, starts, seed, arm, Path(self.raw.name)/f'bad-{seed}-{arm}')
-        bad = Path(self.raw.name)/'bad.json'
-        bad.write_text(json.dumps({'23': {'vector': x.tolist(), 'vector_sha256': '0'*64}}))
-        with self.assertRaisesRegex(ValueError, 'SHA'):
-            run_development_worker(config, bad, 23, 'demo', Path(self.raw.name)/'bad-sha')
-        with self.assertRaises(ValueError):
-            run_development_worker(config, starts, 23, 'demo', ROOT/'bad-output')
-        repo = Path(self.raw.name)/'other-repo'
-        repo.mkdir()
-        subprocess.run(['git', 'init', '-q', str(repo)], check=True)
-        with self.assertRaisesRegex(ValueError, 'Git'):
-            run_development_worker(config, starts, 23, 'demo', repo/'job')
-        cli = subprocess.run([sys.executable, str(ROOT/'scripts/run_development_worker.py'),
-                              '--config', str(config), '--starts', str(bad), '--seed', '23',
-                              '--arm', 'demo', '--output', str(Path(self.raw.name)/'cli-fail')],
-                             capture_output=True, text=True)
-        self.assertEqual(cli.returncode, 2)
-        self.assertIn('STOP:', cli.stderr)
-        output = Path(self.raw.name)/'failed'
-        def fail(worker):
-            _save_checkpoint(worker.path/'000001.json', {'preserved': True})
-            raise RuntimeError('worker failure')
-        with patch.object(DevelopmentWorker, 'run', fail):
-            with self.assertRaisesRegex(RuntimeError, 'worker failure'):
-                run_development_worker(config, starts, 23, 'demo', output)
-        self.assertTrue((output/'input.json').is_file())
-        self.assertEqual(json.loads((output/'checkpoints/000001.json').read_text()), {'preserved': True})
-        self.assertFalse((output/'result.json').exists())
-        with self.assertRaises(FileExistsError):
-            run_development_worker(config, starts, 23, 'demo', output)
-
-    def test_save_failure_stops_without_retry(self):
-        _, _, _, _, starts, config = self.inputs()
-        input_fail = Path(self.raw.name)/'input-failed'
-        with patch('lpf.search._development_runner._save_checkpoint', side_effect=OSError('input disk full')), \
-             patch('lpf.search._development_runner.DevelopmentWorker') as worker:
-            with self.assertRaisesRegex(OSError, 'input disk full'):
-                run_development_worker(config, starts, 23, 'demo', input_fail)
+    def test_invalid_start_and_box_stop_before_worker(self):
+        _, _, d, p, x, box, plan, starts = self.prepared()
+        bad = copy.deepcopy(starts)
+        bad[23]['vector_sha256'] = '0'*64
+        with patch('lpf.search._development_runner.run_prepared_weighted_job') as worker:
+            with self.assertRaisesRegex(ValueError, 'SHA'):
+                run_weighted_development(plan, d, p, bad, Path(self.raw.name)/'bad-sha', root=ROOT)
             worker.assert_not_called()
-        self.assertTrue(input_fail.is_dir())
-        output = Path(self.raw.name)/'save-failed'
-        def save(path, value):
-            if path.name == 'result.json':
-                raise OSError('disk full')
-            return _save_checkpoint(path, value)
-        with patch('lpf.search._development_runner._save_checkpoint', side_effect=save) as writer:
-            with self.assertRaisesRegex(OSError, 'disk full'):
-                run_development_worker(config, starts, 23, 'demo', output)
-        self.assertEqual([c.args[0].name for c in writer.call_args_list], ['input.json', 'result.json'])
-        self.assertTrue((output/'input.json').exists())
-        self.assertTrue(list((output/'checkpoints').glob('*.json')))
-        self.assertFalse((output/'result.json').exists())
+        outside = copy.deepcopy(box)
+        outside[0] = [box[0][0], float(x[0])-.1]
+        bad_plan = _weighted_plan(Path(self.sources.name)/'plan.yaml', ROOT, 'demo', 3, search_bounds=outside)
+        with patch('lpf.search._development_runner.run_prepared_weighted_job') as worker:
+            with self.assertRaises(ValueError):
+                run_weighted_development(bad_plan, d, p, starts, Path(self.raw.name)/'bad-box', root=ROOT)
+            worker.assert_not_called()
+
+    def test_worker_failure_keeps_unknown_and_never_retries(self):
+        _, _, d, p, _, _, plan, starts = self.prepared()
+        output = Path(self.raw.name)/'failed'
+        with patch('lpf.search._development_runner.run_prepared_weighted_job',
+                   side_effect=OSError('disk full')) as worker:
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
+        worker.assert_called_once()
+        self.assertEqual(summary['status'], 'unknown')
+        self.assertEqual(summary['jobs'][0]['reserved'], 3*70+84+476)
+        self.assertEqual(json.loads((output/'run.json').read_text())['status'], 'unknown')
+        with self.assertRaises(ValueError):
+            run_weighted_development(plan, d, p, starts, output, root=ROOT)
 
 
 if __name__ == '__main__':

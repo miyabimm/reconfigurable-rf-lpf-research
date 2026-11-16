@@ -31,7 +31,6 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('develop',))
     parser.add_argument('--config', required=True)
-    parser.add_argument('--mode', choices=('fixture', 'production'), default='fixture')
     parser.add_argument('--output')
     parser.add_argument('--starts', help='JSON seed→{vector, vector_sha256}')
     parser.add_argument('--sobol', action='store_true', help='weighted development: one unmodified Sobol point per seed')
@@ -80,16 +79,14 @@ def main(argv=None):
                     i += 1
             return supervise([sys.executable, str(Path(__file__).resolve()), *forwarded],
                              args.monitor_dir, args.output, profile=args.profile, root=ROOT)
-        if args.mode == 'production':
-            print('STOP: production_not_authorized: G0/G1 and G2-G5 not connected', file=sys.stderr)
-            return 3
         if args.objective_mode:
             if (not args.output or not args.max_search_forwards or bool(args.starts) == args.sobol or
                     args.storage_mode != 'legacy' or args.debug_forward_history or args.monitor_dir or args.timing_output):
                 raise ValueError('weighted development requires output, positive budget, exactly one of starts/Sobol, and legacy storage')
             import yaml
             from lpf.search.plan import Loader
-            from lpf.search._development_runner import _weighted_plan, _normalize_search_bounds
+            from lpf.search._development_runner import _weighted_plan
+            from lpf.search._development_worker import _normalize_search_bounds
             from lpf.search.proposals import definition_from_data
             from lpf.search.starts import generate_for_definition
             from lpf.search.component_constraints import physical_bounds

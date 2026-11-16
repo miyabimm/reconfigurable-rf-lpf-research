@@ -166,7 +166,9 @@ runpy.run_path(sys.argv[0], run_name='__main__')
                 config_path.write_text(yaml.safe_dump(changed))
                 self.assertEqual(self.invoke(argv)[0], 2)
                 self.assertFalse(args[-1].exists())
-            self.assertEqual(self.invoke(argv+['--mode', 'production'])[0], 3)
+            with self.assertRaises(SystemExit) as retired:
+                self.invoke(argv+['--mode', 'production'])
+            self.assertEqual(retired.exception.code, 2)
             forward.assert_not_called()
 
     def test_final_readback_faults_and_save_failure_stop_without_rewrite(self):

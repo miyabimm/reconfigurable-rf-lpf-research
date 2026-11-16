@@ -43,16 +43,16 @@ class MonitorTests(unittest.TestCase):
         script = ROOT/'scripts/run_rf_search.py'
         with tempfile.TemporaryDirectory(prefix='issue378-cli-') as tmp:
             logs = Path(tmp)/'logs'
-            args = [sys.executable, str(script), 'develop', '--config', 'missing', '--mode', 'production']
+            args = [sys.executable, str(script), 'develop', '--config', 'missing']
             plain = subprocess.run(args, capture_output=True, text=True)
             monitored = subprocess.run(args + ['--monitor-dir', str(logs)], capture_output=True, text=True)
-            self.assertEqual((plain.returncode, monitored.returncode), (3, 3))
-            self.assertIn('production_not_authorized', (logs/'stderr.txt').read_text())
-            self.assertEqual(json.loads((logs/'monitor-summary.json').read_text())['exit_code'], 3)
+            self.assertEqual((plain.returncode, monitored.returncode), (2, 2))
+            self.assertIn('STOP:', (logs/'stderr.txt').read_text())
+            self.assertEqual(json.loads((logs/'monitor-summary.json').read_text())['exit_code'], 2)
             abbreviated = Path(tmp)/'abbreviated'
             result = subprocess.run(args + [f'--monitor-d={abbreviated}'], capture_output=True, text=True, timeout=15)
-            self.assertEqual(result.returncode, 3)
-            self.assertEqual(json.loads((abbreviated/'monitor-summary.json').read_text())['exit_code'], 3)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads((abbreviated/'monitor-summary.json').read_text())['exit_code'], 2)
             invalid = subprocess.run(args + ['--profile'], capture_output=True, text=True)
             self.assertEqual(invalid.returncode, 2)
             self.assertIn('--profile requires --monitor-dir', invalid.stderr)
