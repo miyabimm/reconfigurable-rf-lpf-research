@@ -38,7 +38,7 @@ class WeightedTests(unittest.TestCase):
                           (c['validation'], ('max_requested_samples',))):
             for key in keys:
                 obj.pop(key, None)
-        c['selection']['points_per_interval'] = 3
+        c.pop('selection')
         c['validation']['terminal_points'] = 17
         config.write_text(yaml.safe_dump(c))
         starts = Path(self.raw.name) / 'starts.json'
@@ -64,6 +64,15 @@ class WeightedTests(unittest.TestCase):
         residuals = _weighted_residuals(SimpleNamespace(il_db=values), {'worst_il_db': .3}, worker.prepared_requirements)
         self.assertEqual(float(np.sum(residuals**2)), 0.)
 
+    def test_selection_configuration_is_rejected_not_silently_migrated(self):
+        config, _, _, _, _ = self.inputs()
+        data = yaml.safe_load(config.read_text())
+        data['selection'] = dict(rule='mandatory_vmax_vsum_il_sha', top_k=1,
+                                 max_candidates=1, points_per_interval=3)
+        config.write_text(yaml.safe_dump(data))
+        with self.assertRaisesRegex(ValueError, 'omit selection'):
+            _weighted_plan(config, ROOT, 'demo', 3)
+
     def test_runner_budget_checkpoint_terminal_and_spots(self):
         config, starts, d, p, x = self.inputs()
         output = Path(self.raw.name)/'job'
@@ -79,8 +88,8 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(step['options'], dict(max_search_forwards=3))
         self.assertEqual(step['max_requested_samples'], 210)
         costs = plan['costs']['jobs']['demo']
-        self.assertEqual((costs['selection_upper_reservation'], costs['terminal_fixed_reservation'],
-                          costs['total_upper_reservation']), (84, 476, 770))
+        self.assertNotIn('selection_upper_reservation', costs)
+        self.assertEqual((costs['terminal_fixed_reservation'], costs['total_upper_reservation']), (476, 686))
         self.assertEqual(sha(plan), record['plan_sha256'])
         self.assertEqual(record['weighted_objective_sha256'], sha(WEIGHTED_OBJECTIVE))
         s = result['steps'][0]
@@ -91,17 +100,16 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(s['rf_best']['objective_j'], s['solver_result']['best_fun'])
         best = s['rf_best']['vector_sha256']
         self.assertEqual(json.loads(sorted((job/'checkpoints').glob('*.json'))[-1].read_text())['best'], s['rf_best'])
-        self.assertEqual(result['selection']['forward_count'], 1)
-        self.assertEqual(result['selection']['ranked'][0]['vector_sha256'], best)
+        self.assertNotIn('selection', result)
         self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'], best)
         self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
         self.assertEqual(result['costs']['search_requested_samples'], s['forward_count']*70)
-        self.assertEqual(result['costs']['selection_requested_samples'], 84)
+        self.assertNotIn('selection_requested_samples', result['costs'])
         self.assertEqual(result['costs']['terminal_requested_samples'], 476)
         self.assertEqual(result['costs']['independent_mna_samples_by_stage'], {'terminal': 2})
         self.assertEqual(json.loads((job/'result.json').read_text()), result)
 
-    def test_selection_uses_best_not_endpoint_or_strict(self):
+    def test_terminal_uses_best_not_endpoint_or_strict(self):
         config, _, d, p, x = self.inputs()
         plan = _weighted_plan(config, ROOT, 'demo', 3)
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
@@ -118,15 +126,23 @@ class WeightedTests(unittest.TestCase):
         def score(*args):
             return next(evaluations_twice)
         evaluations_twice = iter([np.array([2.]), np.array([2.]), np.array([1.]), np.array([1.]), np.array([1.])])
+        from lpf.search.performance import evaluate_requirements
+        def terminal_fail(*args, **kwargs):
+            assessment = evaluate_requirements(*args, **kwargs)
+            assessment['strict_feasible'] = False  # force terminal FAIL; no candidate substitution
+            return assessment
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
              patch('lpf.search._development_worker._weighted_residuals', side_effect=score), \
              patch('lpf.search._development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
+             patch('lpf.search._development_worker.evaluate_requirements', side_effect=terminal_fail), \
              patch('lpf.search._development_worker.rank_candidates', side_effect=AssertionError('must not rank')):
             result = w.run()
         self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(y))
         self.assertFalse(result['steps'][0]['rf_best']['strict_feasible'])
-        self.assertEqual(result['selection']['ranked'][0]['vector_sha256'], vector_sha(y))
+        self.assertNotIn('selection', result)
+        self.assertEqual(len(result['terminal']['candidates']), 1)
         self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'], vector_sha(y))
+        self.assertFalse(result['terminal']['candidates'][0]['assessment']['strict_feasible'])
 
     def test_cli(self):
         config, starts, _, _, _ = self.inputs()
@@ -156,7 +172,7 @@ class WeightedTests(unittest.TestCase):
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
              patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
             result = w.run()
-        self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(second))
+        self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(first))
         self.assertEqual(vector_sha(result['steps'][0]['solver_result']['best_x']), vector_sha(first))
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                               checkpoint=Path(self.raw.name)/'mismatch', objective_mode='weighted_violation')

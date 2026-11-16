@@ -605,10 +605,9 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             if (result['status'] != 'search_budget_exhausted' or type(n) is not int or
                     n != max_search_forwards or costs['search_requested_samples'] != n * 70 or
                     costs['search_completed_samples'] != n * 70 or
-                    costs['selection_requested_samples'] != 84 or costs['terminal_requested_samples'] != 476 or
+                    'selection_requested_samples' in costs or costs['terminal_requested_samples'] != 476 or
                     result['plan_sha256'] != plan.sha256 or result['steps'][0]['forward_count'] != n):
                 raise ValueError('Job status or budget/readback mismatch')
-            selected = result['selection']['ranked']
             terminal = result['terminal']['candidates']
             best = result['steps'][0]['rf_best']
             solver = result['steps'][0]['solver_result']
@@ -616,12 +615,10 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
                     solver['max_evaluations'] != n or solver['maxiter'] != n or
                     solver['stop_reason'] != 'evaluation_budget_exhausted' or
                     solver['best_fun'] != best['objective_j'] or
-                    len(selected) != 1 or len(terminal) != 1 or
+                    'selection' in result or len(terminal) != 1 or
                     vector_sha(best['vector']) != best['vector_sha256'] or
-                    vector_sha(selected[0]['vector']) != best['vector_sha256'] or
-                    selected[0]['vector_sha256'] != best['vector_sha256'] or
                     terminal[0]['vector_sha256'] != best['vector_sha256']):
-                raise ValueError('Job best/selection/terminal mismatch')
+                raise ValueError('Job best/terminal mismatch')
             checkpoints = sorted((path / 'checkpoints').glob('*.json'))
             if not checkpoints:
                 raise ValueError('Missing final checkpoint')
@@ -638,7 +635,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             if audits != expected_audits:
                 raise ValueError('Independent MNA accounting mismatch')
             count = sum(audits.values())
-            requested = n * 70 + 84 + 476
+            requested = n * 70 + 476
             candidate = copy.deepcopy(state)
             updated = candidate['jobs'][index]
             best_summary = {key: best[key] for key in ('vector_sha256', 'objective_j')}

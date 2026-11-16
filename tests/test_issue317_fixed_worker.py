@@ -67,6 +67,11 @@ class FixedWorkerTests(unittest.TestCase):
         with patch('lpf.search.worker.slsqp_minimize', side_effect=solver or self.fixture):
             return execute_development_job(spec, path, solver_kind='fixture')
 
+    def test_two_stage_fixed_job_is_blocked_until_formal_worker_migration(self):
+        plan, d, p, x = self.setup_model('RF-F003', 'full_lpf', lambda c: c.pop('selection'))
+        with self.assertRaisesRegex(ValueError, 'Search→Terminal fixed Job not yet supported'):
+            freeze_development_job(plan, d, p, 'demo', 23, x)
+
     def test_two_steps_real_rf_one_selection_shared_cost_and_audit(self):
         spec, path, plan, d, p, x = self.job()
         result = self.run_fixture(spec, path)

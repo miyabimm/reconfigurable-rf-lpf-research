@@ -112,6 +112,21 @@ class PreflightTests(unittest.TestCase):
         config = self.config(); config['arms'][0]['steps'][0]['options']['max_iterations'] = 4
         self.assertNotEqual(plan.sha256, self.load(config).sha256)
 
+    def test_two_stage_costs_use_frozen_grids_and_keep_other_reservations(self):
+        config = self.config()
+        del config['selection']
+        plan = self.load(config).data
+        cost = plan['costs']['jobs']['demo']
+        self.assertNotIn('selection', plan['grids'])
+        self.assertNotIn('selection_upper_reservation', cost)
+        self.assertEqual(cost['terminal_fixed_reservation'],
+                         plan['grids']['terminal']['requested_samples_per_forward'])
+        self.assertEqual(cost['total_upper_reservation'], 1000 + 112 + 168)
+        self.assertEqual(cost['stages']['coarse']['reserved_after_step'], 112 + 168)
+        config['selection'] = None
+        with self.assertRaisesRegex(ValueError, 'omitted, not null'):
+            self.load(config)
+
     def test_invalid_yaml_and_conflicting_caps_stop(self):
         mutations = [
             lambda d: d.pop('anytime_points_per_interval'),

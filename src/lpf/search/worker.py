@@ -45,6 +45,8 @@ def _freeze_fixed_job(plan, definition, policy, arm, seed, vector, *, root=None,
     if sha(data) != plan.sha256 or sha(freeze(data['config'], root)) != plan.sha256:
         raise ValueError('Plan/source/RF/grid SHA mismatch')
     config = data['config']
+    if 'selection' not in config:
+        raise ValueError('Search→Terminal fixed Job not yet supported; fail closed')
     from .preflight import definition_sha
     if sha(asdict(definition)) != definition_sha(config['definition']):
         raise ValueError('Development Job requires a frozen complete definition')

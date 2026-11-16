@@ -35,19 +35,18 @@ def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='ex
         raise ValueError('Weighted mode requires Hybrid/sum')
     if step.get('options') not in (None, {}):
         raise ValueError('Weighted development takes its search budget from --max-search-forwards; omit step options')
+    if 'selection' in cfg:
+        raise ValueError('Selection is not supported by Search→Terminal development; omit selection')
     policy = load_constraint('RF-T008', root=root, allow_trial=True)
     req = compile_requirements(policy, rf_input_file(root, policy['bands_file']), 'full_lpf')
     grid = build_evaluation_grid(req, step['points_per_interval'], step.get('stop_points_per_interval'))
-    selection = cfg['selection']
     terminal = cfg['validation']
     if (step['points_per_interval'] != 2 or step.get('stop_points_per_interval') != 3 or
-            len(grid.frequency_hz) != 70 or selection['points_per_interval'] != 3 or
-            terminal['terminal_points'] != 17):
-        raise ValueError('Weighted mode requires 70/84/476 search/selection/terminal samples')
+            len(grid.frequency_hz) != 70 or terminal['terminal_points'] != 17):
+        raise ValueError('Weighted mode requires 70/476 search/terminal samples')
     step['options'] = dict(max_search_forwards=n)
     step['max_requested_samples'] = n * len(grid.frequency_hz)
-    selection['max_candidates'] = selection['top_k'] = 1
-    total = step['max_requested_samples'] + 84 + 476
+    total = step['max_requested_samples'] + 476
     if total > 2**63 - 1:
         raise ValueError('Sample reservation overflow')
     cfg['arms'][0]['max_requested_samples'] = cfg['max_trial_requested_samples'] = total
@@ -57,7 +56,7 @@ def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='ex
     frozen = freeze(cfg, root)
     costs = frozen['costs']['jobs'][arm]
     if (costs['stages'][step['name']]['upper_reservation'] != n * len(grid.frequency_hz) or
-            costs['selection_upper_reservation'] != 84 or costs['terminal_fixed_reservation'] != 476 or
+            costs['terminal_fixed_reservation'] != 476 or
             costs['total_upper_reservation'] != total):
         raise ValueError('Weighted budget arithmetic mismatch')
     if search_bounds is not None:

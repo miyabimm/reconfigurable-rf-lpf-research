@@ -56,8 +56,9 @@ def _solver(step):
 
 def freeze(d, root):
     from .plan import fields, positive
-    base_fields = 'schema_version rf objective definition seeds arms max_trial_requested_samples selection validation anytime_samples anytime_points_per_interval'
-    fields(d, base_fields + (' campaign' if isinstance(d, dict) and 'campaign' in d else ''))
+    base_fields = 'schema_version rf objective definition seeds arms max_trial_requested_samples validation anytime_samples anytime_points_per_interval'
+    fields(d, base_fields + (' selection' if isinstance(d, dict) and 'selection' in d else '') +
+           (' campaign' if isinstance(d, dict) and 'campaign' in d else ''))
     if 'campaign' in d:
         envelope = d['campaign']
         fields(envelope, 'max_topologies max_rf_samples structure independent')
@@ -143,15 +144,20 @@ def freeze(d, root):
             grids[name]['stop_points_per_interval'] = stop_points
         return n
 
-    selection = d['selection']
-    fields(selection, 'rule top_k max_candidates points_per_interval')
-    if selection['rule'] != 'mandatory_vmax_vsum_il_sha':
-        raise ValueError('Unknown Stage-3 selection rule')
-    positive(selection['top_k'])
-    positive(selection['max_candidates'])
-    if selection['top_k'] > selection['max_candidates']:
-        raise ValueError('Selection top_k exceeds candidate cap')
-    selection_one = grid('selection', selection['points_per_interval'])
+    # Transitional support for existing fixed-step callers. New Search→Terminal
+    # Plans omit selection entirely; they never allocate or serialize that stage.
+    selection = d.get('selection')
+    if 'selection' in d and selection is None:
+        raise ValueError('Selection must be omitted, not null')
+    if selection is not None:
+        fields(selection, 'rule top_k max_candidates points_per_interval')
+        if selection['rule'] != 'mandatory_vmax_vsum_il_sha':
+            raise ValueError('Unknown Stage-3 selection rule')
+        positive(selection['top_k'])
+        positive(selection['max_candidates'])
+        if selection['top_k'] > selection['max_candidates']:
+            raise ValueError('Selection top_k exceeds candidate cap')
+        selection_one = grid('selection', selection['points_per_interval'])
     validation = d['validation']
     fields(validation, 'terminal_points dense_points max_candidates max_requested_samples')
     positive(validation['max_candidates'])
@@ -161,7 +167,7 @@ def freeze(d, root):
     if 'campaign' in d:
         independent = d['campaign']['independent']
         if (any(i >= terminal_one for i in independent['sample_indices']) or
-                independent['max_candidates'] > selection['top_k']):
+                independent['max_candidates'] > (selection['top_k'] if selection is not None else 1)):
             raise ValueError('Independent candidate/sample request exceeds terminal selection')
     dense_upper = validation['max_candidates']*dense_one
     if dense_upper > validation['max_requested_samples']:
@@ -210,9 +216,9 @@ def freeze(d, root):
                                  solver_max_evaluations=step['options'][
                                      'max_search_forwards' if step['solver'] == 'hybrid' else 'max_evaluations'],
                                  status='not_run')
-        terminal = selection['top_k']*terminal_one
+        terminal = (selection['top_k'] if selection is not None else 1)*terminal_one
         anytime = len(milestones)*anytime_one
-        selected = selection['max_candidates']*selection_one
+        selected = selection['max_candidates']*selection_one if selection is not None else 0
         stage_upper = sum(s['upper_reservation'] for s in stages.values())
         required = stage_upper+selected+terminal+anytime
         if required > arm['max_requested_samples']:
@@ -223,13 +229,14 @@ def freeze(d, root):
         for stage in reversed(list(stages.values())):
             stage['reserved_after_step'] = future_reserved
             future_reserved += stage['upper_reservation']
-        jobs[name] = dict(stages=stages, selection_one_forward=selection_one,
-                          selection_upper_reservation=selected,
+        jobs[name] = dict(stages=stages,
                           terminal_one_forward=terminal_one, terminal_fixed_reservation=terminal,
                           anytime_one_forward=anytime_one, anytime_fixed_reservation=anytime,
                           runtime_reserved_samples=selected+terminal+anytime,
                           total_upper_reservation=required,
                           max_requested_samples=arm['max_requested_samples'], status='not_run')
+        if selection is not None:
+            jobs[name].update(selection_one_forward=selection_one, selection_upper_reservation=selected)
     trial_reservation = sum(a['max_requested_samples'] for a in arms)
     if trial_reservation > d['max_trial_requested_samples']:
         raise ValueError('STOP: Trial cannot reserve all fixed jobs')

@@ -95,7 +95,7 @@ class RunnerTests(unittest.TestCase):
             summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
         worker.assert_called_once()
         self.assertEqual(summary['status'], 'unknown')
-        self.assertEqual(summary['jobs'][0]['reserved'], 3*70+84+476)
+        self.assertEqual(summary['jobs'][0]['reserved'], 3*70+476)
         self.assertEqual(json.loads((output/'run.json').read_text())['status'], 'unknown')
         with self.assertRaises(ValueError):
             run_weighted_development(plan, d, p, starts, output, root=ROOT)
