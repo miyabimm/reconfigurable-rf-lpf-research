@@ -20,7 +20,7 @@ from .starts import load_explicit
 from .storage import canonical, sha, vector_sha
 
 
-def _weighted_plan(config, root, arm, n):
+def _weighted_plan(config, root, arm, n, *, budget_restarts=False, search_bounds=None, start_method='explicit'):
     """Derive the existing Plan format before freezing; never alter formal preflight."""
     if type(n) is not int or n < 1 or n > (2**63 - 1) // 1_000_000:
         raise ValueError('max_search_forwards must be a bounded positive integer')
@@ -29,7 +29,8 @@ def _weighted_plan(config, root, arm, n):
     if (not isinstance(cfg, dict) or cfg.get('rf') != {'constraint_id': 'RF-T008', 'allow_trial': True}
             or cfg.get('objective') != 'full_lpf' or len(cfg.get('arms', [])) != 1
             or cfg['arms'][0].get('name') != arm or len(cfg['arms'][0].get('steps', [])) != 1
-            or len(cfg.get('seeds', [])) != 1 or cfg.get('anytime_samples') != []):
+            or (not budget_restarts and len(cfg.get('seeds', [])) != 1)
+            or cfg.get('anytime_samples') != []):
         raise ValueError('Weighted mode requires RF-T008/full_lpf, one arm, seed and step, no anytime')
     step = cfg['arms'][0]['steps'][0]
     if step.get('solver') != 'hybrid' or step.get('aggregation') != 'sum':
@@ -59,7 +60,53 @@ def _weighted_plan(config, root, arm, n):
             costs['selection_upper_reservation'] != 84 or costs['terminal_fixed_reservation'] != 476 or
             costs['total_upper_reservation'] != total):
         raise ValueError('Weighted budget arithmetic mismatch')
+    if budget_restarts:
+        if start_method not in ('explicit', 'scrambled_sobol_single_point'):
+            raise ValueError('Unknown start method')
+        frozen['development_weighted_restart'] = dict(
+            max_search_forwards=n, max_restarts=None, restart_sigma=0.1,
+            checkpoint_interval=1000, search_bounds=search_bounds, start_method=start_method,
+            search_bounds_sha256=sha(search_bounds), objective='weighted_violation')
     return Plan(canonical(frozen), sha(frozen))
+
+
+def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output, *, root,
+                              source, search_bounds, spot_checks=None):
+    """Run one already-frozen budget-restart Job for the sequential parent."""
+    from ._development_worker import WEIGHTED_OBJECTIVE
+    output, root = Path(output), Path(root)
+    if source_identity(root) != source:
+        raise ValueError('Source changed before Job')
+    record = dict(kind='development_weighted_restart_input_v1', plan=plan.data,
+                  plan_sha256=plan.sha256, definition=asdict(definition),
+                  definition_sha256=sha(asdict(definition)), policy_id=policy['active_constraint_id'],
+                  policy_fingerprint=constraint_fingerprint(policy), seed=seed, arm=arm,
+                  start=start, checkpoint_interval=1000, spot_checks=spot_checks,
+                  search_bounds=search_bounds, search_bounds_sha256=sha(search_bounds),
+                  weighted_objective=WEIGHTED_OBJECTIVE, weighted_objective_sha256=sha(WEIGHTED_OBJECTIVE),
+                  source=source, source_sha256=sha(source))
+    output.mkdir(exist_ok=False)
+    _save_checkpoint(output / 'input.json', record)
+    if canonical(json.loads((output / 'input.json').read_text())) != canonical(record):
+        raise ValueError('Input readback mismatch')
+    try:
+        worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
+                                   root=root, checkpoint=output / 'checkpoints', checkpoint_interval=1000,
+                                   spot_checks=spot_checks, search_bounds=search_bounds,
+                                   objective_mode='weighted_violation', budget_restarts=True)
+        result = worker.run()
+        if source_identity(root) != source:
+            raise ValueError('Source changed during Job')
+        _save_checkpoint(output / 'result.json', result)
+        if canonical(json.loads((output / 'result.json').read_text())) != canonical(result):
+            raise ValueError('Result readback mismatch')
+        return result
+    except (Exception, KeyboardInterrupt) as exc:
+        try:
+            _save_checkpoint(output / 'failure.json', dict(status='STOP', reason=f'{type(exc).__name__}: {exc}'))
+        except Exception:
+            pass  # preserve the original failure; never retry a checkpoint
+        raise
 
 
 def run_development_worker(config, starts, seed, arm, output, *, root=ROOT,

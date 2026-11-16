@@ -36,7 +36,7 @@ class HybridResult:
     stop_reason: str
     seed: int
     maxiter: int
-    max_restarts: int
+    max_restarts: int | None
     max_evaluations: int
     restart_sigma: float
     aggregation: str = 'sum'
@@ -48,15 +48,17 @@ class _Stop(Exception):
 
 def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                     max_restarts: int, max_evaluations: int, restart_sigma: float,
-                    weights=None, aggregation: str = 'sum', event_callback=None) -> HybridResult:
+                    weights=None, aggregation: str = 'sum', event_callback=None,
+                    run_callback=None) -> HybridResult:
     """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
 
     The default 'sum' is weighted least squares; 'max' is the maximum weighted
     squared residual, not the maximum signed error. The 'max' objective is
     nonsmooth, so L-BFGS-B may fail to converge or stop in its line search.
 
-    All budgets are mandatory: maxiter is per local run; max_restarts excludes
-    the initial run; max_evaluations is a hard total cap on residual calls,
+    maxiter is per local run; max_restarts excludes the initial run, or is
+    None for development-only budget-limited restarts. max_evaluations is a
+    hard total cap on residual calls,
     including finite differences. A partially evaluated gradient can interrupt
     SciPy: its end is the last *valid evaluated point*, not a converged iterate;
     status=None and success=False. best is the best valid evaluated point,
@@ -70,14 +72,17 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
     if not isinstance(aggregation, str) or aggregation not in ('sum', 'max'):
         raise ValueError("aggregation must be 'sum' or 'max'")
     for name, value, minimum in (('seed', seed, 0), ('maxiter', maxiter, 1),
-                                  ('max_restarts', max_restarts, 0),
                                   ('max_evaluations', max_evaluations, 1)):
         if type(value) is not int or value < minimum:
             raise ValueError(f'{name} must be an integer >= {minimum}')
+    if max_restarts is not None and (type(max_restarts) is not int or max_restarts < 0):
+        raise ValueError('max_restarts must be None or a nonnegative integer')
     if not np.isscalar(restart_sigma) or not np.isfinite(restart_sigma) or restart_sigma <= 0:
         raise ValueError('restart_sigma must be finite and positive')
     if not callable(residuals):
         raise ValueError('residuals must be callable')
+    if run_callback is not None and not callable(run_callback):
+        raise ValueError('run_callback must be callable')
     x0 = np.asarray(x0, dtype=float)
     box = np.asarray(bounds, dtype=float)
     if x0.ndim != 1 or not x0.size or box.shape != (x0.size, 2):
@@ -117,7 +122,10 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
 
     import time
     z_start = (x0[free] - lo[free]) / width[free]
-    for run_index in range(max_restarts + 1):
+    # Each local run makes at least one residual call; N is also a safe bound
+    # on the number of runs in the budget-only mode.
+    run_limit = max_evaluations if max_restarts is None else max_restarts + 1
+    for run_index in range(run_limit):
         if total >= max_evaluations:
             reason = 'evaluation_budget_exhausted'
             break
@@ -131,6 +139,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                       cpu_s=restart_cpu_s + (cpu_end - cpu_start)))
         else:
             start_x = x0.copy() if run_index == 0 else physical(z_start)
+        if run_callback is not None:
+            run_callback(run_index)
         start_fun = None
         last_x = last_fun = None
         local_nfev = nit = 0
@@ -183,6 +193,11 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
                                bounds=[(0.0, 1.0)] * int(np.sum(free)),
                                callback=callback, options={'maxiter': maxiter,
                                                            'maxfun': max_evaluations})
+                if (max_restarts is None and
+                        (local_nfev == 0 or np.asarray(sol.x).shape != z_start.shape or
+                         not np.all(np.isfinite(sol.x)) or not np.isfinite(sol.fun) or
+                         np.any(np.asarray(sol.x) < 0) or np.any(np.asarray(sol.x) > 1))):
+                    raise _Stop('invalid_solver_endpoint')
                 end_x = start_x if np.array_equal(sol.x, z_start) else physical(sol.x)
                 run = LocalRun(start_x.tolist(), start_fun, end_x.tolist(),
                                float(sol.fun), bool(sol.success), int(sol.status),
@@ -210,7 +225,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int, maxiter: int,
         runs.append(run)
         if reason != 'restarts_exhausted':
             break
-        if run_index < max_restarts:
+        if max_restarts is None or run_index < max_restarts:
             if total >= max_evaluations:
                 reason = 'evaluation_budget_exhausted'
                 break

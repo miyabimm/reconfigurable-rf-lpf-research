@@ -20,8 +20,7 @@ class MinimalWorker:
         root = Path(root).resolve()
         data = plan.data
         cfg = data['config']
-        if sha(data) != plan.sha256 or sha(freeze(cfg, root)) != plan.sha256:
-            raise ValueError('Plan/current RF inputs mismatch')
+        self._verify_plan(plan, root)
         if sha(asdict(definition)) != definition_sha(cfg['definition']):
             raise ValueError('Definition/Plan mismatch')
         approved = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
@@ -47,6 +46,10 @@ class MinimalWorker:
                                      frozen_model=self.model)
         self.x = np.array(vector, dtype=float, copy=True)
         self.evaluator = self.model.evaluator(self.grid)
+
+    def _verify_plan(self, plan, root):
+        if sha(plan.data) != plan.sha256 or sha(freeze(plan.data['config'], root)) != plan.sha256:
+            raise ValueError('Plan/current RF inputs mismatch')
 
     @staticmethod
     def _validate_arm(chosen):

@@ -518,6 +518,155 @@ def run_development(plan, definition, policy, starts, output, *, root=None,
     return state
 
 
+def _weighted_strict_winner(jobs):
+    eligible = [r for r in jobs if r['status'] == 'completed' and
+                r['terminal']['assessment']['strict_feasible']]
+    eligible.sort(key=lambda r: (r['terminal']['assessment']['worst_il_db'], r['best']['vector_sha256']))
+    return eligible[0]['job_id'] if eligible else None
+
+
+def run_weighted_development(plan, definition, policy, starts, output, *, root=None, spot_checks=None):
+    """Sequential budget-restart development Jobs; never a formal EXP entry."""
+    import copy
+    import json
+    import subprocess
+    from types import SimpleNamespace
+    from lpf.rf_core import build_rf_model
+    from ._development_runner import run_prepared_weighted_job
+    from ._job_evaluation import source_identity
+    from .plan import ROOT
+    from .starts import validate
+    root, output = Path(root or ROOT).resolve(), Path(output).resolve()
+    _validate_development_output(output, root, 'legacy')
+    if output.exists() or not output.parent.is_dir():
+        raise ValueError('Fresh output in existing system temporary directory required')
+    if subprocess.run(['git', '-C', str(output.parent), 'rev-parse', '--is-inside-work-tree'],
+                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+        raise ValueError('Output must be outside Git checkouts')
+    cfg = plan.data['config']
+    mode = plan.data['development_weighted_restart']
+    box = mode['search_bounds']
+    if (sha(plan.data) != plan.sha256 or sha(box) != mode['search_bounds_sha256'] or
+            not isinstance(starts, dict) or set(starts) != set(cfg['seeds'])):
+        raise ValueError('Frozen Plan/box/starts mismatch')
+    model = build_rf_model(definition, policy)
+    circuit = SimpleNamespace(definition=definition, schema=model.schema, resolved_policy=policy)
+    for seed in cfg['seeds']:
+        start = starts[seed]
+        if (not isinstance(start, dict) or set(start) != {'vector', 'vector_sha256'} or
+                vector_sha(start['vector']) != start['vector_sha256']):
+            raise ValueError('Start vector/SHA mismatch')
+        validate(circuit, start['vector'], box)
+    source = source_identity(root)
+    arm = cfg['arms'][0]['name']
+    cap = cfg['arms'][0]['max_requested_samples']
+    rows = [dict(job_id=f'development-{arm}-{seed}', trial_id=f'seed{seed}', seed=seed, arm=arm,
+                 status='not_started', cap=cap, reserved=cap, released=0, requested=0, completed=0,
+                 independent_requested=0, independent_completed=0, start=plain(starts[seed]),
+                 raw_path=f'development-{arm}-{seed}') for seed in cfg['seeds']]
+    if len({r['job_id'] for r in rows}) != len(rows):
+        raise ValueError('Duplicate Job')
+    state = dict(kind='development_weighted_sequential_v1', status='not_started', plan=plan.data,
+                 plan_sha256=plan.sha256, source=source, source_sha256=sha(source),
+                 gates=plan.data['gates'], jobs=rows,
+                 trials={f'seed{s}': dict(kind='development_only', seed=s, cap=cap,
+                                         initial_reservation=cap) for s in cfg['seeds']})
+    _development_totals(state)
+    output.mkdir(exist_ok=False)
+    ledger = output / 'run.json'
+    def save(value):
+        atomic(ledger, value)
+        if ledger.read_bytes() != (canonical(value) + '\n').encode():
+            raise ValueError('Parent ledger readback mismatch')
+    save(state)
+    for index in range(len(state['jobs'])):
+        row = state['jobs'][index]
+        row['status'] = state['status'] = 'unknown'
+        _development_totals(state)
+        save(state)
+        try:
+            path = output / row['raw_path']
+            result = run_prepared_weighted_job(plan, definition, policy, row['seed'], arm, row['start'], path,
+                                               root=root, source=source, search_bounds=box, spot_checks=spot_checks)
+            raw = (path / 'result.json').read_bytes()
+            if raw != (canonical(result) + '\n').encode():
+                raise ValueError('Job result byte mismatch')
+            job_input = json.loads((path / 'input.json').read_text())
+            if (job_input['plan'] != plan.data or job_input['plan_sha256'] != plan.sha256 or
+                    job_input['source'] != source or job_input['source_sha256'] != sha(source) or
+                    job_input['start'] != row['start'] or job_input['seed'] != row['seed'] or
+                    job_input['arm'] != arm or job_input['search_bounds'] != box or
+                    job_input['search_bounds_sha256'] != sha(box)):
+                raise ValueError('Job input/Plan/source readback mismatch')
+            costs = result['costs']
+            n = costs['search_forwards']
+            if (result['status'] != 'search_budget_exhausted' or type(n) is not int or
+                    n != mode['max_search_forwards'] or costs['search_requested_samples'] != n * 70 or
+                    costs['search_completed_samples'] != n * 70 or
+                    costs['selection_requested_samples'] != 84 or costs['terminal_requested_samples'] != 476 or
+                    result['plan_sha256'] != plan.sha256 or result['steps'][0]['forward_count'] != n):
+                raise ValueError('Job status or budget/readback mismatch')
+            selected = result['selection']['ranked']
+            terminal = result['terminal']['candidates']
+            best = result['steps'][0]['rf_best']
+            solver = result['steps'][0]['solver_result']
+            if (solver['nfev'] != n or sum(r['nfev'] for r in solver['runs']) != n or
+                    solver['max_restarts'] is not None or solver['max_evaluations'] != n or
+                    solver['stop_reason'] != 'evaluation_budget_exhausted' or
+                    solver['best_fun'] != best['objective_j'] or
+                    len(selected) != 1 or len(terminal) != 1 or
+                    vector_sha(best['vector']) != best['vector_sha256'] or
+                    selected[0]['vector_sha256'] != best['vector_sha256'] or
+                    terminal[0]['vector_sha256'] != best['vector_sha256']):
+                raise ValueError('Job best/selection/terminal mismatch')
+            checkpoints = sorted((path / 'checkpoints').glob('*.json'))
+            if not checkpoints:
+                raise ValueError('Missing final checkpoint')
+            last = json.loads(checkpoints[-1].read_text())
+            if (last['forward_count'] != n or last['best'] != best or last['plan_sha256'] != plan.sha256 or
+                    last['seed'] != row['seed'] or last['arm'] != arm or
+                    last['sequence'] != len(checkpoints) or last['restart_count'] != len(solver['runs']) - 1):
+                raise ValueError('Final checkpoint readback mismatch')
+            assessed = terminal[0]['assessment']
+            audits = costs['independent_mna_samples_by_stage']
+            stage = f"{arm}/{cfg['arms'][0]['steps'][0]['name']}"
+            expected_audits = {name: len(indices) * (n if name == stage else 1)
+                               for name, indices in (spot_checks or {}).items()}
+            if audits != expected_audits:
+                raise ValueError('Independent MNA accounting mismatch')
+            count = sum(audits.values())
+            requested = n * 70 + 84 + 476
+            candidate = copy.deepcopy(state)
+            updated = candidate['jobs'][index]
+            updated.update(status='completed', worker_status=result['status'], requested=requested,
+                           completed=requested, reserved=0, released=cap-requested,
+                           independent_requested=count, independent_completed=count,
+                           result_sha256=hashlib.sha256(raw).hexdigest(), best=best,
+                           terminal=terminal[0], local_runs=result['steps'][0]['solver_result']['runs'])
+            updated['local_solver_success_count'] = sum(r['success'] for r in updated['local_runs'])
+            updated['local_solver_failure_count'] = len(updated['local_runs']) - updated['local_solver_success_count']
+            if type(assessed['strict_feasible']) is not bool:
+                raise ValueError('Invalid terminal strict feasibility')
+            candidate['status'] = 'completed' if index == len(rows)-1 else 'running'
+            _development_totals(candidate)
+        except (Exception, KeyboardInterrupt) as exc:
+            state['exit_reason'] = f'{type(exc).__name__}: {exc}'
+            save(state)
+            break
+        save(candidate)  # failure leaves the durable unknown marker; do not retry
+        state = candidate
+    summary = dict(kind='development_weighted_sequential_summary_v1', status=state['status'],
+                   plan_sha256=plan.sha256, source_sha256=sha(source), jobs=state['jobs'],
+                   campaign=state['campaign'], trials=state['trials'], gates=state['gates'],
+                   selected_job_id=_weighted_strict_winner(state['jobs']),
+                   dense='not_run', continuous_frequency='not_verified', physical_feasibility='not_verified',
+                   rf_compliance_certified=False, exit_reason=state.get('exit_reason'))
+    atomic(output / 'summary.json', summary)
+    if (output / 'summary.json').read_bytes() != (canonical(summary) + '\n').encode():
+        raise ValueError('Summary readback mismatch')
+    return summary
+
+
 def finalize_development(state, output):
     """Read the final parent AND Worker files again; summarize without forwards.
 

@@ -50,19 +50,19 @@ class IllegalStart(ValueError):
         super().__init__(f'Illegal Sobol point; STOP without retry: {cause}')
 
 
-def generate_for_definition(definition, policy, seed):
-    """Single legal Sobol start for a new definition; no retry or clipping."""
+def generate_for_definition(definition, policy, seed, bounds=None):
+    """Single legal Sobol start in a physical sub-box; no retry or clipping."""
     from types import SimpleNamespace
     from lpf.rf_core import build_rf_model
     model = build_rf_model(definition, policy)
     return generate(SimpleNamespace(definition=definition, schema=model.schema,
-                                    resolved_policy=policy), seed)
+                                    resolved_policy=policy), seed, bounds=bounds)
 
 
 def generate(circuit, seed, bounds=None):
     hard = physical_box(circuit)
     bounds = hard if bounds is None else bounds
-    box = np.asarray(bounds)
+    box = validate_search_box(bounds, hard)
     free = box[:, 1] > box[:, 0]
     x = box[:, 0].copy()
     if np.any(free):
