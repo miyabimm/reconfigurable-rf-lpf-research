@@ -18,6 +18,7 @@ from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
 from lpf.search.runner import run_weighted_development, _weighted_strict_winner
 from lpf.search.storage import vector_sha
+from lpf.optimizers.hybrid import HybridResult, LocalRun
 from lpf.search.starts import generate_for_definition
 from lpf.rf_core import build_rf_model
 
@@ -86,6 +87,50 @@ class SequentialTests(unittest.TestCase):
         self.assertEqual(summary['status'], 'completed')
         self.assertEqual([r['seed'] for r in summary['jobs']], [23, 24])
         self.assertEqual(summary['jobs'][0]['start']['vector_sha256'], vector_sha(x))
+
+    def test_worker_readback_tampering_stops_with_unknown(self):
+        from lpf.search._development_runner import run_prepared_weighted_job
+        plan, d, p, x, box, starts = self.prepared(2)
+        output = Path(self.raw.name)/'tampered'
+        def tamper(*args, **kwargs):
+            result = run_prepared_weighted_job(*args, **kwargs)
+            path = Path(args[6])/'result.json'
+            path.write_text(path.read_text() + ' ')
+            return result
+        with patch('lpf.search._development_runner.run_prepared_weighted_job', side_effect=tamper):
+            summary = run_weighted_development(plan, d, p, starts, output, root=ROOT)
+        self.assertEqual(summary['status'], 'unknown')
+        self.assertIn('byte mismatch', summary['exit_reason'])
+        self.assertEqual(summary['jobs'][0]['reserved'], 2*70+84+476)
+        self.assertEqual(summary['jobs'][1]['status'], 'not_started')
+
+    def test_exact_multiple_and_interruption_preserve_checkpoint(self):
+        plan, d, p, x, box, starts = self.prepared(1000)
+        for interrupted in (False, True):
+            path = Path(self.raw.name)/('interrupt' if interrupted else 'exact')
+            worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                checkpoint=path, checkpoint_interval=1000, search_bounds=box,
+                objective_mode='weighted_violation', budget_restarts=True)
+            evaluation = worker.evaluate(x)
+            def solver(callback, start, bounds, **kw):
+                with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
+                    for _ in range(1000):
+                        residual = callback(x)
+                if interrupted:
+                    raise RuntimeError('interrupted')
+                score = float(np.sum(residual * residual))
+                run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
+                return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
+                                    23, 1000, None, 1000, .1)
+            with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
+                if interrupted:
+                    with self.assertRaisesRegex(RuntimeError, 'interrupted'):
+                        worker.run()
+                else:
+                    self.assertEqual(worker.run()['status'], 'search_budget_exhausted')
+            checkpoints = sorted(path.glob('*.json'))
+            self.assertEqual(len(checkpoints), 1)
+            self.assertEqual(json.loads(checkpoints[0].read_text())['forward_count'], 1000)
 
     def test_stop_preserves_unknown_reservation_and_no_retry(self):
         plan, d, p, x, box, starts = self.prepared()
