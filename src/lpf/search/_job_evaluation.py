@@ -39,10 +39,11 @@ class FixedJobEvaluation(FixedStageEvaluation):
         self.result = dict(kind=('campaign_formal_raw_v1' if spec.data['kind'] == 'campaign_formal_job_v1'
                                  else 'stage4c1_development_only'), spec=plain(spec),
             status='not_started', exit_reason=None, steps=[],
-            selection=dict(status='not_run', ranked=[], excluded=[]),
             terminal=dict(status='not_run', candidates=[]), dense=dict(status='not_run'),
             anytime=[dict(milestone=m, status='not_run', reason='threshold_not_reached')
                      for m in plan.data['config']['anytime_samples']])
+        if 'campaign_context' in spec.data:
+            self.result['selection'] = dict(status='not_run', ranked=[], excluded=[])
         self.allocations = {}
         self.active = None
         first = next(a for a in plan.data['config']['arms'] if a['name'] == arm)['steps'][0]['name']
@@ -50,9 +51,10 @@ class FixedJobEvaluation(FixedStageEvaluation):
         for name, stage in self.job['stages'].items():
             self.allocations[f'{arm}/{name}'] = stage['upper_reservation']
         cfg = self.data['config']
-        for i in range(cfg['selection']['max_candidates']):
-            self.allocations[f'selection:{i}'] = self.job['selection_one_forward']
-        for i in range(cfg['selection']['top_k']):
+        if 'selection' in cfg:
+            for i in range(cfg['selection']['max_candidates']):
+                self.allocations[f'selection:{i}'] = self.job['selection_one_forward']
+        for i in range(cfg['selection']['top_k'] if 'selection' in cfg else 1):
             self.allocations[f'terminal:{i}'] = self.job['terminal_one_forward']
         for i in range(len(cfg['anytime_samples'])):
             self.allocations[f'anytime:{i}'] = self.job['anytime_one_forward']

@@ -129,11 +129,10 @@ def main(argv=None):
         if config['definition'] is None:
             raise ValueError('develop requires an explicit complete definition')
         from lpf.constraint_versions import load_constraint
-        from lpf.topology_management import CircuitDefinition, InductorTree, CapacitorPlacement
-        definition = json.loads((ROOT / config['definition']['path']).read_bytes())
-        definition['inductor_tree'] = InductorTree(**definition['inductor_tree'])
-        definition['capacitor_placement'] = CapacitorPlacement(**definition['capacitor_placement'])
-        definition = CircuitDefinition(**definition)
+        from lpf.search.proposals import definition_from_data
+        ref = config['definition']
+        definition = definition_from_data(ref if 'inductor_tree' in ref else
+                                          json.loads((ROOT / ref['path']).read_bytes()))
         policy = load_constraint(config['rf']['constraint_id'], allow_trial=config['rf']['allow_trial'])
         starts = load_explicit(args.starts)
         spots = json.loads(args.spot_checks) if args.spot_checks else None
