@@ -238,6 +238,41 @@ class MinimaxTests(unittest.TestCase):
             self.assertEqual(json.loads((failed/'failure.json').read_text())['status'], 'STOP')
             self.assertFalse((failed/'result.json').exists())
 
+    def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
+        from dataclasses import asdict
+        import subprocess
+        import yaml
+        from lpf.search.storage import plain, vector_sha
+        _, definition, _, _, x = make('RF-F003')
+        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        cfg.pop('selection')
+        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                   definition=plain(asdict(definition)), anytime_samples=[])
+        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+            objective='signed_margin_db', options=dict(max_search_forwards=2))
+        with tempfile.TemporaryDirectory(prefix='issue446-cli-') as tmp:
+            tmp = Path(tmp)
+            config, starts, output = tmp/'plan.yaml', tmp/'starts.json', tmp/'run'
+            config.write_text(yaml.safe_dump(cfg))
+            starts.write_text(json.dumps({'23': dict(vector=plain(x), vector_sha256=vector_sha(x))}))
+            command = [sys.executable, str(ROOT/'scripts/run_rf_search.py'), 'develop', '--config', str(config),
+                       '--starts', str(starts), '--output', str(output), '--spot-checks', '{"terminal":[0]}',
+                       '--checkpoint-interval-forwards', '1']
+            proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 4, proc.stderr)
+            self.assertEqual(json.loads(proc.stdout)['status'], 'completed')
+            result = json.loads((output/'result.json').read_text())
+            self.assertEqual(len(result['terminal']['candidates']), 1)
+            self.assertEqual(json.loads((output/'input.json').read_text())['checkpoint_interval'], 1)
+            retry = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(retry.returncode, 2)
+            self.assertIn('Fresh temporary', retry.stderr)
+            cfg['rf']['allow_trial'] = False
+            config.write_text(yaml.safe_dump(cfg))
+            refused = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(refused.returncode, 2)
+            self.assertIn('opt-in', refused.stderr)
+
     def test_profile_worker_hard_forward_cap_and_no_retry(self):
         from dataclasses import asdict
         from unittest.mock import patch

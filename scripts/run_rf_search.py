@@ -119,13 +119,41 @@ def main(argv=None):
             summary = run_weighted_development(plan, definition, policy, starts, args.output, spot_checks=spots)
             print(canonical(summary))
             return 4 if summary['status'] == 'completed' else 2
-        if (args.sobol or args.max_search_forwards is not None or args.search_bounds or
-                args.checkpoint_interval_forwards is not None):
-            raise ValueError('Sobol, search bounds, forward budget and checkpoint interval require weighted objective mode')
+        if args.sobol or args.max_search_forwards is not None:
+            raise ValueError('Sobol and CLI forward budget require weighted objective mode')
         if not args.output or not args.starts:
             raise ValueError('develop requires --starts and a fresh system tmp --output')
         plan = load_preflight(args.config)
         config = plan.data['config']
+        if config['rf']['constraint_id'] == 'RF-T009':
+            if (len(config['arms']) != 1 or len(config['seeds']) != 1 or args.storage_mode != 'legacy'
+                    or args.debug_forward_history or args.monitor_dir or args.timing_output):
+                raise ValueError('RF-T009 CLI requires one arm and seed, legacy storage, and no monitor or timing')
+            from lpf.minimax_profile import load_minimax_profile
+            from lpf.search._development_runner import run_profile_development
+            from lpf.search.proposals import definition_from_data
+            from lpf.constraint_versions import load_constraint
+            ref = config['definition']
+            if ref is None:
+                raise ValueError('develop requires an explicit complete definition')
+            definition = definition_from_data(ref if 'inductor_tree' in ref else
+                                              json.loads((ROOT / ref['path']).read_bytes()))
+            profile = load_minimax_profile('RF-T009', allow_trial=config['rf']['allow_trial'])
+            policy = load_constraint(profile.profile['base_physical_constraint_id'])
+            starts = load_explicit(args.starts)
+            seed = config['seeds'][0]
+            if set(starts) != {seed}:
+                raise ValueError('RF-T009 requires exactly the configured seed start')
+            spots = json.loads(args.spot_checks) if args.spot_checks else None
+            box = json.loads(Path(args.search_bounds).read_text()) if args.search_bounds else None
+            result = run_profile_development(plan, definition, policy, seed, config['arms'][0]['name'],
+                starts[seed], args.output, root=ROOT, spot_checks=spots, search_bounds=box,
+                checkpoint_interval=1000 if args.checkpoint_interval_forwards is None else args.checkpoint_interval_forwards)
+            print(canonical(dict(status='completed', kind=result['kind'], output=str(Path(args.output).resolve()),
+                                 plan_sha256=plan.sha256, rf_compliance_certified=False)))
+            return 4
+        if args.search_bounds is not None or args.checkpoint_interval_forwards is not None:
+            raise ValueError('Search bounds and checkpoint interval require weighted or RF-T009 development mode')
         if config['definition'] is None:
             raise ValueError('develop requires an explicit complete definition')
         from lpf.constraint_versions import load_constraint
