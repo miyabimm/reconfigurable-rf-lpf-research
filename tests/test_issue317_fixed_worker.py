@@ -22,6 +22,11 @@ class FixtureOutput:
     success: bool = False
     nfev: int = 999  # deliberately unrelated to RF samples
     stop_reason: str = 'fixture_nonconvergence'
+    evaluations: int = 999
+
+    @property
+    def converged(self):
+        return self.success
 
 
 @dataclass
@@ -33,8 +38,12 @@ class FixtureRun:
 @dataclass
 class FixtureHybrid:
     runs: list
-    best_x: list | None
+    x: list | None
     reason: str = 'fixture_nonconvergence'
+
+    @property
+    def converged(self):
+        return bool(self.runs) and all(r.success for r in self.runs)
 
 
 class FixedWorkerTests(unittest.TestCase):

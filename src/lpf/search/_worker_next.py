@@ -23,7 +23,14 @@ class MinimalWorker:
         self._verify_plan(plan, root)
         if sha(asdict(definition)) != definition_sha(cfg['definition']):
             raise ValueError('Definition/Plan mismatch')
-        approved = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
+        self.profile = None
+        if cfg['rf']['constraint_id'] == 'RF-T009':
+            import json
+            from lpf.minimax_profile import load_minimax_profile
+            self.profile = load_minimax_profile('RF-T009', root=root, allow_trial=cfg['rf']['allow_trial'])
+            approved = json.loads(self.profile.base_json)
+        else:
+            approved = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
         if constraint_fingerprint(policy) != constraint_fingerprint(approved):
             raise ValueError('Policy/Plan mismatch')
         if type(seed) is not int or seed not in cfg['seeds'] or vector_sha(vector) != expected_vector_sha:
@@ -32,10 +39,16 @@ class MinimalWorker:
         self._validate_arm(chosen)
         self.step = chosen['steps'][0]
         self.definition, self.policy, self.seed = definition, policy, seed
-        self.model = build_rf_model(definition, policy)
+        self.physical_model = build_rf_model(definition, policy)
+        self.model = self.profile.build_model(definition) if self.profile else self.physical_model
         self.grid = plan.requested_grid(f"{arm}/{self.step['name']}")
-        self.requirements = compile_requirements(policy, rf_input_file(root, policy['bands_file']), cfg['objective'])
-        if (self.model.policy_fingerprint != constraint_fingerprint(approved) or
+        if self.profile:
+            from .performance import compile_profile_requirements
+            self.requirements = compile_profile_requirements(self.profile)
+        else:
+            self.requirements = compile_requirements(policy, rf_input_file(root, policy['bands_file']), cfg['objective'])
+        expected_fingerprint = self.profile.fingerprint if self.profile else constraint_fingerprint(approved)
+        if (self.model.policy_fingerprint != expected_fingerprint or
                 sha(asdict(self.requirements)) != sha(data['requirements']) or
                 grid_fingerprint(self.grid) != data['grids'][f"{arm}/{self.step['name']}"]['sha256']):
             raise ValueError('Model/requirements/grid mismatch')
@@ -43,7 +56,7 @@ class MinimalWorker:
         self.bounds = physical_bounds(definition, self.model.schema, policy)
         self._physical_bounds = self.bounds
         _validate_values_with_bounds(definition, self.model.schema, vector, policy, self.bounds,
-                                     frozen_model=self.model)
+                                     frozen_model=self.physical_model)
         self.x = np.array(vector, dtype=float, copy=True)
         self.evaluator = self.model.evaluator(self.grid)
 
@@ -83,14 +96,15 @@ class MinimalWorker:
         return hybrid_residuals(evaluation[1])
 
     def solve(self):
+        if self.profile:
+            raise ValueError('RF-T009 optimizer objective must be explicitly configured; not implemented')
         # Check the solver box at the boundary, not at every callback.
         validate_search_box(self.bounds, self._physical_bounds)
         self._check_box(self.x)
         from .worker import _development_options
         result = hybrid_minimize(self._solver_residuals, self.x, self.bounds, seed=self.seed,
                                  aggregation=self.step['aggregation'], **_development_options(self.step))
-        for vector in [result.best_x, *(run.end_x for run in result.runs)]:
-            if vector is not None:
-                self._check_box(vector)
-                validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
+        if result.x is not None:
+            self._check_box(result.x)
+            validate_values(self.definition, self.model.schema, result.x, self.policy, frozen_model=self.physical_model)
         return result

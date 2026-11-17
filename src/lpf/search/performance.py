@@ -102,6 +102,20 @@ def _rule(rule):
     return bound, _number(rule[bound])
 
 
+def _csv_intervals(rows):
+    """Compile the validated CSV rows without applying performance policy."""
+    from lpf.rf_core._grid import validated_band_segments
+    segments = validated_band_segments(rows)
+    intervals = []
+    for n, (r, (setting, _, low, high)) in enumerate(zip(rows, segments)):
+        if set(r) != {'case', 'region', 'type', 'low_mhz', 'high_mhz', 'note'}:
+            raise ValueError('Invalid band row')
+        identity = f"csv:{n+2}:{r['case']}:{r['region']}:{r['type']}:{r['note']}"
+        intervals.append(Interval(n, identity, n+2, r['case'], r['region'], r['type'],
+                                  r['note'], setting, low*1e6, high*1e6))
+    return intervals
+
+
 def compile_requirements(policy, bands, mode='full_lpf'):
     """Compile current-schema rules, preserving CSV line identity and all gaps.
 
@@ -125,20 +139,10 @@ def compile_requirements(policy, bands, mode='full_lpf'):
             rows = list(csv.DictReader(f))
     else:
         rows = list(bands)
-    from lpf.rf_core._grid import CASES, validated_band_segments
-    validated_band_segments(rows)  # existing six-setting/subband meaning checks
+    from lpf.rf_core._grid import CASES
     settings = list(CASES)
-    intervals = []
+    intervals = _csv_intervals(rows)
     span = policy['external_port_parasitics']['format']
-    for n, r in enumerate(rows):
-        if (set(r) != {'case', 'region', 'type', 'low_mhz', 'high_mhz', 'note'} or
-                r['region'] not in {'UL', 'DL', 'H2', 'H3'} or
-                r['type'] != ('pass' if r['region'] in {'UL', 'DL'} else 'stop')):
-            raise ValueError('Invalid band row')
-        lo, hi = float(r['low_mhz'])*1e6, float(r['high_mhz'])*1e6
-        identity = f"csv:{n+2}:{r['case']}:{r['region']}:{r['type']}:{r['note']}"
-        intervals.append(Interval(n, identity, n+2, r['case'], r['region'], r['type'],
-                                  r['note'], settings.index(r['case']), lo, hi))
     if not isinstance(p['margins'], list):
         raise ValueError('Expected margins list')
     margins = {}
@@ -203,6 +207,34 @@ def compile_requirements(policy, bands, mode='full_lpf'):
         raise ValueError('Every active interval needs a requirement')
     content = dict(policy_id=policy['active_constraint_id'], policy_fingerprint=constraint_fingerprint(policy),
                    mode=mode, intervals=tuple(active), limits=tuple(limits), objective_segments=objective,
+                   s2p_span_hz=(span['f_start_hz'], span['f_stop_hz']))
+    fingerprint = _digest({k: [asdict(v) for v in value] if k in ('intervals', 'limits') else value
+                           for k, value in content.items()})
+    return Requirements(**content, fingerprint=fingerprint)
+
+
+def compile_profile_requirements(profile):
+    """Compile the opt-in profile's 28 performance intervals for grid construction.
+
+    This contains no optimizer objective. The common terminal verdict remains
+    ``signed_margins`` on the independent terminal grid.
+    """
+    from lpf.minimax_profile import MinimaxProfile
+    if not isinstance(profile, MinimaxProfile):
+        raise ValueError('Expected verified RF performance profile')
+    intervals = tuple(_csv_intervals(profile.records))
+    span = profile.rf_input_policy()['external_port_parasitics']['format']
+    if any(i.low_hz < span['f_start_hz'] or i.high_hz > span['f_stop_hz'] for i in intervals):
+        raise ValueError('Interval outside fixed S2P span')
+    keys = {'UL': 'ul_il_max', 'DL': 'dl_il_max', 'H2': 'h2_atten_min', 'H3': 'h3_atten_min'}
+    p = profile.profile
+    limits = tuple(Requirement(i, 'il_db' if i.type == 'pass' else 'attenuation_db',
+                               'mandatory', 'max_db' if i.type == 'pass' else 'min_db',
+                               float(p['limits_db'][i.note or i.case][keys[i.region]]))
+                   for i in intervals)
+    content = dict(policy_id=p['constraint_id'], policy_fingerprint=profile.fingerprint,
+                   mode='full_lpf', intervals=intervals, limits=limits,
+                   objective_segments=tuple(i.segment for i in intervals if i.type == 'pass'),
                    s2p_span_hz=(span['f_start_hz'], span['f_stop_hz']))
     fingerprint = _digest({k: [asdict(v) for v in value] if k in ('intervals', 'limits') else value
                            for k, value in content.items()})

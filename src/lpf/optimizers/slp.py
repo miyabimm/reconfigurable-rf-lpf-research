@@ -3,32 +3,13 @@
 This solver uses HiGHS, finite differences and a trust box; it does not run
 SLSQP or imply global optimality, RF feasibility, or ADS equivalence.
 """
-from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
 from scipy.optimize import linprog
 
 from ._objectives import aggregate, squared_terms, validate_weights
-
-
-@dataclass(frozen=True)
-class Stage:
-    reason: str
-    iterations: int
-    evaluations: int  # individual errors / constraints callback invocations
-
-
-@dataclass(frozen=True)
-class SlpResult:
-    x: np.ndarray
-    aggregation: str
-    objective: float
-    max_violation: float
-    feasible: bool
-    success: bool  # local numerical convergence AND feasibility
-    slp: Stage
-    slsqp: Stage  # not_run; retained alongside the legacy reporting format
+from .result import OptimizerResult
 
 
 class _BudgetExhausted(Exception):
@@ -50,7 +31,8 @@ def _minimize_core(
     constraint_tolerance: float = 1e-7,
     aggregation: str = "signed_max",
     weights=None,
-) -> SlpResult:
+    objective_callback=None,
+) -> OptimizerResult:
     """Minimize transformed errors with box bounds and optional constraints(x)>=0.
 
     Step sizes are fractions of each bound width. Finite differences and every
@@ -66,6 +48,8 @@ def _minimize_core(
         raise ValueError("aggregation must be 'sum', 'max', or 'signed_max'")
     if aggregation == "signed_max" and weights is not None:
         raise ValueError("weights are not supported for signed_max")
+    if objective_callback is not None and not callable(objective_callback):
+        raise ValueError('objective_callback must be callable')
     weights = validate_weights(weights)
     if weights is not None:
         weights = weights.copy()
@@ -117,6 +101,8 @@ def _minimize_core(
                     value = np.array([aggregate(value, aggregation)])
                 if not np.all(np.isfinite(value)):
                     raise ValueError("weighted squared objective must be finite")
+            if i == 0 and objective_callback is not None:
+                objective_callback(point.copy(), float(np.max(value)))
             values.append(value)
         return values
 
@@ -198,8 +184,7 @@ def _minimize_core(
 
     v = violation(g)
     feasible = v <= constraint_tolerance
-    return SlpResult(x.copy(), aggregation, float(np.max(e)), v, feasible, converged and feasible,
-                     Stage(reason, iterations, calls), Stage("not_run", 0, 0))
+    return OptimizerResult(x.copy(), float(np.max(e)), converged and feasible, reason, calls)
 
 
 def slp_minimize(
@@ -207,7 +192,8 @@ def slp_minimize(
     constraints: Callable | None = None, max_iterations: int, max_evaluations: int,
     initial_step: float = 0.25, min_step: float = 1e-8, fd_step: float = 1e-6,
     tolerance: float = 1e-7, constraint_tolerance: float = 1e-7,
-) -> SlpResult:
+    objective_callback=None,
+) -> OptimizerResult:
     """Minimize a weighted squared residual sum or max, or a signed maximum.
 
     'sum' linearizes the total scalar; 'max' linearizes each weighted square
@@ -217,14 +203,17 @@ def slp_minimize(
     Constraints are vectors g(x)>=0. All callbacks and finite differences share
     the evaluation budget, and LP solves count as iterations. Invalid or
     nonfinite callback outputs and transformed objectives raise ValueError.
+    objective_callback receives each valid observed (x, f(x)) after the
+    configured transformation; its exceptions propagate without retry.
     Feasibility is distinct from convergence: success is only a local
     linearized-stationarity heuristic, subject to HiGHS tolerances and not a
-    global optimum guarantee. See slp.reason for nonconvergence and budgets.
+    global optimum guarantee. See stop_reason for nonconvergence and budgets.
     """
     result = _minimize_core(
         residuals, x0, bounds, aggregation=aggregation, weights=weights,
         constraints=constraints, max_iterations=max_iterations, max_evaluations=max_evaluations,
         initial_step=initial_step, min_step=min_step, fd_step=fd_step,
         tolerance=tolerance, constraint_tolerance=constraint_tolerance,
+        objective_callback=objective_callback,
     )
     return result

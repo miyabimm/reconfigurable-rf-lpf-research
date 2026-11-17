@@ -18,7 +18,8 @@ from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
 from lpf.search.runner import run_weighted_development, _weighted_strict_winner
 from lpf.search.storage import canonical, vector_sha
-from lpf.optimizers.hybrid import HybridResult, LocalRun
+from lpf.optimizers.hybrid import LocalRun
+from lpf.optimizers.result import OptimizerResult
 from lpf.search.starts import generate_for_definition
 from lpf.rf_core import build_rf_model
 
@@ -57,7 +58,7 @@ class SequentialTests(unittest.TestCase):
             self.assertEqual(set(row['best']), {'vector_sha256', 'objective_j'})
             self.assertEqual(set(row['terminal']['assessment']), {'strict_feasible', 'worst_il_db'})
             job = output/row['raw_path']
-            self.assertEqual(len(json.loads((job/'result.json').read_text())['steps'][0]['solver_result']['runs']), 3)
+            self.assertEqual(json.loads((job/'result.json').read_text())['steps'][0]['local_run_stats']['count'], 3)
             checkpoint = json.loads((job/'checkpoints'/'000001.json').read_text())
             self.assertEqual(checkpoint['forward_count'], 3)
             self.assertEqual(checkpoint['restart_count'], 2)
@@ -200,14 +201,15 @@ class SequentialTests(unittest.TestCase):
             evaluation = worker.evaluate(x)
             def solver(callback, start, bounds, **kw):
                 with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
-                    for _ in range(1000):
+                    for i in range(1000):
                         residual = callback(x)
+                        kw['progress_callback'](x, float(np.sum(residual * residual)), i == 0)
                 if interrupted:
                     raise RuntimeError('interrupted')
                 score = float(np.sum(residual * residual))
                 run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
-                return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
-                                    23, 1000, 1000, .1)
+                kw['local_run_callback'](run)
+                return OptimizerResult(x.tolist(), score, False, 'evaluation_budget_exhausted', 1000)
             with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
                 if interrupted:
                     with self.assertRaisesRegex(RuntimeError, 'interrupted'):
@@ -265,10 +267,12 @@ class SequentialTests(unittest.TestCase):
         evaluation = worker.evaluate(x)
         worker._running = True
         worker.forward_count = worker.saved_count = 0
-        worker.saved_sha = worker.best = worker.best_key = worker.solver_best = None
+        worker.saved_sha = worker.best = worker.best_key = None
+        worker.observed_objectives = {}
         with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
-            for _ in range(2001):
-                worker._evaluate(x)
+            for i in range(2001):
+                residual = worker._solver_residuals(x)
+                worker._observe_objective(x, float(np.sum(residual * residual)), i == 0)
         worker._save_best()
         paths = sorted(worker.path.glob('*.json'))
         rows = [json.loads(path.read_text()) for path in paths]

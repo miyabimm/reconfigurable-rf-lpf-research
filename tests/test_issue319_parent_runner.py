@@ -124,7 +124,7 @@ class ParentRunnerTests(unittest.TestCase):
                 self.assertEqual(observed['assessment']['strict_feasible'], batch['assessment']['strict_feasible'])
             self.assertEqual(row['evidence']['independent'][-1]['status'], 'pass')
             self.assertEqual(row['evidence']['dense']['status'], 'not_run')
-            self.assertEqual(row['solver_nfev'], [999])
+            self.assertEqual(row['solver_evaluations'], [999])
             self.assertEqual(row['released'], row['cap']-row['requested'])
         self.assertEqual(json.loads((args[-1]/'run.json').read_text()), state)
 

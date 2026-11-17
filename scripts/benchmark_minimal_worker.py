@@ -73,9 +73,9 @@ def main():
     end, cpu_end = perf_counter(), process_time()
     observation_start = perf_counter()
     observation = None
-    if result.best_x is not None:
-        physical = validate_values(definition, worker.model.schema, result.best_x, policy, frozen_model=worker.model)
-        _, assessment = worker.evaluate(result.best_x)  # post-timing inspection, not optimizer nfev
+    if result.x is not None:
+        physical = validate_values(definition, worker.model.schema, result.x, policy, frozen_model=worker.physical_model)
+        _, assessment = worker.evaluate(result.x)  # post-timing inspection, not optimizer callbacks
         summary = summarize_mandatory(assessment, worker.prepared_requirements)
         observation = dict(physical=physical, worst_il_db=assessment['worst_il_db'],
                            strict_feasible=summary['strict_feasible'],
@@ -85,7 +85,7 @@ def main():
                   setup_s=ready-start, setup_cpu_s=cpu_ready-cpu_start,
                   solver_s=end-ready, solver_cpu_s=cpu_end-cpu_ready, total_s=end-start,
                   observation_s=observation_end-observation_start,
-                  observation_forward_count=int(result.best_x is not None),
+                  observation_forward_count=int(result.x is not None),
                   solver=asdict(result), observation=observation,
                   timers=timer.snapshot() if timer else {},
                   timing_boundary='solver_s is worker.solve including instrumentation; observation_s is outside solver_s; timers are inclusive',

@@ -18,7 +18,8 @@ from lpf.rf_core import build_rf_model
 from lpf.search._development_worker import DevelopmentWorker, _weighted_residuals, WEIGHTED_OBJECTIVE
 from lpf.search.plan import ROOT
 from lpf.search.storage import sha, vector_sha
-from lpf.optimizers.hybrid import HybridResult, LocalRun
+from lpf.optimizers.hybrid import LocalRun
+from lpf.optimizers.result import OptimizerResult
 
 
 class WeightedTests(unittest.TestCase):
@@ -94,10 +95,10 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(record['weighted_objective_sha256'], sha(WEIGHTED_OBJECTIVE))
         s = result['steps'][0]
         self.assertLessEqual(s['forward_count'], 3)
-        self.assertEqual(s['solver_result']['nfev'], s['forward_count'])
+        self.assertEqual(s['solver_result']['evaluations'], s['local_run_stats']['evaluations'])
         self.assertEqual(s['stop_reason'], 'evaluation_budget_exhausted')
         self.assertEqual(result['status'], 'search_budget_exhausted')
-        self.assertEqual(s['rf_best']['objective_j'], s['solver_result']['best_fun'])
+        self.assertEqual(s['rf_best']['objective_j'], s['solver_result']['objective'])
         best = s['rf_best']['vector_sha256']
         self.assertEqual(json.loads(sorted((job/'checkpoints').glob('*.json'))[-1].read_text())['best'], s['rf_best'])
         self.assertNotIn('selection', result)
@@ -119,13 +120,17 @@ class WeightedTests(unittest.TestCase):
         summaries = iter([dict(strict_feasible=True, max_violation_db=0., sum_violation_db=0.),
                           dict(strict_feasible=False, max_violation_db=.1, sum_violation_db=.1)])
         def solver(callback, start, bounds, **kw):
-            a, b = callback(x), callback(y)
+            a = callback(x)
+            kw['progress_callback'](x, float(a@a), True)
+            b = callback(y)
+            kw['progress_callback'](y, float(b@b), True)
             run = LocalRun(x.tolist(), float(a@a), x.tolist(), float(a@a), False, 1, 'fixture', 0, 2)
-            return HybridResult([run], y.tolist(), float(b@b), 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
-        # Each callback computes the same score once for best and once for solver.
+            kw['local_run_callback'](run)
+            return OptimizerResult(y.tolist(), float(b@b), False, 'evaluation_budget_exhausted', 2)
+        # Each RF callback computes residuals only once; the solver reports its score.
         def score(*args):
             return next(evaluations_twice)
-        evaluations_twice = iter([np.array([2.]), np.array([2.]), np.array([1.]), np.array([1.]), np.array([1.])])
+        evaluations_twice = iter([np.array([2.]), np.array([1.])])
         from lpf.search.performance import evaluate_requirements
         def terminal_fail(*args, **kwargs):
             assessment = evaluate_requirements(*args, **kwargs)
@@ -155,8 +160,7 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(process.returncode, 4, process.stderr)
         summary = json.loads((output/'summary.json').read_text())
         result = json.loads((output/summary['jobs'][0]['raw_path']/'result.json').read_text())
-        self.assertEqual(result['steps'][0]['solver_result']['maxiter'], 2)
-        self.assertEqual(result['steps'][0]['solver_result']['max_evaluations'], 2)
+        self.assertEqual(result['steps'][0]['solver_result']['evaluations'], 2)
 
     def test_equal_score_tie_and_optimizer_mismatch_stop(self):
         config, _, d, p, x = self.inputs()
@@ -164,25 +168,27 @@ class WeightedTests(unittest.TestCase):
         y = x.copy(); y[0] += .01
         first, second = sorted((x, y), key=vector_sha, reverse=True)
         def solver(callback, start, bounds, **kw):
-            callback(first); callback(second)
+            a = callback(first); kw['progress_callback'](first, float(a@a), True)
+            b = callback(second); kw['progress_callback'](second, float(b@b), False)
             run = LocalRun(first.tolist(), 1., first.tolist(), 1., False, 1, 'fixture', 0, 2)
-            return HybridResult([run], first.tolist(), 1., 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
+            kw['local_run_callback'](run)
+            return OptimizerResult(first.tolist(), 1., False, 'evaluation_budget_exhausted', 2)
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                               checkpoint=Path(self.raw.name)/'ties', objective_mode='weighted_violation')
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
              patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
             result = w.run()
         self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(first))
-        self.assertEqual(vector_sha(result['steps'][0]['solver_result']['best_x']), vector_sha(first))
+        self.assertEqual(vector_sha(result['steps'][0]['solver_result']['x']), vector_sha(first))
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                               checkpoint=Path(self.raw.name)/'mismatch', objective_mode='weighted_violation')
         def bad(callback, start, bounds, **kw):
             out = solver(callback, start, bounds, **kw)
-            out.best_x = second.tolist()  # not the first equal-score point retained by Hybrid
-            return out
+            from dataclasses import replace
+            return replace(out, x=second.tolist())  # not Hybrid's first equal-score point
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=bad), \
              patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
-            with self.assertRaisesRegex(ValueError, 'objective/vector mismatch'):
+            with self.assertRaisesRegex(ValueError, 'not observed on Search grid'):
                 w.run()
 
     def test_convergence_and_abnormal_no_best_stop(self):
@@ -198,11 +204,48 @@ class WeightedTests(unittest.TestCase):
         self.assertEqual(result['steps'][0]['forward_count'], 1)
         worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                                    checkpoint=Path(self.raw.name)/'no-best', objective_mode='weighted_violation')
-        out = HybridResult([], None, None, 0, 'evaluation_budget_exhausted', 23, 3, 3, .1)
+        out = OptimizerResult(None, None, False, 'evaluation_budget_exhausted', 0)
         with patch('lpf.search._worker_next.hybrid_minimize', return_value=out):
             with self.assertRaisesRegex(ValueError, 'No weighted best'):
                 worker.run()
         self.assertFalse(list(worker.path.glob('*.json')))
+
+    def test_worker_rejects_invalid_direct_optimizer_result(self):
+        from dataclasses import replace
+        config, _, d, p, x = self.inputs()
+        plan = _weighted_plan(config, ROOT, 'demo', 3)
+        for field, value in (('objective', float('nan')), ('x', [float('inf')]),
+                             ('evaluations', 0), ('stop_reason', 'invalid_residual')):
+            with self.subTest(field=field):
+                worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                                           checkpoint=Path(self.raw.name)/('invalid-' + field),
+                                           objective_mode='weighted_violation')
+                def fake(callback, start, bounds, **kw):
+                    residual = callback(x)
+                    score = float(residual @ residual)
+                    kw['progress_callback'](x, score, True)
+                    run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1)
+                    kw['local_run_callback'](run)
+                    native = OptimizerResult(x.tolist(), score, False, 'evaluation_budget_exhausted', 1)
+                    return replace(native, **{field: value})
+                with patch('lpf.search._worker_next.hybrid_minimize', side_effect=fake):
+                    with self.assertRaises(ValueError):
+                        worker.run()
+
+    def test_worker_forward_cap_independent_of_solver(self):
+        config, _, d, p, x = self.inputs()
+        plan = _weighted_plan(config, ROOT, 'demo', 2)
+        worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                                   checkpoint=Path(self.raw.name)/'hard-cap', objective_mode='weighted_violation')
+        def misbehaving_solver(callback, start, bounds, **kw):
+            for _ in range(3):
+                value = callback(x)
+                kw['progress_callback'](x, float(value @ value), True)
+            raise AssertionError('forward cap did not stop solver')
+        with patch('lpf.search._worker_next.hybrid_minimize', side_effect=misbehaving_solver):
+            with self.assertRaisesRegex(ValueError, 'Search RF forward budget exhausted'):
+                worker.run()
+        self.assertEqual(worker.forward_count, 2)
 
     def test_invalid_budget_and_mode(self):
         config, starts, _, _, _ = self.inputs()

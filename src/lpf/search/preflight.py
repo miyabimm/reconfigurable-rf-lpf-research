@@ -95,9 +95,20 @@ def freeze(d, root):
     if (type(d['rf']['allow_trial']) is not bool or
             not isinstance(d['rf']['constraint_id'], str) or not d['rf']['constraint_id']):
         raise ValueError('Explicit RF ID and boolean trial opt-in required')
-    policy = load_constraint(d['rf']['constraint_id'], root=root, allow_trial=d['rf']['allow_trial'])
-    bands = rf_input_file(root, policy['bands_file'])
-    req = compile_requirements(policy, bands, d['objective'])
+    profile = None
+    if d['rf']['constraint_id'] == 'RF-T009':
+        if 'campaign' in d or 'selection' in d or d['objective'] != 'full_lpf':
+            raise ValueError('RF-T009 is a standalone full-LPF development profile')
+        from lpf.minimax_profile import load_minimax_profile
+        from .performance import compile_profile_requirements
+        profile = load_minimax_profile('RF-T009', root=root, allow_trial=d['rf']['allow_trial'])
+        policy = json.loads(profile.base_json)
+        bands = rf_input_file(root, profile.profile['bands_file'])
+        req = compile_profile_requirements(profile)
+    else:
+        policy = load_constraint(d['rf']['constraint_id'], root=root, allow_trial=d['rf']['allow_trial'])
+        bands = rf_input_file(root, policy['bands_file'])
+        req = compile_requirements(policy, bands, d['objective'])
     seeds = d['seeds']
     if (not isinstance(seeds, list) or not seeds or
             any(type(s) is not int or s < 0 for s in seeds) or len(set(seeds)) != len(seeds)):
@@ -120,9 +131,11 @@ def freeze(d, root):
             raise ValueError('Definition source SHA mismatch')
         if sha(json.loads(raw)) != ref['definition_sha256']:
             raise ValueError('Definition canonical SHA mismatch')
-    inputs = {'bands': {'path': policy['bands_file'], 'sha256': hashlib.sha256(bands.read_bytes()).hexdigest()}}
+    inputs = {'bands': {'path': profile.profile['bands_file'] if profile else policy['bands_file'],
+                        'sha256': hashlib.sha256(bands.read_bytes()).hexdigest()}}
     for key in ('input_parasitic', 'output_parasitic'):
-        spec = policy['external_port_parasitics'][key]
+        spec = (profile.profile['external_s2p'][key.removesuffix('_parasitic')] if profile
+                else policy['external_port_parasitics'][key])
         actual = hashlib.sha256(rf_input_file(root, spec['path']).read_bytes()).hexdigest()
         if actual != spec['sha256']:
             raise ValueError('Fixed S2P SHA mismatch')
@@ -196,7 +209,9 @@ def freeze(d, root):
         for step in steps:
             fields(step, 'name solver aggregation points_per_interval max_requested_samples options' +
                    (' stop_points_per_interval' if isinstance(step, dict) and
-                    'stop_points_per_interval' in step else ''))
+                    'stop_points_per_interval' in step else '') + (' objective' if profile else ''))
+            if profile and step['objective'] != 'signed_margin_db':
+                raise ValueError('RF-T009 requires explicit signed_margin_db residuals')
             if 'stop_points_per_interval' in step and step['stop_points_per_interval'] is None:
                 raise ValueError('stop_points_per_interval must be an integer >=2')
             sname = step['name']
@@ -207,6 +222,13 @@ def freeze(d, root):
             positive(step['max_requested_samples'])
             one = grid(f'{name}/{sname}', step['points_per_interval'],
                        step.get('stop_points_per_interval'))
+            if profile:
+                if validation['terminal_points'] <= max(step['points_per_interval'],
+                        step.get('stop_points_per_interval', step['points_per_interval'])):
+                    raise ValueError('RF-T009 Terminal must be denser than every Search interval')
+                limit = step['options']['max_search_forwards' if step['solver'] == 'hybrid' else 'max_evaluations']
+                if limit * one > step['max_requested_samples']:
+                    raise ValueError('STOP: Search forward cap exceeds reserved samples')
             check_next_batch(one, step_remaining=step['max_requested_samples'],
                              job_remaining=arm['max_requested_samples'],
                              trial_remaining=d['max_trial_requested_samples'],
@@ -240,7 +262,7 @@ def freeze(d, root):
     trial_reservation = sum(a['max_requested_samples'] for a in arms)
     if trial_reservation > d['max_trial_requested_samples']:
         raise ValueError('STOP: Trial cannot reserve all fixed jobs')
-    return dict(config=d, requirements=asdict(req), grids=grids, rf_inputs=inputs,
+    result = dict(config=d, requirements=asdict(req), grids=grids, rf_inputs=inputs,
                 costs=dict(jobs=jobs, trial_job_cap_reservation=trial_reservation,
                            max_trial_requested_samples=d['max_trial_requested_samples'],
                            dense=dict(one_forward_samples=dense_one, upper_reservation=dense_upper,
@@ -248,3 +270,9 @@ def freeze(d, root):
                                       budget_scope='independent_validation', status='not_run')),
                 gates={'G0_G1': 'not_ready', 'G2_G5': 'not_ready'},
                 execution={'requested_samples': 0, 'completed_samples': 0, 'status': 'not_run'})
+    if profile:
+        result['rf_profile'] = dict(constraint_id=profile.profile['constraint_id'],
+                                    effective_sha256=profile.fingerprint,
+                                    base_constraint_sha256=profile.base_sha256,
+                                    bands_sha256=profile.bands_sha256)
+    return result

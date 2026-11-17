@@ -82,11 +82,11 @@ def load_minimax_profile(constraint_id, *, allow_trial=False, root=ROOT):
         raise ValueError('Unknown minimax profile')
     p = _read(rf_input_file(root, entry['file']))
     if (set(p) != {'schema_version', 'kind', 'constraint_id', 'base_physical_constraint_id',
-                   'bands_file', 'source_ohms', 'load_ohms', 'external_s2p', 'objective', 'limits_db'}
+                   'bands_file', 'source_ohms', 'load_ohms', 'external_s2p', 'limits_db'}
             or type(p['schema_version']) is not int or p['schema_version'] != 1
-            or p['kind'] != 'rf_minimax_profile' or p['constraint_id'] != constraint_id
+            or p['kind'] != 'rf_performance_profile' or p['constraint_id'] != constraint_id
             or p['base_physical_constraint_id'] != entry['base_physical_constraint_id']
-            or p['objective'] != 'minimax_signed_margin_db' or p['bands_file'] != 'rf/bands.csv'):
+            or p['bands_file'] != 'rf/bands.csv'):
         raise ValueError('Invalid minimax profile schema/identity')
     base = load_constraint(p['base_physical_constraint_id'], root=root)
     base_sha = constraint_fingerprint(base)

@@ -73,7 +73,7 @@ class TimingIntegrationTests(unittest.TestCase):
         from lpf.optimizers.hybrid import hybrid_minimize
         from lpf.timing import TimerCollector
         def run(timer):
-            calls = []
+            calls, local_runs = [], []
             def residual(x):
                 calls.append(x.tolist())
                 return [x[0] - .37, x[1] - .71]
@@ -83,14 +83,14 @@ class TimingIntegrationTests(unittest.TestCase):
             options = {} if timer is None else {'event_callback': event}
             result = hybrid_minimize(residual, [.8, .1], [(0, 1), (0, 1)], seed=12,
                                      max_evaluations=200,
-                                     restart_sigma=.2, **options)
-            return asdict(result), calls
+                                     restart_sigma=.2, local_run_callback=local_runs.append, **options)
+            return asdict(result), calls, len(local_runs)
         timer = TimerCollector()
         plain = run(None)
         self.assertEqual(plain, run(timer))
-        self.assertGreater(len(plain[0]['runs']), 1)
-        self.assertEqual(timer.snapshot()['local_run_end']['count'], len(plain[0]['runs']))
-        self.assertEqual(timer.snapshot()['restart_start_generated']['count'], len(plain[0]['runs']) - 1)
+        self.assertGreater(plain[2], 1)
+        self.assertEqual(timer.snapshot()['local_run_end']['count'], plain[2])
+        self.assertEqual(timer.snapshot()['restart_start_generated']['count'], plain[2] - 1)
 
     def test_hybrid_worker_mock_restart_and_raw_same(self):
         from lpf.search.worker import freeze_development_job, execute_development_job

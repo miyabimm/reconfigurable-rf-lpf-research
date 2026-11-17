@@ -68,6 +68,74 @@ def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='ex
     return Plan(canonical(frozen), sha(frozen))
 
 
+def run_profile_development(plan, definition, policy, seed, arm, start, output, *, root,
+                            spot_checks, search_bounds=None, checkpoint_interval=1000):
+    """Single RF-T009 development job; fresh tmp evidence, no Campaign or resume."""
+    import tempfile
+    from .storage import vector_sha
+    output, root = Path(output).resolve(), Path(root).resolve()
+    if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
+            output.is_relative_to(root) or output.exists()):
+        raise ValueError('Fresh temporary output outside repository required')
+    if (plan.data['config']['rf'] != {'constraint_id': 'RF-T009', 'allow_trial': True} or
+            set(start) != {'vector', 'vector_sha256'} or vector_sha(start['vector']) != start['vector_sha256']):
+        raise ValueError('Explicit RF-T009 Plan and complete start/SHA required')
+    costs = plan.data['costs']['jobs'][arm]
+    spots = {} if spot_checks is None else spot_checks
+    if not isinstance(spots, dict) or any(not isinstance(v, list) for v in spots.values()):
+        raise ValueError('Spot checks must be stage to index lists')
+    independent_upper = len(spots.get('terminal', []))
+    for step in next(a['steps'] for a in plan.data['config']['arms'] if a['name'] == arm):
+        stage = f"{arm}/{step['name']}"
+        samples = len(plan.requested_grid(stage).frequency_hz)
+        independent_upper += (costs['stages'][step['name']]['upper_reservation'] // samples) * len(spots.get(stage, []))
+    reservation = dict(rf_samples=costs['total_upper_reservation'], independent_mna_samples=independent_upper)
+    source = source_identity(root)
+    record = dict(kind='development_rf_profile_input_v1', plan=plan.data, plan_sha256=plan.sha256,
+                  definition=asdict(definition), definition_sha256=sha(asdict(definition)),
+                  physical_policy_id=policy['active_constraint_id'],
+                  physical_policy_sha256=constraint_fingerprint(policy), seed=seed, arm=arm,
+                  start=start, spot_checks=spot_checks, search_bounds=search_bounds, reservation=reservation,
+                  checkpoint_interval=checkpoint_interval, source=source, source_sha256=sha(source))
+    output.mkdir(exist_ok=False)
+    _save_checkpoint(output/'input.json', record)
+    if canonical(json.loads((output/'input.json').read_text())) != canonical(record):
+        raise ValueError('Input readback mismatch')
+    try:
+        worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
+            root=root, checkpoint=output/'checkpoints', checkpoint_interval=checkpoint_interval,
+            spot_checks=spot_checks, search_bounds=search_bounds, objective_mode='profile_signed_margin')
+        if worker.source != source:
+            raise ValueError('Source changed before Job')
+        result = worker.run()
+        if source_identity(root) != source or result['source_sha256'] != sha(source):
+            raise ValueError('Source changed during Job')
+        actual = result['costs']
+        rf_used = actual['search_requested_samples'] + actual['terminal_requested_samples']
+        independent_used = sum(actual['independent_mna_samples_by_stage'].values())
+        if rf_used > reservation['rf_samples'] or independent_used > reservation['independent_mna_samples']:
+            raise ValueError('Completed cost exceeds reservation')
+        result['ledger'] = dict(status='completed', reservation=reservation,
+            rf_samples=dict(completed=rf_used, released=reservation['rf_samples'] - rf_used, unknown=0),
+            independent_mna_samples=dict(completed=independent_used,
+                released=reservation['independent_mna_samples'] - independent_used, unknown=0))
+        _save_checkpoint(output/'result.json', result)
+        if canonical(json.loads((output/'result.json').read_text())) != canonical(result):
+            raise ValueError('Result readback mismatch')
+        return result
+    except (Exception, KeyboardInterrupt) as exc:
+        try:
+            # A failure can interrupt a forward, validation, or persistence. Do not infer
+            # completed work from a partial checkpoint: retain the whole reservation as unknown.
+            _save_checkpoint(output/'failure.json', dict(status='STOP', reason=f'{type(exc).__name__}: {exc}',
+                reservation=reservation, rf_samples_unknown_upper_bound=reservation['rf_samples'],
+                independent_mna_samples_unknown_upper_bound=reservation['independent_mna_samples'],
+                retry_allowed=False))
+        except Exception:
+            pass
+        raise
+
+
 def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output, *, root,
                               source, search_bounds, spot_checks=None):
     """Run one already-frozen budget-restart Job for the sequential parent."""
