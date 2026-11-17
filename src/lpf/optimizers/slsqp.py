@@ -26,6 +26,9 @@ class SLSQPResult:
     epigraph_violation: float | None
     epigraph_gap: float | None  # abs(t - max weighted squared residual)
     solver_success: bool | None
+    # Common optimizer contract, independently of solver-native diagnostics.
+    objective: float | None
+    converged: bool
 
 
 class _Stop(Exception):
@@ -125,7 +128,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
         return SLSQPResult(x.copy(), aggregation, fun, v,
                            v is not None and v <= constraint_tolerance,
                            success, reason, status, message, nit, counts[0], counts[1],
-                           sum(counts), epiv, epigap, solver_success)
+                           sum(counts), epiv, epigap, solver_success, fun, success)
 
     try:
         initial_terms = evaluate(x0, 0)

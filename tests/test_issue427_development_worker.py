@@ -277,7 +277,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             callback(x); callback(y)
             run = LocalRun(x.tolist(), 1., y.tolist(), 1., False, 1, 'fixture', 0, 2)
             return HybridResult([run], y.tolist(), 1., 2, 'evaluation_budget_exhausted',
-                                23, 3, 3, .1)
+                                23, 3, 3, .1, x=y.tolist(), objective=1., converged=False, evaluations=2)
         summaries = iter([dict(strict_feasible=False, max_violation_db=v, sum_violation_db=v)
                           for v in (2., 1.)])
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
@@ -313,7 +313,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             runs = [LocalRun(v.tolist(), 1., v.tolist(), 1., False, 1, 'fixture', 0, 1)
                     for v in vectors[:2]]
             return HybridResult(runs, vectors[2].tolist(), 1., 1, 'evaluation_budget_exhausted',
-                                23, 3, 3, .1)
+                                23, 3, 3, .1, x=vectors[2].tolist(), objective=1., converged=False, evaluations=1)
         seen = []
         def rank(rows):
             seen.extend(rows)

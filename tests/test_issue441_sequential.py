@@ -200,14 +200,16 @@ class SequentialTests(unittest.TestCase):
             evaluation = worker.evaluate(x)
             def solver(callback, start, bounds, **kw):
                 with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
-                    for _ in range(1000):
+                    for i in range(1000):
                         residual = callback(x)
+                        kw['progress_callback'](x, float(np.sum(residual * residual)), i == 0)
                 if interrupted:
                     raise RuntimeError('interrupted')
                 score = float(np.sum(residual * residual))
                 run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
                 return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
-                                    23, 1000, 1000, .1)
+                                    23, 1000, 1000, .1, x=x.tolist(), objective=score,
+                                    converged=False, evaluations=1000)
             with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
                 if interrupted:
                     with self.assertRaisesRegex(RuntimeError, 'interrupted'):
@@ -265,10 +267,12 @@ class SequentialTests(unittest.TestCase):
         evaluation = worker.evaluate(x)
         worker._running = True
         worker.forward_count = worker.saved_count = 0
-        worker.saved_sha = worker.best = worker.best_key = worker.solver_best = None
+        worker.saved_sha = worker.best = worker.best_key = None
+        worker.observed_objectives = {}
         with patch('lpf.search._worker_next.MinimalWorker._evaluate', return_value=evaluation):
-            for _ in range(2001):
-                worker._evaluate(x)
+            for i in range(2001):
+                residual = worker._solver_residuals(x)
+                worker._observe_objective(x, float(np.sum(residual * residual)), i == 0)
         worker._save_best()
         paths = sorted(worker.path.glob('*.json'))
         rows = [json.loads(path.read_text()) for path in paths]

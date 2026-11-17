@@ -5,7 +5,7 @@ not necessarily the best point, by independent N(0, restart_sigma**2) in
 [0, 1] coordinates, then project to the box. This permits uphill restarts.
 No global optimality or physical feasibility is implied.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 
 import numpy as np
@@ -39,6 +39,11 @@ class HybridResult:
     max_evaluations: int
     restart_sigma: float
     aggregation: str = 'sum'
+    # Common contract. None means there was no valid observed candidate.
+    x: list[float] | None = field(kw_only=True)
+    objective: float | None = field(kw_only=True)
+    converged: bool = field(kw_only=True)
+    evaluations: int = field(kw_only=True)
 
 
 class _Stop(Exception):
@@ -243,6 +248,9 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             restart_wall_s = time.monotonic() - wall_start
             restart_cpu_s = time.process_time() - cpu_start
 
-    return HybridResult(runs, None if best_x is None else best_x.tolist(), best_fun,
-                        total, reason, seed, maxiter,
-                        max_evaluations, float(restart_sigma), aggregation)
+    selected = None if best_x is None else best_x.tolist()
+    converged = reason == 'all_coordinates_fixed' and bool(runs) and runs[-1].success
+    return HybridResult(runs, selected, best_fun, total, reason, seed, maxiter,
+                        max_evaluations, float(restart_sigma), aggregation,
+                        x=None if selected is None else selected.copy(), objective=best_fun,
+                        converged=bool(converged), evaluations=total)

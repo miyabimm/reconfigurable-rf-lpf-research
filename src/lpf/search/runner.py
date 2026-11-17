@@ -42,6 +42,8 @@ def _selectionless_readback(result, spec, batches):
                 native_converged = (native_reason == 'all_coordinates_fixed' and bool(solver['runs']) and
                                     solver['runs'][-1]['success']) if kind == 'hybrid' else solver['success']
                 if (not isinstance(common, dict) or set(common) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
+                        any(common[k] != solver[k] for k in ('objective', 'converged', 'stop_reason', 'evaluations')) or
+                        vector_sha(solver['x']) != step['output_vector_sha256'] or
                         vector_sha(common['x']) != step['output_vector_sha256'] or
                         type(common['objective']) not in (float, int) or not math.isfinite(common['objective']) or
                         common['objective'] != native_value or common['objective'] != step['output_objective'] or
@@ -679,7 +681,12 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             terminal = result['terminal']['candidates']
             best = result['steps'][0]['rf_best']
             solver = result['steps'][0]['solver_result']
-            if (solver['nfev'] != n or sum(r['nfev'] for r in solver['runs']) != n or
+            common = result['steps'][0]['optimizer_result']
+            if (set(common) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
+                    any(common[k] != solver[k] for k in common) or
+                    vector_sha(common['x']) != best['vector_sha256'] or
+                    common['objective'] != best['objective_j'] or common['converged'] or
+                    solver['nfev'] != n or sum(r['nfev'] for r in solver['runs']) != n or
                     solver['max_evaluations'] != n or solver['maxiter'] != n or
                     solver['stop_reason'] != 'evaluation_budget_exhausted' or
                     solver['best_fun'] != best['objective_j'] or

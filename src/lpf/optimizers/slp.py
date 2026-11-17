@@ -29,6 +29,10 @@ class SlpResult:
     success: bool  # local numerical convergence AND feasibility
     slp: Stage
     slsqp: Stage  # not_run; retained alongside the legacy reporting format
+    # Common optimizer contract; evaluations include both callback types.
+    converged: bool
+    stop_reason: str
+    evaluations: int
 
 
 class _BudgetExhausted(Exception):
@@ -204,7 +208,8 @@ def _minimize_core(
     v = violation(g)
     feasible = v <= constraint_tolerance
     return SlpResult(x.copy(), aggregation, float(np.max(e)), v, feasible, converged and feasible,
-                     Stage(reason, iterations, calls), Stage("not_run", 0, 0))
+                     Stage(reason, iterations, calls), Stage("not_run", 0, 0),
+                     converged and feasible, reason, calls)
 
 
 def slp_minimize(

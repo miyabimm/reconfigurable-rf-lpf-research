@@ -1,5 +1,5 @@
-"""Solver-native result adaptation; synthetic deterministic callbacks only."""
-from dataclasses import replace
+"""Direct solver result contracts; synthetic deterministic callbacks only."""
+from dataclasses import asdict
 from pathlib import Path
 import sys
 import unittest
@@ -8,7 +8,6 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.optimizers.hybrid import hybrid_minimize
-from lpf.optimizers.result import optimizer_result
 from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
 
@@ -35,10 +34,12 @@ class OptimizerResultTests(unittest.TestCase):
                 else:
                     native = hybrid_minimize(callback, [.6], [(0., 1.)], seed=1,
                                              max_evaluations=20, restart_sigma=.1, objective_callback=observe)
-                result = optimizer_result(native)
-                self.assertIn(result.x, seen)
-                self.assertAlmostEqual(result.objective, seen[result.x])
-                self.assertEqual(result.objective, observed[result.x])
+                result = native  # The solver itself provides the common fields.
+                key = tuple(result.x)
+                self.assertIn(key, seen)
+                self.assertAlmostEqual(result.objective, seen[key])
+                self.assertEqual(result.objective, observed[key])
+                self.assertTrue({'x', 'objective', 'converged', 'stop_reason', 'evaluations'} <= set(asdict(result)))
                 self.assertEqual(set(seen), set(observed))
                 self.assertGreater(result.evaluations, 0)
                 self.assertFalse(hasattr(result, 'violation'))
@@ -46,14 +47,35 @@ class OptimizerResultTests(unittest.TestCase):
                 if result.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted'):
                     self.assertFalse(result.converged)
 
-    def test_missing_and_nonfinite_results_stop(self):
-        native = hybrid_minimize(lambda x: [x[0]], [.5], [(0., 1.)], seed=0,
+    def test_constraint_callbacks_are_in_native_counts(self):
+        for solver in ('slsqp', 'slp'):
+            with self.subTest(solver=solver):
+                calls = {'objective': 0, 'constraint': 0}
+                seen = {}
+                def objective(x):
+                    calls['objective'] += 1
+                    seen[tuple(x)] = (x[0] - .4)**2
+                    return np.array([x[0] - .4])
+                def constraint(x):
+                    calls['constraint'] += 1
+                    return np.array([x[0]])
+                fn = slsqp_minimize if solver == 'slsqp' else slp_minimize
+                result = fn(objective, [.6], [(0., 1.)], constraints=constraint,
+                            max_iterations=2, max_evaluations=8)
+                self.assertGreater(calls['constraint'], 0)
+                self.assertEqual(result.evaluations, sum(calls.values()))
+                self.assertAlmostEqual(result.objective, seen[tuple(result.x)])
+                if result.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted'):
+                    self.assertFalse(result.converged)
+
+    def test_invalid_first_callback_exposes_no_candidate_and_never_converges(self):
+        result = hybrid_minimize(lambda x: [float('nan')], [.5], [(0., 1.)], seed=0,
                                  max_evaluations=2, restart_sigma=.1)
-        for broken in (replace(native, best_x=None), replace(native, best_fun=None),
-                       replace(native, best_fun=float('nan')), replace(native, best_x=[float('inf')]),
-                       replace(native, nfev=0), replace(native, stop_reason='invalid_residual')):
-            with self.subTest(broken=broken), self.assertRaises(ValueError):
-                optimizer_result(broken)
+        self.assertIsNone(result.x)
+        self.assertIsNone(result.objective)
+        self.assertFalse(result.converged)
+        self.assertEqual(result.stop_reason, 'invalid_residual')
+        self.assertEqual(result.evaluations, 1)
 
 
 if __name__ == '__main__':

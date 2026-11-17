@@ -5,7 +5,6 @@ import json
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.optimizers.slp import slp_minimize
-from lpf.optimizers.result import optimizer_result
 from .storage import canonical, plain, sha, vector_sha
 
 
@@ -260,7 +259,7 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
                 found = [r.end_x for r in out.runs if r.end_x is not None]
                 if out.best_x is not None:
                     found.append(out.best_x)
-                next_x = out.best_x
+                next_x = out.x if not legacy_campaign and solver_kind == 'scipy' else out.best_x
                 success = bool(out.runs) and all(r.success for r in out.runs)
             else:
                 solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
@@ -307,15 +306,18 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
                 raise
             if not legacy_campaign and solver_kind == 'scipy':
                 digest = vector_sha(next_x)
-                common = optimizer_result(out)
-                score = common.objective
-                if (digest != vector_sha(common.x) or digest not in observed_objectives or
+                score = out.objective
+                if (not isinstance(out.stop_reason, str) or not out.stop_reason or
+                        out.stop_reason.startswith('invalid_') or type(out.evaluations) is not int or
+                        out.evaluations < 1 or type(out.converged) is not bool or
+                        score is None or not np.isfinite(score) or digest not in observed_objectives or
                         score != observed_objectives[digest]):
                     raw['status'] = 'unverified_output'
                     raise ValueError('Solver output/objective was not observed on its Search grid')
                 raw['output_objective'] = float(score)
-                raw['optimizer_result'] = raw_numbers(common)
-                success = common.converged
+                raw['optimizer_result'] = raw_numbers(dict(x=out.x, objective=out.objective,
+                    converged=out.converged, stop_reason=out.stop_reason, evaluations=out.evaluations))
+                success = out.converged
                 raw['status'] = 'converged' if success else 'not_converged'
             all_success &= success
             raw.update(output_vector=plain(next_x), output_vector_sha256=vector_sha(next_x),

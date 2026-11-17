@@ -9,7 +9,6 @@ import numpy as np
 
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.slp import slp_minimize
-from lpf.optimizers.result import optimizer_result
 from ._worker_next import MinimalWorker
 from .component_constraints import _check_vector_box, validate_search_box, validate_values
 from .evaluation import raw_numbers
@@ -332,17 +331,20 @@ class DevelopmentWorker(MinimalWorker):
                     found = [r.end_x for r in out.runs if r.end_x is not None]
                     if out.best_x is not None:
                         found.append(out.best_x)
-                    next_x = out.best_x
+                    next_x = out.x if self.objective_mode else out.best_x
                     if self.objective_mode:
-                        if self.best is None or out.best_fun is None or out.best_x is None:
+                        if self.best is None or out.objective is None or out.x is None:
                             raise ValueError('No weighted best; no replacement or retry')
-                        common = optimizer_result(out)
-                        digest = vector_sha(common.x)
-                        if (self.forward_count > opts['max_evaluations'] or
-                                self.observed_objectives.get(digest) != common.objective or
+                        digest = vector_sha(out.x)
+                        if (not np.isfinite(out.objective) or type(out.evaluations) is not int or
+                                out.evaluations < 1 or type(out.converged) is not bool or
+                                not isinstance(out.stop_reason, str) or not out.stop_reason or
+                                out.stop_reason.startswith('invalid_') or
+                                self.forward_count > opts['max_evaluations'] or
+                                self.observed_objectives.get(digest) != out.objective or
                                 self.best['vector_sha256'] != digest):
                             raise ValueError('Optimizer result not observed on Search grid')
-                        found = [common.x]
+                        found = [out.x]
                     success = bool(out.runs) and all(r.success for r in out.runs)
                     reason = out.stop_reason
                 else:
@@ -375,8 +377,9 @@ class DevelopmentWorker(MinimalWorker):
                                    stop_reason=reason, converged=bool(success), forward_count=self.forward_count,
                                    rf_best=plain(self.best), independent=plain(self.independent))
                 if self.objective_mode:
-                    step_record['optimizer_result'] = raw_numbers(common)
-                    step_record['converged'] = common.converged
+                    step_record['optimizer_result'] = raw_numbers(dict(x=out.x, objective=out.objective,
+                        converged=out.converged, stop_reason=out.stop_reason, evaluations=out.evaluations))
+                    step_record['converged'] = out.converged
                 steps.append(step_record)
                 x = np.asarray(next_x, dtype=float).copy()
             finally:
