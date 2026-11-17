@@ -54,7 +54,11 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
     entire search and preserve prior valid observations. Other exceptions from
     the caller propagate. Weights must be finite, nonnegative and match the
     residual length. Out-of-bounds x0 is rejected, never projected.
-    All-fixed boxes require one evaluation and no SciPy call or restarts.
+    All-fixed boxes require one evaluation and no SciPy call or restarts. The
+    overall result is converged only for this all-fixed case: with free
+    coordinates, successful local runs restart until the evaluation budget is
+    exhausted, and a local success is not overall convergence. Individual
+    local outcomes remain available through local_run_callback.
     objective_callback receives each valid observed (x, f(x)); progress_callback
     also receives whether Hybrid chose that observation as its new best.
     Both callbacks propagate exceptions, without retry or extra RF evaluation.

@@ -84,8 +84,7 @@ def run_profile_development(plan, definition, policy, seed, arm, start, output, 
     spots = {} if spot_checks is None else spot_checks
     if not isinstance(spots, dict) or any(not isinstance(v, list) for v in spots.values()):
         raise ValueError('Spot checks must be stage to index lists')
-    terminal_samples = len(plan.requested_grid('terminal').frequency_hz)
-    independent_upper = terminal_samples + len(spots.get('terminal', []))
+    independent_upper = len(spots.get('terminal', []))
     for step in next(a['steps'] for a in plan.data['config']['arms'] if a['name'] == arm):
         stage = f"{arm}/{step['name']}"
         samples = len(plan.requested_grid(stage).frequency_hz)
@@ -113,7 +112,7 @@ def run_profile_development(plan, definition, policy, seed, arm, start, output, 
             raise ValueError('Source changed during Job')
         actual = result['costs']
         rf_used = actual['search_requested_samples'] + actual['terminal_requested_samples']
-        independent_used = actual['terminal_independent_full_samples'] + sum(actual['independent_mna_samples_by_stage'].values())
+        independent_used = sum(actual['independent_mna_samples_by_stage'].values())
         if rf_used > reservation['rf_samples'] or independent_used > reservation['independent_mna_samples']:
             raise ValueError('Completed cost exceeds reservation')
         result['ledger'] = dict(status='completed', reservation=reservation,

@@ -88,6 +88,8 @@ class HybridTests(unittest.TestCase):
         result = self.run_hybrid(residual, [0.9, 2], [(0, 1), (2, 2)],
                                  weights=[1, 1, 2])
         self.assertTrue(self.runs[0].success)
+        self.assertFalse(result.converged)  # local success does not end budget-only restarts
+        self.assertEqual(result.stop_reason, 'evaluation_budget_exhausted')
         self.assertLess(result.objective, 1e-12)
         self.assertLess(result.objective, self.runs[0].start_fun)
         self.assertEqual(result.x[1], 2)
@@ -141,6 +143,7 @@ class HybridTests(unittest.TestCase):
     def test_fixed_box_and_invalid_residuals(self):
         result = self.run_hybrid(lambda x: [x[0] - 1], [2], [(2, 2)])
         self.assertEqual(result.stop_reason, 'all_coordinates_fixed')
+        self.assertTrue(result.converged)
         self.assertEqual(result.evaluations, 1)
         self.assertTrue(self.runs[0].success)
         for residual in (lambda x: [], lambda x: [np.nan], lambda x: [np.inf],

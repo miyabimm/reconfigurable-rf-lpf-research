@@ -466,16 +466,13 @@ class DevelopmentWorker(MinimalWorker):
                                 independent=self._audit(vector, response, 'terminal'))
             if self.objective_mode == 'profile_signed_margin':
                 from lpf.minimax_profile import signed_margins
-                from lpf.rf_core.independent import validate_response
                 margin, _ = signed_margins(self.profile, self.grid, response)
-                full_audit = validate_response(self.model, vector, response)
                 if assessment['strict_feasible'] != bool(margin <= 0):
                     raise ValueError('Terminal signed margin/requirement mismatch')
                 terminal_row.update(terminal_signed_max_margin_db=margin,
                     performance_feasible=bool(margin <= 0), response=raw_numbers(response),
                     external_passivity='checked_on_terminal_grid',
-                    power_balance='checked_on_terminal_grid_by_independent_mna',
-                    terminal_independent_full=full_audit,
+                    power_balance='checked_at_independent_mna_spots',
                     physical=validate_values(self.definition, self.model.schema, vector, self.policy,
                                              frozen_model=self.physical_model))
             if self.sequential_recording:
@@ -503,7 +500,6 @@ class DevelopmentWorker(MinimalWorker):
                         search_requested_samples=sum(s['forward_count'] * len(self.plan.requested_grid(
                             f"{self.arm}/{s['name']}").frequency_hz) for s in steps),
                         terminal_forwards=1, terminal_requested_samples=len(self.grid.frequency_hz),
-                        terminal_independent_full_samples=len(self.grid.frequency_hz),
                         independent_mna_samples_by_stage=self.audit_samples),
                     terminal_grid_sha256=grid_fingerprint(self.grid))
             if self.objective_mode == 'weighted_violation':

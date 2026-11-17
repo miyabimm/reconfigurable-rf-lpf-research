@@ -131,6 +131,21 @@ class MinimaxTests(unittest.TestCase):
             assessed = evaluate_requirements(r, req, requested_grid=g)
             self.assertEqual(assessed['strict_feasible'], signed <= 0)
 
+    def test_profile_intervals_do_not_depend_on_base_performance(self):
+        from unittest.mock import patch
+        from lpf.search.performance import compile_profile_requirements, compile_requirements, build_evaluation_grid
+        base = compile_requirements(json.loads(self.p.base_json), self.p.records, 'full_lpf')
+        # Physical base may carry unrelated legacy performance declarations. They
+        # are not an input to RF-T009 interval or performance compilation.
+        without_performance = replace(self.p, base_json='{}')
+        with patch('lpf.search.performance.compile_requirements', side_effect=AssertionError('legacy performance')):
+            req = compile_profile_requirements(without_performance)
+        self.assertEqual(req, compile_profile_requirements(self.p))
+        self.assertEqual(req.intervals, base.intervals)
+        self.assertEqual(req.objective_segments, base.objective_segments)
+        self.assertEqual(req.s2p_span_hz, base.s2p_span_hz)
+        self.assertEqual(len(build_evaluation_grid(req, 2).frequency_hz), 56)
+
     def test_profile_preflight_and_minimal_worker_inputs(self):
         from dataclasses import asdict
         import copy
@@ -186,7 +201,12 @@ class MinimaxTests(unittest.TestCase):
                                            root=ROOT, checkpoint=Path(tmp)/'checkpoints',
                                            checkpoint_interval=1, spot_checks={'terminal': [0]},
                                            objective_mode='profile_signed_margin')
-                result = worker.run()
+                from unittest.mock import patch
+                from lpf.rf_core.independent import evaluate_independent_response
+                with patch('lpf.rf_core.independent.evaluate_independent_response',
+                           wraps=evaluate_independent_response) as independent:
+                    result = worker.run()
+                self.assertEqual(independent.call_count, 1)  # specified Terminal spot only
                 record = result['steps'][0]
                 out = record['solver_result']
                 self.assertEqual(set(out), {'x', 'objective', 'converged', 'stop_reason', 'evaluations'})
@@ -197,9 +217,14 @@ class MinimaxTests(unittest.TestCase):
                 self.assertEqual(terminal['vector_sha256'], vector_sha(out['x']))
                 self.assertEqual(terminal['performance_feasible'], terminal['terminal_signed_max_margin_db'] <= 0)
                 self.assertEqual(terminal['independent']['status'], 'pass')
-                self.assertEqual(terminal['terminal_independent_full']['samples_checked'], 112)
-                self.assertTrue(terminal['terminal_independent_full']['independent_mna_checked'])
-                self.assertEqual(result['costs']['terminal_independent_full_samples'], 112)
+                self.assertEqual(terminal['independent']['sample_indices'], [0])
+                self.assertEqual(terminal['independent']['power_balance'], 'pass_at_samples')
+                self.assertFalse(terminal['independent']['whole_band_checked'])
+                self.assertEqual(terminal['external_passivity'], 'checked_on_terminal_grid')
+                self.assertEqual(terminal['power_balance'], 'checked_at_independent_mna_spots')
+                self.assertNotIn('terminal_independent_full', terminal)
+                self.assertNotIn('terminal_independent_full_samples', result['costs'])
+                self.assertEqual(result['costs']['independent_mna_samples_by_stage'], {'terminal': 1})
                 self.assertEqual(len(terminal['response']['il_db']), 112)
                 self.assertGreaterEqual(len(list((Path(tmp)/'checkpoints').glob('*.json'))), 1)
 
@@ -231,6 +256,10 @@ class MinimaxTests(unittest.TestCase):
             ledger = result['ledger']
             self.assertEqual(result['costs']['independent_mna_samples_by_stage']['demo/coarse'],
                              result['costs']['search_forwards'])
+            self.assertEqual(ledger['independent_mna_samples']['completed'],
+                             1 + result['costs']['search_forwards'])
+            self.assertEqual(ledger['reservation']['independent_mna_samples'],
+                             1 + plan.data['costs']['jobs']['demo']['stages']['coarse']['upper_reservation'] // 56)
             self.assertEqual(ledger['reservation'], stored_input['reservation'])
             for name in ('rf_samples', 'independent_mna_samples'):
                 self.assertEqual(ledger[name]['unknown'], 0)
@@ -251,6 +280,17 @@ class MinimaxTests(unittest.TestCase):
             self.assertEqual(failure['independent_mna_samples_unknown_upper_bound'],
                              failed_input['reservation']['independent_mna_samples'])
             self.assertFalse((failed/'result.json').exists())
+            spot_failed = Path(tmp)/'spot-failed'
+            with patch('lpf.rf_core.independent.evaluate_independent_response',
+                       side_effect=ValueError('Power balance failed')) as audit:
+                with self.assertRaisesRegex(ValueError, 'Power balance failed'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, spot_failed,
+                                            root=ROOT, spot_checks={'terminal': [0]})
+            self.assertEqual(audit.call_count, 1)
+            failed_spot_record = json.loads((spot_failed/'failure.json').read_text())
+            self.assertEqual(failed_spot_record['status'], 'STOP')
+            self.assertEqual(failed_spot_record['independent_mna_samples_unknown_upper_bound'], 1)
+            self.assertFalse((spot_failed/'result.json').exists())
 
     def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
         from dataclasses import asdict
