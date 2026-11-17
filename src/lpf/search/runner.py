@@ -7,6 +7,45 @@ from .storage import atomic, canonical, sha, plain, vector_sha
 from .worker import JobSpec, freeze_development_job, execute_development_job
 
 
+def _selectionless_readback(result, spec, batches):
+    """Bind the sole terminal to the final solver output, never a ranked observation."""
+    d = spec.data
+    if 'selection' in result or 'selection' in d['plan']['config']:
+        raise ValueError('Selection is not valid in a new development Job')
+    complete = result['status'] in ('converged', 'not_converged')
+    steps = result['steps']
+    chosen = next(a for a in d['plan']['config']['arms'] if a['name'] == d['arm'])
+    if len(steps) != len(chosen['steps']):
+        raise ValueError('Step count mismatch')
+    if complete:
+        previous = d['start']['vector_sha256']
+        for step, configured in zip(steps, chosen['steps']):
+            solver = step['solver_result']
+            output = solver['best_x'] if configured['solver'] == 'hybrid' else solver['x']
+            stage = f"{d['arm']}/{configured['name']}"
+            if (step['name'] != configured['name'] or step['settings'] != configured or
+                    step['status'] not in ('converged', 'not_converged') or
+                    vector_sha(step['input_vector']) != previous or
+                    step['input_vector_sha256'] != previous or
+                    output is None or vector_sha(output) != step['output_vector_sha256'] or
+                    vector_sha(step['output_vector']) != step['output_vector_sha256'] or
+                    not any(b['stage'] == stage and b['status'] == 'completed' for b in batches.values()) and
+                    not result.get('progress_by_allocation', {}).get(stage, {}).get('completed')):
+                raise ValueError('Completed step/solver/vector evidence mismatch')
+            previous = step['output_vector_sha256']
+    terminal = result['terminal']
+    candidates = terminal['candidates']
+    if len(candidates) > 1 or (candidates and terminal['status'] != 'completed') or (complete and len(candidates) != 1):
+        raise ValueError('Terminal status/count mismatch')
+    for candidate in candidates:
+        batch = batches.get(candidate['batch_index'])
+        if (not steps or 'output_vector_sha256' not in steps[-1] or batch is None or
+                batch['stage'] != 'terminal' or batch['status'] != 'completed' or
+                candidate['vector_sha256'] != steps[-1]['output_vector_sha256'] or
+                candidate['vector_sha256'] != batch['vector_sha256']):
+            raise ValueError('Terminal/final solver/batch mismatch')
+
+
 def _development_readback(path, returned, spec):
     """Bind actual raw bytes to the Worker snapshot and frozen JobSpec.
 
@@ -133,6 +172,12 @@ def _window_development_readback(path, returned, spec):
             result.get('best_hybrid_observed_by_stage') != expected_hybrid_best or
             result.get('unsaved_window_results_may_be_lost') is not True):
         raise ValueError('Window best-observed evidence mismatch')
+    if 'selection' not in d['plan']['config']:
+        _selectionless_readback(result, spec, dict(enumerate(result['batches'])))
+        imported = _validate_development_result(raw, result, spec, compact=True, content=envelope)
+        imported['worker_io'] = dict(atomic_writes=number, payload_bytes=io['written_bytes']+len(raw),
+            atomic_readbacks=io['read_calls']+1, readback_bytes=io['read_bytes']+len(raw), scope='worker_raw_only')
+        return imported
     from .evaluation import raw_numbers
     ranked = result['selection']['ranked']
     if ranked and result['selection']['status'] != 'completed':
@@ -229,10 +274,11 @@ def _validate_development_result(raw, result, spec, *, compact, content=None, su
     uncertain = False
     job = plan['costs']['jobs'][d['arm']]
     caps = {f"{d['arm']}/{name}": s['upper_reservation'] for name, s in job['stages'].items()}
-    caps.update({f'selection:{i}': job['selection_one_forward']
-                 for i in range(plan['config']['selection']['max_candidates'])})
+    if 'selection' in plan['config']:
+        caps.update({f'selection:{i}': job['selection_one_forward']
+                     for i in range(plan['config']['selection']['max_candidates'])})
     caps.update({f'terminal:{i}': job['terminal_one_forward']
-                 for i in range(plan['config']['selection']['top_k'])})
+                 for i in range(plan['config']['selection']['top_k'] if 'selection' in plan['config'] else 1)})
     caps.update({f'anytime:{i}': job['anytime_one_forward']
                  for i in range(len(plan['config']['anytime_samples']))})
     for batch in result['batches']:
@@ -328,7 +374,11 @@ def _validate_development_result(raw, result, spec, *, compact, content=None, su
             inactive += caps[key]-r
     if inactive != result['reservations']['inactive']:
         raise ValueError('Raw inactive reservation mismatch')
-    safe = (result['status'] in ('converged', 'not_converged', 'budget_exhausted') and
+    campaign = 'campaign_context' in d
+    if not campaign and not compact:
+        _selectionless_readback(result, spec, dict(enumerate(result['batches'])))
+    safe_statuses = ('converged', 'not_converged', 'budget_exhausted') if campaign else ('converged', 'not_converged')
+    safe = (result['status'] in safe_statuses and
             result['evaluation_status'] in ('ready', 'stopped') and not uncertain and requested == completed)
     evidence = dict(terminal=result['terminal'], anytime=result['anytime'], dense=result['dense'],
         independent=[b['independent'] for b in result['batches']],
@@ -719,8 +769,6 @@ def finalize_development(state, output):
             summary['solver_steps'] = [dict(name=s['name'], status=s['status'],
                 stop_reason=s.get('solver_result', {}).get('stop_reason',
                     s.get('solver_result', {}).get('reason'))) for s in result['steps']]
-            summary['selection'] = dict(status=result['selection']['status'],
-                ranked_vector_sha256=[r['vector_sha256'] for r in result['selection']['ranked']])
             summary.update(terminal=result['terminal'], anytime=result['anytime'])
             summary['independent_spots'] = [b['independent'] for b in result['batches']]
             summary['finite_grid'] = [dict(stage=b['stage'], grid_sha256=b['grid_sha256'],

@@ -29,6 +29,7 @@ class DevelopmentCLITests(unittest.TestCase):
 
     def prepare(self, two_arms=False):
         def tiny(c):
+            c.pop('selection')
             c['anytime_samples'] = [56]
             first = c['arms'][0]['steps'][0]
             first['max_requested_samples'] = 56
@@ -88,8 +89,8 @@ runpy.run_path(sys.argv[0], run_name='__main__')
         self.assertEqual(summary['development_flow'], 'completed')
         self.assertFalse(summary['solver_converged'])
         self.assertFalse(summary['rf_compliance_certified'])
-        self.assertEqual(summary['campaign']['requested'], 392)
-        self.assertEqual(summary['campaign']['completed'], 392)
+        self.assertEqual(summary['campaign']['requested'], 308)
+        self.assertEqual(summary['campaign']['completed'], 308)
         self.assertEqual(summary['campaign']['independent_completed'], 1)
         self.assertEqual(summary['campaign']['reserved'], 0)
         self.assertEqual(summary['interval_count'], 28)
@@ -104,9 +105,9 @@ runpy.run_path(sys.argv[0], run_name='__main__')
         self.assertEqual(job['start_vector_sha256'], args[3][23]['vector_sha256'])
         self.assertEqual(len(job['solver_steps']), 2)
         self.assertEqual([s['status'] for s in job['solver_steps']], ['not_converged']*2)
-        self.assertEqual([b['requested'] for b in raw['batches']], [56, 84, 56, 84, 112])
+        self.assertEqual([b['requested'] for b in raw['batches']], [56, 84, 56, 112])
         self.assertEqual(raw['terminal']['status'], 'completed')
-        self.assertEqual(job['selection']['status'], 'completed')
+        self.assertNotIn('selection', job)
         self.assertEqual(job['anytime'][0]['status'], 'completed')
         self.assertEqual(job['independent_spots'][-1]['status'], 'pass')
         self.assertFalse(job['finite_grid'][-1]['strict_feasible'])
@@ -130,13 +131,15 @@ runpy.run_path(sys.argv[0], run_name='__main__')
         import numpy as np
         def converged(residuals, x, bounds, **kw):
             # Synthetic convergence only; actual RF is still evaluated once.
-            residuals(x)
-            return FixtureOutput(np.array(x), success=True)
+            value = residuals(x)
+            result = FixtureOutput(np.array(x), success=True)
+            result.fun = float(np.sum(value**2))
+            return result
         with patch('lpf.search.worker.slsqp_minimize', side_effect=converged):
             code, out, err = self.invoke(argv)
         self.assertEqual(code, 0, err)
         summary = json.loads(out)
-        self.assertEqual(summary['campaign']['requested'], 784)
+        self.assertEqual(summary['campaign']['requested'], 616)
         self.assertEqual(summary['trials']['seed23']['initial_reservation'], 3000)
         self.assertTrue(summary['solver_converged'])
         self.assertFalse(summary['rf_compliance_certified'])
@@ -194,20 +197,20 @@ runpy.run_path(sys.argv[0], run_name='__main__')
         self.assertEqual(raw.read_bytes(), raw_bytes)
         self.assertFalse((args[-1]/'summary.json').exists())
 
-    def test_budget_stop_is_reconciled_not_implementation_or_rf_pass(self):
+    def test_budget_stop_without_terminal_keeps_reservation(self):
         args, argv = self.prepare()
         from test_issue317_fixed_worker import FixedWorkerTests
         # Two callbacks want two full grids; the explicit step cap permits one.
         with patch('lpf.search.worker.slsqp_minimize', side_effect=FixedWorkerTests.fixture):
             code, out, err = self.invoke(argv)
-        self.assertEqual(code, 4, err)
+        self.assertEqual(code, 2, err)
         summary = json.loads(out)
-        self.assertEqual(summary['development_flow'], 'completed')
+        self.assertEqual(summary['development_flow'], 'stopped')
         self.assertEqual(summary['jobs'][0]['worker_status'], 'budget_exhausted')
         self.assertEqual(summary['jobs'][0]['terminal']['status'], 'not_run')
         self.assertEqual(summary['campaign']['requested'], 140)  # 56 search + 84 anytime
         self.assertEqual(summary['campaign']['requested'], summary['campaign']['completed'])
-        self.assertEqual(summary['campaign']['reserved'], 0)
+        self.assertGreater(summary['campaign']['reserved'], 0)
         self.assertFalse(summary['rf_compliance_certified'])
 
     def test_cli_parent_save_failure_is_stop_and_never_retried(self):

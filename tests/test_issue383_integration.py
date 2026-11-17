@@ -17,7 +17,12 @@ from lpf.search.storage import vector_sha
 
 class TimingIntegrationTests(unittest.TestCase):
     setUp = stage_tests.FixedStageTests.setUp
-    setup_model = stage_tests.FixedStageTests.setup_model
+    def setup_model(self, cid='RF-F003', mode='full_lpf', mutate=None):
+        def configure(c):
+            if mutate:
+                mutate(c)
+            c.pop('selection', None)
+        return stage_tests.FixedStageTests.setup_model(self, cid, mode, configure)
 
     def test_window_raw_and_cost_unchanged_two_independent_jobs(self):
         def config(c):
@@ -51,7 +56,7 @@ class TimingIntegrationTests(unittest.TestCase):
                 if jobs is not None:
                     diagnostics = jobs
         self.assertEqual(results[0], results[1])
-        self.assertEqual(calls[:8], calls[8:])
+        self.assertEqual(calls[:6], calls[6:])
         self.assertEqual(len(diagnostics), 2)
         self.assertIsNot(diagnostics[0]['timer'], diagnostics[1]['timer'])
         for diagnostic in diagnostics:
@@ -61,7 +66,7 @@ class TimingIntegrationTests(unittest.TestCase):
                          'evaluation', 'physical_validation', 'rf_forward', 'requirements',
                          'checkpoint', 'window_checkpoint_save', 'source_contract', 'solver_callback'):
                 self.assertGreater(regions[name]['count'], 0, name)
-            self.assertEqual(regions['rf_forward']['count'], 4)
+            self.assertEqual(regions['rf_forward']['count'], 3)
 
     def test_hybrid_random_restarts_and_evaluations_unchanged(self):
         from dataclasses import asdict
@@ -180,8 +185,7 @@ class TimingIntegrationTests(unittest.TestCase):
             summary = dict(exit_code=4, development_flow='completed', plan_sha256='plan', source_sha256='source')
             with patch.object(cli, 'load_preflight', return_value=plan), \
                  patch.object(Path, 'read_bytes', return_value=json.dumps(dict(inductor_tree={}, capacitor_placement={})).encode()), \
-                 patch('lpf.topology_management.InductorTree'), patch('lpf.topology_management.CapacitorPlacement'), \
-                 patch('lpf.topology_management.CircuitDefinition'), patch('lpf.constraint_versions.load_constraint'), \
+                 patch('lpf.search.proposals.definition_from_data'), patch('lpf.constraint_versions.load_constraint'), \
                  patch.object(cli, 'load_explicit'), patch.object(cli, 'run_development', side_effect=fake_run), \
                  patch.object(cli, 'finalize_development', return_value=summary):
                 args = ['develop', '--config', 'unused', '--starts', 'unused', '--output', str(output), '--timing-output', str(path)]

@@ -124,6 +124,13 @@ def readback_summaries(raw, envelope, spec):
         n = len(d['definition']['inductor_tree']['edges'])
         if (n and (type(minimum) not in (int, float) or not math.isfinite(minimum) or minimum <= 0)) or (not n and minimum is not None):
             raise ValueError('Best inductance matrix evidence mismatch')
+    if 'selection' not in d['plan']['config']:
+        from .runner import _selectionless_readback
+        _selectionless_readback(result, spec, batches)
+        number, io = envelope['checkpoint_number'], envelope['io_before']
+        imported['worker_io'] = dict(atomic_writes=number, payload_bytes=io['written_bytes']+len(raw),
+            atomic_readbacks=io['read_calls']+1, readback_bytes=io['read_bytes']+len(raw), scope='worker_raw_only')
+        return imported
     selection = result['selection']
     ranked = selection['ranked']
     if ranked and selection['status'] != 'completed':

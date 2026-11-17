@@ -51,6 +51,7 @@ class FixedWorkerTests(unittest.TestCase):
             c['anytime_samples'] = [56, 168]
             if mutate:
                 mutate(c)
+            c.pop('selection', None)
         plan, definition, policy, x = self.setup_model(cid, mode, config)
         spec = freeze_development_job(plan, definition, policy, 'demo', 23, x)
         self.counter += 1
@@ -67,24 +68,24 @@ class FixedWorkerTests(unittest.TestCase):
         with patch('lpf.search.worker.slsqp_minimize', side_effect=solver or self.fixture):
             return execute_development_job(spec, path, solver_kind='fixture')
 
-    def test_two_stage_fixed_job_is_blocked_until_formal_worker_migration(self):
-        plan, d, p, x = self.setup_model('RF-F003', 'full_lpf', lambda c: c.pop('selection'))
-        with self.assertRaisesRegex(ValueError, 'Search→Terminal fixed Job not yet supported'):
+    def test_old_selection_plan_is_rejected_for_development(self):
+        plan, d, p, x = self.setup_model('RF-F003', 'full_lpf')
+        with self.assertRaisesRegex(ValueError, 'selectionless'):
             freeze_development_job(plan, d, p, 'demo', 23, x)
 
-    def test_two_steps_real_rf_one_selection_shared_cost_and_audit(self):
+    def test_two_steps_real_rf_one_terminal_shared_cost_and_audit(self):
         spec, path, plan, d, p, x = self.job()
         result = self.run_fixture(spec, path)
         self.assertEqual(result['status'], 'not_converged')
-        self.assertEqual(result['requested'], 588)  # 4*56 + 2*84 + 84 + 112
-        self.assertEqual(result['completed'], 588)
+        self.assertEqual(result['requested'], 504)  # 4*56 + 2*84 + 112
+        self.assertEqual(result['completed'], 504)
         self.assertEqual(result['search_requested'], 224)
         self.assertEqual([r['stage'] for r in result['batches']],
-            ['demo/coarse', 'anytime', 'demo/coarse', 'demo/fine', 'anytime', 'demo/fine', 'selection', 'terminal'])
+            ['demo/coarse', 'anytime', 'demo/coarse', 'demo/fine', 'anytime', 'demo/fine', 'terminal'])
         self.assertEqual([s['status'] for s in result['anytime']], ['completed']*2)
         self.assertEqual(result['dense']['status'], 'not_run')
         self.assertEqual(result['steps'][1]['input_vector_sha256'], vector_sha(x))
-        self.assertEqual(len(result['selection']['ranked']), 1)
+        self.assertNotIn('selection', result)
         self.assertEqual(result['terminal']['status'], 'completed')
         self.assertEqual(result['solver_execution_kind'], 'fixture')
         for row in result['batches']:
@@ -479,7 +480,7 @@ class FixedWorkerTests(unittest.TestCase):
         spec = freeze_development_job(plan, d, p, 'demo', 23, x,
                                       spot_checks={'terminal': [0, 111], 'anytime': [0]})
         result = self.run_fixture(spec, path)
-        self.assertEqual(result['requested'], 588)
+        self.assertEqual(result['requested'], 504)
         self.assertEqual(result['batches'][-1]['independent']['status'], 'pass')
         self.assertEqual(result['batches'][-1]['independent']['completed'], 2)
         self.assertFalse(result['batches'][-1]['independent']['whole_band_checked'])
@@ -495,22 +496,22 @@ class FixedWorkerTests(unittest.TestCase):
             c['max_trial_requested_samples'] = 3000
         spec, path, *_ = self.job(change)
         result = self.run_fixture(spec, path)
-        self.assertEqual(result['requested'], 588)
+        self.assertEqual(result['requested'], 504)
         self.assertEqual(result['reservations']['other_jobs'], 1500)
-        self.assertEqual(result['remaining']['trial'], 3000-588)
+        self.assertEqual(result['remaining']['trial'], 3000-504)
 
     def test_step_release_and_reservations_and_one_batch_short(self):
         spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
         meter = FixedJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
         meter.activate('demo/coarse', 'demo/coarse')
         before = meter.snapshot()['reservations']['inactive']
-        self.assertEqual(before, 224+168+112)
+        self.assertEqual(before, 224+112)
         meter.evaluate(x)
         meter.finish()
         self.assertNotIn('demo/coarse', meter.allocations)
         meter.activate('demo/fine', 'demo/fine')
         self.assertEqual(meter.requested, 56)
-        self.assertEqual(meter.snapshot()['reservations']['inactive'], 168+112)
+        self.assertEqual(meter.snapshot()['reservations']['inactive'], 112)
         meter.allocations[meter.active] = 55
         with patch.object(RFEvaluator, 'evaluate') as forward:
             with self.assertRaisesRegex(ValueError, 'full batch'): meter.evaluate(x)
@@ -519,7 +520,7 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(json.loads(path.read_text())['evaluation_status'], 'stopped')
 
     def test_each_validation_slot_and_job_trial_caps(self):
-        for allocation, grid in [('selection:0', 'selection'), ('terminal:0', 'terminal'), ('anytime:0', 'anytime')]:
+        for allocation, grid in [('terminal:0', 'terminal'), ('anytime:0', 'anytime')]:
             for cap in ('allocation', 'job', 'trial'):
                 with self.subTest(allocation=allocation, cap=cap):
                     spec, path, plan, d, p, x = self.job()
@@ -574,7 +575,7 @@ class FixedWorkerTests(unittest.TestCase):
             self.assertEqual((result['requested'], result['completed']), (56, 0))
             self.assertEqual(result['status'], 'interrupted' if isinstance(failure, KeyboardInterrupt) else 'failed')
             self.assertIn('demo/coarse', result['allocations'])
-            self.assertEqual(result['selection']['status'], 'not_run')
+            self.assertNotIn('selection', result)
             with self.assertRaisesRegex(ValueError, 'Existing'): self.run_fixture(spec, path)
 
     def test_save_failure_preserves_durable_unknown(self):
@@ -608,19 +609,16 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(terminal['assessment']['mode'], 'matching_only')
         self.assertFalse(result['rf_compliance_certified'])
 
-    def test_candidate_cap_and_invalid_separation(self):
-        def cap(c):
-            c['selection'].update(max_candidates=1, top_k=1)
-            c['anytime_samples'] = []
-        spec, path, *_ = self.job(cap)
+    def test_final_step_output_is_terminal_candidate(self):
+        spec, path, *_ = self.job(lambda c: c.update(anytime_samples=[]))
         def output(residuals, x, bounds, **opts):
             residuals(x)
             v = np.array(x); v[0] += .01
             return FixtureOutput(v)
         result = self.run_fixture(spec, path, output)
-        self.assertEqual(len(result['selection']['ranked']), 1)
-        self.assertEqual(result['selection']['excluded'][0]['status'], 'unrun')
+        self.assertNotIn('selection', result)
         self.assertEqual(len(result['terminal']['candidates']), 1)
+        self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'], result['steps'][-1]['output_vector_sha256'])
 
     def test_hybrid_slp_adapters_invalid_endpoint_and_top_k(self):
         def change(c):
@@ -638,12 +636,13 @@ class FixedWorkerTests(unittest.TestCase):
              patch('lpf.search.worker.slp_minimize', side_effect=self.fixture):
             result = execute_development_job(spec, path, solver_kind='fixture')
         self.assertEqual(result['status'], 'not_converged')
-        self.assertEqual(result['requested'], 728)
+        self.assertEqual(result['requested'], 448)
         self.assertEqual(result['search_requested'], 168)
         self.assertEqual(result['steps'][1]['input_vector_sha256'], vector_sha(x))
-        self.assertEqual(len(result['selection']['ranked']), 2)
-        self.assertEqual(result['selection']['excluded'][0]['status'], 'invalid')
-        self.assertEqual(len(result['terminal']['candidates']), 2)
+        self.assertEqual(len(result['steps'][0]['candidates']), 1)
+        self.assertEqual(result['steps'][0]['candidates'][0]['vector_sha256'], vector_sha(x))
+        self.assertNotIn('selection', result)
+        self.assertEqual(len(result['terminal']['candidates']), 1)
 
     def test_hybrid_worker_writes_monitor_events_without_rf(self):
         def change(c):
@@ -680,9 +679,9 @@ class FixedWorkerTests(unittest.TestCase):
         with patch('lpf.search.worker.hybrid_minimize', return_value=FixtureHybrid([], None)):
             result = execute_development_job(spec, path, solver_kind='fixture')
         self.assertEqual(result['requested'], 0)
-        self.assertEqual(result['steps'][0]['status'], 'no_candidate')
+        self.assertEqual(result['steps'][0]['status'], 'no_observation')
         self.assertEqual(result['steps'][1]['status'], 'not_started')
-        self.assertEqual(result['selection']['status'], 'not_run')
+        self.assertNotIn('selection', result)
         self.assertEqual(result['terminal']['status'], 'not_run')
         self.assertTrue(all(a['status'] == 'not_run' for a in result['anytime']))
 
@@ -697,7 +696,7 @@ class FixedWorkerTests(unittest.TestCase):
         self.assertEqual(result['completed'], 336)
         self.assertNotIn('demo/coarse', result['allocations'])
         self.assertIn('demo/fine', result['allocations'])
-        self.assertEqual(result['selection']['status'], 'not_run')
+        self.assertNotIn('selection', result)
 
     def test_changed_anytime_and_terminal_points_are_executed(self):
         def change(c):
@@ -705,7 +704,7 @@ class FixedWorkerTests(unittest.TestCase):
             c['validation']['terminal_points'] = 6
         spec, path, *_ = self.job(change)
         result = self.run_fixture(spec, path)
-        self.assertEqual(result['requested'], 756)
+        self.assertEqual(result['requested'], 672)
         self.assertEqual([r['requested'] for r in result['batches'] if r['stage'] == 'anytime'], [140, 140])
         self.assertEqual(result['batches'][-1]['requested'], 168)
 
@@ -713,17 +712,16 @@ class FixedWorkerTests(unittest.TestCase):
         spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
         real = RFEvaluator.evaluate
         calls = 0
-        def fail_selection(evaluator, vector):
+        def fail_terminal(evaluator, vector):
             nonlocal calls
             calls += 1
-            if calls == 5: raise ValueError('selection numerical failure')
+            if calls == 5: raise ValueError('terminal numerical failure')
             return real(evaluator, vector)
-        with patch.object(RFEvaluator, 'evaluate', new=fail_selection):
+        with patch.object(RFEvaluator, 'evaluate', new=fail_terminal):
             result = self.run_fixture(spec, path)
-        self.assertEqual((result['requested'], result['completed']), (308, 224))
-        self.assertEqual(result['selection']['status'], 'failed')
-        self.assertEqual(result['selection']['excluded'][0]['status'], 'not_evaluated')
-        self.assertEqual(result['terminal']['status'], 'not_run')
+        self.assertEqual((result['requested'], result['completed']), (336, 224))
+        self.assertNotIn('selection', result)
+        self.assertEqual(result['terminal']['status'], 'failed')
         spec, path, plan, d, p, x = self.job(lambda c: c.update(anytime_samples=[]))
         meter = FixedJobEvaluation(plan, d, p, 'demo', path, spec, root=Path.cwd())
         meter.activate('demo/coarse', 'demo/coarse'); meter.evaluate(x)

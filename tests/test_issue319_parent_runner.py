@@ -15,7 +15,12 @@ from lpf.search.storage import atomic, canonical, plain, sha, vector_sha
 
 class ParentRunnerTests(unittest.TestCase):
     setUp = stage_tests.FixedStageTests.setUp
-    setup_model = stage_tests.FixedStageTests.setup_model
+    def setup_model(self, cid='RF-F003', mode='full_lpf', mutate=None):
+        def configure(c):
+            if mutate:
+                mutate(c)
+            c.pop('selection', None)
+        return stage_tests.FixedStageTests.setup_model(self, cid, mode, configure)
 
     def setup_parent(self, seeds=None, mutate=None):
         def config(c):
@@ -63,6 +68,27 @@ class ParentRunnerTests(unittest.TestCase):
                 requested=n, completed=n, status='completed', vector=d['start']['vector'],
                 vector_sha256=d['start']['vector_sha256'], independent=dict(status='not_run'),
                 response=response, assessment=assessment)])
+        if 'campaign_context' in d:
+            atomic(path, result)
+            return result
+        terminal_n = plan['grids']['terminal']['requested_samples_per_forward']
+        terminal_response = {key: [0.] * terminal_n for key in ('il_db', 'apl_db', 'in_rl_db', 'out_rl_db')}
+        terminal_response.update({key: [[[0., 0.], [0., 0.]] for _ in range(terminal_n)]
+                                  for key in ('s_real', 's_imag')})
+        terminal_assessment = dict(assessment, grid_fingerprint=plan['grids']['terminal']['sha256'])
+        vector, digest = d['start']['vector'], d['start']['vector_sha256']
+        configured = next(a for a in plan['config']['arms'] if a['name'] == arm)['steps'][0]
+        result.update(requested=n+terminal_n, completed=n+terminal_n,
+            remaining=dict(job=job['max_requested_samples']-n-terminal_n,
+                           trial=plan['costs']['max_trial_requested_samples']-n-terminal_n),
+            steps=[dict(name=configured['name'], settings=configured, status='not_converged',
+                        input_vector=vector, input_vector_sha256=digest, output_vector=vector,
+                        output_vector_sha256=digest, solver_result=dict(nfev=999, x=vector))],
+            terminal=dict(status='completed', candidates=[dict(vector_sha256=digest, batch_index=1)]))
+        result['batches'].append(dict(stage='terminal', allocation='terminal:0',
+            grid_sha256=plan['grids']['terminal']['sha256'], requested=terminal_n, completed=terminal_n,
+            status='completed', vector=vector, vector_sha256=digest, independent=dict(status='not_run'),
+            response=terminal_response, assessment=terminal_assessment))
         atomic(path, result)
         return result
 
@@ -72,7 +98,7 @@ class ParentRunnerTests(unittest.TestCase):
             state = runner.run_development(*args, solver_kind='fixture', spot_checks={'terminal': [0]})
         self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
         self.assertEqual(len(state['jobs']), 2)
-        self.assertEqual(state['campaign']['requested'], 2*392)  # each: 112 search + 84 anytime + 84 selection + 112 terminal
+        self.assertEqual(state['campaign']['requested'], 2*308)  # 112 search + 84 anytime + 112 terminal
         self.assertEqual(state['campaign']['requested'], state['campaign']['completed'])
         self.assertEqual(state['campaign']['independent_completed'], 2)
         self.assertEqual(state['campaign']['reserved'], 0)
@@ -89,8 +115,8 @@ class ParentRunnerTests(unittest.TestCase):
             frozen = json.loads(result['spec']['frozen_json'])
             self.assertEqual(frozen['start'], args[3][23])
             self.assertEqual(result['policy_fingerprint'], args[0].data['requirements']['policy_fingerprint'])
-            self.assertEqual([b['requested'] for b in result['batches']], [56, 84, 56, 84, 112])
-            self.assertEqual(sum(b['completed'] for b in result['batches']), 392)
+            self.assertEqual([b['requested'] for b in result['batches']], [56, 84, 56, 112])
+            self.assertEqual(sum(b['completed'] for b in result['batches']), 308)
             self.assertEqual(row['worker_status'], 'not_converged')
             self.assertEqual(row['evidence']['anytime'][0]['status'], 'completed')
             self.assertEqual(row['evidence']['terminal']['status'], 'completed')
@@ -124,16 +150,16 @@ class ParentRunnerTests(unittest.TestCase):
             state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture',
                                            storage_mode='window100', spot_checks={'terminal': [0]})
             self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
-            self.assertEqual(forward.call_count, 4)  # 2 search + selection + terminal
+            self.assertEqual(forward.call_count, 3)  # 2 search + terminal
             raw = json.loads((output/state['jobs'][0]['raw_path']).read_bytes())
             self.assertEqual(raw['kind'], 'development_forward_window_v1')
             self.assertIsNone(raw['window'])
-            self.assertEqual(raw['confirmed']['forwards'], 4)
-            self.assertEqual([b['stage'] for b in raw['payload']['batches']], ['selection', 'terminal'])
+            self.assertEqual(raw['confirmed']['forwards'], 3)
+            self.assertEqual([b['stage'] for b in raw['payload']['batches']], ['terminal'])
             self.assertIn('response', raw['payload']['batches'][-1])
             summary = runner.finalize_development(state, output)
             self.assertEqual(summary['exit_code'], 4)
-            self.assertEqual(summary['campaign']['requested'], 308)
+            self.assertEqual(summary['campaign']['requested'], 224)
             legacy_output = Path(self.raw.name)/'legacy-comparison'
             legacy = runner.run_development(plan, d, p, starts, legacy_output, solver_kind='fixture',
                                             spot_checks={'terminal': [0]})
@@ -141,11 +167,12 @@ class ParentRunnerTests(unittest.TestCase):
             legacy_raw = json.loads((legacy_output/legacy['jobs'][0]['raw_path']).read_bytes())
             self.assertEqual(legacy_raw['requested'], raw['payload']['requested'])
             self.assertEqual(legacy_raw['completed'], raw['payload']['completed'])
-            self.assertEqual(legacy_raw['selection'], raw['payload']['selection'])
+            self.assertNotIn('selection', legacy_raw)
+            self.assertNotIn('selection', raw['payload'])
             self.assertEqual(legacy_raw['terminal'], raw['payload']['terminal'])
             self.assertEqual(raw['payload']['batches'][-1]['independent']['status'], 'pass')
             self.assertEqual(legacy_raw['batches'][-1]['independent'], raw['payload']['batches'][-1]['independent'])
-            self.assertEqual(forward.call_count, 8)
+            self.assertEqual(forward.call_count, 6)
             self.assertEqual(summary['io']['worker']['atomic_writes'], raw['checkpoint_number'])
             self.assertEqual(summary['io']['summary']['payload_bytes'], len((output/'summary.json').read_bytes()))
         from lpf.search.worker import JobSpec
@@ -168,8 +195,8 @@ class ParentRunnerTests(unittest.TestCase):
             lambda r: r['payload']['batches'][0]['assessment'].update(policy_id='wrong'),
             lambda r: r['payload']['batches'][-1].pop('response'),
             lambda r: r['payload']['best_observed_by_stage']['demo/coarse'].update(vector_sha256='0'*64),
-            lambda r: r['payload']['selection']['ranked'][0].update(batch_index=0),
-            lambda r: r['payload']['selection']['ranked'][0].update(rank_key=[0]),
+            lambda r: r['payload']['steps'][-1].update(output_vector_sha256='0'*64),
+            lambda r: r['payload'].update(selection={}),
             lambda r: r['payload']['terminal']['candidates'][0].update(vector_sha256='0'*64),
         ]
         for mutate in corruptions:
@@ -361,11 +388,11 @@ class ParentRunnerTests(unittest.TestCase):
              patch('lpf.search.worker.slsqp_minimize', side_effect=solver):
             state = runner.run_development(plan, d, p, starts, output, solver_kind='fixture', storage_mode='window100')
         self.assertEqual(forward.call_count, 2)
-        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        self.assertEqual(state['status'], 'unknown', state.get('exit_reason'))
         row = state['jobs'][0]
         self.assertEqual((row['worker_status'], row['requested'], row['completed']), ('budget_exhausted', 112, 112))
-        self.assertEqual(row['reserved'], 0)
-        self.assertTrue(row['safe_to_release'])
+        self.assertEqual(row['reserved'], row['cap']-112)
+        self.assertFalse(row['safe_to_release'])
 
     def test_window_initial_save_failure_keeps_parent_unknown(self):
         from lpf.rf_core.model import RFEvaluator
@@ -400,8 +427,8 @@ class ParentRunnerTests(unittest.TestCase):
         with patch.object(runner, 'execute_development_job', side_effect=worker):
             state = runner.run_development(*args, solver_kind='fixture')
         self.assertEqual(seen, [(23, 'demo'), (23, 'other'), (24, 'demo'), (24, 'other')])
-        self.assertEqual([t['requested'] for t in state['trials'].values()], [112, 112])
-        self.assertEqual(state['campaign']['requested'], 224)
+        self.assertEqual([t['requested'] for t in state['trials'].values()], [336, 336])
+        self.assertEqual(state['campaign']['requested'], 672)
         self.assertNotIn('cap', state['campaign'])
 
     def test_bad_starts_plan_caps_specs_and_output_stop_before_worker(self):
@@ -519,7 +546,7 @@ class ParentRunnerTests(unittest.TestCase):
                 self.assertEqual(state['jobs'][1]['status'], 'not_started')
                 self.assertEqual(json.loads((args[-1]/'run.json').read_text()), state)
 
-    def test_budget_is_accepted_but_not_rf_success(self):
+    def test_budget_without_terminal_keeps_reservation(self):
         args = self.setup_parent()
         def worker(spec, path, **kw):
             result = self.mock_result(spec, path, **kw)
@@ -527,9 +554,10 @@ class ParentRunnerTests(unittest.TestCase):
             atomic(path, result); return result
         with patch.object(runner, 'execute_development_job', side_effect=worker):
             state = runner.run_development(*args, solver_kind='fixture')
-        self.assertEqual(state['status'], 'completed')
-        self.assertTrue(all(r['worker_status'] == 'budget_exhausted' for r in state['jobs']))
-        self.assertTrue(all(r['evidence']['terminal']['status'] == 'not_run' for r in state['jobs']))
+        self.assertEqual(state['status'], 'unknown')
+        self.assertEqual(state['jobs'][0]['worker_status'], 'budget_exhausted')
+        self.assertGreater(state['jobs'][0]['reserved'], 0)
+        self.assertEqual(state['jobs'][1]['status'], 'not_started')
 
     def test_parent_save_failure_never_retries_or_commits_in_memory_success(self):
         for when in ('unknown_marker', 'import'):
