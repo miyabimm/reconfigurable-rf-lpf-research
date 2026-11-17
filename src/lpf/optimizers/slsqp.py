@@ -35,7 +35,8 @@ class _Stop(Exception):
 def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
                    weights=None, constraints: Callable | None = None,
                    max_iterations: int, max_evaluations: int,
-                   tolerance: float = 1e-9, constraint_tolerance: float = 1e-7) -> SLSQPResult:
+                   tolerance: float = 1e-9, constraint_tolerance: float = 1e-7,
+                   objective_callback=None) -> SLSQPResult:
     """Minimize weighted squared residual sum or maximum under g(x) >= 0.
 
     Both budgets are mandatory. Each actual residual or physical-constraint
@@ -50,10 +51,13 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
     success, independently evaluated physical/epigraph feasibility, and an
     epigraph gap within constraint_tolerance; all-fixed boxes are evaluated directly. No global
     optimum, RF compliance, or physical realizability is implied.
+    objective_callback, when supplied, receives each valid observed (x, f(x))
+    after aggregation; its exceptions propagate without retry or extra calls.
     """
     if not isinstance(aggregation, str) or aggregation not in ('sum', 'max'):
         raise ValueError("aggregation must be 'sum' or 'max'")
-    if not callable(residuals) or (constraints is not None and not callable(constraints)):
+    if (not callable(residuals) or (constraints is not None and not callable(constraints)) or
+            (objective_callback is not None and not callable(objective_callback))):
         raise ValueError('callbacks must be callable')
     for name, value in (('max_iterations', max_iterations), ('max_evaluations', max_evaluations)):
         if type(value) is not int or value < 1:
@@ -101,6 +105,8 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
             invalid_sum = aggregation == 'sum' and not np.isfinite(aggregate(value, aggregation))
             if not np.all(np.isfinite(value)) or invalid_sum:
                 raise _Stop('invalid_residual')
+            if objective_callback is not None:
+                objective_callback(x.copy(), aggregate(value, aggregation))
         return value
 
     def objective_value(terms):

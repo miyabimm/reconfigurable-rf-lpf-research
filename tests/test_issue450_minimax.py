@@ -52,7 +52,12 @@ class MinimaxTests(unittest.TestCase):
             self.assertEqual(a['sha256'], b['sha256'])
             self.assertEqual(a['path'], b['path'].replace('data/', 'rf/'))
         self.assertEqual(self.p.base_sha256, 'e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86')
-        self.assertEqual(self.p.fingerprint, 'c20f3fa290bb2ec51fa9b2e085e18dfbdab51cad43420098b6bc5cd39f52edd5')
+        self.assertEqual(self.p.fingerprint, 'd1ebefaf4cb6735898467b9c2affcc57b9590d4a6c9f53a0dd84d1f1f2f8b18d')
+        self.assertEqual(new['kind'], 'rf_performance_profile')
+        self.assertNotIn('objective', new)
+        self.assertEqual(len(new['limits_db']), 7)
+        for limits in new['limits_db'].values():
+            self.assertEqual(limits, dict(ul_il_max=0.8, dl_il_max=0.8, h2_atten_min=30, h3_atten_min=30))
         for cid in ('RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             self.assertEqual(load_constraint(cid, allow_trial=True)['active_constraint_id'], cid)
 
@@ -130,7 +135,7 @@ class MinimaxTests(unittest.TestCase):
 
     def test_fail_closed_profile_inputs(self):
         # Separate disposable RF trees preserve actual registered sources.
-        mutations = ('missing', 'missing_band', 'unknown_band', 'unknown', 'nan', 'inf', 'duplicate', 's2p', 'bands', 'range', 'duplicate_row', 'wrong_role', 'unknown_top')
+        mutations = ('missing', 'missing_band', 'unknown_band', 'unknown', 'nan', 'inf', 'duplicate', 's2p', 'bands', 'range', 'duplicate_row', 'wrong_role', 'unknown_top', 'old_objective')
         for mutation in mutations:
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory(prefix='issue450-test-') as tmp:
                 root = Path(tmp)
@@ -146,8 +151,9 @@ class MinimaxTests(unittest.TestCase):
                 if mutation == 's2p': data['external_s2p']['input']['sha256'] = '0'*64
                 if mutation == 'wrong_role': data['external_s2p']['input']['port_flip'] = True
                 if mutation == 'unknown_top': data['default'] = 1
+                if mutation == 'old_objective': data['objective'] = 'minimax_signed_margin_db'
                 path.write_text(json.dumps(data))
-                if mutation == 'duplicate': path.write_text(path.read_text().replace('"kind":', '"kind": "rf_minimax_profile", "kind":'))
+                if mutation == 'duplicate': path.write_text(path.read_text().replace('"kind":', '"kind": "rf_performance_profile", "kind":'))
                 if mutation in ('bands', 'range', 'duplicate_row'):
                     bp = root/'rf/bands.csv'
                     text = bp.read_text()

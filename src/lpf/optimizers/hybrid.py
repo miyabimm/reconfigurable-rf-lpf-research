@@ -48,7 +48,7 @@ class _Stop(Exception):
 def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     max_evaluations: int, restart_sigma: float,
                     weights=None, aggregation: str = 'sum', event_callback=None,
-                    run_callback=None) -> HybridResult:
+                    run_callback=None, objective_callback=None, progress_callback=None) -> HybridResult:
     """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
 
     The default 'sum' is weighted least squares; 'max' is the maximum weighted
@@ -67,6 +67,9 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
     the caller propagate. Weights must be finite, nonnegative and match the
     residual length. Out-of-bounds x0 is rejected, never projected.
     All-fixed boxes require one evaluation and no SciPy call or restarts.
+    objective_callback receives each valid observed (x, f(x)); progress_callback
+    also receives whether Hybrid chose that observation as its new best.
+    Both callbacks propagate exceptions, without retry or extra RF evaluation.
     """
     if not isinstance(aggregation, str) or aggregation not in ('sum', 'max'):
         raise ValueError("aggregation must be 'sum' or 'max'")
@@ -80,6 +83,10 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         raise ValueError('residuals must be callable')
     if run_callback is not None and not callable(run_callback):
         raise ValueError('run_callback must be callable')
+    if objective_callback is not None and not callable(objective_callback):
+        raise ValueError('objective_callback must be callable')
+    if progress_callback is not None and not callable(progress_callback):
+        raise ValueError('progress_callback must be callable')
     x0 = np.asarray(x0, dtype=float)
     box = np.asarray(bounds, dtype=float)
     if x0.ndim != 1 or not x0.size or box.shape != (x0.size, 2):
@@ -162,11 +169,16 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             value = aggregate(terms, aggregation)
             if not np.isfinite(value):
                 raise _Stop('invalid_residual')
+            if objective_callback is not None:
+                objective_callback(x.copy(), value)
             if local_nfev == 1:
                 start_fun = value
             last_x, last_fun = x.copy(), value
-            if best_fun is None or value < best_fun:
+            improved = best_fun is None or value < best_fun
+            if improved:
                 best_x, best_fun = x.copy(), value
+            if progress_callback is not None:
+                progress_callback(x.copy(), value, improved)
             return value
 
         def callback(_):

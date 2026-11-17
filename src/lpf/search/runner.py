@@ -32,6 +32,24 @@ def _selectionless_readback(result, spec, batches):
                     not any(b['stage'] == stage and b['status'] == 'completed' for b in batches.values()) and
                     not result.get('progress_by_allocation', {}).get(stage, {}).get('completed')):
                 raise ValueError('Completed step/solver/vector evidence mismatch')
+            if result.get('solver_execution_kind') == 'scipy':
+                import math
+                common = step.get('optimizer_result')
+                kind = configured['solver']
+                native_value = solver['best_fun'] if kind == 'hybrid' else solver['fun'] if kind == 'slsqp' else solver['objective']
+                native_count = solver['nfev'] if kind == 'hybrid' else solver['evaluations'] if kind == 'slsqp' else solver['slp']['evaluations']
+                native_reason = solver['slp']['reason'] if kind == 'slp' else solver['stop_reason']
+                native_converged = (native_reason == 'all_coordinates_fixed' and bool(solver['runs']) and
+                                    solver['runs'][-1]['success']) if kind == 'hybrid' else solver['success']
+                if (not isinstance(common, dict) or set(common) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
+                        vector_sha(common['x']) != step['output_vector_sha256'] or
+                        type(common['objective']) not in (float, int) or not math.isfinite(common['objective']) or
+                        common['objective'] != native_value or common['objective'] != step['output_objective'] or
+                        type(common['converged']) is not bool or common['converged'] != (step['status'] == 'converged') or
+                        common['converged'] != native_converged or
+                        common['stop_reason'] != native_reason or type(common['evaluations']) is not int or
+                        common['evaluations'] != native_count or common['evaluations'] < 1):
+                    raise ValueError('Optimizer result evidence mismatch')
             previous = step['output_vector_sha256']
     terminal = result['terminal']
     candidates = terminal['candidates']

@@ -119,13 +119,16 @@ class WeightedTests(unittest.TestCase):
         summaries = iter([dict(strict_feasible=True, max_violation_db=0., sum_violation_db=0.),
                           dict(strict_feasible=False, max_violation_db=.1, sum_violation_db=.1)])
         def solver(callback, start, bounds, **kw):
-            a, b = callback(x), callback(y)
+            a = callback(x)
+            kw['progress_callback'](x, float(a@a), True)
+            b = callback(y)
+            kw['progress_callback'](y, float(b@b), True)
             run = LocalRun(x.tolist(), float(a@a), x.tolist(), float(a@a), False, 1, 'fixture', 0, 2)
             return HybridResult([run], y.tolist(), float(b@b), 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
-        # Each callback computes the same score once for best and once for solver.
+        # Each RF callback computes residuals only once; the solver reports its score.
         def score(*args):
             return next(evaluations_twice)
-        evaluations_twice = iter([np.array([2.]), np.array([2.]), np.array([1.]), np.array([1.]), np.array([1.])])
+        evaluations_twice = iter([np.array([2.]), np.array([1.])])
         from lpf.search.performance import evaluate_requirements
         def terminal_fail(*args, **kwargs):
             assessment = evaluate_requirements(*args, **kwargs)
@@ -164,7 +167,8 @@ class WeightedTests(unittest.TestCase):
         y = x.copy(); y[0] += .01
         first, second = sorted((x, y), key=vector_sha, reverse=True)
         def solver(callback, start, bounds, **kw):
-            callback(first); callback(second)
+            a = callback(first); kw['progress_callback'](first, float(a@a), True)
+            b = callback(second); kw['progress_callback'](second, float(b@b), False)
             run = LocalRun(first.tolist(), 1., first.tolist(), 1., False, 1, 'fixture', 0, 2)
             return HybridResult([run], first.tolist(), 1., 2, 'evaluation_budget_exhausted', 23, 3, 3, .1)
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
@@ -182,7 +186,7 @@ class WeightedTests(unittest.TestCase):
             return out
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=bad), \
              patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
-            with self.assertRaisesRegex(ValueError, 'objective/vector mismatch'):
+            with self.assertRaisesRegex(ValueError, 'not observed on Search grid'):
                 w.run()
 
     def test_convergence_and_abnormal_no_best_stop(self):
@@ -203,6 +207,21 @@ class WeightedTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'No weighted best'):
                 worker.run()
         self.assertFalse(list(worker.path.glob('*.json')))
+
+    def test_worker_forward_cap_independent_of_solver(self):
+        config, _, d, p, x = self.inputs()
+        plan = _weighted_plan(config, ROOT, 'demo', 2)
+        worker = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
+                                   checkpoint=Path(self.raw.name)/'hard-cap', objective_mode='weighted_violation')
+        def misbehaving_solver(callback, start, bounds, **kw):
+            for _ in range(3):
+                value = callback(x)
+                kw['progress_callback'](x, float(value @ value), True)
+            raise AssertionError('forward cap did not stop solver')
+        with patch('lpf.search._worker_next.hybrid_minimize', side_effect=misbehaving_solver):
+            with self.assertRaisesRegex(ValueError, 'Search RF forward budget exhausted'):
+                worker.run()
+        self.assertEqual(worker.forward_count, 2)
 
     def test_invalid_budget_and_mode(self):
         config, starts, _, _, _ = self.inputs()

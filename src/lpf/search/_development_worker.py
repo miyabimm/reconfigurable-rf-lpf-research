@@ -9,6 +9,7 @@ import numpy as np
 
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.slp import slp_minimize
+from lpf.optimizers.result import optimizer_result
 from ._worker_next import MinimalWorker
 from .component_constraints import _check_vector_box, validate_search_box, validate_values
 from .evaluation import raw_numbers
@@ -199,42 +200,57 @@ class DevelopmentWorker(MinimalWorker):
     def _evaluate(self, vector):
         if self.bounds is not self._physical_bounds:
             _check_vector_box(vector, self.bounds)
+        if self._running and self.objective_mode:
+            if self.forward_count >= self.step['options']['max_search_forwards']:
+                raise ValueError('STOP: Search RF forward budget exhausted')
+            # Charge before entering RF Core, including a forward that raises.
+            self.forward_count += 1
         response, assessment = super()._evaluate(vector)
         if self._running:
-            self.forward_count += 1
+            if not self.objective_mode:
+                self.forward_count += 1
             self.independent = self._audit(vector, response, self.stage)
+            if self.objective_mode:
+                # Optimizer will report its own objective after consuming this response.
+                self.pending_observation = (plain(vector), response, assessment)
+                return response, assessment
             metrics = summarize_mandatory(assessment, self.prepared_requirements)
             digest = vector_sha(vector)
             il = assessment['worst_il_db']
             if not np.isfinite(il) or il < 0 or np.isnan(metrics['max_violation_db']):
                 raise ValueError('Invalid RF best metrics')
-            if self.objective_mode:
-                residuals = _weighted_residuals(response, assessment, self.prepared_requirements)
-                score = float(np.sum(residuals * residuals))
-                if not np.isfinite(score):
-                    raise ValueError('Invalid weighted objective')
-                key = score  # Hybrid retains the first exact tie.
-                if self.solver_best is None or score < self.solver_best[0]:
-                    self.solver_best = (score, digest)
-            else:
-                key = ((0, il, digest) if metrics['strict_feasible'] else
-                       (1, metrics['max_violation_db'], metrics['sum_violation_db'], il, digest))
+            key = ((0, il, digest) if metrics['strict_feasible'] else
+                   (1, metrics['max_violation_db'], metrics['sum_violation_db'], il, digest))
             if self.best is None or key < self.best_key:
                 validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
                 self.best_key = key
                 self.best = dict(vector=plain(vector), vector_sha256=digest,
                                  worst_il_db=il, **metrics)
-                if self.objective_mode:
-                    self.best['objective_j'] = score
-                if self.sequential_recording:
-                    self.best.update(_harmonic_margin(response, self.prepared_requirements))
-            if self.sequential_recording:
-                if self.forward_count % self.checkpoint_interval == 0:
-                    self._save_best()
-            elif self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
-                                           and self.best['vector_sha256'] != self.saved_sha):
+            if self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
+                                          and self.best['vector_sha256'] != self.saved_sha):
                 self._save_best()
         return response, assessment
+
+    def _observe_objective(self, vector, objective, is_best):
+        pending, response, assessment = self.pending_observation
+        digest = vector_sha(vector)
+        if digest != vector_sha(pending) or not np.isfinite(objective):
+            raise ValueError('Optimizer objective does not match Search observation')
+        self.observed_objectives[digest] = float(objective)
+        if is_best:
+            validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
+            metrics = summarize_mandatory(assessment, self.prepared_requirements)
+            self.best = dict(vector=plain(vector), vector_sha256=digest,
+                             worst_il_db=assessment['worst_il_db'], **metrics, objective_j=float(objective))
+            if self.sequential_recording:
+                self.best.update(_harmonic_margin(response, self.prepared_requirements))
+        if self.sequential_recording:
+            if self.forward_count % self.checkpoint_interval == 0:
+                self._save_best()
+        elif self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
+                                       and self.best['vector_sha256'] != self.saved_sha):
+            self._save_best()
+        self.pending_observation = None
 
     def _save_best(self):
         sequence = self.checkpoint_sequence + 1
@@ -300,14 +316,15 @@ class DevelopmentWorker(MinimalWorker):
             self._activate(stage)
             self.forward_count, self.saved_count, self.saved_sha = 0, 0, None
             self.best = self.best_key = None
-            self.solver_best = None
+            self.observed_objectives = {}
+            self.pending_observation = None
             self.independent = dict(status='not_run', reason='no successful forward')
             self._running = True
             try:
                 opts = _development_options(step)
                 if step['solver'] == 'hybrid':
                     from . import _worker_next
-                    extra = {}
+                    extra = {'progress_callback': self._observe_objective} if self.objective_mode else {}
                     if self.sequential_recording:
                         extra['run_callback'] = lambda index: setattr(self, 'local_run_index', index)
                     out = _worker_next.hybrid_minimize(self._solver_residuals, x, self.bounds,
@@ -319,13 +336,13 @@ class DevelopmentWorker(MinimalWorker):
                     if self.objective_mode:
                         if self.best is None or out.best_fun is None or out.best_x is None:
                             raise ValueError('No weighted best; no replacement or retry')
-                        if out.nfev != self.forward_count or out.nfev > opts['max_evaluations']:
-                            raise ValueError('Solver/Worker forward count mismatch')
-                        if (self.best['objective_j'] != out.best_fun or self.solver_best !=
-                                (out.best_fun, vector_sha(out.best_x))):
-                            raise ValueError('Worker/Optimizer best objective/vector mismatch')
-                        # Hybrid keeps the first equal score; Worker breaks exact ties by SHA.
-                        found = [self.best['vector']]
+                        common = optimizer_result(out)
+                        digest = vector_sha(common.x)
+                        if (self.forward_count > opts['max_evaluations'] or
+                                self.observed_objectives.get(digest) != common.objective or
+                                self.best['vector_sha256'] != digest):
+                            raise ValueError('Optimizer result not observed on Search grid')
+                        found = [common.x]
                     success = bool(out.runs) and all(r.success for r in out.runs)
                     reason = out.stop_reason
                 else:
@@ -354,9 +371,13 @@ class DevelopmentWorker(MinimalWorker):
                 if self.best is not None and (self.forward_count != self.saved_count if self.sequential_recording
                                               else self.best['vector_sha256'] != self.saved_sha):
                     self._save_best()
-                steps.append(dict(name=step['name'], solver=step['solver'], solver_result=raw_numbers(out),
-                                  stop_reason=reason, converged=bool(success), forward_count=self.forward_count,
-                                  rf_best=plain(self.best), independent=plain(self.independent)))
+                step_record = dict(name=step['name'], solver=step['solver'], solver_result=raw_numbers(out),
+                                   stop_reason=reason, converged=bool(success), forward_count=self.forward_count,
+                                   rf_best=plain(self.best), independent=plain(self.independent))
+                if self.objective_mode:
+                    step_record['optimizer_result'] = raw_numbers(common)
+                    step_record['converged'] = common.converged
+                steps.append(step_record)
                 x = np.asarray(next_x, dtype=float).copy()
             finally:
                 self._running = False
@@ -365,11 +386,13 @@ class DevelopmentWorker(MinimalWorker):
             # Never substitute an earlier step or a strict-ranked candidate.
             if self.best is None:
                 raise ValueError('Final search step has no valid best')
-            vector = self.best['vector']
+            vector = plain(x)
+            if vector_sha(vector) != self.best['vector_sha256']:
+                raise ValueError('Final optimizer vector does not match Search evidence')
             self._activate('terminal')
             response, _ = self.evaluate(vector)
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            terminal_row = dict(vector_sha256=self.best['vector_sha256'], assessment=assessment,
+            terminal_row = dict(vector_sha256=vector_sha(vector), assessment=assessment,
                                 independent=self._audit(vector, response, 'terminal'))
             if self.sequential_recording:
                 terminal_row.update(_harmonic_margin(response, self.prepared_requirements))

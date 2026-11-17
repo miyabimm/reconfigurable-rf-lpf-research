@@ -60,6 +60,13 @@ class DevelopmentTerminalTests(unittest.TestCase):
                     solver = step['settings']['solver']
                     key = 'best_fun' if solver == 'hybrid' else 'fun' if solver == 'slsqp' else 'objective'
                     self.assertAlmostEqual(step['output_objective'], step['solver_result'][key], places=12)
+                    common = step['optimizer_result']
+                    self.assertEqual(set(common), {'x', 'objective', 'converged', 'stop_reason', 'evaluations'})
+                    self.assertEqual(vector_sha(common['x']), step['output_vector_sha256'])
+                    self.assertEqual(common['objective'], step['output_objective'])
+                    self.assertEqual(common['converged'], step['status'] == 'converged')
+                    if common['stop_reason'] in ('evaluation_limit', 'evaluation_budget_exhausted'):
+                        self.assertFalse(common['converged'])
                     search_batches = [b for b in raw['batches'] if b['stage'] == 'demo/' + step['name']]
                     self.assertGreater(len(search_batches), 0)
                     self.assertTrue(any(b['vector_sha256'] == step['output_vector_sha256'] for b in search_batches))
@@ -131,6 +138,19 @@ class DevelopmentTerminalTests(unittest.TestCase):
         raw = json.loads((args[-1]/row['raw_path']).read_text())
         self.assertEqual(raw['steps'][0]['status'], 'invalid_output')
         self.assertEqual(raw['terminal']['status'], 'not_run')
+
+    def test_readback_rejects_optimizer_result_substitution(self):
+        args = self.prepare()
+        state = runner.run_development(*args)
+        self.assertEqual(state['status'], 'completed', state.get('exit_reason'))
+        row = state['jobs'][0]
+        path = args[-1]/row['raw_path']
+        raw = json.loads(path.read_text())
+        raw['steps'][0]['optimizer_result']['objective'] += 1
+        atomic(path, raw)
+        from lpf.search.worker import JobSpec
+        with self.assertRaisesRegex(ValueError, 'Optimizer result'):
+            runner._development_readback(path, raw, JobSpec(**row['spec']))
 
     def test_readback_rejects_terminal_substitution(self):
         args = self.prepare()

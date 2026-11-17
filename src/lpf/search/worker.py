@@ -5,6 +5,7 @@ import json
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.optimizers.slp import slp_minimize
+from lpf.optimizers.result import optimizer_result
 from .storage import canonical, plain, sha, vector_sha
 
 
@@ -225,18 +226,13 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
             p.timer = timer
             opts = d['solver_options'][i]
             observed_objectives = {}
-            def record_objective(callback, v):
-                from lpf.optimizers._objectives import aggregate, squared_terms
-                values = callback(v)
-                score = (float(np.max(values)) if step['aggregation'] == 'signed_max' else
-                         aggregate(squared_terms(np.asarray(values), None), step['aggregation']))
+            def record_objective(v, score):
                 observed_objectives[vector_sha(v)] = score
-                return values
             if step['solver'] == 'hybrid':
                 def hybrid_callback(v):
                     return hybrid_residuals(meter.evaluate(v)['assessment'])
                 def residuals(v):
-                    return hybrid_callback(v) if legacy_campaign else record_objective(hybrid_callback, v)
+                    return hybrid_callback(v)
                 if timer is not None:
                     unmeasured_residuals = residuals
                     def residuals(v):
@@ -256,6 +252,8 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
                     extra = {'event_callback': collect_event}
                 else:
                     extra = {'event_callback': event_callback} if event_path else {}
+                if not legacy_campaign and solver_kind == 'scipy':
+                    extra['objective_callback'] = record_objective
                 out = _timed_solver(timer, f"solver:{step['name']}:hybrid", hybrid_minimize,
                                       residuals, x, d['bounds'], seed=d['seed'],
                                       aggregation=step['aggregation'], **extra, **opts)
@@ -267,11 +265,10 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
             else:
                 solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
                 callback = p.residuals if step['solver'] == 'slsqp' else p.errors
-                def objective(v):
-                    return callback(v) if legacy_campaign else record_objective(callback, v)
+                extra = {'objective_callback': record_objective} if not legacy_campaign and solver_kind == 'scipy' else {}
                 out = _timed_solver(timer, f"solver:{step['name']}:{step['solver']}", solver,
-                             objective, x, d['bounds'], constraints=p.constraints,
-                             aggregation=step['aggregation'], **opts)
+                             callback, x, d['bounds'], constraints=p.constraints,
+                             aggregation=step['aggregation'], **extra, **opts)
                 next_x, success = out.x, out.success
                 found = [out.x]
             raw.update(solver_result=raw_numbers(out), status='converged' if success else 'not_converged')
@@ -300,7 +297,6 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
             if numerical_reason.startswith('invalid_'):
                 raw['status'] = 'numerical_failure'
                 raise ValueError(f'Solver numerical STOP: {numerical_reason}; no implicit retry')
-            all_success &= success
             if next_x is None:
                 raw['status'] = 'no_candidate'
                 raise ValueError('No solver output; no implicit retry or replacement')
@@ -311,13 +307,17 @@ def _execute_fixed_job(spec, checkpoint, *, root=None, solver_kind='scipy', time
                 raise
             if not legacy_campaign and solver_kind == 'scipy':
                 digest = vector_sha(next_x)
-                score = (out.best_fun if step['solver'] == 'hybrid' else
-                         out.fun if step['solver'] == 'slsqp' else out.objective)
-                if (digest not in observed_objectives or score is None or not np.isfinite(score) or
-                        not np.isclose(score, observed_objectives[digest], rtol=1e-12, atol=1e-12)):
+                common = optimizer_result(out)
+                score = common.objective
+                if (digest != vector_sha(common.x) or digest not in observed_objectives or
+                        score != observed_objectives[digest]):
                     raw['status'] = 'unverified_output'
                     raise ValueError('Solver output/objective was not observed on its Search grid')
                 raw['output_objective'] = float(score)
+                raw['optimizer_result'] = raw_numbers(common)
+                success = common.converged
+                raw['status'] = 'converged' if success else 'not_converged'
+            all_success &= success
             raw.update(output_vector=plain(next_x), output_vector_sha256=vector_sha(next_x),
                        boundary_indices=np.flatnonzero(np.any(np.asarray(next_x)[:, None] == np.asarray(d['bounds']), axis=1)).tolist())
             x = plain(next_x)  # fixed rule: generic solver x / Hybrid best_x, no inter-step RF selection
