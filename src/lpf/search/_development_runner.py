@@ -1,6 +1,7 @@
 """One development-only Worker invocation; not a production or EXP runner."""
 from dataclasses import asdict
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -98,10 +99,11 @@ def run_profile_development(plan, definition, policy, seed, arm, start, output, 
                   start=start, spot_checks=spot_checks, search_bounds=search_bounds, reservation=reservation,
                   checkpoint_interval=checkpoint_interval, source=source, source_sha256=sha(source))
     output.mkdir(exist_ok=False)
-    _save_checkpoint(output/'input.json', record)
-    if canonical(json.loads((output/'input.json').read_text())) != canonical(record):
-        raise ValueError('Input readback mismatch')
     try:
+        _save_checkpoint(output/'input.json', record)
+        input_bytes = (output/'input.json').read_bytes()
+        if canonical(json.loads(input_bytes)) != canonical(record):
+            raise ValueError('Input readback mismatch')
         worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
             root=root, checkpoint=output/'checkpoints', checkpoint_interval=checkpoint_interval,
             spot_checks=spot_checks, search_bounds=search_bounds, objective_mode='profile_signed_margin')
@@ -122,6 +124,27 @@ def run_profile_development(plan, definition, policy, seed, arm, start, output, 
         _save_checkpoint(output/'result.json', result)
         if canonical(json.loads((output/'result.json').read_text())) != canonical(result):
             raise ValueError('Result readback mismatch')
+        # Hash the actual persisted bytes, not a reconstructed serialization. The
+        # receipt is separate so it cannot recursively include its own digest.
+        if (output/'input.json').read_bytes() != input_bytes:
+            raise ValueError('Input bytes changed')
+        checkpoints = sorted((output/'checkpoints').glob('*.json'))
+        if {p.name for p in checkpoints} != set(worker.checkpoint_files):
+            raise ValueError('Checkpoint set changed')
+        for path in checkpoints:
+            data = path.read_bytes()
+            if worker.checkpoint_files[path.name] != dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest()):
+                raise ValueError('Checkpoint bytes changed')
+        evidence = [output/'input.json', output/'result.json', *checkpoints]
+        files = {}
+        for path in evidence:
+            data = path.read_bytes()
+            json.loads(data)  # every listed artifact must remain readable
+            files[str(path.relative_to(output))] = dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+        receipt = dict(kind='development_rf_profile_receipt_v1', files=files)
+        _save_checkpoint(output/'receipt.json', receipt)
+        if canonical(json.loads((output/'receipt.json').read_text())) != canonical(receipt):
+            raise ValueError('Receipt readback mismatch')
         return result
     except (Exception, KeyboardInterrupt) as exc:
         try:

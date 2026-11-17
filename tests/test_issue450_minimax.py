@@ -251,6 +251,14 @@ class MinimaxTests(unittest.TestCase):
             result = run_profile_development(plan, definition, policy, 23, 'demo', start, output,
                 root=ROOT, spot_checks={'terminal': [0], 'demo/coarse': [0]}, checkpoint_interval=1)
             self.assertEqual(json.loads((output/'result.json').read_text()), result)
+            receipt = json.loads((output/'receipt.json').read_text())
+            for name, info in receipt['files'].items():
+                contents = (output/name).read_bytes()
+                self.assertEqual(info, dict(bytes=len(contents), sha256=hashlib.sha256(contents).hexdigest()))
+            self.assertIn('result.json', receipt['files'])
+            self.assertTrue(any(name.startswith('checkpoints/') for name in receipt['files']))
+            self.assertEqual(result['terminal']['candidates'][0]['vector'], result['steps'][-1]['solver_result']['x'])
+            self.assertEqual(len(result['terminal']['candidates'][0]['signed_margins_db']), 112)
             stored_input = json.loads((output/'input.json').read_text())
             self.assertEqual(stored_input['start'], start)
             ledger = result['ledger']
@@ -291,6 +299,20 @@ class MinimaxTests(unittest.TestCase):
             self.assertEqual(failed_spot_record['status'], 'STOP')
             self.assertEqual(failed_spot_record['independent_mna_samples_unknown_upper_bound'], 1)
             self.assertFalse((spot_failed/'result.json').exists())
+            from lpf.search._development_worker import DevelopmentWorker
+            original_run = DevelopmentWorker.run
+            def tamper(worker):
+                value = original_run(worker)
+                next(worker.path.glob('*.json')).write_text('{}\n')
+                return value
+            corrupt = Path(tmp)/'corrupt'
+            with patch.object(DevelopmentWorker, 'run', tamper):
+                with self.assertRaisesRegex(ValueError, 'Checkpoint bytes changed'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, corrupt,
+                                            root=ROOT, spot_checks={'terminal': [0]}, checkpoint_interval=1)
+            failure = json.loads((corrupt/'failure.json').read_text())
+            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failure['reservation']['rf_samples'])
+            self.assertFalse((corrupt/'receipt.json').exists())
 
     def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
         from dataclasses import asdict
@@ -326,6 +348,36 @@ class MinimaxTests(unittest.TestCase):
             refused = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
             self.assertEqual(refused.returncode, 2)
             self.assertIn('opt-in', refused.stderr)
+
+    def test_profile_worker_no_legacy_assessment_and_checks_every_forward(self):
+        from dataclasses import asdict
+        from unittest.mock import patch
+        import yaml
+        from lpf.search._development_worker import DevelopmentWorker
+        from lpf.search.component_constraints import _validate_values_with_bounds
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        cfg.pop('selection')
+        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                   definition=plain(asdict(definition)), anytime_samples=[])
+        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+            objective='signed_margin_db', options=dict(max_search_forwards=2))
+        frozen = freeze(cfg, ROOT)
+        with tempfile.TemporaryDirectory(prefix='issue447-worker-') as tmp:
+            worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
+                23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
+                spot_checks={'terminal': [0]}, objective_mode='profile_signed_margin')
+            with patch('lpf.search._worker_next.evaluate_requirements', side_effect=AssertionError('legacy')), \
+                 patch('lpf.search._development_worker.evaluate_requirements', side_effect=AssertionError('legacy')), \
+                 patch('lpf.search._development_worker.summarize_mandatory', side_effect=AssertionError('legacy')), \
+                 patch('lpf.search._development_worker._validate_values_with_bounds',
+                       wraps=_validate_values_with_bounds) as physical:
+                result = worker.run()
+            self.assertEqual(physical.call_count, result['forward_count'])
+            self.assertNotIn('assessment', result['terminal']['candidates'][0])
 
     def test_profile_worker_hard_forward_cap_and_no_retry(self):
         from dataclasses import asdict

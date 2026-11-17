@@ -1,6 +1,7 @@
 """Gate-free, single-process development worker; not a formal Job or resume API."""
 import os
 import json
+import hashlib
 from numbers import Real
 from pathlib import Path
 import tempfile
@@ -10,7 +11,8 @@ import numpy as np
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.slp import slp_minimize
 from ._worker_next import MinimalWorker
-from .component_constraints import _check_vector_box, validate_search_box, validate_values
+from .component_constraints import (_check_vector_box, validate_search_box, validate_values,
+                                    _validate_values_with_bounds)
 from .evaluation import raw_numbers
 from .performance import (evaluate_requirements, grid_fingerprint, prepare_requirements,
                           summarize_mandatory)
@@ -193,6 +195,7 @@ class DevelopmentWorker(MinimalWorker):
                 raise ValueError('Invalid independent spot checks')
         self.path.mkdir(exist_ok=False)
         self.checkpoint_sequence = 0
+        self.checkpoint_files = {}
 
     def _activate(self, stage):
         if stage not in self._grids:
@@ -214,7 +217,19 @@ class DevelopmentWorker(MinimalWorker):
                 raise ValueError('STOP: Search RF forward budget exhausted')
             # Charge before entering RF Core, including a forward that raises.
             self.forward_count += 1
-        response, assessment = super()._evaluate(vector)
+        if self.profile is not None:
+            _validate_values_with_bounds(self.definition, self.model.schema, vector, self.policy,
+                                         self._physical_bounds, frozen_model=self.physical_model)
+            response = self.evaluator.evaluate(vector)
+            if (response.grid is not self.grid or response.policy_id != self.profile.profile['constraint_id'] or
+                    response.policy_fingerprint != self.profile.fingerprint):
+                raise ValueError('Response profile/grid mismatch')
+            if (not np.all(np.isfinite(response.s)) or
+                    np.any(np.linalg.svd(response.s, compute_uv=False)[:, 0] > 1 + 1e-8)):
+                raise ValueError('Non-passive external power-wave response')
+            assessment = None
+        else:
+            response, assessment = super()._evaluate(vector)
         if self._running:
             if not self.objective_mode:
                 self.forward_count += 1
@@ -292,6 +307,8 @@ class DevelopmentWorker(MinimalWorker):
         _save_checkpoint(target, payload)
         if self.objective_mode and canonical(json.loads(target.read_text())) != canonical(raw_numbers(payload)):
             raise ValueError('Checkpoint readback mismatch')
+        data = target.read_bytes()
+        self.checkpoint_files[target.name] = dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
         self.checkpoint_sequence = sequence
         self.saved_sha, self.saved_count = self.best['vector_sha256'], self.forward_count
 
@@ -299,7 +316,17 @@ class DevelopmentWorker(MinimalWorker):
         if self.objective_mode == 'weighted_violation':
             return _weighted_residuals(*evaluation, self.prepared_requirements)
         if self.objective_mode == 'profile_signed_margin':
-            residuals = -np.asarray(evaluation[1]['mandatory_g'], dtype=float)
+            response = evaluation[0]
+            rows = self.profile.records
+            limits = self.profile.profile['limits_db']
+            keys = {'UL': 'ul_il_max', 'DL': 'dl_il_max',
+                    'H2': 'h2_atten_min', 'H3': 'h3_atten_min'}
+            residuals = np.empty(len(response.il_db))
+            for segment, row in enumerate(rows):
+                ix = self.grid.segment == segment
+                limit = limits[row['note'] or row['case']][keys[row['region']]]
+                residuals[ix] = (response.il_db[ix] - limit if row['type'] == 'pass'
+                                 else limit - response.il_db[ix])
             if not residuals.size or not np.all(np.isfinite(residuals)):
                 raise ValueError('Nonfinite signed-margin Search residuals')
             return residuals
@@ -344,6 +371,10 @@ class DevelopmentWorker(MinimalWorker):
         candidates, steps, invalid = [], [], []
         cfg = self.plan.data['config']
         for step in self.steps:
+            if self.profile is not None:
+                if source_identity(self.root) != self.source:
+                    raise ValueError('Source changed at step boundary; no retry')
+                self._verify_plan(self.plan, self.root)
             self.step = step
             stage = f"{self.arm}/{step['name']}"
             self._activate(stage)
@@ -461,20 +492,19 @@ class DevelopmentWorker(MinimalWorker):
                 raise ValueError('Final optimizer vector does not match Search evidence')
             self._activate('terminal')
             response, _ = self.evaluate(vector)
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            terminal_row = dict(vector_sha256=vector_sha(vector), assessment=assessment,
+            terminal_row = dict(vector=vector, vector_sha256=vector_sha(vector),
                                 independent=self._audit(vector, response, 'terminal'))
             if self.objective_mode == 'profile_signed_margin':
                 from lpf.minimax_profile import signed_margins
-                margin, _ = signed_margins(self.profile, self.grid, response)
-                if assessment['strict_feasible'] != bool(margin <= 0):
-                    raise ValueError('Terminal signed margin/requirement mismatch')
-                terminal_row.update(terminal_signed_max_margin_db=margin,
+                margin, margins = signed_margins(self.profile, self.grid, response)
+                terminal_row.update(signed_margins_db=plain(margins), terminal_signed_max_margin_db=margin,
                     performance_feasible=bool(margin <= 0), response=raw_numbers(response),
                     external_passivity='checked_on_terminal_grid',
                     power_balance='checked_at_independent_mna_spots',
                     physical=validate_values(self.definition, self.model.schema, vector, self.policy,
                                              frozen_model=self.physical_model))
+            else:
+                terminal_row['assessment'] = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             if self.sequential_recording:
                 terminal_row.update(_harmonic_margin(response, self.prepared_requirements))
             terminal = dict(status='completed', forward_count=1, candidates=[raw_numbers(terminal_row)])
@@ -489,8 +519,10 @@ class DevelopmentWorker(MinimalWorker):
             if self.objective_mode == 'profile_signed_margin':
                 if source_identity(self.root) != self.source:
                     raise ValueError('Source changed during RF; no retry')
+                self._verify_plan(self.plan, self.root)
                 result.update(plan=self.plan.data, plan_sha256=self.plan.sha256,
                     source=self.source, source_sha256=sha(self.source), seed=self.seed,
+                    search_bounds=plain(self.bounds), search_bounds_sha256=sha(self.bounds),
                     initial_vector=plain(self.x), initial_vector_sha256=vector_sha(self.x),
                     rf_profile=self.plan.data['rf_profile'],
                     solver_objective=dict(residual='per-sample signed margin in dB',
