@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "rf_minimax_profile",
+  "constraint_id": "RF-T009",
+  "base_physical_constraint_id": "RF-F003",
+  "bands_file": "rf/bands.csv",
+  "source_ohms": {"real": 50, "imag": 0},
+  "load_ohms": {"real": 60, "imag": -40},
+  "external_s2p": {
+    "input": {"path": "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p", "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"},
+    "output": {"path": "rf/parasitics/circuit2_poc_through_0_6ghz.s2p", "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"}
+  },
+  "objective": "minimax_signed_margin_db",
+  "limits_db": {
+    "B71": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B12": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B28": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B13": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B14": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B26": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30},
+    "B8": {"ul_il_max": 0.8, "dl_il_max": 0.8, "h2_atten_min": 30, "h3_atten_min": 30}
+  }
+}

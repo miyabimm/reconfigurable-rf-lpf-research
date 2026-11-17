@@ -214,6 +214,18 @@ def validate_registry(*, root=ROOT):
                         resolved['trial_' + model] = copy.deepcopy(payload['study_' + model])
                 if entry.get('effective_constraint_sha256') != constraint_fingerprint(resolved):
                     raise ValueError(f'Trial resolved fingerprint mismatch: {cid}')
+    profiles = registry.get('minimax_profiles', {})
+    if not isinstance(profiles, dict):
+        raise ValueError('Invalid minimax profile registry')
+    for cid, entry in profiles.items():
+        if (not re.fullmatch(r'RF-T[0-9]{3}', cid) or cid in registry['trial']
+                or cid in registry['formal'] or not isinstance(entry, dict)
+                or set(entry) != {'file', 'state', 'base_physical_constraint_id',
+                                  'base_constraint_sha256', 'bands_sha256', 'effective_constraint_sha256'}
+                or entry['file'] != f'rf/constraints/trial/{cid}.json'
+                or entry['state'] != 'study_authorized'
+                or entry['base_physical_constraint_id'] not in registry['formal']):
+            raise ValueError('Invalid minimax profile registration')
     if registry.get("active_formal_id") not in registry["formal"]:
         raise ValueError("Active constraint must be a registered approved formal version")
     return registry
