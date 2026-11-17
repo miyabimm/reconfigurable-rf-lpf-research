@@ -25,10 +25,8 @@ class SlpTest(unittest.TestCase):
                 self.assertAlmostEqual(r.x[0], expected, places=3)
                 self.assertAlmostEqual(r.objective, (sum if mode == 'sum' else max)(
                     np.square(residual(r.x))), places=12)
-                self.assertEqual(r.aggregation, mode)
-                self.assertTrue(r.feasible)
                 # Local finite-difference and HiGHS tolerances may prevent convergence.
-                self.assertTrue(r.success or r.slp.reason in ('step_too_small', 'iteration_limit'))
+                self.assertTrue(r.converged or r.stop_reason in ('step_too_small', 'iteration_limit'))
 
     def test_weighted_and_default(self):
         residual = lambda x: [x[0], 2 * (x[0] - 1)]
@@ -40,7 +38,7 @@ class SlpTest(unittest.TestCase):
         default = self.solve(residual)
         explicit = self.solve(residual, aggregation='sum', weights=[1, 1])
         np.testing.assert_array_equal(default.x, explicit.x)
-        self.assertEqual(default.slp, explicit.slp)
+        self.assertEqual((default.stop_reason, default.evaluations), (explicit.stop_reason, explicit.evaluations))
 
     def test_constraints_fixed_and_reproducible(self):
         kw = dict(constraints=lambda x: [x[0]**2 - .49], aggregation='sum')
@@ -48,17 +46,17 @@ class SlpTest(unittest.TestCase):
             return self.solve(lambda x: [x[0], x[1]], x0=(.4, .2),
                               bounds=((0, 1), (.2, .2)), **kw)
         a, b = run(), run()
-        self.assertTrue(a.feasible)
+        self.assertGreaterEqual(a.x[0]**2 - .49, -1e-7)
         self.assertAlmostEqual(a.x[0], .7, places=4)
         self.assertEqual(a.x[1], .2)
         np.testing.assert_array_equal(a.x, b.x)
-        self.assertEqual(a.slp, b.slp)
+        self.assertEqual((a.stop_reason, a.evaluations), (b.stop_reason, b.evaluations))
         # This initial linearization is infeasible even in the full box; it
         # must not be reported as a solution or as proof of global infeasibility.
         stalled = self.solve(lambda x: [x[0]], x0=(.2,), **kw)
-        self.assertFalse(stalled.feasible)
-        self.assertFalse(stalled.success)
-        self.assertTrue(stalled.slp.reason.startswith('lp_failure:'))
+        self.assertLess(stalled.x[0]**2 - .49, 0)
+        self.assertFalse(stalled.converged)
+        self.assertTrue(stalled.stop_reason.startswith('lp_failure:'))
 
     def test_budget_and_linearization_shape(self):
         for mode, rows in [('sum', 1), ('max', 2)]:
@@ -71,9 +69,9 @@ class SlpTest(unittest.TestCase):
                                  max_iterations=1, max_evaluations=2)
             self.assertEqual(lp.call_args.kwargs['A_ub'].shape, (rows, 2))
             self.assertEqual(len(calls), 2)
-            self.assertEqual(r.slp.evaluations, 2)
-            self.assertEqual(r.slp.reason, 'evaluation_limit')
-            self.assertFalse(r.success)
+            self.assertEqual(r.evaluations, 2)
+            self.assertEqual(r.stop_reason, 'evaluation_limit')
+            self.assertFalse(r.converged)
             self.assertEqual(r.x[0], .1)
         zero = self.solve(lambda x: [1e300], weights=[0])
         self.assertEqual(zero.objective, 0)
@@ -97,41 +95,38 @@ class SignedMaxTest(unittest.TestCase):
 
     def test_signed_epigraph_and_equiripple(self):
         r = self.solve(lambda x: [x[0], 1 - x[0]], [0.1], [(0, 1)])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .5, places=5)
         self.assertAlmostEqual(r.objective, .5, places=5)
         r = self.solve(lambda x: [x[0] - 2, -x[0] - 1], [.9], [(0, 1)])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .5, places=5)
         self.assertAlmostEqual(r.objective, -1.5, places=5)
-        self.assertEqual(r.slsqp.reason, 'not_run')
 
     def test_nonlinear_and_active_bound(self):
         r = self.solve(lambda x: [x[0]**2, (1 - x[0])**2], [.05], [(0, 1)])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .5, places=4)
         self.assertAlmostEqual(r.objective, .25, places=5)
         r = self.solve(lambda x: [-x[0]], [0], [(0, 1)])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], 1)
         r = self.solve(lambda x: [x[0] + x[1], 1 - x[1]],
                        [.2, 0], [(.2, .2), (0, 1)])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         np.testing.assert_allclose(r.x, [.2, .4], atol=1e-5)
 
     def test_constraint_and_initial_infeasibility(self):
         r = self.solve(lambda x: [x[0]], [0], [(0, 1)],
                        constraints=lambda x: [x[0] - .7])
-        self.assertTrue(r.success, r)
-        self.assertTrue(r.feasible)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .7, places=5)
-        self.assertLessEqual(r.max_violation, 1e-7)
+        self.assertGreaterEqual(r.x[0] - .7, -1e-7)
         r = self.solve(lambda x: [x[0]], [0], [(0, 1)],
                        constraints=lambda x: [x[0] - 2])
-        self.assertFalse(r.success)
-        self.assertFalse(r.feasible)
-        self.assertGreater(r.max_violation, 0)
-        self.assertTrue(r.slp.reason.startswith('lp_failure:'), r)
+        self.assertFalse(r.converged)
+        self.assertLess(r.x[0] - 2, 0)
+        self.assertTrue(r.stop_reason.startswith('lp_failure:'), r)
 
     def test_nonlinear_actual_acceptance_and_constraint(self):
         seen = []
@@ -139,7 +134,7 @@ class SignedMaxTest(unittest.TestCase):
             seen.append(float(x[0]))
             return [(x[0] - .4)**2]
         r = self.solve(error, [.8], [(0, 1)], tolerance=1e-5)
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .4, places=3)
         # The full linearized step from .55 overshoots to .05 and is rejected;
         # the next derivative is again evaluated at the unchanged .55.
@@ -147,23 +142,22 @@ class SignedMaxTest(unittest.TestCase):
         self.assertAlmostEqual(seen[5], .550001)
         r = self.solve(lambda x: [x[0]], [.8], [(0, 1)],
                        constraints=lambda x: [x[0]**2 - .25])
-        self.assertTrue(r.success, r)
+        self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], .5, places=5)
-        self.assertLessEqual(r.max_violation, 1e-7)
+        self.assertGreaterEqual(r.x[0]**2 - .25, -1e-7)
         # Tight tolerance relative to the finite-difference bias can stall;
         # feasibility and numerical convergence must not be conflated.
         r = self.solve(lambda x: [(x[0] - .4)**2], [.8], [(0, 1)])
-        self.assertTrue(r.feasible)
-        self.assertFalse(r.success)
-        self.assertEqual(r.slp.reason, 'step_too_small')
+        self.assertFalse(r.converged)
+        self.assertEqual(r.stop_reason, 'step_too_small')
 
     def test_lp_failure_is_not_success_even_if_feasible(self):
         fail = SimpleNamespace(success=False, status=4, message='numerical trouble')
         with patch('lpf.optimizers.slp.linprog', return_value=fail):
             r = self.solve(lambda x: [x[0]], [.5], [(0, 1)])
-        self.assertTrue(r.feasible)
-        self.assertFalse(r.success)
-        self.assertIn('lp_failure:4', r.slp.reason)
+        self.assertFalse(r.converged)
+        self.assertIn('lp_failure:4', r.stop_reason)
+        self.assertEqual(r.x[0], .5)
 
     def test_budget_counts_both_callbacks_and_differences(self):
         calls = []
@@ -176,10 +170,9 @@ class SignedMaxTest(unittest.TestCase):
         r = slp_minimize(e, [.5], [(0, 1)], constraints=g,
                          aggregation='signed_max', max_iterations=5, max_evaluations=3)
         self.assertEqual(calls, ['e', 'g', 'e'])
-        self.assertEqual(r.slp.evaluations, 3)
-        self.assertEqual(r.slp.reason, 'evaluation_limit')
-        self.assertFalse(r.success)
-        self.assertTrue(r.feasible)
+        self.assertEqual(r.evaluations, 3)
+        self.assertEqual(r.stop_reason, 'evaluation_limit')
+        self.assertFalse(r.converged)
         self.assertEqual(r.x[0], .5)
 
     def test_reproducibility_and_iteration_limit(self):
@@ -188,9 +181,9 @@ class SignedMaxTest(unittest.TestCase):
                                 aggregation='signed_max', max_iterations=1, max_evaluations=20)
         a, b = run(), run()
         np.testing.assert_array_equal(a.x, b.x)
-        self.assertEqual(a.slp, b.slp)
-        self.assertEqual(a.slp.reason, 'iteration_limit')
-        self.assertFalse(a.success)
+        self.assertEqual((a.stop_reason, a.evaluations), (b.stop_reason, b.evaluations))
+        self.assertEqual(a.stop_reason, 'iteration_limit')
+        self.assertFalse(a.converged)
 
     def test_invalid_inputs_and_callbacks(self):
         with self.assertRaises(ValueError):

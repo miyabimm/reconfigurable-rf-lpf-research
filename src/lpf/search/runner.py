@@ -21,7 +21,7 @@ def _selectionless_readback(result, spec, batches):
         previous = d['start']['vector_sha256']
         for step, configured in zip(steps, chosen['steps']):
             solver = step['solver_result']
-            output = solver['best_x'] if configured['solver'] == 'hybrid' else solver['x']
+            output = solver['x']
             stage = f"{d['arm']}/{configured['name']}"
             if (step['name'] != configured['name'] or step['settings'] != configured or
                     step['status'] not in ('converged', 'not_converged') or
@@ -34,23 +34,16 @@ def _selectionless_readback(result, spec, batches):
                 raise ValueError('Completed step/solver/vector evidence mismatch')
             if result.get('solver_execution_kind') == 'scipy':
                 import math
-                common = step.get('optimizer_result')
-                kind = configured['solver']
-                native_value = solver['best_fun'] if kind == 'hybrid' else solver['fun'] if kind == 'slsqp' else solver['objective']
-                native_count = solver['nfev'] if kind == 'hybrid' else solver['evaluations'] if kind == 'slsqp' else solver['slp']['evaluations']
-                native_reason = solver['slp']['reason'] if kind == 'slp' else solver['stop_reason']
-                native_converged = (native_reason == 'all_coordinates_fixed' and bool(solver['runs']) and
-                                    solver['runs'][-1]['success']) if kind == 'hybrid' else solver['success']
+                common = solver
                 if (not isinstance(common, dict) or set(common) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
-                        any(common[k] != solver[k] for k in ('objective', 'converged', 'stop_reason', 'evaluations')) or
-                        vector_sha(solver['x']) != step['output_vector_sha256'] or
                         vector_sha(common['x']) != step['output_vector_sha256'] or
                         type(common['objective']) not in (float, int) or not math.isfinite(common['objective']) or
-                        common['objective'] != native_value or common['objective'] != step['output_objective'] or
+                        common['objective'] != step['output_objective'] or
                         type(common['converged']) is not bool or common['converged'] != (step['status'] == 'converged') or
-                        common['converged'] != native_converged or
-                        common['stop_reason'] != native_reason or type(common['evaluations']) is not int or
-                        common['evaluations'] != native_count or common['evaluations'] < 1):
+                        not isinstance(common['stop_reason'], str) or not common['stop_reason'] or
+                        common['stop_reason'].startswith('invalid_') or
+                        (common['stop_reason'] in ('evaluation_limit', 'evaluation_budget_exhausted') and common['converged']) or
+                        type(common['evaluations']) is not int or common['evaluations'] < 1):
                     raise ValueError('Optimizer result evidence mismatch')
             previous = step['output_vector_sha256']
     terminal = result['terminal']
@@ -413,7 +406,7 @@ def _validate_development_result(raw, result, spec, *, compact, content=None, su
         worker_status=result['status'], exit_reason=result['exit_reason'],
         requested=requested, completed=completed,
         independent_requested=audit_requested, independent_completed=audit_completed,
-        solver_nfev=[s.get('solver_result', {}).get('nfev') for s in result['steps']],
+        solver_evaluations=[s.get('solver_result', {}).get('evaluations') for s in result['steps']],
         evidence=evidence, safe_to_release=safe)
 
 
@@ -681,15 +674,15 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             terminal = result['terminal']['candidates']
             best = result['steps'][0]['rf_best']
             solver = result['steps'][0]['solver_result']
-            common = result['steps'][0]['optimizer_result']
-            if (set(common) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
-                    any(common[k] != solver[k] for k in common) or
-                    vector_sha(common['x']) != best['vector_sha256'] or
-                    common['objective'] != best['objective_j'] or common['converged'] or
-                    solver['nfev'] != n or sum(r['nfev'] for r in solver['runs']) != n or
-                    solver['max_evaluations'] != n or solver['maxiter'] != n or
+            stats = result['steps'][0]['local_run_stats']
+            if (set(solver) != {'x', 'objective', 'converged', 'stop_reason', 'evaluations'} or
+                    vector_sha(solver['x']) != best['vector_sha256'] or
+                    solver['objective'] != best['objective_j'] or solver['converged'] or
+                    set(stats) != {'count', 'success', 'evaluations'} or
+                    any(type(stats[k]) is not int or stats[k] < 0 for k in stats) or
+                    not 0 < stats['count'] or stats['success'] > stats['count'] or
+                    stats['evaluations'] != solver['evaluations'] or
                     solver['stop_reason'] != 'evaluation_budget_exhausted' or
-                    solver['best_fun'] != best['objective_j'] or
                     'selection' in result or len(terminal) != 1 or
                     vector_sha(best['vector']) != best['vector_sha256'] or
                     terminal[0]['vector_sha256'] != best['vector_sha256']):
@@ -700,7 +693,7 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
             last = json.loads(checkpoints[-1].read_text())
             if (last['forward_count'] != n or last['best'] != best or last['plan_sha256'] != plan.sha256 or
                     last['seed'] != row['seed'] or last['arm'] != arm or
-                    last['sequence'] != len(checkpoints) or last['restart_count'] != len(solver['runs']) - 1):
+                    last['sequence'] != len(checkpoints) or last['restart_count'] != stats['count'] - 1):
                 raise ValueError('Final checkpoint readback mismatch')
             assessed = terminal[0]['assessment']
             audits = costs['independent_mna_samples_by_stage']
@@ -723,8 +716,8 @@ def run_weighted_development(plan, definition, policy, starts, output, *, root=N
                            completed=requested, reserved=0, released=cap-requested,
                            independent_requested=count, independent_completed=count,
                            result_sha256=hashlib.sha256(raw).hexdigest(), best=best_summary,
-                           terminal=terminal_summary, local_run_count=len(solver['runs']))
-            updated['local_solver_success_count'] = sum(r['success'] for r in solver['runs'])
+                           terminal=terminal_summary, local_run_count=stats['count'])
+            updated['local_solver_success_count'] = stats['success']
             updated['local_solver_failure_count'] = updated['local_run_count'] - updated['local_solver_success_count']
             if type(assessed['strict_feasible']) is not bool:
                 raise ValueError('Invalid terminal strict feasibility')
@@ -790,7 +783,7 @@ def finalize_development(state, output):
             if any(row[k] != value for k, value in imported.items()):
                 raise ValueError('Final Worker/parent evidence mismatch')
             summary.update({k: row[k] for k in ('raw_path', 'raw_byte_sha256',
-                'raw_content_sha256', 'worker_status', 'exit_reason', 'solver_nfev')})
+                'raw_content_sha256', 'worker_status', 'exit_reason', 'solver_evaluations')})
             summary['solver_steps'] = [dict(name=s['name'], status=s['status'],
                 stop_reason=s.get('solver_result', {}).get('stop_reason',
                     s.get('solver_result', {}).get('reason'))) for s in result['steps']]

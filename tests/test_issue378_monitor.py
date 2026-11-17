@@ -213,7 +213,7 @@ with open(out, 'w') as f:
         options = dict(seed=1, max_evaluations=100, restart_sigma=.1)
         with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
             out = hybrid_minimize(lambda x: [x[0]], [.5], [(0,1)], event_callback=events.append, **options)
-        self.assertEqual(len(out.runs), 100)
+        self.assertEqual(out.evaluations, 100)
         restarts = [e for e in events if e['event'] == 'restart_start_generated']
         local_events = [e for e in events if e['event'] != 'restart_start_generated']
         self.assertEqual(len(restarts), 99)

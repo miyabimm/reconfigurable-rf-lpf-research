@@ -34,11 +34,11 @@ class SharedObjectiveTest(unittest.TestCase):
             for mode, value in zip(('sum', 'max'), expected):
                 with self.subTest(residual=residual, weights=weights, mode=mode):
                     slp, hybrid, slsqp = self.solve(residual, weights, mode)
-                    np.testing.assert_allclose([slp.objective, hybrid.best_fun, slsqp.fun],
+                    np.testing.assert_allclose([slp.objective, hybrid.objective, slsqp.objective],
                                                [value] * 3, rtol=1e-15)
                     # HiGHS may reject enormous LP coefficients; objective
                     # agreement does not imply that SLP converged.
-                    self.assertTrue(slp.feasible and hybrid.runs[0].success and slsqp.success)
+                    self.assertTrue(hybrid.converged and slsqp.converged)
 
     def test_invalid_weights_keep_solver_contracts(self):
         for weights in ([-1], [np.inf], [np.nan], [], [[1]]):
@@ -67,8 +67,8 @@ class SharedObjectiveTest(unittest.TestCase):
         # Terms are finite but their sum overflows; max remains finite.
         residual = [1e154, 1e154]
         slp, hybrid, slsqp = self.solve(residual, None, 'max')
-        self.assertTrue(np.isfinite(slp.objective) and np.isfinite(hybrid.best_fun)
-                        and np.isfinite(slsqp.fun))
+        self.assertTrue(np.isfinite(slp.objective) and np.isfinite(hybrid.objective)
+                        and np.isfinite(slsqp.objective))
         with self.assertRaises(ValueError):
             slp_minimize(lambda x: residual, [0], [(0, 0)], max_iterations=2, max_evaluations=10)
         hybrid = hybrid_minimize(lambda x: residual, [0], [(0, 0)], seed=0,
@@ -97,13 +97,13 @@ class SharedObjectiveTest(unittest.TestCase):
             package = Path(tmp) / 'lpf' / 'optimizers'
             package.mkdir(parents=True)
             (package.parent / '__init__.py').touch()
-            for name in ('__init__.py', 'slp.py', '_objectives.py'):
+            for name in ('__init__.py', 'slp.py', '_objectives.py', 'result.py'):
                 shutil.copy(source / name, package / name)
             code = ("import sys; sys.path.insert(0, sys.argv[1]); "
                     "from lpf.optimizers.slp import slp_minimize; "
                     "r=slp_minimize(lambda x: [-2.], [0], [(0,0)], "
                     "aggregation='signed_max', max_iterations=2, max_evaluations=5); "
-                    "assert r.success and r.objective == -2.")
+                    "assert r.converged and r.objective == -2.")
             subprocess.run([sys.executable, '-I', '-c', code, tmp], check=True)
 
 

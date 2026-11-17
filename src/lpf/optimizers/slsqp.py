@@ -1,34 +1,11 @@
 """Generic bounded SLSQP for weighted squared residuals; not the RF runner."""
-from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
 from scipy.optimize import minimize
 
 from ._objectives import aggregate, squared_terms, validate_weights
-
-
-@dataclass(frozen=True)
-class SLSQPResult:
-    x: np.ndarray
-    aggregation: str
-    fun: float | None
-    max_violation: float | None  # physical constraints and box, not epigraph
-    feasible: bool
-    success: bool
-    stop_reason: str
-    status: int | None  # None if SciPy did not return
-    message: str
-    nit: int
-    nfev: int  # residual callback invocations
-    ncev: int  # physical constraint callback invocations
-    evaluations: int  # shared hard budget: nfev + ncev
-    epigraph_violation: float | None
-    epigraph_gap: float | None  # abs(t - max weighted squared residual)
-    solver_success: bool | None
-    # Common optimizer contract, independently of solver-native diagnostics.
-    objective: float | None
-    converged: bool
+from .result import OptimizerResult
 
 
 class _Stop(Exception):
@@ -39,7 +16,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
                    weights=None, constraints: Callable | None = None,
                    max_iterations: int, max_evaluations: int,
                    tolerance: float = 1e-9, constraint_tolerance: float = 1e-7,
-                   objective_callback=None) -> SLSQPResult:
+                   objective_callback=None) -> OptimizerResult:
     """Minimize weighted squared residual sum or maximum under g(x) >= 0.
 
     Both budgets are mandatory. Each actual residual or physical-constraint
@@ -83,9 +60,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
     free = width > 0
     counts = [0, 0]
     sizes = [None, None]
-    nit = 0
-    status = solver_success = None
-    initial_fun = initial_v = None
+    initial_fun = None
 
     def evaluate(x, kind):
         if sum(counts) >= max_evaluations:
@@ -124,11 +99,8 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
         x[free] = z[:np.count_nonzero(free)]
         return x
 
-    def result(x, fun, v, epiv, epigap, success, reason, message):
-        return SLSQPResult(x.copy(), aggregation, fun, v,
-                           v is not None and v <= constraint_tolerance,
-                           success, reason, status, message, nit, counts[0], counts[1],
-                           sum(counts), epiv, epigap, solver_success, fun, success)
+    def result(x, fun, success, reason):
+        return OptimizerResult(x.copy(), fun, bool(success), reason, sum(counts))
 
     try:
         initial_terms = evaluate(x0, 0)
@@ -137,9 +109,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
         initial_v = violation(x0, initial_g)
         if not np.any(free):
             feasible = initial_v <= constraint_tolerance
-            return result(x0, initial_fun, initial_v, 0.0 if aggregation == 'max' else None,
-                          0.0 if aggregation == 'max' else None, feasible, 'all_coordinates_fixed' if feasible else 'fixed_infeasible',
-                          'all coordinates fixed; evaluated directly')
+            return result(x0, initial_fun, feasible, 'all_coordinates_fixed' if feasible else 'fixed_infeasible')
 
         z0 = x0[free].copy()
         solver_bounds = list(zip(lo[free], hi[free]))
@@ -155,27 +125,21 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
         if constraints is not None:
             scipy_constraints.append({'type': 'ineq', 'fun': lambda z: evaluate(physical(z), 1)})
 
-        def callback(_z):
-            nonlocal nit
-            nit += 1
-
         sol = minimize(objective, z0, method='SLSQP', bounds=solver_bounds,
-                       constraints=scipy_constraints, callback=callback,
+                       constraints=scipy_constraints,
                        options={'maxiter': max_iterations, 'ftol': tolerance})
-        status, solver_success, nit = int(sol.status), bool(sol.success), int(sol.nit)
+        solver_success = bool(sol.success)
         if not np.all(np.isfinite(sol.x)):
-            return result(x0, initial_fun, initial_v, None, None, False,
-                          'invalid_solver_result', str(sol.message))
+            return result(x0, initial_fun, False, 'invalid_solver_result')
         x = physical(sol.x)
         # Do not trust sol.fun or constraint values without checking this exact point.
         terms = evaluate(x, 0)
         g = evaluate(x, 1) if constraints is not None else np.empty(0)
         fun, v = objective_value(terms), violation(x, g)
-        epiv = max(0.0, float(np.max(terms - sol.x[-1]))) if aggregation == 'max' else None
         epigap = abs(float(sol.x[-1]) - fun) if aggregation == 'max' else None
         success = (solver_success and v <= constraint_tolerance and
                    (epigap is None or epigap <= constraint_tolerance))
         reason = 'converged' if success else ('verification_failed' if solver_success else 'solver_failure')
-        return result(x, fun, v, epiv, epigap, success, reason, str(sol.message))
+        return result(x, fun, success, reason)
     except _Stop as exc:
-        return result(x0, initial_fun, initial_v, None, None, False, str(exc), str(exc))
+        return result(x0, initial_fun, False, str(exc))

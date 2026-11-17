@@ -59,11 +59,11 @@ class MinimalWorkerTests(unittest.TestCase):
         with patch('builtins.open', side_effect=AssertionError('unexpected I/O')), \
              patch.object(Path, 'open', side_effect=AssertionError('unexpected I/O')):
             actual = worker.solve()
-        self.assertEqual(actual.nfev, expected.nfev)
+        self.assertEqual(actual.evaluations, expected.evaluations)
         self.assertEqual(actual.stop_reason, expected.stop_reason)
-        self.assertEqual(actual.best_fun, expected.best_fun)
-        np.testing.assert_array_equal(actual.best_x, expected.best_x)
-        self.assertEqual(actual.nfev, 3)
+        self.assertEqual(actual.objective, expected.objective)
+        np.testing.assert_array_equal(actual.x, expected.x)
+        self.assertEqual(actual.evaluations, 3)
 
     def test_bad_inputs_and_failures(self):
         plan, d, p, x, worker = self.prepare()
@@ -118,7 +118,7 @@ class SourceBoundaryTests(unittest.TestCase):
         identity = {'head': 'start', 'files': {'src/test.py': 'digest'}, 'dirty_patch_sha256': 'dirty', 'environment': {}}
         @dataclass
         class Output:
-            best_x: object = None
+            x: object = None
         worker = SimpleNamespace(step={'name': 'coarse', 'options': {'max_search_forwards': 1}},
             model=SimpleNamespace(policy_id='fixture', policy_fingerprint='fixture'), solve=lambda: Output())
         plan = SimpleNamespace(data={'config': {'definition': {}, 'rf': {'constraint_id': 'fixture', 'allow_trial': True}},

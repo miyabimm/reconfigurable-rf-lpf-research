@@ -5,13 +5,14 @@ not necessarily the best point, by independent N(0, restart_sigma**2) in
 [0, 1] coordinates, then project to the box. This permits uphill restarts.
 No global optimality or physical feasibility is implied.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
 from scipy.optimize import minimize
 
 from ._objectives import aggregate, squared_terms, validate_weights
+from .result import OptimizerResult
 
 
 @dataclass
@@ -27,25 +28,6 @@ class LocalRun:
     nfev: int  # actual residual calls, including finite differences and invalid calls
 
 
-@dataclass
-class HybridResult:
-    runs: list[LocalRun]
-    best_x: list[float] | None
-    best_fun: float | None
-    nfev: int
-    stop_reason: str
-    seed: int
-    maxiter: int
-    max_evaluations: int
-    restart_sigma: float
-    aggregation: str = 'sum'
-    # Common contract. None means there was no valid observed candidate.
-    x: list[float] | None = field(kw_only=True)
-    objective: float | None = field(kw_only=True)
-    converged: bool = field(kw_only=True)
-    evaluations: int = field(kw_only=True)
-
-
 class _Stop(Exception):
     pass
 
@@ -53,7 +35,8 @@ class _Stop(Exception):
 def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     max_evaluations: int, restart_sigma: float,
                     weights=None, aggregation: str = 'sum', event_callback=None,
-                    run_callback=None, objective_callback=None, progress_callback=None) -> HybridResult:
+                    run_callback=None, objective_callback=None, progress_callback=None,
+                    local_run_callback=None) -> OptimizerResult:
     """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
 
     The default 'sum' is weighted least squares; 'max' is the maximum weighted
@@ -92,6 +75,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         raise ValueError('objective_callback must be callable')
     if progress_callback is not None and not callable(progress_callback):
         raise ValueError('progress_callback must be callable')
+    if local_run_callback is not None and not callable(local_run_callback):
+        raise ValueError('local_run_callback must be callable')
     x0 = np.asarray(x0, dtype=float)
     box = np.asarray(bounds, dtype=float)
     if x0.ndim != 1 or not x0.size or box.shape != (x0.size, 2):
@@ -112,7 +97,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
     best_x = best_fun = None
     total = 0
     residual_size = None
-    runs = []
+    run = None
     reason = 'restarts_exhausted'
 
     def physical(z):
@@ -234,7 +219,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                       wall_s=wall_end-wall_start, cpu_s=cpu_end-cpu_start,
                       nfev=run.nfev, nit=run.nit, success=run.success,
                       status=run.status, message=run.message, interrupted=run.status is None))
-        runs.append(run)
+        if local_run_callback is not None:
+            local_run_callback(run)
         if reason != 'restarts_exhausted':
             break
         if total >= max_evaluations:
@@ -249,8 +235,5 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             restart_cpu_s = time.process_time() - cpu_start
 
     selected = None if best_x is None else best_x.tolist()
-    converged = reason == 'all_coordinates_fixed' and bool(runs) and runs[-1].success
-    return HybridResult(runs, selected, best_fun, total, reason, seed, maxiter,
-                        max_evaluations, float(restart_sigma), aggregation,
-                        x=None if selected is None else selected.copy(), objective=best_fun,
-                        converged=bool(converged), evaluations=total)
+    converged = reason == 'all_coordinates_fixed' and run is not None and run.success
+    return OptimizerResult(selected, best_fun, bool(converged), reason, total)

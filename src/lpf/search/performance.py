@@ -209,6 +209,33 @@ def compile_requirements(policy, bands, mode='full_lpf'):
     return Requirements(**content, fingerprint=fingerprint)
 
 
+def compile_profile_requirements(profile):
+    """Compile the opt-in profile's 28 performance intervals for grid construction.
+
+    This contains no optimizer objective. The common terminal verdict remains
+    ``signed_margins`` on the independent terminal grid.
+    """
+    from lpf.minimax_profile import MinimaxProfile
+    if not isinstance(profile, MinimaxProfile):
+        raise ValueError('Expected verified RF performance profile')
+    base = json.loads(profile.base_json)
+    reference = compile_requirements(base, profile.records, 'full_lpf')
+    if len(reference.intervals) != 28 or any(i.csv_line is None for i in reference.intervals):
+        raise ValueError('Profile requires exactly 28 CSV intervals')
+    keys = {'UL': 'ul_il_max', 'DL': 'dl_il_max', 'H2': 'h2_atten_min', 'H3': 'h3_atten_min'}
+    p = profile.profile
+    limits = tuple(Requirement(i, 'il_db' if i.type == 'pass' else 'attenuation_db',
+                               'mandatory', 'max_db' if i.type == 'pass' else 'min_db',
+                               float(p['limits_db'][i.note or i.case][keys[i.region]]))
+                   for i in reference.intervals)
+    content = dict(policy_id=p['constraint_id'], policy_fingerprint=profile.fingerprint,
+                   mode='full_lpf', intervals=reference.intervals, limits=limits,
+                   objective_segments=reference.objective_segments, s2p_span_hz=reference.s2p_span_hz)
+    fingerprint = _digest({k: [asdict(v) for v in value] if k in ('intervals', 'limits') else value
+                           for k, value in content.items()})
+    return Requirements(**content, fingerprint=fingerprint)
+
+
 # A static allocation safety limit, not a scientific density or budget default.
 MAX_GRID_SAMPLES = 1_000_000
 

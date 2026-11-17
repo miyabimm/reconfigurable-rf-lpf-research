@@ -68,6 +68,50 @@ def _weighted_plan(config, root, arm, n, *, search_bounds=None, start_method='ex
     return Plan(canonical(frozen), sha(frozen))
 
 
+def run_profile_development(plan, definition, policy, seed, arm, start, output, *, root,
+                            spot_checks, search_bounds=None, checkpoint_interval=1000):
+    """Single RF-T009 development job; fresh tmp evidence, no Campaign or resume."""
+    import tempfile
+    from .storage import vector_sha
+    output, root = Path(output).resolve(), Path(root).resolve()
+    if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
+            output.is_relative_to(root) or output.exists()):
+        raise ValueError('Fresh temporary output outside repository required')
+    if (plan.data['config']['rf'] != {'constraint_id': 'RF-T009', 'allow_trial': True} or
+            set(start) != {'vector', 'vector_sha256'} or vector_sha(start['vector']) != start['vector_sha256']):
+        raise ValueError('Explicit RF-T009 Plan and complete start/SHA required')
+    source = source_identity(root)
+    record = dict(kind='development_rf_profile_input_v1', plan=plan.data, plan_sha256=plan.sha256,
+                  definition=asdict(definition), definition_sha256=sha(asdict(definition)),
+                  physical_policy_id=policy['active_constraint_id'],
+                  physical_policy_sha256=constraint_fingerprint(policy), seed=seed, arm=arm,
+                  start=start, spot_checks=spot_checks, search_bounds=search_bounds,
+                  checkpoint_interval=checkpoint_interval, source=source, source_sha256=sha(source))
+    output.mkdir(exist_ok=False)
+    _save_checkpoint(output/'input.json', record)
+    if canonical(json.loads((output/'input.json').read_text())) != canonical(record):
+        raise ValueError('Input readback mismatch')
+    try:
+        worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
+            root=root, checkpoint=output/'checkpoints', checkpoint_interval=checkpoint_interval,
+            spot_checks=spot_checks, search_bounds=search_bounds, objective_mode='profile_signed_margin')
+        if worker.source != source:
+            raise ValueError('Source changed before Job')
+        result = worker.run()
+        if source_identity(root) != source or result['source_sha256'] != sha(source):
+            raise ValueError('Source changed during Job')
+        _save_checkpoint(output/'result.json', result)
+        if canonical(json.loads((output/'result.json').read_text())) != canonical(result):
+            raise ValueError('Result readback mismatch')
+        return result
+    except (Exception, KeyboardInterrupt) as exc:
+        try:
+            _save_checkpoint(output/'failure.json', dict(status='STOP', reason=f'{type(exc).__name__}: {exc}'))
+        except Exception:
+            pass
+        raise
+
+
 def run_prepared_weighted_job(plan, definition, policy, seed, arm, start, output, *, root,
                               source, search_bounds, spot_checks=None):
     """Run one already-frozen budget-restart Job for the sequential parent."""

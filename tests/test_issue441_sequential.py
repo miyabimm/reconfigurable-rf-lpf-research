@@ -18,7 +18,8 @@ from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
 from lpf.search.runner import run_weighted_development, _weighted_strict_winner
 from lpf.search.storage import canonical, vector_sha
-from lpf.optimizers.hybrid import HybridResult, LocalRun
+from lpf.optimizers.hybrid import LocalRun
+from lpf.optimizers.result import OptimizerResult
 from lpf.search.starts import generate_for_definition
 from lpf.rf_core import build_rf_model
 
@@ -57,7 +58,7 @@ class SequentialTests(unittest.TestCase):
             self.assertEqual(set(row['best']), {'vector_sha256', 'objective_j'})
             self.assertEqual(set(row['terminal']['assessment']), {'strict_feasible', 'worst_il_db'})
             job = output/row['raw_path']
-            self.assertEqual(len(json.loads((job/'result.json').read_text())['steps'][0]['solver_result']['runs']), 3)
+            self.assertEqual(json.loads((job/'result.json').read_text())['steps'][0]['local_run_stats']['count'], 3)
             checkpoint = json.loads((job/'checkpoints'/'000001.json').read_text())
             self.assertEqual(checkpoint['forward_count'], 3)
             self.assertEqual(checkpoint['restart_count'], 2)
@@ -207,9 +208,8 @@ class SequentialTests(unittest.TestCase):
                     raise RuntimeError('interrupted')
                 score = float(np.sum(residual * residual))
                 run = LocalRun(x.tolist(), score, x.tolist(), score, False, None, 'budget', 0, 1000)
-                return HybridResult([run], x.tolist(), score, 1000, 'evaluation_budget_exhausted',
-                                    23, 1000, 1000, .1, x=x.tolist(), objective=score,
-                                    converged=False, evaluations=1000)
+                kw['local_run_callback'](run)
+                return OptimizerResult(x.tolist(), score, False, 'evaluation_budget_exhausted', 1000)
             with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver):
                 if interrupted:
                     with self.assertRaisesRegex(RuntimeError, 'interrupted'):

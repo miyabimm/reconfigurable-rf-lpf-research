@@ -49,7 +49,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 ```
 
 - `plain`は無計時、`timed`はL1/L2、`deep`はL3内訳も記録。包含区間は二重加算しない。
-- source/Plan/RF条件・grid・seed/完全vector・環境とscript SHAを記録する。`worker.solve()`と後段の追加`best_x`観測forwardは費用・時間境界を分離する。
+- source/Plan/RF条件・grid・seed/完全vector・環境とscript SHAを記録する。`worker.solve()`と後段の追加`x`観測forwardは費用・時間境界を分離する。
 - `--expected-source-sha256` / `--expected-script-sha256`は任意の不一致拒否。旧新比較はwarmup除外・順序交替・分布と外れ値の提示を要する。
 - 利用価値と限界は[methods](../project/methods.md#minimalworker性能診断の運用401408)・[results](../project/results.md#minimalworker性能診断issue-401)に集約。`project/diagnostics/`のファイル自体はIssue #397で変更しない。
 

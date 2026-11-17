@@ -3,36 +3,13 @@
 This solver uses HiGHS, finite differences and a trust box; it does not run
 SLSQP or imply global optimality, RF feasibility, or ADS equivalence.
 """
-from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
 from scipy.optimize import linprog
 
 from ._objectives import aggregate, squared_terms, validate_weights
-
-
-@dataclass(frozen=True)
-class Stage:
-    reason: str
-    iterations: int
-    evaluations: int  # individual errors / constraints callback invocations
-
-
-@dataclass(frozen=True)
-class SlpResult:
-    x: np.ndarray
-    aggregation: str
-    objective: float
-    max_violation: float
-    feasible: bool
-    success: bool  # local numerical convergence AND feasibility
-    slp: Stage
-    slsqp: Stage  # not_run; retained alongside the legacy reporting format
-    # Common optimizer contract; evaluations include both callback types.
-    converged: bool
-    stop_reason: str
-    evaluations: int
+from .result import OptimizerResult
 
 
 class _BudgetExhausted(Exception):
@@ -55,7 +32,7 @@ def _minimize_core(
     aggregation: str = "signed_max",
     weights=None,
     objective_callback=None,
-) -> SlpResult:
+) -> OptimizerResult:
     """Minimize transformed errors with box bounds and optional constraints(x)>=0.
 
     Step sizes are fractions of each bound width. Finite differences and every
@@ -207,9 +184,7 @@ def _minimize_core(
 
     v = violation(g)
     feasible = v <= constraint_tolerance
-    return SlpResult(x.copy(), aggregation, float(np.max(e)), v, feasible, converged and feasible,
-                     Stage(reason, iterations, calls), Stage("not_run", 0, 0),
-                     converged and feasible, reason, calls)
+    return OptimizerResult(x.copy(), float(np.max(e)), converged and feasible, reason, calls)
 
 
 def slp_minimize(
@@ -218,7 +193,7 @@ def slp_minimize(
     initial_step: float = 0.25, min_step: float = 1e-8, fd_step: float = 1e-6,
     tolerance: float = 1e-7, constraint_tolerance: float = 1e-7,
     objective_callback=None,
-) -> SlpResult:
+) -> OptimizerResult:
     """Minimize a weighted squared residual sum or max, or a signed maximum.
 
     'sum' linearizes the total scalar; 'max' linearizes each weighted square
@@ -232,7 +207,7 @@ def slp_minimize(
     configured transformation; its exceptions propagate without retry.
     Feasibility is distinct from convergence: success is only a local
     linearized-stationarity heuristic, subject to HiGHS tolerances and not a
-    global optimum guarantee. See slp.reason for nonconvergence and budgets.
+    global optimum guarantee. See stop_reason for nonconvergence and budgets.
     """
     result = _minimize_core(
         residuals, x0, bounds, aggregation=aggregation, weights=weights,

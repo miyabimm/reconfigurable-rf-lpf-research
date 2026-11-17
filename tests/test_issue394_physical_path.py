@@ -72,7 +72,7 @@ class PhysicalPathTests(unittest.TestCase):
         plan, d, p, x, w = self.prepare()
         bad = x.copy(); bad[0] = w.bounds[0][1] + 1
         with patch('lpf.search._worker_next.hybrid_minimize', return_value=SimpleNamespace(
-                best_x=bad, runs=[])):
+                x=bad)):
             with self.assertRaises(ValueError): w.solve()
         with self.assertRaises(ValueError):
             MinimalWorker(plan, replace(d, physical_order=tuple(reversed(d.physical_order))),
@@ -82,12 +82,17 @@ class PhysicalPathTests(unittest.TestCase):
             MinimalWorker(plan, d, changed, 'demo', 23, x, vector_sha(x), root=ROOT)
 
     def test_window_real_forward_matches_detailed_stage_and_evidence(self):
-        plan, d, p, x, _ = self.prepare()
+        def configure(c):
+            c.pop('selection')
+            c['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+                options=dict(max_search_forwards=3))
+        plan, d, p, x = self.setup_model('RF-T008', mutate=configure)
         spec = freeze_development_job(plan, d, p, 'demo', 23, x, storage_mode='window100')
         with patch.object(WindowJobEvaluation, '_validate_checkpoint'):
             window = WindowJobEvaluation(plan, d, p, 'demo', Path(self.raw.name)/'window.json',
                                          spec, root=ROOT)
-        old = FixedStageEvaluation(plan, d, p, 'demo', 'coarse', Path(self.raw.name)/'old.json')
+        legacy_plan, _, _, _, _ = self.prepare()
+        old = FixedStageEvaluation(legacy_plan, d, p, 'demo', 'coarse', Path(self.raw.name)/'old.json')
         window.activate('demo/coarse', 'demo/coarse')
         reference = old.evaluate(x)
         actual = window.evaluate(x)

@@ -57,10 +57,8 @@ class DevelopmentTerminalTests(unittest.TestCase):
                 self.assertEqual(row['requested'], row['completed'])
                 self.assertEqual(row['requested'], sum(b['requested'] for b in raw['batches']))
                 for step in raw['steps']:
-                    solver = step['settings']['solver']
-                    key = 'best_fun' if solver == 'hybrid' else 'fun' if solver == 'slsqp' else 'objective'
-                    self.assertAlmostEqual(step['output_objective'], step['solver_result'][key], places=12)
-                    common = step['optimizer_result']
+                    self.assertAlmostEqual(step['output_objective'], step['solver_result']['objective'], places=12)
+                    common = step['solver_result']
                     self.assertEqual(set(common), {'x', 'objective', 'converged', 'stop_reason', 'evaluations'})
                     self.assertEqual(vector_sha(common['x']), step['output_vector_sha256'])
                     self.assertEqual(common['objective'], step['output_objective'])
@@ -146,7 +144,7 @@ class DevelopmentTerminalTests(unittest.TestCase):
         row = state['jobs'][0]
         path = args[-1]/row['raw_path']
         raw = json.loads(path.read_text())
-        raw['steps'][0]['optimizer_result']['objective'] += 1
+        raw['steps'][0]['solver_result']['objective'] += 1
         atomic(path, raw)
         from lpf.search.worker import JobSpec
         with self.assertRaisesRegex(ValueError, 'Optimizer result'):

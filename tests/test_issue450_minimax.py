@@ -118,6 +118,210 @@ class MinimaxTests(unittest.TestCase):
             with self.assertRaises(ValueError): signed_margins(self.p, wrong, r)
             with self.assertRaises(ValueError): signed_margins(self.p, wrong, response(self.p, wrong))
 
+    def test_profile_requirements_grid_without_optimizer_objective(self):
+        from lpf.search.performance import (compile_profile_requirements, build_evaluation_grid,
+                                            evaluate_requirements)
+        req = compile_profile_requirements(self.p)
+        self.assertEqual((req.policy_id, req.policy_fingerprint), ('RF-T009', self.p.fingerprint))
+        self.assertEqual((len(req.intervals), len(req.limits)), (28, 28))
+        g = build_evaluation_grid(req, 2)
+        for offset in (-.5, 0., 1.):
+            r = response(self.p, g, offset)
+            signed, _ = signed_margins(self.p, g, r)
+            assessed = evaluate_requirements(r, req, requested_grid=g)
+            self.assertEqual(assessed['strict_feasible'], signed <= 0)
+
+    def test_profile_preflight_and_minimal_worker_inputs(self):
+        from dataclasses import asdict
+        import copy
+        import yaml
+        from lpf.search._worker_next import MinimalWorker
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        cfg.pop('selection')
+        cfg['rf'] = dict(constraint_id='RF-T009', allow_trial=True)
+        cfg['definition'] = plain(asdict(definition))
+        cfg['anytime_samples'] = []
+        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+                                          objective='signed_margin_db', options=dict(max_search_forwards=2))
+        frozen = freeze(cfg, ROOT)
+        self.assertEqual(frozen['rf_profile']['effective_sha256'], self.p.fingerprint)
+        self.assertEqual(frozen['requirements']['policy_id'], 'RF-T009')
+        self.assertEqual(len(frozen['requirements']['limits']), 28)
+        plan = Plan(canonical(frozen), sha(frozen))
+        worker = MinimalWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x), root=ROOT)
+        response, _ = worker.evaluate(x)
+        self.assertEqual(response.policy_fingerprint, self.p.fingerprint)
+        rejected = copy.deepcopy(cfg)
+        rejected['rf']['allow_trial'] = False
+        with self.assertRaises(ValueError): freeze(rejected, ROOT)
+        rejected = copy.deepcopy(cfg)
+        rejected['objective'] = 'matching_only'
+        with self.assertRaises(ValueError): freeze(rejected, ROOT)
+
+    def test_profile_worker_all_solvers_and_one_terminal(self):
+        from dataclasses import asdict
+        import yaml
+        from lpf.search._development_worker import DevelopmentWorker
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        for solver in ('slsqp', 'slp', 'hybrid'):
+            with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-profile-') as tmp:
+                cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+                cfg.pop('selection')
+                cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                           definition=plain(asdict(definition)), anytime_samples=[])
+                step = cfg['arms'][0]['steps'][0]
+                step.update(solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
+                            objective='signed_margin_db', options=(dict(max_search_forwards=2)
+                            if solver == 'hybrid' else dict(max_iterations=1, max_evaluations=2)))
+                frozen = freeze(cfg, ROOT)
+                plan = Plan(canonical(frozen), sha(frozen))
+                worker = DevelopmentWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x),
+                                           root=ROOT, checkpoint=Path(tmp)/'checkpoints',
+                                           checkpoint_interval=1, spot_checks={'terminal': [0]},
+                                           objective_mode='profile_signed_margin')
+                result = worker.run()
+                record = result['steps'][0]
+                out = record['solver_result']
+                self.assertEqual(set(out), {'x', 'objective', 'converged', 'stop_reason', 'evaluations'})
+                self.assertLessEqual(record['forward_count'], 2)
+                self.assertFalse(out['converged'])
+                self.assertEqual(len(result['terminal']['candidates']), 1)
+                terminal = result['terminal']['candidates'][0]
+                self.assertEqual(terminal['vector_sha256'], vector_sha(out['x']))
+                self.assertEqual(terminal['performance_feasible'], terminal['terminal_signed_max_margin_db'] <= 0)
+                self.assertEqual(terminal['independent']['status'], 'pass')
+                self.assertEqual(terminal['terminal_independent_full']['samples_checked'], 112)
+                self.assertTrue(terminal['terminal_independent_full']['independent_mna_checked'])
+                self.assertEqual(result['costs']['terminal_independent_full_samples'], 112)
+                self.assertEqual(len(terminal['response']['il_db']), 112)
+                self.assertGreaterEqual(len(list((Path(tmp)/'checkpoints').glob('*.json'))), 1)
+
+    def test_profile_runner_persists_and_readbacks_or_stops(self):
+        from dataclasses import asdict
+        from unittest.mock import patch
+        import yaml
+        from lpf.search._development_runner import run_profile_development
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        cfg.pop('selection')
+        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                   definition=plain(asdict(definition)), anytime_samples=[])
+        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
+            objective='signed_margin_db', options=dict(max_search_forwards=2))
+        frozen = freeze(cfg, ROOT)
+        plan = Plan(canonical(frozen), sha(frozen))
+        start = dict(vector=plain(x), vector_sha256=vector_sha(x))
+        with tempfile.TemporaryDirectory(prefix='issue446-runner-') as tmp:
+            output = Path(tmp)/'job'
+            result = run_profile_development(plan, definition, policy, 23, 'demo', start, output,
+                root=ROOT, spot_checks={'terminal': [0]}, checkpoint_interval=1)
+            self.assertEqual(json.loads((output/'result.json').read_text()), result)
+            self.assertEqual(json.loads((output/'input.json').read_text())['start'], start)
+            with self.assertRaisesRegex(ValueError, 'Fresh temporary'):
+                run_profile_development(plan, definition, policy, 23, 'demo', start, output,
+                                        root=ROOT, spot_checks={'terminal': [0]})
+            failed = Path(tmp)/'failed'
+            with patch('lpf.search._worker_next.hybrid_minimize', side_effect=RuntimeError('solver failed')):
+                with self.assertRaisesRegex(RuntimeError, 'solver failed'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, failed,
+                                            root=ROOT, spot_checks={'terminal': [0]})
+            self.assertEqual(json.loads((failed/'failure.json').read_text())['status'], 'STOP')
+            self.assertFalse((failed/'result.json').exists())
+
+    def test_profile_worker_hard_forward_cap_and_no_retry(self):
+        from dataclasses import asdict
+        from unittest.mock import patch
+        import yaml
+        from lpf.search._development_worker import DevelopmentWorker
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        for solver in ('slsqp', 'slp', 'hybrid'):
+            with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-cap-') as tmp:
+                cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+                cfg.pop('selection')
+                cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                           definition=plain(asdict(definition)), anytime_samples=[])
+                cfg['arms'][0]['steps'][0].update(solver=solver,
+                    aggregation='signed_max' if solver == 'slp' else 'sum', objective='signed_margin_db',
+                    options=dict(max_search_forwards=2) if solver == 'hybrid' else
+                            dict(max_iterations=1, max_evaluations=2))
+                frozen = freeze(cfg, ROOT)
+                worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
+                    23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
+                    checkpoint_interval=1, spot_checks={'terminal': [0]}, objective_mode='profile_signed_margin')
+                def overrunning(callback, start, bounds, **kw):
+                    for _ in range(3):
+                        residual = callback(x)
+                        value = float(np.max(residual) if solver == 'slp' else residual @ residual)
+                        if solver == 'hybrid':
+                            kw['progress_callback'](x, value, False)
+                        else:
+                            kw['objective_callback'](x, value)
+                    self.fail('hard cap was not enforced')
+                target = ('lpf.search._worker_next.hybrid_minimize' if solver == 'hybrid' else
+                          f'lpf.search._development_worker.{solver}_minimize')
+                with patch(target, side_effect=overrunning):
+                    with self.assertRaisesRegex(ValueError, 'Search RF forward budget exhausted'):
+                        worker.run()
+                self.assertEqual(worker.forward_count, 2)
+                with self.assertRaisesRegex(RuntimeError, 'retry'):
+                    worker.run()
+
+    def test_profile_worker_multistep_passes_only_final_x(self):
+        from dataclasses import asdict
+        import copy
+        import yaml
+        from lpf.search._development_worker import DevelopmentWorker
+        from lpf.search.plan import Plan
+        from lpf.search.preflight import freeze
+        from lpf.search.storage import canonical, plain, sha, vector_sha
+        policy, definition, _, _, x = make('RF-F003')
+        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
+        cfg.pop('selection')
+        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
+                   definition=plain(asdict(definition)), anytime_samples=[], max_trial_requested_samples=4000)
+        cfg['validation']['terminal_points'] = 5
+        arm = cfg['arms'][0]
+        arm['max_requested_samples'] = 4000
+        template = arm['steps'][0]
+        arm['steps'] = []
+        for index, solver in enumerate(('slsqp', 'slp', 'hybrid')):
+            step = copy.deepcopy(template)
+            step.update(name=f'step{index}', solver=solver,
+                        aggregation='signed_max' if solver == 'slp' else 'sum',
+                        objective='signed_margin_db', points_per_interval=2+index,
+                        options=dict(max_search_forwards=2) if solver == 'hybrid' else
+                                dict(max_iterations=1, max_evaluations=2))
+            arm['steps'].append(step)
+        frozen = freeze(cfg, ROOT)
+        plan = Plan(canonical(frozen), sha(frozen))
+        with tempfile.TemporaryDirectory(prefix='issue446-multistep-') as tmp:
+            worker = DevelopmentWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x),
+                                       root=ROOT, checkpoint=Path(tmp)/'checkpoints', checkpoint_interval=1,
+                                       spot_checks={'terminal': [0]}, objective_mode='profile_signed_margin')
+            result = worker.run()
+            self.assertEqual(len(result['steps']), 3)
+            for previous, step in zip(result['steps'], result['steps'][1:]):
+                self.assertEqual(vector_sha(previous['solver_result']['x']), step['input_vector_sha256'])
+            self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'],
+                             vector_sha(result['steps'][-1]['solver_result']['x']))
+            self.assertEqual(len(result['terminal']['candidates']), 1)
+            checkpoints = [json.loads(p.read_text()) for p in sorted((Path(tmp)/'checkpoints').glob('*.json'))]
+            self.assertEqual(set(c['step'] for c in checkpoints), {'step0', 'step1', 'step2'})
+            self.assertTrue(all(c['kind'] == 'development_temporary_observation_v1' for c in checkpoints))
+
     def test_real_forward_equals_formal_external_cascade(self):
         _, definition, old, _, x = make('RF-F003')
         new = self.p.build_model(definition)

@@ -12,7 +12,8 @@ from lpf.search._development_worker import DevelopmentWorker
 from lpf.search._worker_next import MinimalWorker
 from lpf.search.worker import _development_options
 from lpf.search.problem import Problem
-from lpf.optimizers.hybrid import hybrid_minimize, HybridResult, LocalRun
+from lpf.optimizers.hybrid import hybrid_minimize, LocalRun
+from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.optimizers.slp import slp_minimize
 from lpf.search.performance import summarize_mandatory
@@ -199,7 +200,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
         self.assertEqual(seen, [box] * 3)
         for step in result['steps']:
             for i in range(1, 25):
-                self.assertEqual(step['solver_result']['best_x' if step['solver'] == 'hybrid' else 'x'][i], x[i])
+                self.assertEqual(step['solver_result']['x'][i], x[i])
                 self.assertEqual(step['rf_best']['vector'][i], x[i])
         for path in w.path.glob('*.json'):
             self.assertEqual(json.loads(path.read_text())['best']['vector'][1:], x.tolist()[1:])
@@ -276,8 +277,8 @@ class DevelopmentWorkerTests(unittest.TestCase):
         def solver(callback, x0, bounds, **kw):
             callback(x); callback(y)
             run = LocalRun(x.tolist(), 1., y.tolist(), 1., False, 1, 'fixture', 0, 2)
-            return HybridResult([run], y.tolist(), 1., 2, 'evaluation_budget_exhausted',
-                                23, 3, 3, .1, x=y.tolist(), objective=1., converged=False, evaluations=2)
+            kw['local_run_callback'](run)
+            return OptimizerResult(y.tolist(), 1., False, 'evaluation_budget_exhausted', 2)
         summaries = iter([dict(strict_feasible=False, max_violation_db=v, sum_violation_db=v)
                           for v in (2., 1.)])
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
@@ -312,8 +313,9 @@ class DevelopmentWorkerTests(unittest.TestCase):
             callback(vectors[0])
             runs = [LocalRun(v.tolist(), 1., v.tolist(), 1., False, 1, 'fixture', 0, 1)
                     for v in vectors[:2]]
-            return HybridResult(runs, vectors[2].tolist(), 1., 1, 'evaluation_budget_exhausted',
-                                23, 3, 3, .1, x=vectors[2].tolist(), objective=1., converged=False, evaluations=1)
+            for run in runs:
+                kw['local_run_callback'](run)
+            return OptimizerResult(vectors[2].tolist(), 1., False, 'evaluation_budget_exhausted', 1)
         seen = []
         def rank(rows):
             seen.extend(rows)

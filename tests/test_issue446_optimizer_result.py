@@ -39,11 +39,11 @@ class OptimizerResultTests(unittest.TestCase):
                 self.assertIn(key, seen)
                 self.assertAlmostEqual(result.objective, seen[key])
                 self.assertEqual(result.objective, observed[key])
-                self.assertTrue({'x', 'objective', 'converged', 'stop_reason', 'evaluations'} <= set(asdict(result)))
+                self.assertEqual({'x', 'objective', 'converged', 'stop_reason', 'evaluations'}, set(asdict(result)))
                 self.assertEqual(set(seen), set(observed))
                 self.assertGreater(result.evaluations, 0)
-                self.assertFalse(hasattr(result, 'violation'))
-                self.assertFalse(hasattr(result, 'rf_margin_db'))
+                for key in ('violation', 'max_violation', 'rf_margin_db', 'fun', 'best_fun', 'best_x', 'runs'):
+                    self.assertFalse(hasattr(result, key), key)
                 if result.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted'):
                     self.assertFalse(result.converged)
 

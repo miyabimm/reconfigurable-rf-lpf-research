@@ -130,12 +130,12 @@ class DevelopmentWorker(MinimalWorker):
             raise ValueError('Positive checkpoint interval required')
         if plan.data['config']['objective'] != 'full_lpf':
             raise ValueError('DevelopmentWorker requires all full-LPF intervals')
-        if objective_mode not in (None, 'weighted_violation'):
+        if objective_mode not in (None, 'weighted_violation', 'profile_signed_margin'):
             raise ValueError('Unknown development objective mode')
         self.objective_mode = objective_mode
         if 'selection' not in plan.data['config'] and not objective_mode:
-            raise ValueError('Search→Terminal development currently requires weighted objective; fail closed')
-        self.plan, self.arm = plan, arm
+            raise ValueError('Search→Terminal development requires an explicit objective; fail closed')
+        self.plan, self.arm, self.root = plan, arm, root
         self.checkpoint_interval = checkpoint_interval
         self.spot_checks = {} if spot_checks is None else dict(spot_checks)
         self.audit_samples = {}
@@ -148,7 +148,7 @@ class DevelopmentWorker(MinimalWorker):
             _check_vector_box(self.x, box)
             self.bounds = box
         self.steps = next(a['steps'] for a in plan.data['config']['arms'] if a['name'] == arm)
-        if self.objective_mode:
+        if self.objective_mode == 'weighted_violation':
             step = self.steps[0]
             opts = step['options']
             costs = plan.data['costs']['jobs'][arm]
@@ -173,6 +173,14 @@ class DevelopmentWorker(MinimalWorker):
                                 start_method=mode.get('start_method'))
                 if mode != expected or mode['start_method'] not in ('explicit', 'scrambled_sobol_single_point'):
                     raise ValueError('Budget restart settings/box do not match frozen Plan')
+        if self.objective_mode == 'profile_signed_margin':
+            if (self.profile is None or 'selection' in plan.data['config'] or
+                    plan.data['config']['anytime_samples'] or not self.spot_checks.get('terminal')):
+                raise ValueError('RF-T009 requires selectionless full-LPF Plan and terminal MNA spots')
+            from ._job_evaluation import source_identity
+            self.source = source_identity(root)
+        elif self.profile is not None:
+            raise ValueError('RF-T009 requires explicit profile_signed_margin mode')
         self._grids = {f"{arm}/{self.step['name']}":
                        (self.grid, self.evaluator, self.prepared_requirements)}
         valid = {f"{arm}/{s['name']}" for s in self.steps} | {'terminal'}
@@ -200,7 +208,9 @@ class DevelopmentWorker(MinimalWorker):
         if self.bounds is not self._physical_bounds:
             _check_vector_box(vector, self.bounds)
         if self._running and self.objective_mode:
-            if self.forward_count >= self.step['options']['max_search_forwards']:
+            opts = self.step['options']
+            cap = opts['max_search_forwards' if self.step['solver'] == 'hybrid' else 'max_evaluations']
+            if self.forward_count >= cap:
                 raise ValueError('STOP: Search RF forward budget exhausted')
             # Charge before entering RF Core, including a forward that raises.
             self.forward_count += 1
@@ -221,7 +231,7 @@ class DevelopmentWorker(MinimalWorker):
             key = ((0, il, digest) if metrics['strict_feasible'] else
                    (1, metrics['max_violation_db'], metrics['sum_violation_db'], il, digest))
             if self.best is None or key < self.best_key:
-                validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
+                validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.physical_model)
                 self.best_key = key
                 self.best = dict(vector=plain(vector), vector_sha256=digest,
                                  worst_il_db=il, **metrics)
@@ -237,7 +247,7 @@ class DevelopmentWorker(MinimalWorker):
             raise ValueError('Optimizer objective does not match Search observation')
         self.observed_objectives[digest] = float(objective)
         if is_best:
-            validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.model)
+            validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.physical_model)
             metrics = summarize_mandatory(assessment, self.prepared_requirements)
             self.best = dict(vector=plain(vector), vector_sha256=digest,
                              worst_il_db=assessment['worst_il_db'], **metrics, objective_j=float(objective))
@@ -251,6 +261,17 @@ class DevelopmentWorker(MinimalWorker):
             self._save_best()
         self.pending_observation = None
 
+    def _observe_profile(self, vector, objective, *_):
+        pending, _, _ = self.pending_observation
+        digest = vector_sha(vector)
+        if digest != vector_sha(pending) or not np.isfinite(objective):
+            raise ValueError('Optimizer objective does not match Search observation')
+        self.observed_objectives[digest] = float(objective)
+        self.best = dict(vector=plain(vector), vector_sha256=digest, objective=float(objective))
+        self.pending_observation = None
+        if self.forward_count % self.checkpoint_interval == 0:
+            self._save_best()
+
     def _save_best(self):
         sequence = self.checkpoint_sequence + 1
         payload = dict(kind='development_temporary_best_v1', job_id=f'development-{self.arm}-{self.seed}',
@@ -260,6 +281,10 @@ class DevelopmentWorker(MinimalWorker):
                        rf_inputs=self.plan.data['rf_inputs'], grid_sha256=grid_fingerprint(self.grid),
                        requirements_fingerprint=self.requirements.fingerprint,
                        forward_count=self.forward_count, best=self.best)
+        if self.objective_mode == 'profile_signed_margin':
+            payload['kind'] = 'development_temporary_observation_v1'
+            payload['observation'] = payload.pop('best')
+            payload['source_sha256'] = sha(self.source)
         if self.sequential_recording:
             payload['local_run_index'] = self.local_run_index
             payload['restart_count'] = self.local_run_index
@@ -271,8 +296,13 @@ class DevelopmentWorker(MinimalWorker):
         self.saved_sha, self.saved_count = self.best['vector_sha256'], self.forward_count
 
     def _residuals(self, evaluation):
-        if self.objective_mode:
+        if self.objective_mode == 'weighted_violation':
             return _weighted_residuals(*evaluation, self.prepared_requirements)
+        if self.objective_mode == 'profile_signed_margin':
+            residuals = -np.asarray(evaluation[1]['mandatory_g'], dtype=float)
+            if not residuals.size or not np.all(np.isfinite(residuals)):
+                raise ValueError('Nonfinite signed-margin Search residuals')
+            return residuals
         return super()._residuals(evaluation)
 
     def _objective(self, vector, *, square_root):
@@ -304,6 +334,10 @@ class DevelopmentWorker(MinimalWorker):
         if self._started:
             raise RuntimeError('Worker cannot retry or resume')
         self._started = True
+        if self.objective_mode == 'profile_signed_margin':
+            from ._job_evaluation import source_identity
+            if source_identity(self.root) != self.source:
+                raise ValueError('Source changed before RF; no retry')
         validate_search_box(self.bounds, self._physical_bounds)
         _check_vector_box(self.x, self.bounds)
         x = self.x.copy()
@@ -323,16 +357,28 @@ class DevelopmentWorker(MinimalWorker):
                 opts = _development_options(step)
                 if step['solver'] == 'hybrid':
                     from . import _worker_next
-                    extra = {'progress_callback': self._observe_objective} if self.objective_mode else {}
+                    extra = ({'progress_callback': self._observe_objective}
+                             if self.objective_mode == 'weighted_violation' else
+                             {'progress_callback': self._observe_profile}
+                             if self.objective_mode == 'profile_signed_margin' else {})
+                    local_runs = []
+                    local_run_stats = dict(count=0, success=0, evaluations=0)
+                    def record_local_run(run):
+                        local_run_stats['count'] += 1
+                        local_run_stats['success'] += int(run.success)
+                        local_run_stats['evaluations'] += run.nfev
+                        if not self.objective_mode:
+                            local_runs.append(run)
+                    extra['local_run_callback'] = record_local_run
                     if self.sequential_recording:
                         extra['run_callback'] = lambda index: setattr(self, 'local_run_index', index)
                     out = _worker_next.hybrid_minimize(self._solver_residuals, x, self.bounds,
                             seed=self.seed, aggregation=step['aggregation'], **opts, **extra)
-                    found = [r.end_x for r in out.runs if r.end_x is not None]
-                    if out.best_x is not None:
-                        found.append(out.best_x)
-                    next_x = out.x if self.objective_mode else out.best_x
-                    if self.objective_mode:
+                    found = [r.end_x for r in local_runs if r.end_x is not None]
+                    if out.x is not None:
+                        found.append(out.x)
+                    next_x = out.x
+                    if self.objective_mode == 'weighted_violation':
                         if self.best is None or out.objective is None or out.x is None:
                             raise ValueError('No weighted best; no replacement or retry')
                         digest = vector_sha(out.x)
@@ -345,23 +391,40 @@ class DevelopmentWorker(MinimalWorker):
                                 self.best['vector_sha256'] != digest):
                             raise ValueError('Optimizer result not observed on Search grid')
                         found = [out.x]
-                    success = bool(out.runs) and all(r.success for r in out.runs)
+                    success = out.converged
                     reason = out.stop_reason
                 else:
                     solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
-                    out = solver(lambda v: self._objective(v, square_root=step['solver'] == 'slsqp'),
-                                 x, self.bounds, constraints=self._constraints,
-                                 aggregation=step['aggregation'], **opts)
-                    next_x, success, found = out.x, out.success, [out.x]
-                    reason = out.stop_reason if step['solver'] == 'slsqp' else out.slp.reason
+                    if self.objective_mode == 'profile_signed_margin':
+                        callback = lambda v: self._residuals(self._evaluate(v))
+                        out = solver(callback, x, self.bounds, constraints=None,
+                                     objective_callback=self._observe_profile,
+                                     aggregation=step['aggregation'], **opts)
+                    else:
+                        out = solver(lambda v: self._objective(v, square_root=step['solver'] == 'slsqp'),
+                                     x, self.bounds, constraints=self._constraints,
+                                     aggregation=step['aggregation'], **opts)
+                    next_x, success, found = out.x, out.converged, [out.x]
+                    reason = out.stop_reason
                 if reason.startswith('invalid_'):
                     raise ValueError(f'Solver numerical STOP: {reason}')
                 if next_x is None:
                     raise ValueError('No solver output; no implicit retry')
+                if self.objective_mode == 'profile_signed_margin':
+                    digest = vector_sha(out.x)
+                    if (out.objective is None or not np.isfinite(out.objective) or
+                            type(out.evaluations) is not int or not 1 <= out.evaluations <= opts['max_evaluations'] or
+                            type(out.converged) is not bool or not isinstance(out.stop_reason, str) or
+                            not out.stop_reason or (out.converged and out.stop_reason in
+                                ('evaluation_limit', 'evaluation_budget_exhausted')) or
+                            self.observed_objectives.get(digest) != out.objective):
+                        raise ValueError('Optimizer result not observed on Search grid')
+                    self.best = dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective)
+                    found = [out.x]
                 for v in found:
                     try:
                         _check_vector_box(v, self.bounds)
-                        validate_values(self.definition, self.model.schema, v, self.policy, frozen_model=self.model)
+                        validate_values(self.definition, self.model.schema, v, self.policy, frozen_model=self.physical_model)
                     except ValueError as exc:
                         if self.objective_mode:
                             raise ValueError('Invalid weighted best; no replacement') from exc
@@ -369,17 +432,21 @@ class DevelopmentWorker(MinimalWorker):
                         continue
                     candidates.append(plain(v))
                 _check_vector_box(next_x, self.bounds)
-                validate_values(self.definition, self.model.schema, next_x, self.policy, frozen_model=self.model)
-                if self.best is not None and (self.forward_count != self.saved_count if self.sequential_recording
-                                              else self.best['vector_sha256'] != self.saved_sha):
+                validate_values(self.definition, self.model.schema, next_x, self.policy, frozen_model=self.physical_model)
+                if self.best is not None and ((self.forward_count != self.saved_count or
+                        self.best['vector_sha256'] != self.saved_sha)
+                        if self.sequential_recording or self.objective_mode == 'profile_signed_margin'
+                        else self.best['vector_sha256'] != self.saved_sha):
                     self._save_best()
                 step_record = dict(name=step['name'], solver=step['solver'], solver_result=raw_numbers(out),
                                    stop_reason=reason, converged=bool(success), forward_count=self.forward_count,
                                    rf_best=plain(self.best), independent=plain(self.independent))
-                if self.objective_mode:
-                    step_record['optimizer_result'] = raw_numbers(dict(x=out.x, objective=out.objective,
-                        converged=out.converged, stop_reason=out.stop_reason, evaluations=out.evaluations))
-                    step_record['converged'] = out.converged
+                if self.objective_mode == 'profile_signed_margin':
+                    step_record.pop('rf_best')
+                    step_record.update(input_vector=plain(x), input_vector_sha256=vector_sha(x),
+                                       grid_sha256=grid_fingerprint(self.grid))
+                if step['solver'] == 'hybrid':
+                    step_record['local_run_stats'] = local_run_stats
                 steps.append(step_record)
                 x = np.asarray(next_x, dtype=float).copy()
             finally:
@@ -397,6 +464,20 @@ class DevelopmentWorker(MinimalWorker):
             assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
             terminal_row = dict(vector_sha256=vector_sha(vector), assessment=assessment,
                                 independent=self._audit(vector, response, 'terminal'))
+            if self.objective_mode == 'profile_signed_margin':
+                from lpf.minimax_profile import signed_margins
+                from lpf.rf_core.independent import validate_response
+                margin, _ = signed_margins(self.profile, self.grid, response)
+                full_audit = validate_response(self.model, vector, response)
+                if assessment['strict_feasible'] != bool(margin <= 0):
+                    raise ValueError('Terminal signed margin/requirement mismatch')
+                terminal_row.update(terminal_signed_max_margin_db=margin,
+                    performance_feasible=bool(margin <= 0), response=raw_numbers(response),
+                    external_passivity='checked_on_terminal_grid',
+                    power_balance='checked_on_terminal_grid_by_independent_mna',
+                    terminal_independent_full=full_audit,
+                    physical=validate_values(self.definition, self.model.schema, vector, self.policy,
+                                             frozen_model=self.physical_model))
             if self.sequential_recording:
                 terminal_row.update(_harmonic_margin(response, self.prepared_requirements))
             terminal = dict(status='completed', forward_count=1, candidates=[raw_numbers(terminal_row)])
@@ -408,7 +489,24 @@ class DevelopmentWorker(MinimalWorker):
             if self.sequential_recording:
                 result['status'] = ('search_budget_exhausted' if steps[0]['stop_reason'] == 'evaluation_budget_exhausted'
                                     else 'incomplete')
-            if self.objective_mode:
+            if self.objective_mode == 'profile_signed_margin':
+                if source_identity(self.root) != self.source:
+                    raise ValueError('Source changed during RF; no retry')
+                result.update(plan=self.plan.data, plan_sha256=self.plan.sha256,
+                    source=self.source, source_sha256=sha(self.source), seed=self.seed,
+                    initial_vector=plain(self.x), initial_vector_sha256=vector_sha(self.x),
+                    rf_profile=self.plan.data['rf_profile'],
+                    solver_objective=dict(residual='per-sample signed margin in dB',
+                        slp='max(residual), dB', slsqp_hybrid='configured sum or max of residual**2, dB^2',
+                        weights='unit', note='solver objectives are not cross-step comparable'),
+                    costs=dict(search_forwards=sum(s['forward_count'] for s in steps),
+                        search_requested_samples=sum(s['forward_count'] * len(self.plan.requested_grid(
+                            f"{self.arm}/{s['name']}").frequency_hz) for s in steps),
+                        terminal_forwards=1, terminal_requested_samples=len(self.grid.frequency_hz),
+                        terminal_independent_full_samples=len(self.grid.frequency_hz),
+                        independent_mna_samples_by_stage=self.audit_samples),
+                    terminal_grid_sha256=grid_fingerprint(self.grid))
+            if self.objective_mode == 'weighted_violation':
                 search_samples = sum(s['forward_count'] * len(self.plan.requested_grid(
                     f"{self.arm}/{s['name']}").frequency_hz) for s in steps)
                 result.update(weighted_objective=WEIGHTED_OBJECTIVE,

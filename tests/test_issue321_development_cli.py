@@ -127,15 +127,14 @@ runpy.run_path(sys.argv[0], run_name='__main__')
 
     def test_two_arms_and_zero_exit_is_not_a_scientific_pass(self):
         args, argv = self.prepare(two_arms=True)
-        from lpf.optimizers.slsqp import SLSQPResult
+        from lpf.optimizers.result import OptimizerResult
         import numpy as np
         def converged(residuals, x, bounds, **kw):
             # Synthetic convergence only; actual RF is still evaluated once.
             value = residuals(x)
             objective = float(np.sum(value**2))
             kw['objective_callback'](np.array(x), objective)
-            return SLSQPResult(np.array(x), 'sum', objective, 0., True, True, 'converged',
-                               0, 'fixture', 1, 1, 0, 1, None, None, True, objective, True)
+            return OptimizerResult(np.array(x), objective, True, 'converged', 1)
         with patch('lpf.search.worker.slsqp_minimize', side_effect=converged):
             code, out, err = self.invoke(argv)
         self.assertEqual(code, 0, err)

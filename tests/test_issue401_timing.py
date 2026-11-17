@@ -36,17 +36,17 @@ class TimingTests(unittest.TestCase):
              patch.object(timed, 'evaluate', side_effect=AssertionError('public evaluate used')), \
              patch.object(timed, 'residuals', side_effect=AssertionError('public residuals used')):
             actual = timed.solve()
-        self.assertEqual(actual.nfev, expected.nfev)
+        self.assertEqual(actual.evaluations, expected.evaluations)
         self.assertEqual(actual.stop_reason, expected.stop_reason)
-        self.assertEqual(actual.best_fun, expected.best_fun)
-        np.testing.assert_array_equal(actual.best_x, expected.best_x)
+        self.assertEqual(actual.objective, expected.objective)
+        np.testing.assert_array_equal(actual.x, expected.x)
         rows = timer.snapshot()
         for region in ('solver_callback', 'rf_forward', 'requirements', 'residual'):
-            self.assertEqual(rows[region]['count'], actual.nfev)
+            self.assertEqual(rows[region]['count'], actual.evaluations)
             self.assertEqual(rows[region]['failed'], 0)
         self.assertEqual(rows['solve_total']['count'], 1)
         self.assertEqual(rows['hybrid_minimize']['count'], 1)
-        self.assertEqual(rows['postsolve_validation']['count'], 2)
+        self.assertEqual(rows['postsolve_validation']['count'], 1)
 
     def test_deep_regions_follow_rf_path(self):
         _, _, _, _, worker = self.prepare()
@@ -55,10 +55,10 @@ class TimingTests(unittest.TestCase):
             result = worker.solve()
         rows = timer.snapshot()
         for name in ('l3_port_admittance', 'l3_node_admittance', 'l3_matrices', 'l3_power_response',
-                     'l3_decode', 'l3_encode', 'l3_y_to_s_solve'):
-            self.assertEqual(rows[name]['count'], result.nfev)
+                     'l3_decode', 'l3_y_to_s_solve'):
+            self.assertEqual(rows[name]['count'], result.evaluations)
             self.assertEqual(rows[name]['failed'], 0)
-        self.assertEqual(rows['l3_cascade']['count'], 2 * result.nfev)
+        self.assertEqual(rows['l3_cascade']['count'], 2 * result.evaluations)
         self.assertEqual(rows['l3_cascade']['failed'], 0)
 
     def test_benchmark_modes_separate_postsolve_forward(self):
@@ -83,7 +83,7 @@ class TimingTests(unittest.TestCase):
             report = json.loads(output.getvalue())
             reports.append(report)
             self.assertEqual(report['mode'], mode)
-            self.assertEqual(report['solver']['nfev'], 3)
+            self.assertEqual(report['solver']['evaluations'], 3)
             self.assertEqual(report['observation_forward_count'], 1)
             if mode == 'plain':
                 self.assertEqual(report['timers'], {})

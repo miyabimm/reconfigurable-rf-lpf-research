@@ -14,7 +14,7 @@
 | SLSQP反復・停止理由の運用 | [slsqp_iteration_policy.md](slsqp_iteration_policy.md) |
 | 回路理論・探索上の判断基準 | [methods.md](methods.md) |
 | 観測された候補・失敗・検証深度 | [results.md](results.md)、[EXP索引](../data/experiment_index.csv) |
-| 試験minimax RF-T009（旧Worker未統合） | [minimax_profile.md](minimax_profile.md) |
+| 試験RF-T009（限定開発Worker入口） | [minimax_profile.md](minimax_profile.md) |
 | 開発ツール／CIの実入口 | [scripts/README.md](../scripts/README.md)、[CI](../.github/workflows/audit.yml) |
 | 現行診断の参照先 | [diagnostics/README.md](diagnostics/README.md)（**#397の整理対象外**） |
 | 旧パス／固定Git履歴の読み方 | [legacy_git_replay.md](legacy_git_replay.md) |
