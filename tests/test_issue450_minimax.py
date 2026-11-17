@@ -224,9 +224,17 @@ class MinimaxTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='issue446-runner-') as tmp:
             output = Path(tmp)/'job'
             result = run_profile_development(plan, definition, policy, 23, 'demo', start, output,
-                root=ROOT, spot_checks={'terminal': [0]}, checkpoint_interval=1)
+                root=ROOT, spot_checks={'terminal': [0], 'demo/coarse': [0]}, checkpoint_interval=1)
             self.assertEqual(json.loads((output/'result.json').read_text()), result)
-            self.assertEqual(json.loads((output/'input.json').read_text())['start'], start)
+            stored_input = json.loads((output/'input.json').read_text())
+            self.assertEqual(stored_input['start'], start)
+            ledger = result['ledger']
+            self.assertEqual(result['costs']['independent_mna_samples_by_stage']['demo/coarse'],
+                             result['costs']['search_forwards'])
+            self.assertEqual(ledger['reservation'], stored_input['reservation'])
+            for name in ('rf_samples', 'independent_mna_samples'):
+                self.assertEqual(ledger[name]['unknown'], 0)
+                self.assertEqual(ledger[name]['completed'] + ledger[name]['released'], ledger['reservation'][name])
             with self.assertRaisesRegex(ValueError, 'Fresh temporary'):
                 run_profile_development(plan, definition, policy, 23, 'demo', start, output,
                                         root=ROOT, spot_checks={'terminal': [0]})
@@ -235,7 +243,13 @@ class MinimaxTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'solver failed'):
                     run_profile_development(plan, definition, policy, 23, 'demo', start, failed,
                                             root=ROOT, spot_checks={'terminal': [0]})
-            self.assertEqual(json.loads((failed/'failure.json').read_text())['status'], 'STOP')
+            failure = json.loads((failed/'failure.json').read_text())
+            failed_input = json.loads((failed/'input.json').read_text())
+            self.assertEqual(failure['status'], 'STOP')
+            self.assertFalse(failure['retry_allowed'])
+            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failed_input['reservation']['rf_samples'])
+            self.assertEqual(failure['independent_mna_samples_unknown_upper_bound'],
+                             failed_input['reservation']['independent_mna_samples'])
             self.assertFalse((failed/'result.json').exists())
 
     def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
