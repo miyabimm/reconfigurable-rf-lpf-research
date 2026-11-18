@@ -100,11 +100,11 @@ def freeze(d, root):
         if 'campaign' in d or 'selection' in d or d['objective'] != 'full_lpf':
             raise ValueError('RF-T009 is a standalone full-LPF development profile')
         from lpf.minimax_profile import load_minimax_profile
-        from .performance import compile_profile_requirements
+        from .performance import compile_profile_grid
         profile = load_minimax_profile('RF-T009', root=root, allow_trial=d['rf']['allow_trial'])
         policy = json.loads(profile.base_json)
         bands = rf_input_file(root, profile.profile['bands_file'])
-        req = compile_profile_requirements(profile)
+        req = compile_profile_grid(profile)
     else:
         policy = load_constraint(d['rf']['constraint_id'], root=root, allow_trial=d['rf']['allow_trial'])
         bands = rf_input_file(root, policy['bands_file'])

@@ -213,11 +213,10 @@ def compile_requirements(policy, bands, mode='full_lpf'):
     return Requirements(**content, fingerprint=fingerprint)
 
 
-def compile_profile_requirements(profile):
-    """Compile the opt-in profile's 28 performance intervals for grid construction.
+def compile_profile_grid(profile):
+    """Compile the 28 intervals for the existing grid builder, without rules.
 
-    This contains no optimizer objective. The common terminal verdict remains
-    ``signed_margins`` on the independent terminal grid.
+    Profile limits come directly from the profile, not the legacy evaluator.
     """
     from lpf.minimax_profile import MinimaxProfile
     if not isinstance(profile, MinimaxProfile):
@@ -226,15 +225,8 @@ def compile_profile_requirements(profile):
     span = profile.rf_input_policy()['external_port_parasitics']['format']
     if any(i.low_hz < span['f_start_hz'] or i.high_hz > span['f_stop_hz'] for i in intervals):
         raise ValueError('Interval outside fixed S2P span')
-    keys = {'UL': 'ul_il_max', 'DL': 'dl_il_max', 'H2': 'h2_atten_min', 'H3': 'h3_atten_min'}
-    p = profile.profile
-    limits = tuple(Requirement(i, 'il_db' if i.type == 'pass' else 'attenuation_db',
-                               'mandatory', 'max_db' if i.type == 'pass' else 'min_db',
-                               float(p['limits_db'][i.note or i.case][keys[i.region]]))
-                   for i in intervals)
-    content = dict(policy_id=p['constraint_id'], policy_fingerprint=profile.fingerprint,
-                   mode='full_lpf', intervals=intervals, limits=limits,
-                   objective_segments=tuple(i.segment for i in intervals if i.type == 'pass'),
+    content = dict(policy_id=profile.profile['constraint_id'], policy_fingerprint=profile.fingerprint,
+                   mode='full_lpf', intervals=intervals, limits=(), objective_segments=(),
                    s2p_span_hz=(span['f_start_hz'], span['f_stop_hz']))
     fingerprint = _digest({k: [asdict(v) for v in value] if k in ('intervals', 'limits') else value
                            for k, value in content.items()})
@@ -335,6 +327,8 @@ def prepare_requirements(requirements, grid):
     req, g = requirements, grid
     if not isinstance(req, Requirements):
         raise ValueError('Expected compiled Requirements')
+    if not req.limits:
+        raise ValueError('Grid-only intervals cannot be used for legacy performance assessment')
     content = asdict(req)
     if _digest({k: v for k, v in content.items() if k != 'fingerprint'}) != req.fingerprint:
         raise ValueError('Requirements fingerprint mismatch')

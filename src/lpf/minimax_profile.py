@@ -139,6 +139,15 @@ def load_minimax_profile(constraint_id, *, allow_trial=False, root=ROOT):
                           json.dumps(rows), fingerprint, band_sha, base_sha, root.resolve())
 
 
+def _margin_parameters(profile, grid):
+    """Signed IL offset and direction in the order of an already frozen grid."""
+    limits = profile.profile['limits_db']
+    rows = profile.records
+    threshold = np.array([limits[r['note'] or r['case']][_KEYS[r['region']]] for r in rows])
+    direction = np.array([1 if r['type'] == 'pass' else -1 for r in rows])
+    return threshold[grid.segment], direction[grid.segment]
+
+
 def signed_margins(profile, expected_grid, response):
     """Return (J, per-sample margins) on the exact requested, complete grid.
 
@@ -170,7 +179,6 @@ def signed_margins(profile, expected_grid, response):
         measured = -20*np.log10(np.abs(s[:, 1, 0]))
     if not np.allclose(il, measured, rtol=1e-10, atol=1e-10):
         raise ValueError('IL does not match external power-wave S21')
-    margins = np.empty(len(il))
     for i, (setting, _, lo, hi) in enumerate(intervals):
         mask = g.segment == i
         f = g.frequency_hz[mask]
@@ -178,7 +186,6 @@ def signed_margins(profile, expected_grid, response):
                 or np.min(f) != lo*1e6 or np.max(f) != hi*1e6
                 or np.any(f < lo*1e6) or np.any(f > hi*1e6)):
             raise ValueError(f'Invalid interval grid: {i}')
-        row = rows[i]
-        limit = p['limits_db'][row['note'] or row['case']][_KEYS[row['region']]]
-        margins[mask] = il[mask] - limit if row['type'] == 'pass' else limit - il[mask]
+    threshold, direction = _margin_parameters(profile, g)
+    margins = direction * (il - threshold)
     return float(np.max(margins)), margins

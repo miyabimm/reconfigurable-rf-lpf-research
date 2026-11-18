@@ -20,17 +20,12 @@ class MinimalWorker:
         root = Path(root).resolve()
         data = plan.data
         cfg = data['config']
+        if 'rf_profile' in data or cfg['rf']['constraint_id'] == 'RF-T009':
+            raise ValueError('Use DevelopmentWorker for RF performance profile execution')
         self._verify_plan(plan, root)
         if sha(asdict(definition)) != definition_sha(cfg['definition']):
             raise ValueError('Definition/Plan mismatch')
-        self.profile = None
-        if cfg['rf']['constraint_id'] == 'RF-T009':
-            import json
-            from lpf.minimax_profile import load_minimax_profile
-            self.profile = load_minimax_profile('RF-T009', root=root, allow_trial=cfg['rf']['allow_trial'])
-            approved = json.loads(self.profile.base_json)
-        else:
-            approved = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
+        approved = load_constraint(cfg['rf']['constraint_id'], root=root, allow_trial=cfg['rf']['allow_trial'])
         if constraint_fingerprint(policy) != constraint_fingerprint(approved):
             raise ValueError('Policy/Plan mismatch')
         if type(seed) is not int or seed not in cfg['seeds'] or vector_sha(vector) != expected_vector_sha:
@@ -40,14 +35,10 @@ class MinimalWorker:
         self.step = chosen['steps'][0]
         self.definition, self.policy, self.seed = definition, policy, seed
         self.physical_model = build_rf_model(definition, policy)
-        self.model = self.profile.build_model(definition) if self.profile else self.physical_model
+        self.model = self.physical_model
         self.grid = plan.requested_grid(f"{arm}/{self.step['name']}")
-        if self.profile:
-            from .performance import compile_profile_requirements
-            self.requirements = compile_profile_requirements(self.profile)
-        else:
-            self.requirements = compile_requirements(policy, rf_input_file(root, policy['bands_file']), cfg['objective'])
-        expected_fingerprint = self.profile.fingerprint if self.profile else constraint_fingerprint(approved)
+        self.requirements = compile_requirements(policy, rf_input_file(root, policy['bands_file']), cfg['objective'])
+        expected_fingerprint = constraint_fingerprint(approved)
         if (self.model.policy_fingerprint != expected_fingerprint or
                 sha(asdict(self.requirements)) != sha(data['requirements']) or
                 grid_fingerprint(self.grid) != data['grids'][f"{arm}/{self.step['name']}"]['sha256']):
@@ -96,8 +87,6 @@ class MinimalWorker:
         return hybrid_residuals(evaluation[1])
 
     def solve(self):
-        if self.profile:
-            raise ValueError('RF-T009 optimizer objective must be explicitly configured; not implemented')
         # Check the solver box at the boundary, not at every callback.
         validate_search_box(self.bounds, self._physical_bounds)
         self._check_box(self.x)

@@ -2,6 +2,7 @@
 from dataclasses import asdict, is_dataclass
 import hashlib
 import json
+from numbers import Real
 import os
 from pathlib import Path
 import tempfile
@@ -40,16 +41,42 @@ def vector_sha(x):
     return hashlib.sha256(a.tobytes()).hexdigest()
 
 
-def _atomic_data(path, data):
+def _normalize_search_bounds(bounds):
+    """Copy numeric pairs without accepting bools, strings, or ragged input."""
+    try:
+        box = np.asarray(bounds, dtype=object)
+        if (box.ndim != 2 or box.shape[1] != 2 or
+                any(isinstance(v, (bool, np.bool_)) or not isinstance(v, Real) for v in box.flat)):
+            raise ValueError('Search bounds must be numeric pairs')
+        box = np.asarray(box, dtype=float)
+    except (TypeError, OverflowError) as exc:
+        raise ValueError('Search bounds must be numeric pairs') from exc
+    if not np.all(np.isfinite(box)):
+        raise ValueError('Search bounds must be finite')
+    return tuple(tuple(row) for row in box.tolist())
+
+
+def _save_checkpoint(path, payload):
+    """Publish an append-only event. Never replace existing raw bytes."""
+    from .evaluation import raw_numbers
+    return _atomic_data(path, canonical(raw_numbers(payload)).encode() + b'\n', replace=False)
+
+
+def _atomic_data(path, data, *, replace=True):
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if replace:
+        path.parent.mkdir(parents=True, exist_ok=True)
     fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name)
     try:
         with os.fdopen(fd, 'wb') as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(name, path)
+        if replace:
+            os.replace(name, path)
+        else:
+            os.link(name, path)
+            os.unlink(name)
         directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
         try:
             os.fsync(directory)

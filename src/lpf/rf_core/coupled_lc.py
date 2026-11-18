@@ -263,7 +263,7 @@ class CoupledLCTopology:
             )
         return Y
 
-    def port_admittance(self, values, omega_rad_s, setting_indices):
+    def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False):
         """Shared forward Schur reduction; never used by independent MNA."""
         Y = self.node_admittance(values, omega_rad_s, setting_indices)
         ports = (self.inductor_tree.source_node, self.inductor_tree.load_node)
@@ -276,12 +276,26 @@ class CoupledLCTopology:
             V = reordered[:, 2:, :2]
             E = reordered[:, 2:, 2:]
             try:
-                R = R - U @ np.linalg.solve(E, V)
+                internal = np.linalg.solve(E, V)
+                R = R - U @ internal
             except np.linalg.LinAlgError as exc:
                 raise CircuitNumericalError('schur_solve_failed', 'Internal-node Schur solve failed') from exc
         if not np.all(np.isfinite(R)):
             raise CircuitNumericalError('schur_nonfinite', 'Non-finite port admittance',
                 sample_index=int(np.flatnonzero(~np.all(np.isfinite(R), axis=(1, 2)))[0]))
+        if check_power:
+            # Compare real power at the reduced ports with real power in the
+            # full nodal system for any two-port voltage excitation.
+            lift = np.broadcast_to(np.eye(2), (len(Y), 2, 2))
+            if middle:
+                lift = np.concatenate((lift, -internal), axis=1)
+
+            def hermitian(a):
+                return (a + a.conj().swapaxes(-1, -2)) / 2
+
+            dissipated = lift.conj().swapaxes(-1, -2) @ hermitian(reordered) @ lift
+            if not np.allclose(hermitian(R), dissipated, rtol=1e-9, atol=1e-10):
+                raise CircuitNumericalError('schur_power_balance', 'Reduced circuit fails nodal power balance')
         return R
 
 

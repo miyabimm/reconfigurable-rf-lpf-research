@@ -68,7 +68,15 @@ class RFResponse:
     independent_mna_checked: bool = False
 
 
-def power_response(s, zs, zl):
+def _adjoint(a):
+    return a.conj().swapaxes(-1, -2)
+
+
+def _wave_loss(s):
+    return np.eye(2) - _adjoint(s) @ s
+
+
+def power_response(s, zs, zl, *, check_power=False):
     """Renormalize original real-50-ohm S without changing Touchstone data."""
     s = np.asarray(s, dtype=np.complex128)
     if s.ndim != 3 or s.shape[1:] != (2, 2) or not np.all(np.isfinite(s)):
@@ -87,6 +95,12 @@ def power_response(s, zs, zl):
         raise CircuitNumericalError('wave_singular', 'Singular power-wave conversion') from exc
     if not np.all(np.isfinite(result)):
         raise CircuitNumericalError('wave_nonfinite', 'Non-finite power waves')
+    if check_power:
+        # Both normalized wave bases describe the same port voltages/currents.
+        loss = _wave_loss(result)
+        if (np.any(np.linalg.eigvalsh(loss) < -2e-8) or
+                not np.allclose(_adjoint(a) @ loss @ a, _wave_loss(s), rtol=1e-9, atol=1e-10)):
+            raise CircuitNumericalError('external_power_balance', 'External waves are non-passive or fail power balance')
     magnitude = np.abs(result)
     if not np.all(np.isfinite(magnitude)):
         raise CircuitNumericalError('wave_nonfinite', 'Power-wave magnitude overflow')
@@ -105,7 +119,7 @@ def power_response(s, zs, zl):
     return (result, *metrics)
 
 
-def _cascade(a, b):
+def _cascade(a, b, *, check_power=False):
     """Scalar two-port Redheffer product; valid even at transmission zeros."""
     den = 1-a[:, 1, 1]*b[:, 0, 0]
     if np.any(den == 0) or not np.all(np.isfinite(den)):
@@ -117,6 +131,22 @@ def _cascade(a, b):
     s[:, 1, 1] = b[:, 1, 1] + b[:, 1, 0]*a[:, 1, 1]*b[:, 0, 1]/den
     if not np.all(np.isfinite(s)):
         raise CircuitNumericalError('cascade_nonfinite', 'Non-finite S cascade')
+    if check_power:
+        # Map the two external incident waves to each constituent's inputs.
+        # Net power lost at the external ports must equal the sum of the two
+        # absorber powers, for arbitrary excitation (including cross terms).
+        in_b = np.zeros_like(s)
+        in_b[:, 0, 0] = a[:, 1, 0] / den
+        in_b[:, 0, 1] = a[:, 1, 1] * b[:, 0, 1] / den
+        in_b[:, 1, 1] = 1
+        in_a = np.zeros_like(s)
+        in_a[:, 0, 0] = 1
+        in_a[:, 1, :] = (b @ in_b)[:, 0, :]
+        loss_a, loss_b, loss = _wave_loss(a), _wave_loss(b), _wave_loss(s)
+        absorbed = _adjoint(in_a) @ loss_a @ in_a + _adjoint(in_b) @ loss_b @ in_b
+        if (any(np.any(np.linalg.eigvalsh(d) < -2e-8) for d in (loss_a, loss_b, loss)) or
+                not np.allclose(loss, absorbed, rtol=1e-9, atol=1e-10)):
+            raise CircuitNumericalError('cascade_power_balance', 'Cascade is non-passive or fails power balance')
     return s
 
 
@@ -164,21 +194,29 @@ class RFEvaluator:
             s = [get_two_port_s(policy, key, float(f)) for f in self.grid.frequency_hz]
             object.__setattr__(self, name, _frozen(s, np.complex128))
 
-    def evaluate(self, x):
+    def evaluate(self, x, *, check_power=False):
         m, g = self.model, self.grid
         if isinstance(x, CircuitValues):
             m.encode(x)  # Validate dimensions and setting-invariant capacitors.
             values = x
         else:
             values = m.decode(x)
-        r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
+        if check_power:
+            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting, check_power=True)
+        else:
+            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
         eye = np.eye(2)
         try:
             core = np.linalg.solve(eye + 50*r, eye - 50*r)
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError('s_singular', 'Singular Y-to-S conversion') from exc
-        full = _cascade(_cascade(self.pre, core), self.post)
-        data = power_response(full, self.source_ohms, self.load_ohms)
+        if check_power:
+            voltage = np.sqrt(50.) * (eye + core)
+            absorbed = _adjoint(voltage) @ ((r + _adjoint(r)) / 2) @ voltage
+            if not np.allclose(_wave_loss(core), absorbed, rtol=1e-9, atol=1e-10):
+                raise CircuitNumericalError('core_power_balance', 'Core power waves fail nodal power balance')
+        full = _cascade(_cascade(self.pre, core, check_power=check_power), self.post, check_power=check_power)
+        data = power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
                   for j, a in enumerate(data)]
         return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)

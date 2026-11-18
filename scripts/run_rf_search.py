@@ -86,7 +86,7 @@ def main(argv=None):
             import yaml
             from lpf.search.plan import Loader
             from lpf.search._development_runner import _weighted_plan
-            from lpf.search._development_worker import _normalize_search_bounds
+            from lpf.search.storage import _normalize_search_bounds
             from lpf.search.proposals import definition_from_data
             from lpf.search.starts import generate_for_definition
             from lpf.search.component_constraints import physical_bounds
