@@ -25,7 +25,8 @@ ACTIVE_ENTRYPOINTS = (
     "project/campaign_workflow.md",
     "project/diagnostics/README.md",
     "project/instructions.md",
-    "project/roadmap.md",
+    "project/minimax_profile.md",
+    "scripts/README.md",
     "project/results.md",
     "project/methods.md",
     "project/specification.md",
@@ -103,9 +104,9 @@ def all_links(md, known):
 
 def verify_status():
     required = {
-        "README.md": ["RF-F003", "project/roadmap.md", "project/results.md"],
+        "README.md": ["RF-F003", "RF-T009", "scripts/README.md", "project/results.md"],
         "project/instructions.md": ["rf/constraints/registry.json", "承認"],
-        "project/roadmap.md": ["campaign_workflow.md", "diagnostics/README.md", "instructions.md", "../rf/constraints/registry.json", "../rf/bands.csv"],
+        "project/minimax_profile.md": ["RF-T009", "rf_performance_profile", "scripts/README.md"],
         "project/results.md": ["RF-T005", "RF-F003", "experiment_index.csv"],
     }
     for file, tokens in required.items():
