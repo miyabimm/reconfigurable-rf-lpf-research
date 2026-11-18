@@ -1,4 +1,4 @@
-"""Compile one effective Plan for an RF-T009 development Run (no RF forwards)."""
+"""Compile one effective Plan for an RF profile development Run (no RF forwards)."""
 from dataclasses import asdict
 import hashlib
 import json
@@ -25,11 +25,13 @@ def solver_options(step):
 def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_interval):
     """Return the immutable Plan and its verified physical/profile inputs."""
     d = json.loads(canonical(config))
-    if not isinstance(d, dict) or d.get('rf') != {'constraint_id': 'RF-T009', 'allow_trial': True} or d['rf']['allow_trial'] is not True:
-        raise ValueError('Development requires explicit RF-T009 trial opt-in')
+    if (not isinstance(d, dict) or not isinstance(d.get('rf'), dict)
+            or set(d['rf']) != {'constraint_id', 'allow_trial'}
+            or d['rf']['allow_trial'] is not True):
+        raise ValueError('Development requires a profile ID and explicit trial opt-in')
     fields(d, 'schema_version rf definition seeds arms terminal_points budget')
     if type(d['schema_version']) is not int or d['schema_version'] != 1:
-        raise ValueError('Expected RF-T009 development schema_version 1')
+        raise ValueError('Expected development schema_version 1')
     positive(checkpoint_interval)
     ref = d['definition']
     if isinstance(ref, dict) and 'inductor_tree' in ref:
@@ -43,7 +45,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
         if hashlib.sha256(blob).hexdigest() != ref['source_sha256'] or sha(json.loads(blob)) != ref['definition_sha256']:
             raise ValueError('Definition source SHA mismatch')
         definition = definition_from_data(json.loads(blob))
-    profile = load_minimax_profile('RF-T009', root=root, allow_trial=True)
+    profile = load_minimax_profile(d['rf']['constraint_id'], root=root, allow_trial=True)
     policy = json.loads(profile.base_json)
     model = profile.build_model(definition)
     physical = physical_bounds(definition, model.schema, policy)
@@ -52,7 +54,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
     req = compile_profile_grid(profile)
     grids, spots = {}, {}
     if not isinstance(spot_checks, dict) or not spot_checks.get('terminal'):
-        raise ValueError('RF-T009 requires Terminal MNA spots')
+        raise ValueError('Development requires Terminal MNA spots')
 
     def grid(stage, points, stop=None):
         g = build_evaluation_grid(req, points, stop)
@@ -92,7 +94,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
             if not isinstance(sname, str) or not sname.isidentifier() or stage in grids:
                 raise ValueError('Unique identifier step names required within an arm')
             if step['objective'] != 'signed_margin_db':
-                raise ValueError('RF-T009 requires signed_margin_db residuals')
+                raise ValueError('Development requires signed_margin_db residuals')
             validate_solver(step)
             points = step['points_per_interval']
             stop = step.get('stop_points_per_interval', points)

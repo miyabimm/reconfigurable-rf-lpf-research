@@ -1,4 +1,4 @@
-"""RF-T009 Search→Terminal science for a single frozen Job."""
+"""RF profile Search→Terminal science for a single frozen Job."""
 from dataclasses import asdict
 import hashlib
 import json
@@ -21,7 +21,7 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 
 
 class DevelopmentWorker:
-    """Run a frozen RF-T009 Job once. The caller owns durable reservation and raw."""
+    """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
     def __init__(self, compiled, job_index, source, *, root, checkpoint):
         self.plan, self.definition, self.profile, self.model, self.physical_bounds = compiled
@@ -62,7 +62,7 @@ class DevelopmentWorker:
     def _verify_boundary(self):
         if source_identity(self.root) != self.source:
             raise ValueError('Source/environment changed; no retry')
-        if minimax_profile.load_minimax_profile('RF-T009', root=self.root, allow_trial=True) != self.profile:
+        if minimax_profile.load_minimax_profile(self.data['rf_profile']['constraint_id'], root=self.root, allow_trial=True) != self.profile:
             raise ValueError('RF profile/base/bands/S2P changed; no retry')
         ref = self.data['config']['definition']
         if 'path' in ref and hashlib.sha256((self.root/ref['path']).read_bytes()).hexdigest() != ref['source_sha256']:
