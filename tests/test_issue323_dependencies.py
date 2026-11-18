@@ -102,15 +102,6 @@ class DependenciesTests(unittest.TestCase):
                      'limited_candidate_evidence', 'problem_seed', 'topology_enumeration'):
             self.assertFalse((root / (name + '.py')).exists(), name)
 
-    def test_checkout_checks_have_one_definition_and_no_legacy_gate_import(self):
-        from lpf.search import checkout, gates, preservation
-        for name in ('_complete_checkout', '_fresh_main'):
-            self.assertIs(getattr(gates, name), getattr(checkout, name))
-        for module in (gates, preservation):
-            source = Path(module.__file__).read_text()
-            self.assertNotIn('scripts.run_phase2_shared', source)
-            self.assertNotIn('scripts.run_phase2_one_start', source)
-
     def test_science_and_preservation_without_legacy_execution_closure(self):
         # Run actual scientific assertions in a fresh interpreter, rather than
         # importing old modules merely to patch them. Covers transitive fixture
@@ -123,10 +114,11 @@ sys.path[:0] = ['src', 'tests']
 class BlockLegacy(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname.startswith(('lpf.phase2_models', 'scripts.run_phase2_',
-                                'lpf.variable_c_layouts', 'lpf.coupling_layout')):
+                                'lpf.variable_c_layouts', 'lpf.coupling_layout',
+                                'lpf.search.campaign', 'lpf.search.gates', 'lpf.search.preservation')):
             raise AssertionError('Legacy execution dependency: ' + fullname)
 sys.meta_path.insert(0, BlockLegacy())
-from lpf.search import gates, preservation
+from lpf.search.checkout import verify_checkout
 from lpf.experiment_preservation import finalize_experiment, aggregate_selected
 assert aggregate_selected([], {})['validation'] == {'numerical': 'not_run', 'independent': 'not_run'}
 suite = unittest.defaultTestLoader.loadTestsFromNames([
@@ -137,7 +129,8 @@ suite = unittest.defaultTestLoader.loadTestsFromNames([
 result = unittest.TextTestRunner(verbosity=1).run(suite)
 assert result.wasSuccessful()
 assert not any(name.startswith(('lpf.phase2_models', 'scripts.run_phase2_',
-                                'lpf.variable_c_layouts', 'lpf.coupling_layout')) for name in sys.modules)
+                                'lpf.variable_c_layouts', 'lpf.coupling_layout',
+                                'lpf.search.campaign', 'lpf.search.gates', 'lpf.search.preservation')) for name in sys.modules)
 '''
         subprocess.run([sys.executable, '-c', code], check=True,
                        cwd=Path(__file__).resolve().parents[1])

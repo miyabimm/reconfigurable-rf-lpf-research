@@ -62,6 +62,14 @@ def _save_checkpoint(path, payload):
     return _atomic_data(path, canonical(raw_numbers(payload)).encode() + b'\n', replace=False)
 
 
+def sync_directory(path):
+    directory = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+
+
 def _atomic_data(path, data, *, replace=True):
     path = Path(path)
     if replace:
@@ -77,11 +85,7 @@ def _atomic_data(path, data, *, replace=True):
         else:
             os.link(name, path)
             os.unlink(name)
-        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
+        sync_directory(path.parent)
     finally:
         if os.path.exists(name):
             os.unlink(name)

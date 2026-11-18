@@ -9,7 +9,7 @@
 | 系統 | main統合済み／確認済みの範囲 | 未実施・制限 |
 |---|---|---|
 | 科学・実行基盤 #306 | #307閉区間/schema2・履歴保護、#309 RF Core、#311性能、#313静的preflight、#315固定stage、#317 Worker、#319逐次親、#321開発CLI、#323依存整理 | 統合だけでRF目標達成や探索収束を認定しない |
-| Campaign #325 | schema2 Plan、data-only提案、Controller/Worker、隔離Git fixtureによるG0〜G5の限定配線 | `run_campaign()`自動loopは`not_ready`、本物の正式Campaign EXPの実運用は未実証 |
+| RF-T009開発Runner #448 | 1回の実効Plan凍結、seed→arm逐次実行、先行予約とraw読戻し。#325旧Campaign実行・専用ゲート結合は撤去 | 新形式の正式Campaignは未接続。正式EXP管理は独立 |
 | 実SciPy非EXP #330 | 開発Jobと隔離の架空EXP、各616/616 samples、独立terminal各1 spotを実行 | 予算終了・**未収束**、全9 batchのstrict finite-gridはFAIL。全面MNA／正式EXPではない |
 | 実行基盤 #301 | 固定順逐次・明示提出API | scheduler、parallel、retry/resume、自動ライフサイクルは未提供 |
 | 保存CI #332 / PR #334 | 保存専用と確実に分類できる変更だけ一般RF回帰を省略。G0/保存/provenance常時監査 | CI PASSは科学的RF再計算の実施を意味しない |
@@ -34,4 +34,4 @@
 3. 大規模本番計算と新規EXPは具体的Issue・ユーザーの着手指示、main中央番号G0予約、完全checkout/G1を前提とする。
 4. 過去のStage 1〜5成果は限定的な開発到達記録。旧詳細は[Issue #163](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/163)とPR #164/#169/#187/#190/#193/#195を参照。研究Phase移行は別途決定する。
 
-実際のコマンドは[Campaign操作ガイド](campaign_workflow.md)、数値結果と仮説の区別は[methods.md](methods.md)／[results.md](results.md)。
+実際のコマンドは[開発CLI](../scripts/README.md)と[正式EXP外部管理](campaign_workflow.md)、数値結果と仮説の区別は[methods.md](methods.md)／[results.md](results.md)。

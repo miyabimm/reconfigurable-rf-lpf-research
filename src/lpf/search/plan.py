@@ -36,6 +36,31 @@ def positive(value):
         raise ValueError('Positive integer required')
 
 
+def validate_solver(step):
+    solver, agg, options = step['solver'], step['aggregation'], step['options']
+    if solver == 'hybrid':
+        fields(options, 'max_search_forwards')
+        positive(options['max_search_forwards'])
+    elif solver in ('slsqp', 'slp'):
+        fields(options, 'max_iterations max_evaluations')
+        positive(options['max_iterations'])
+    else:
+        raise ValueError('Unknown solver')
+    if agg not in (('signed_max',) if solver == 'slp' else ('sum', 'max')):
+        raise ValueError('Unknown solver aggregation')
+    if solver != 'hybrid':
+        positive(options['max_evaluations'])
+
+
+def grid_from_record(record):
+    from ..rf_core.model import EvaluationGrid
+    from .performance import grid_fingerprint
+    grid = EvaluationGrid(record['frequency_hz'], record['setting'], record['segment'])
+    if grid_fingerprint(grid) != record['sha256']:
+        raise ValueError('Frozen grid SHA mismatch')
+    return grid
+
+
 @dataclass(frozen=True)
 class Plan:
     frozen_json: str
@@ -47,13 +72,7 @@ class Plan:
 
     def requested_grid(self, name):
         """Reconstruct a Stage-4A request independently of any RF response."""
-        from ..rf_core.model import EvaluationGrid
-        from .performance import grid_fingerprint
-        record = self.data['grids'][name]
-        grid = EvaluationGrid(record['frequency_hz'], record['setting'], record['segment'])
-        if grid_fingerprint(grid) != record['sha256']:
-            raise ValueError('Frozen grid SHA mismatch')
-        return grid
+        return grid_from_record(self.data['grids'][name])
 
 
 def load_preflight(path, root=ROOT):

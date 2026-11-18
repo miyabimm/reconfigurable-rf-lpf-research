@@ -1,13 +1,11 @@
-"""RF performance profile science Worker for development G2 only."""
+"""RF-T009 Search→Terminal science for a single frozen Job."""
 from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
-import tempfile
 
 import numpy as np
 
-from lpf.constraint_versions import constraint_fingerprint
 from lpf import minimax_profile
 from lpf.minimax_profile import signed_margins, _margin_parameters
 from lpf.optimizers.hybrid import hybrid_minimize
@@ -15,75 +13,48 @@ from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.rf_core.model import build_rf_model
-from ._job_evaluation import source_identity
-from .component_constraints import (_check_vector_box, _validate_values_with_bounds,
-                                    physical_bounds, validate_search_box)
+from .plan import grid_from_record
+from .source import source_identity
+from .component_constraints import _check_vector_box, _validate_values_with_bounds
 from .evaluation import raw_numbers
-from .performance import grid_fingerprint
-from .preflight import definition_sha, _freeze_with_profile
-from .storage import _normalize_search_bounds, _save_checkpoint, canonical, plain, sha, vector_sha
-from .worker import _development_options
+from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 
 
 class DevelopmentWorker:
     """Run a frozen RF-T009 Job once. The caller owns durable reservation and raw."""
 
-    def __init__(self, plan, definition, policy, arm, seed, vector, expected_vector_sha,
-                 *, root, checkpoint, checkpoint_interval=1000, spot_checks=None, search_bounds=None):
-        data = plan.data
-        cfg = data['config']
-        if cfg['rf'] != {'constraint_id': 'RF-T009', 'allow_trial': True} or 'rf_profile' not in data:
-            raise ValueError('STOP: DevelopmentWorker requires an explicit RF-T009 performance profile; legacy performance is unsupported')
-        if (cfg['objective'] != 'full_lpf' or 'campaign' in cfg or 'selection' in cfg or cfg['anytime_samples']):
-            raise ValueError('STOP: RF-T009 G2 requires a standalone Search→Terminal Plan')
-        self.root = Path(root).resolve()
-        self.source = source_identity(self.root)
-        self.source_sha256 = sha(self.source)
-        current, self.profile = _freeze_with_profile(cfg, self.root)
-        if sha(data) != plan.sha256 or sha(current) != plan.sha256:
-            raise ValueError('Plan/current RF inputs mismatch')
-        if (self.profile.fingerprint != data['rf_profile']['effective_sha256'] or
-                constraint_fingerprint(policy) != self.profile.base_sha256):
-            raise ValueError('RF profile/physical base mismatch')
-        if sha(asdict(definition)) != definition_sha(cfg['definition']):
-            raise ValueError('Definition/Plan mismatch')
-        steps = next((a['steps'] for a in cfg['arms'] if a['name'] == arm), None)
-        if not steps:
-            raise ValueError('Plan arm with steps required')
-        if type(seed) is not int or seed not in cfg['seeds'] or vector_sha(vector) != expected_vector_sha:
-            raise ValueError('Seed/start SHA mismatch')
-        self.plan, self.data, self.arm, self.seed, self.steps = plan, data, arm, seed, steps
-        self.definition = definition
+    def __init__(self, compiled, job_index, source, *, root, checkpoint):
+        self.plan, self.definition, self.profile, self.model, self.physical_bounds = compiled
+        self.data = self.plan.data
+        if sha(self.data) != self.plan.sha256:
+            raise ValueError('Frozen Plan SHA mismatch')
+        cfg = self.data['config']
+        job = self.data['jobs'][job_index]
+        self.arm, self.seed = job['arm'], job['seed']
+        self.steps = next(a['steps'] for a in cfg['arms'] if a['name'] == self.arm)
+        self.root = root
+        self.source = source
+        self.source_sha256 = sha(source)
+        self._verify_boundary()
         self.policy = json.loads(self.profile.base_json)
-        self.physical_model = build_rf_model(definition, self.policy)
-        self.model = self.profile.build_model(definition)
-        self.physical_bounds = physical_bounds(definition, self.model.schema, self.policy)
-        self.bounds = self.physical_bounds if search_bounds is None else _normalize_search_bounds(search_bounds)
-        validate_search_box(self.bounds, self.physical_bounds)
-        self.x = _check_vector_box(vector, self.bounds).astype(float, copy=True)
+        self.physical_model = build_rf_model(self.definition, self.policy)
+        if (sha(asdict(self.definition)) != sha(self.data['definition']) or
+                plain(self.model.schema) != self.data['parameter_schema'] or
+                self.profile.fingerprint != self.data['rf_profile']['effective_sha256']):
+            raise ValueError('Frozen Plan/Job inputs mismatch')
+        self.bounds = self.data['search_bounds']
+        self.x = _check_vector_box(job['vector'], self.bounds).astype(float, copy=True)
+        if vector_sha(self.x) != job['vector_sha256']:
+            raise ValueError('Start vector SHA mismatch')
         self.x.setflags(write=False)
         self._physical(self.x)
-        self.grids = {stage: plan.requested_grid(stage) for stage in
-                      [f"{arm}/{step['name']}" for step in steps] + ['terminal']}
-        if any(grid_fingerprint(g) != data['grids'][stage]['sha256'] for stage, g in self.grids.items()):
-            raise ValueError('Grid/Plan mismatch')
-        if not isinstance(spot_checks, dict) or not spot_checks.get('terminal'):
-            raise ValueError('RF-T009 requires terminal MNA spots')
-        self.spot_checks = {}
-        for stage, indices in spot_checks.items():
-            if (stage not in self.grids or not isinstance(indices, list) or not indices or
-                    any(type(i) is not int or not 0 <= i < len(self.grids[stage].frequency_hz) for i in indices) or
-                    len(set(indices)) != len(indices)):
-                raise ValueError('Invalid independent spot checks')
-            self.spot_checks[stage] = tuple(indices)
-        self.path = Path(checkpoint).resolve()
-        if (not self.path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
-                self.path.is_relative_to(self.root) or self.path.exists()):
-            raise ValueError('Fresh temporary checkpoint outside repository required')
-        if type(checkpoint_interval) is not int or checkpoint_interval < 1:
-            raise ValueError('Positive checkpoint interval required')
+        self.grids = {stage: grid_from_record(self.data['grids'][stage]) for stage in
+                      [f"{self.arm}/{step['name']}" for step in self.steps] + ['terminal']}
+        self.spot_checks = {stage: tuple(indices) for stage, indices in self.data['spot_checks'].items()
+                            if stage in self.grids}
+        self.path = Path(checkpoint)
         self.path.mkdir(exist_ok=False)
-        self.checkpoint_interval = checkpoint_interval
+        self.checkpoint_interval = self.data['checkpoint_interval']
         self.checkpoint_files = {}
         self.audit_samples = {}
         self._started = False
@@ -154,7 +125,7 @@ class DevelopmentWorker:
         stage = f"{self.arm}/{step['name']}"
         evaluator = self.model.evaluator(self.grids[stage])
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
-        opts = _development_options(step)
+        opts = step['effective_options']
         self.forward_count, self.forward_cap = 0, opts['max_evaluations']
         saved = None
         independent = None

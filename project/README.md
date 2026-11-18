@@ -9,12 +9,12 @@
 | 役割、承認、研究の保存方針 | [instructions.md](instructions.md)／[AGENTS.md](../AGENTS.md) |
 | 最新の開発状況、未検証ゲート | [roadmap.md](roadmap.md)／GitHub Issues |
 | 回路・RF条件、全6設定／28区間 | [specification.md](specification.md)、[registry.json](../rf/constraints/registry.json)、[bands.csv](../rf/bands.csv) |
-| Campaign（開発・正式EXP）の明示API | [campaign_workflow.md](campaign_workflow.md) |
+| 正式EXP外部管理と旧Campaignの扱い | [campaign_workflow.md](campaign_workflow.md) |
 | 新規EXPのG0〜G5・証拠の分類 | [experiment_storage_policy.md](experiment_storage_policy.md) |
 | SLSQP反復・停止理由の運用 | [slsqp_iteration_policy.md](slsqp_iteration_policy.md) |
 | 回路理論・探索上の判断基準 | [methods.md](methods.md) |
 | 観測された候補・失敗・検証深度 | [results.md](results.md)、[EXP索引](../data/experiment_index.csv) |
-| 試験RF-T009（限定開発Worker入口） | [minimax_profile.md](minimax_profile.md) |
+| 試験RF-T009（逐次開発Runner） | [minimax_profile.md](minimax_profile.md) |
 | 開発ツール／CIの実入口 | [scripts/README.md](../scripts/README.md)、[CI](../.github/workflows/audit.yml) |
 | 現行診断の参照先 | [diagnostics/README.md](diagnostics/README.md)（**#397の整理対象外**） |
 | 旧パス／固定Git履歴の読み方 | [legacy_git_replay.md](legacy_git_replay.md) |
@@ -26,22 +26,9 @@
 - 共通数値入口は`src/lpf/rf_core/`、設計検査は`src/lpf/search/`、結合/接続の構造は`src/lpf/topology_management/`。現役の動作と回帰はコードとテストを確認する。
 - RF Coreの一致・CI PASS・solver success・保存完了は、それぞれ**全帯域RF適合、独立MNA、連続帯域保証、実測**と同義ではない。SPD、受動性・電力保存、固定S2P、全6設定の別区間評価を維持する。
 
-### 開発用固定definition CLI
+### RF-T009開発用固定definition CLI
 
-正式EXPではない固定definitionの逐次開発用入口：
-
-```bash
-uv sync --frozen
-uv run --frozen python scripts/run_rf_search.py develop \
-  --config <schema2.yaml> --starts <starts.json> --output <未存在のcheckout外system tmpディレクトリ>
-```
-
-- `--starts`はseedから完全vector/SHAへの入力。自動clip・補充・別トポロジーへの単純投影はしない。
-- 通常開発の新しいPlanは `selection` を含めず、最終Search stepのsolver出力1件をTerminal格子で評価する。SearchとTerminalは別判定で、異なるstep格子の目的値を比較しない。旧Selection Plan/rawは自動変換しない。Terminalのstrict FAILはsolver収束や開発フロー完了と別のRF判定。Campaign経路は本変更の対象外。
-- RF-T008 trial / `full_lpf` のみ、`--objective-mode weighted_violation --max-search-forwards N --search-bounds <box.json>` と `--starts` または `--sobol` のいずれかで、固定seed順に予算内restartを実行できる。各Jobの探索上限はN、checkpoint間隔は1000 forward。Search/Terminal/独立MNAは別会計。出力の `run.json` は親台帳、`summary.json` は有限格子でstrict適合した候補のIL順位。budget終了は収束やRF認証を意味しない。正式EXP入口ではない。
-- 4L2C向けbox例は [`diagnostics/issue441/recommended_box.json`](diagnostics/issue441/recommended_box.json)。これは指定definition／RF-T008向けの完全vector順（L: nH、C/Cv: pF、k: 無次元）の探索部分箱であり、物理hard boundsの変更ではない。Sobol違法点は修復・再抽選せずSTOP。
-- 終了コードは0=実行完走＋solver収束、4=照合済み未収束／予算切れ、2=不正・中断状態等。正式production入口はこのCLIにない。**終了0だけでRF適合とはしない**。
-- 開発Campaignの**1件ずつproposal提出**と正式CampaignのG0〜G5は[操作ガイド](campaign_workflow.md)で区別する。
+[RF-T009逐次開発CLI](../scripts/README.md#rf-t009-開発run)は、明示opt-inのRF-T009のみを受け付ける。全seed×armの初期値・共通boundsと予算を一度だけ凍結し、同じRunnerで逐次実行する。正式EXPのG0〜G5とは独立しており、新形式の正式Campaignには未接続。
 
 ## 廃止済み旧探索入口
 

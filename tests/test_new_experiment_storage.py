@@ -2,10 +2,13 @@
 import hashlib
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from scripts.audit_new_experiment_storage import (
     CASES, MIN_NEW_EXP_NUMBER, audit_all, inspect_new_git_files, reservation_on_main,
@@ -232,6 +235,53 @@ class StoragePolicyGateTests(unittest.TestCase):
         self.assertEqual(1, report["checkpoints"])
         self.assertTrue(report["committed_readback"])
         self.assertEqual("not_run", report["independent_validation"])
+
+    def test_g5_external_readback_checks_remote_and_exact_raw_without_deleting(self):
+        from lpf.experiment_preservation import cleanup_eligibility
+
+        self.complete()
+        (self.root/'data/experiment_number_registry.csv').write_text('fixture\n')
+        (self.root/'rf').mkdir()
+        (self.root/'rf/bands.csv').write_text('fixture\n')
+        index = self.root/'data/experiment_index.csv'
+        index.write_text('fixture\n')
+        (self.root/'.gitignore').write_text('/results/\n')
+        raw = self.root/'results/EXP-050/observation.bin'
+        raw.parent.mkdir(parents=True)
+        raw.write_bytes(b'raw observation')
+        inventory = self.base + '/raw-inventory.json'
+        digest = dump(self.root/inventory, {raw.name: hashlib.sha256(raw.read_bytes()).hexdigest()})
+        entry = dict(path=inventory, sha256=digest)
+        self.manifest['evidence'].append(entry)
+        self.record['supporting_evidence'] = [dict(entry, role='other', reason='Exact C inventory')]
+        self.save()
+        self.commit_changes()
+        origin = tempfile.TemporaryDirectory()
+        self.addCleanup(origin.cleanup)
+        def git(*args):
+            subprocess.run(['git', *args], cwd=self.root, check=True, capture_output=True)
+        git('init', '--bare', '-q', origin.name)
+        git('remote', 'add', 'origin', origin.name)
+        git('push', '-q', 'origin', 'HEAD:main')
+        def check():
+            return cleanup_eligibility(self.root, 'EXP-050', inventory_path=inventory,
+                                       resume_needed=False, classification_complete=True)
+        with patch(SCRIPT + '.validate_manifest'), patch(
+                SCRIPT + '.reservation_on_main', return_value={'constraint_id': 'RF-F003'}):
+            report = check()
+            self.assertTrue(report['eligible'])
+            self.assertFalse(report['deleted'])
+            self.assertEqual(report['temporary_c'], [raw.name])
+            self.assertEqual(raw.read_bytes(), b'raw observation')
+            raw.write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError, 'Raw changed/unclassified'):
+                check()
+            raw.write_bytes(b'raw observation')
+            index.write_text('not on remote\n')
+            self.commit_changes()
+            with self.assertRaisesRegex(ValueError, 'Remote main preservation bytes mismatch'):
+                check()
+            self.assertTrue(raw.is_file())
 
     def test_exp_total_limit_is_configurable(self):
         self.complete()
