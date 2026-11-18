@@ -146,9 +146,16 @@ class DevelopmentWorker:
                 saved = self.forward_count, digest, objective
 
         solver = step['solver']
+        local_runs = 0
+
+        def count_local_run(_run):
+            nonlocal local_runs
+            local_runs += 1
+
         if solver == 'hybrid':
             out = hybrid_minimize(residuals, x, self.bounds, seed=self.seed,
-                                  aggregation=step['aggregation'], objective_callback=observe, **opts)
+                                  aggregation=step['aggregation'], objective_callback=observe,
+                                  local_run_callback=count_local_run, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = minimize(residuals, x, self.bounds, constraints=None, aggregation=step['aggregation'],
@@ -165,11 +172,14 @@ class DevelopmentWorker:
         digest = vector_sha(out.x)
         if saved != (self.forward_count, digest, out.objective):
             self._checkpoint(step['name'], stage, dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective))
-        return dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
-                    solver_result=raw_numbers(out), stop_reason=out.stop_reason, converged=out.converged,
-                    forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
-                    input_vector=plain(x), input_vector_sha256=vector_sha(x),
-                    grid_sha256=self.data['grids'][stage]['sha256'], independent=independent), out.x
+        record = dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
+                      solver_result=raw_numbers(out), stop_reason=out.stop_reason, converged=out.converged,
+                      forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
+                      input_vector=plain(x), input_vector_sha256=vector_sha(x),
+                      grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
+        if solver == 'hybrid':
+            record['local_runs'] = local_runs
+        return record, out.x
 
     def run(self):
         if self._started:

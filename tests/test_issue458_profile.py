@@ -72,7 +72,32 @@ class Profile458Tests(unittest.TestCase):
                 np.testing.assert_allclose(getattr(new, key)[i], ref[key], rtol=0, atol=1e-9)
         print('T010 476-point: worst IL', max(new.il_db[passed]), 'min H2/H3', min(new.il_db[~passed]), 'J', j)
 
+    def test_hybrid_sigma_plan(self):
+        options = self.cfg['arms'][0]['steps'][0]['options']
+        fingerprints = []
+        for sigma in (None, .03, .10, .30):
+            if sigma is None:
+                options.pop('restart_sigma', None)
+            else:
+                options['restart_sigma'] = sigma
+            plan = self.freeze()[0]
+            step = plan.data['config']['arms'][0]['steps'][0]
+            self.assertEqual(step['effective_options']['restart_sigma'], .1 if sigma is None else sigma)
+            self.assertEqual(plan.sha256, sha(plan.data))
+            fingerprints.append(plan.sha256)
+        self.assertEqual(len(set(fingerprints)), 4)
+        for invalid in (True, False, None, '0.1', [], float('nan'), float('inf'),
+                        -float('inf'), 0, -0.1, 10**400):
+            options['restart_sigma'] = invalid
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                self.freeze()
+        options['restart_sigma'] = .1
+        options['extra'] = 1
+        with self.assertRaises(ValueError):
+            self.freeze()
+
     def test_runner_smoke(self):
+        self.cfg['arms'][0]['steps'][0]['options']['restart_sigma'] = .03
         with tempfile.TemporaryDirectory(prefix='issue458-smoke-') as tmp:
             out = Path(tmp)/'run'
             state = runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks={'terminal':[0,57]},
@@ -89,7 +114,28 @@ class Profile458Tests(unittest.TestCase):
             self.assertTrue(list((out/'job-0001/checkpoints').iterdir()))
             result = json.loads((out/'job-0001/result.json').read_text())
             self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
+            self.assertEqual(plan['config']['arms'][0]['steps'][0]['effective_options']['restart_sigma'], .03)
+            self.assertEqual(result['steps'][0]['solver_options']['restart_sigma'], .03)
+            self.assertEqual(result['steps'][0]['local_runs'], 1)
+            self.assertEqual(result['plan_sha256'], sha(plan))
             print('T010 smoke reservation', row['reservation'], 'actual', row['actual'])
+
+    def test_hybrid_local_run_callback_counts_each_invocation(self):
+        from lpf.optimizers.hybrid import hybrid_minimize
+
+        def multiple_runs(*args, **kwargs):
+            callback = kwargs['local_run_callback']
+            callback(None)
+            callback(None)
+            return hybrid_minimize(*args, **kwargs)
+
+        with tempfile.TemporaryDirectory(prefix='issue461-callback-') as tmp, \
+             patch('lpf.search._development_worker.hybrid_minimize', side_effect=multiple_runs):
+            out = Path(tmp)/'run'
+            runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks={'terminal': [0, 57]},
+                       search_bounds=None, checkpoint_interval=1)
+            result = json.loads((out/'job-0001/result.json').read_text())
+            self.assertEqual(result['steps'][0]['local_runs'], 3)
 
     def test_generic_alias_and_fail_closed(self):
         with tempfile.TemporaryDirectory(prefix='issue458-registry-') as tmp:

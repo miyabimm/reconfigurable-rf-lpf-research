@@ -118,6 +118,10 @@ class CommonRunnerTests(unittest.TestCase):
                               options=dict(max_iterations=1, max_evaluations=2)))
         self.launch()
         result = self.read('job-0001/result.json')
+        self.assertEqual(result['steps'][0]['local_runs'], 1)
+        self.assertEqual(result['steps'][0]['solver_options']['restart_sigma'], .1)
+        for step in result['steps'][1:]:
+            self.assertNotIn('local_runs', step)
         for previous, step in zip(result['steps'], result['steps'][1:]):
             self.assertEqual(vector_sha(previous['solver_result']['x']), step['input_vector_sha256'])
         terminal, = result['terminal']['candidates']
