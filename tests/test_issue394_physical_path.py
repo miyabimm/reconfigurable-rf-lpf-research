@@ -1,5 +1,9 @@
 """Direct RF Core SPD threshold regression retained from Issue #394."""
+from pathlib import Path
+import sys
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from lpf.rf_core.coupled_lc import CircuitValues, CoupledLCTopology
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
