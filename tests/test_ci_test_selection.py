@@ -117,6 +117,21 @@ class SelectionTests(unittest.TestCase):
             selector.execute(result)
         run.assert_not_called()
 
+    def test_historical_experiment_numerics_remain_manual_only(self):
+        for name in ('test_exp009_checkpoints.py', 'test_exp011.py',
+                     'test_exp057_graph_neighbors.py', 'test_legacy_gap.py',
+                     'test_area7_reference.py'):
+            self.assertTrue(selector.manual_historical_numeric(name))
+        for name in ('test_experiment_provenance.py', 'test_issue343_d3_science.py'):
+            self.assertFalse(selector.manual_historical_numeric(name))
+        plan = {'full': False, 'classes': [], 'changed_tests': [
+            'tests/test_exp011.py', 'tests/test_legacy_gap.py'
+        ], 'storage_only': False, 'reasons': []}
+        with patch.dict(os.environ, {'GITHUB_STEP_SUMMARY': ''}), \
+             patch.object(selector.subprocess, 'run') as run:
+            selector.execute(plan)
+        run.assert_not_called()
+
     def test_document_rules_keep_safety_ownership(self):
         for path, expected in {
             'project/specification.md': {'RF'},
