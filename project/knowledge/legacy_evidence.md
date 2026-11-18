@@ -68,7 +68,7 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 ## 文書統合と固定監査の読み方（Issue #352）
 
-研究解釈は本ページと[methods](../methods.md)、現役実装とゲートは[roadmap](../roadmap.md)、運用は変更しない[instructions](../../project/instructions.md)へ集約しました。W3/W4/W5の当時の監査完了・CI成功は、原研究の数値再実行、重要証拠の削除許可、研究Phase移行ではありません。225件、131件、46件の台帳は重複し得る別集合で、単純合算しません。旧39/31/3 workflow数や「未merge」は各報告時点の意味で、現役状態ではありません。
+研究解釈は本ページと[methods](../methods.md)、現役実装とゲートは[GitHub Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)・[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)およびmain実装・CI、運用は変更しない[instructions](../../project/instructions.md)へ集約しました。W3/W4/W5の当時の監査完了・CI成功は、原研究の数値再実行、重要証拠の削除許可、研究Phase移行ではありません。225件、131件、46件の台帳は重複し得る別集合で、単純合算しません。旧39/31/3 workflow数や「未merge」は各報告時点の意味で、現役状態ではありません。
 
 [W3統合文書](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/main/docs/archive/w3_consolidated_documents_20261017.md)は当時のD-001〜004の出典・承認を記録する。正式EXPの残存するmanifest・選抜point・独立MNAが現在の証拠であり、退役した旧W4/W5の[原レビュー資料](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/246444b93fb6e6b082af6ece3c5bfc7bcaff05c9/data/repository_reviews)は当時の原blob分類・終了状態・訂正の参照に限ります。時点固定のW4/W5保全一覧は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/c2143b0f9322f0a16f2eb39073ed243a8d0e4b51/data/repository_reviews)にあり、数値再検証ではありません。削除した日付別文書の逐語内容と試行内訳は[整理前tree](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/3370ea4/docs)、元pathごとの処置・残置callerは[PR #353](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/353)に記録します。復元専用機能・新アーカイブは追加しません。
 

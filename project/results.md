@@ -37,7 +37,7 @@
 
 ## 枝スタンプ前計算の3方式比較（Issue #413）
 
-[現役KB](knowledge/pilot_performance.md#枝qスタンプ前計算と小行列縮約issue-413)・[報告と原記録](diagnostics/issue413_report.md)。RF-T008 rev3 trial／full_lpf・70点に限定した開発診断。事前枝Qスタンプのsix-matmul／direct-matmulは固定100 vectorの完全RF forwardとSolver plainで2batch改善方向を観測。six-matmulを独立レビュー第一候補とするが**本番未採用**。全S／全指標／mandatoryの許容差内一致・代表全70点独立MNAとSTOP回帰を確認、ビット非一致・Solver経路差・全88 Solver run未収束。正式RF適合や汎用速度率を認定しない。
+[現役KB](knowledge/pilot_performance.md#枝qスタンプ前計算と小行列縮約issue-413)・[報告と原記録](diagnostics/issue413_report.md)。RF-T008 rev3 trial／full_lpf・70点に限定した開発診断。事前枝Qスタンプのsix-matmul／direct-matmulは固定100 vectorの完全RF forwardとSolver plainで2batch改善方向を観測。six-matmulは**#413の診断時点では本番未採用**だったが、後に[PR #416](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/416)で本番採用。全S／全指標／mandatoryの許容差内一致・代表全70点独立MNAとSTOP回帰を確認、ビット非一致・Solver経路差・全88 Solver run未収束。正式RF適合や汎用速度率を認定しない。
 
 ## six-matmul採用後mainのRF forward内訳（Issue #417）
 

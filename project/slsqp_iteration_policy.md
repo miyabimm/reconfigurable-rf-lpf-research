@@ -1,6 +1,6 @@
-# SLSQP反復・停止理由の運用（Phase 2、v2）
+# 二段階SLSQP反復・停止理由（既存v2方式の記録）
 
-**現行2段階SLSQPの標準は`slsqp-staged-v2`。** これは探索計算の停止基準であり、RF制約・物理モデル・新EXPのG0〜G5を変更しない。正本実装は[src/lpf/slsqp_budget.py](../src/lpf/slsqp_budget.py)、[回帰テスト](../tests/test_slsqp_budget.py)。旧v1は歴史記録としてGit履歴へ残し、過去EXPに遡及適用しない。
+**本書は従来の二段階SLSQP方式 `slsqp-staged-v2` の停止規則と実験証拠を記録するものであり、RF-T009の現行逐次開発Runnerの標準Planではない。** RF-T009では[専用profile・Search→Terminal仕様](minimax_profile.md)と[CLI](../scripts/README.md#rf-t009-開発run)を参照する。当該二段階方式の実装は[src/lpf/slsqp_budget.py](../src/lpf/slsqp_budget.py)、[回帰テスト](../tests/test_slsqp_budget.py)。RF制約・物理モデル・正式EXPのG0〜G5を変更せず、過去のv1/EXP記録へ遡及適用しない。
 
 ## v2の反復上限と回復条件
 
@@ -21,7 +21,7 @@
 - [EXP-060](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39434590336)：126試行、両段階収束62／未収束64。粗status4=31、8=29、9=4、粗240反復到達0。精密120反復到達4はすべて粗status4後であり、280への延長で両段階収束0。
 - [EXP-061](https://github.com/MasayaTakagi/reconfigurable-rf-lpf-research/actions/runs/39439246405)：粗status4/8・精密status0の保存20点を**同じvectorから**通常240/120と増額500/280で対照再始動し、双方20/20で両段階収束・30dB適合・独立9×9MNA PASS。当該20点では増額の実質IL利益を観測せず、他の未収束点へ一般化しない。
 - 旧EXP-055→056のウォーム再探索6/6収束は**初期vectorとiteration上限を同時変更**したため、上限増額の単独因果効果ではない。通常240/120の大域最適性・全帯域の保証ではない。
-- 古いv1は`run_staged_slsqp`（初回240/120・真のlimit時500/280救済）の当時仕様。新規は`run_termination_aware_slsqp`を使用し、過去の`iteration_policy_id=slsqp-staged-v1`を上書きしない。
+- 古いv1は`run_staged_slsqp`（初回240/120・真のlimit時500/280救済）の当時仕様。二段階v2を独立して使用する場合は`run_termination_aware_slsqp`を使用する。RF-T009 RunnerのOptimizer stepにはこの上限を自動適用しない。過去の`iteration_policy_id=slsqp-staged-v1`を上書きしない。
 
 ```python
 from lpf.slsqp_budget import run_termination_aware_slsqp

@@ -1,6 +1,6 @@
 # 旧Stage 4：候補記録と条件別Pareto（履歴）
 
-**この文書は#189/#191当時の限定APIに関する記録であり、現行の実行入口ではありません。** #343 D3で旧`candidate_records`/`candidate_audit`/`post_search_journal`は撤去済み。現行の候補と保存は[Campaignガイド](campaign_workflow.md)、[保存ポリシー](experiment_storage_policy.md)、[results.md](results.md)を使用する。
+**この文書は#189/#191当時の限定APIに関する記録であり、現行の実行入口ではありません。** #343 D3で旧`candidate_records`/`candidate_audit`/`post_search_journal`は撤去済み。現行のRF-T009開発実行は[開発CLI](../scripts/README.md#rf-t009-開発run)、正式EXPの管理は[外部管理](campaign_workflow.md)と[保存ポリシー](experiment_storage_policy.md)、代表結果は[results.md](results.md)を使用する。
 
 ## 残す設計上の教訓
 
