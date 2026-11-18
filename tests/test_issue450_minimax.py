@@ -372,6 +372,18 @@ class MinimaxTests(unittest.TestCase):
                 failure = json.loads((Path(tmp)/name/'failure.json').read_text())
                 self.assertEqual(failure['rf_forwards_unknown_upper_bound'], failure['reservation']['rf_forwards'])
                 self.assertFalse((Path(tmp)/name/'receipt.json').exists())
+            from lpf.search.storage import _save_checkpoint
+            def fail_result(path, payload):
+                if path.name == 'result.json':
+                    raise OSError('result storage unavailable')
+                return _save_checkpoint(path, payload)
+            with patch('lpf.search._development_runner._save_checkpoint', side_effect=fail_result):
+                with self.assertRaisesRegex(OSError, 'result storage unavailable'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'disk',
+                        root=ROOT, spot_checks={'terminal': [0]})
+            failure = json.loads((Path(tmp)/'disk'/'failure.json').read_text())
+            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failure['reservation']['rf_samples'])
+            self.assertFalse((Path(tmp)/'disk'/'receipt.json').exists())
 
     def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
         from dataclasses import asdict
@@ -436,6 +448,13 @@ class MinimaxTests(unittest.TestCase):
                 result = worker.run()
             self.assertEqual(physical.call_count, result['forward_count'])
             self.assertNotIn('assessment', result['terminal']['candidates'][0])
+            # Even a rehashed Plan cannot silently change the grid or reservation.
+            frozen['grids']['terminal']['frequency_hz'][0] += 1
+            with self.assertRaisesRegex(ValueError, 'Plan/current RF inputs mismatch'):
+                DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy,
+                    'demo', 23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'bad-plan',
+                    spot_checks={'terminal': [0]})
+            self.assertFalse((Path(tmp)/'bad-plan').exists())
 
     def test_profile_worker_hard_forward_cap_and_no_retry(self):
         from dataclasses import asdict
