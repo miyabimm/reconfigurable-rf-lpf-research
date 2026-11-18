@@ -8,20 +8,20 @@ Read only the **documents relevant to the task**, using the latest available `ma
 
 - **Operating authority and approvals:** [`project/instructions.md`](project/instructions.md).
 - **Formal RF numbers:** the immutable JSON selected by `active_formal_id` in [`rf/constraints/registry.json`](rf/constraints/registry.json); trial constraints require explicit opt-in. The owner-approved one-time same-ID migration exception for Issue #307 is recorded in `project/instructions.md`; original JSON/registry/SHAs remain in `rf/constraints/history/`. **Bands:** [`rf/bands.csv`](rf/bands.csv). **Fixed S2P:** files and hashes specified by the active constraint.
-- **Scientific interpretation:** [`project/specification.md`](project/specification.md) (not a separate numeric authority). **Current work and gates:** [`project/roadmap.md`](project/roadmap.md), Issues, and PRs.
+- **Scientific interpretation:** [`project/specification.md`](project/specification.md) (not a separate numeric authority). **Current implementation and pending work:** GitHub Issues, PRs, merged `main` code, and CI evidence.
 - **Experiment evidence:** [`data/experiment_index.csv`](data/experiment_index.csv) and `experiments/.../EXP-NNN/`. **For new EXP:** [`project/experiment_storage_policy.md`](project/experiment_storage_policy.md). **For staged SLSQP:** [`project/slsqp_iteration_policy.md`](project/slsqp_iteration_policy.md).
 
-Do not duplicate changing RF limits, results, or Stage status here. If source access fails, report what remains unverified. A roadmap item is not an implemented API or available runner.
+Do not duplicate changing RF limits, results, or Stage status here. If source access fails, report what remains unverified. An Issue plan is not an implemented API or an available runner.
 
 ## Authority: proceed or stop
 
 - **Owner:** decides material RF/scientific-contract changes, new experiments and large production runs, important research-data changes, and research-phase transitions.
 - **ChatGPT:** research PM / RF technical lead; proposes topology and search directions, manages scope, and independently reviews pushed diffs and evidence.
-- **Codex / Pi Code:** implement, self-test, and prepare a review branch or Draft PR within the delegated scope. Do not assume an unimplemented Pi Code local-search runner exists.
+- **Codex / Pi Code:** implement, self-test, and prepare a review branch or Draft PR within the delegated scope. The available RF-T009 trial development runner is [`scripts/run_rf_search.py develop`](scripts/README.md#rf-t009-開発run); legacy schema-2 Campaign execution has been removed and no replacement formal EXP G2 runner is connected.
 - **Proceed autonomously** on ordinary engineering, limited theoretical calculations, and bounded checks already within approved scope.
 - **Stop for owner approval** before changing RF constraints or model/metric meaning, materially changing search budgets or fairness, launching an unapproved scientific EXP or major computation, or modifying/deleting important saved results and checkpoints.
 
-Research stays in **Phase 2** until the owner explicitly authorizes Phase 3. Software-development Stages are separate; completion requires the roadmap's actual gates.
+Research stays in **Phase 2** until the owner explicitly authorizes Phase 3. Software-development Stages are separate; completion must be established from merged code, tests, and applicable review/CI evidence.
 
 ## Implementation and review
 
@@ -51,7 +51,7 @@ The research repository retains current executable search/verification code, for
 
 ## Pi workspace
 
-Pi Code normally uses a complete checkout containing the needed repository files. Read `project/README.md` and use the current `project/` and `rf/` inputs. Immutable RF snapshots contain historical logical `data/...` paths; the RF loader resolves them to the byte-identical `rf/` files and must fail rather than fall back to missing legacy files. Full historical EXP audits, source recovery and EXP-number reservation require verifying that the checkout has the necessary evidence and Git history; do not label an incomplete audit as PASS. This repository migration remains Draft/unfinished until the owner-approved cutover.
+Pi Code normally uses a complete checkout containing the needed repository files. Read `project/README.md` and use the current `project/` and `rf/` inputs. Immutable RF snapshots contain historical logical `data/...` paths; the RF loader resolves them to the byte-identical `rf/` files and must fail rather than fall back to missing legacy files. Full historical EXP audits, source recovery and EXP-number reservation require verifying that the checkout has the necessary evidence and Git history; do not label an incomplete audit as PASS. The current checkout uses `project/` and `rf/` paths; verify legacy-path compatibility against the actual file and loader when needed.
 
 ## Local workspace hygiene
 

@@ -1,13 +1,13 @@
 # プロジェクト作業入口（Phase 2）
 
-**このページは操作の索引です。** 権限と開発規則は[運用正本](instructions.md)、正式数値は[RFレジストリ](../rf/constraints/registry.json)、実績は[ロードマップ](roadmap.md)が優先します。
+**このページは操作の索引です。** 権限と開発規則は[運用正本](instructions.md)、正式数値は[RFレジストリ](../rf/constraints/registry.json)、現況は[GitHub Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)・[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)と最新`main`の実装・CIを確認します。
 
 ## 最初に読む文書
 
 | 用途 | 正本・入口 |
 |---|---|
 | 役割、承認、研究の保存方針 | [instructions.md](instructions.md)／[AGENTS.md](../AGENTS.md) |
-| 最新の開発状況、未検証ゲート | [roadmap.md](roadmap.md)／GitHub Issues |
+| 最新の開発状況、未検証ゲート | [GitHub Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)／[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)／最新`main`のコード・CI |
 | 回路・RF条件、全6設定／28区間 | [specification.md](specification.md)、[registry.json](../rf/constraints/registry.json)、[bands.csv](../rf/bands.csv) |
 | 正式EXP外部管理と旧Campaignの扱い | [campaign_workflow.md](campaign_workflow.md) |
 | 新規EXPのG0〜G5・証拠の分類 | [experiment_storage_policy.md](experiment_storage_policy.md) |

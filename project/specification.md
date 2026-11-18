@@ -30,6 +30,8 @@ GJM01固定C：Q80、各0.1–100pF（閉区間）、面積2/3。PCBパターン
 
 ## 別登録の試験条件と研究ゲート
 
+[RF-T009](../rf/constraints/trial/RF-T009.json)は`registry.json`の`minimax_profiles`に登録した**schema 1の試験RF性能profile**。物理stampはRF-F003を基礎とするが、試験性能閾値（各UL/DL IL最大0.8dB、H2/H3減衰最小30dB）と外部系の符号付きmarginは正式RF-F003の性能判定とは別である。旧schema 2のtrial overrideではなく、`load_constraint`や旧Campaignには渡さない。RF-T009専用[開発Runner](../scripts/README.md#rf-t009-開発run)の結果は正式RF適合・正式EXPに自動昇格しない。詳しくは[minimax profile](minimax_profile.md)を参照する。
+
 [RF-T005](../rf/constraints/trial/RF-T005.json) はRF-F003基準の明示opt-in試験条件で最大3独立可変C、各0–3pF・Q35・接続自由。RF-F003との差分は枝数上限のみ。旧[RF-T004](../rf/constraints/history/pre-issue-307/trial/RF-T004.json) はRF-F002基準の旧比較条件で、可変Cのみ**最大3独立枝**へ緩和する旧版。試験版利用には明示opt-in、実効条件ハッシュの保存を要する。RF-T001/T002/T003は旧RF-F001ベースの元バイト列を履歴に保存する。RF-F001/F002およびRF-T001〜T004は履歴監査専用であり、明示opt-inでも新規実行には利用できない。従来のLPF-007/008等はRF-F002に適合した成果とは扱わない。
 
 Q値は一定Q仮定であり、実SRF・Q(f)・寄生・同時結合・量産性は未検証。旧版の結果は当時の制約と検証条件で区別する。

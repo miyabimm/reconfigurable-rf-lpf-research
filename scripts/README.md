@@ -1,6 +1,6 @@
 # scripts/：現役操作・監査の入口
 
-実行前に[運用正本](../project/instructions.md)、[現在地](../project/roadmap.md)、[RF制約](../rf/constraints/registry.json)を確認する。スクリプトの存在は新規EXPや本番計算の承認ではない。
+実行前に[運用正本](../project/instructions.md)、[GitHub Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)／[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)と最新`main`の実装・CI、[RF制約](../rf/constraints/registry.json)を確認する。スクリプトの存在は新規EXPや本番計算の承認ではない。
 
 | 用途 | スクリプト／扱い |
 |---|---|

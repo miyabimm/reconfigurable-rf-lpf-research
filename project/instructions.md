@@ -8,17 +8,17 @@
 
 複数LTEバンドに対応する受動再構成可能RF-LPFで、低IL・高調波抑圧・小型化・実装性・再現性を追求します。ChatGPT主導の新回路トポロジー考案と、スクリプトによる体系的な有限探索を相互利用します。
 
-- 正式RF制約は`rf/constraints/registry.json`の`active_formal_id`が指す不変JSON。試験条件は明示的opt-inの別IDで、正式版へ自動昇格しません。
+- 正式RF制約は`rf/constraints/registry.json`の`active_formal_id`が指す不変JSON（現在RF-F003）。試験条件は明示的opt-inの別IDで、正式版へ自動昇格しません。RF-T009は`minimax_profiles`に登録したschema 1の試験`rf_performance_profile`であり、旧schema 2 trial overrideや正式EXPの条件には使用しません。
   - **Issue #307 の一回限りの承認済み例外**：#306 v1.0に従いRF-F003/T005〜T008を同じIDでschema 2へ移行し、GJM01下限0.1 pF・PCB_L下限0.01 nHと全値域の閉区間を採用。移行前全JSON/registry/元main SHA/旧effective SHA/親子関係は`rf/constraints/history/pre-issue-307/`、新旧SHA対応は`rf/constraints/history/issue307-migration.json`に保存。F001/F002/T001〜T004は履歴専用。これ以外のRF科学条件変更やtrial自動昇格は承認していません。
 - 周波数区間は`rf/bands.csv`、外部寄生は正式JSONでSHA固定されたS2P。解説は`project/specification.md`であり、数値の独立した正本ではありません。
-- 現況・未解決事項は`project/roadmap.md`とGitHub Issues、実験原本は`experiments/.../EXP-NNN/`、実行と検証の索引はGitHub上の`data/experiment_index.csv`（通常Piでは非取得）。
-- 二段階SLSQPの現行手順は`project/slsqp_iteration_policy.md`、新規実験の選別証拠は`project/experiment_storage_policy.md`。既存の識別子・ファイル名を説明上の簡素化だけで改名しません。
+- 現況・未解決事項はGitHub Issues・PRと最新`main`の実装／CIで確認し、変化する到達度の文書台帳は置きません。実験原本は`experiments/.../EXP-NNN/`、実行と検証の索引はGitHub上の`data/experiment_index.csv`（通常Piでは非取得）。
+- 旧二段階SLSQPの手順・独立利用時の参考は`project/slsqp_iteration_policy.md`、現行RF-T009開発Runは`project/minimax_profile.md`と`scripts/README.md`、新規正式実験の選別証拠は`project/experiment_storage_policy.md`。既存の識別子・ファイル名を説明上の簡素化だけで改名しません。
 
 ## 役割・承認境界
 
 - **ユーザー:** 研究方針・重要なRF仕様や科学的評価条件・Issue範囲外の新規実験や大規模本番計算・重要データ変更の最終判断、およびPi Codeの起動による着手指示。
 - **ChatGPT:** 研究PM兼RF技術責任者。回路案、探索方針、Issue管理、PR差分・実証記録の独立レビュー、進捗管理。
-- **Codex／Pi Code:** 利用可能な環境に応じた実装・テスト・PR作成。Pi Codeの新しいローカル探索実行器は未実装であり、使えると仮定しません。
+- **Codex／Pi Code:** 利用可能な環境に応じた実装・テスト・PR作成。`scripts/run_rf_search.py develop`によるRF-T009専用の逐次開発Runは実装済みですが、旧schema 2 Campaignは撤去され、新形式の正式EXP G2実行は未接続です。開発Runのrawや親`run.json`を正式EXPのG0予約・G2認定・保存完了とみなしません。
 
 **ChatGPTが起票したIssueの具体的スコープを承認範囲とし、ユーザーがそのIssueのためにPi Codeを起動したことを作業・実験の着手指示とします。** その範囲で追加のowner本人認証・承認コメント／JSON・追加許可フラグや二重承認を求めません。IssueがOpenであるだけでは自動・無人起動しません。通常の回路考案・理論計算・小規模検証・開発管理も委任範囲内で自律的に進めます。
 
