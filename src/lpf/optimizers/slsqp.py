@@ -112,6 +112,8 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
             return result(x0, initial_fun, feasible, 'all_coordinates_fixed' if feasible else 'fixed_infeasible')
 
         z0 = x0[free].copy()
+        # Rely on SciPy SLSQP's bounds handling for callback/finite-difference
+        # points; fixed coordinates are reconstructed from the validated x0.
         solver_bounds = list(zip(lo[free], hi[free]))
         if aggregation == 'max':
             z0 = np.r_[z0, initial_fun]

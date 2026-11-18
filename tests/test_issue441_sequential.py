@@ -13,7 +13,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 import test_issue435_weighted_development as fixtures
 from lpf.search._development_runner import _weighted_plan
-from lpf.search._development_worker import DevelopmentWorker
+from lpf.search._legacy_development_worker import LegacyDevelopmentWorker as DevelopmentWorker
 from lpf.search.component_constraints import physical_bounds
 from lpf.search.plan import ROOT
 from lpf.search.runner import run_weighted_development, _weighted_strict_winner

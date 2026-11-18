@@ -1,556 +1,236 @@
-"""Gate-free, single-process development worker; not a formal Job or resume API."""
-import os
+"""RF performance profile science Worker for development G2 only."""
+from dataclasses import asdict
+import hashlib
 import json
-from numbers import Real
 from pathlib import Path
 import tempfile
 
 import numpy as np
 
-from lpf.optimizers.slsqp import slsqp_minimize
+from lpf.constraint_versions import constraint_fingerprint
+from lpf import minimax_profile
+from lpf.minimax_profile import signed_margins, _margin_parameters
+from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
-from ._worker_next import MinimalWorker
-from .component_constraints import _check_vector_box, validate_search_box, validate_values
+from lpf.optimizers.slsqp import slsqp_minimize
+from lpf.rf_core.model import build_rf_model
+from ._job_evaluation import source_identity
+from .component_constraints import (_check_vector_box, _validate_values_with_bounds,
+                                    physical_bounds, validate_search_box)
 from .evaluation import raw_numbers
-from .performance import (evaluate_requirements, grid_fingerprint, prepare_requirements,
-                          summarize_mandatory)
-from .storage import canonical, plain, sha, vector_sha
-from .validation import rank_candidates
+from .performance import grid_fingerprint
+from .preflight import definition_sha, _freeze_with_profile
+from .storage import _normalize_search_bounds, _save_checkpoint, canonical, plain, sha, vector_sha
 from .worker import _development_options
 
 
-WEIGHTED_OBJECTIVE = dict(mode='weighted_violation', formula='IL_weight*p^2 + H_weight*mean(h^2)',
-                          p='max(0, worst_pass_IL_db - 0.30)',
-                          h='max(0, 30.01 - attenuation_db)', IL_weight=1, H_weight=100,
-                          nominal_harmonic_db=35, strict_harmonic_db=30,
-                          note='development only; weights and margin attainment unverified')
-
-
-def _weighted_residuals(response, assessment, prepared):
-    intervals = prepared.requirements.intervals
-    segments = [i.segment for i in intervals if i.region in ('H2', 'H3')]
-    ix = np.flatnonzero(np.isin(prepared.grid.segment, segments))
-    if not len(ix):
-        raise ValueError('No harmonic samples')
-    il = assessment['worst_il_db']
-    attenuation = response.il_db[ix]
-    if not np.isfinite(il) or il < 0 or np.any(np.isnan(attenuation)) or np.any(np.isneginf(attenuation)):
-        raise ValueError('Invalid RF values for weighted objective')
-    p = max(0., il - 0.30)
-    h = np.maximum(0., 30.01 - attenuation)
-    residuals = np.r_[p, np.sqrt(100. / len(ix)) * h]
-    if not np.all(np.isfinite(residuals)):
-        raise ValueError('Invalid weighted objective residuals')
-    return residuals
-
-
-def _harmonic_margin(response, prepared):
-    segments = [i.segment for i in prepared.requirements.intervals if i.region in ('H2', 'H3')]
-    indices = np.flatnonzero(np.isin(prepared.grid.segment, segments))
-    if not len(indices):
-        raise ValueError('No harmonic samples')
-    minimum = float(np.min(response.il_db[indices]))
-    if np.isnan(minimum) or np.isneginf(minimum):
-        raise ValueError('Invalid harmonic attenuation')
-    return dict(min_harmonic_attenuation_db=minimum, target_30_01=bool(minimum >= 30.01))
-
-
-def _save_checkpoint(path, payload):
-    """Atomically publish a new event without replacing any existing path."""
-    data = (canonical(raw_numbers(payload)) + '\n').encode()
-    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name)
-    try:
-        with os.fdopen(fd, 'wb') as stream:
-            stream.write(data)
-            stream.flush()
-            os.fsync(stream.fileno())
-        # link is an atomic no-replace publication even if a path appears after
-        # initialization. Both names are on the same temporary filesystem.
-        os.link(name, path)
-        os.unlink(name)
-        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        if os.path.exists(name):
-            os.unlink(name)
-
-
-def _normalize_search_bounds(bounds):
-    """Copy numeric pairs without accepting bools, strings, or ragged input."""
-    try:
-        box = np.asarray(bounds, dtype=object)
-        if (box.ndim != 2 or box.shape[1] != 2 or
-                any(isinstance(v, (bool, np.bool_)) or not isinstance(v, Real) for v in box.flat)):
-            raise ValueError('Search bounds must be numeric pairs')
-        box = np.asarray(box, dtype=float)
-    except (TypeError, OverflowError) as exc:
-        raise ValueError('Search bounds must be numeric pairs') from exc
-    if not np.all(np.isfinite(box)):
-        raise ValueError('Search bounds must be finite')
-    return tuple(tuple(row) for row in box.tolist())
-
-
-class DevelopmentWorker(MinimalWorker):
-    """Execute a frozen Plan without formal storage, reservations, or recovery.
-
-    The checkpoint is an append-only experimental best history, not solver state.
-    A fresh directory in the system temporary directory is required.
-    """
-    def _verify_plan(self, plan, root):
-        if not self.sequential_recording:
-            return super()._verify_plan(plan, root)
-        from .preflight import freeze
-        data = plan.data
-        base = {k: v for k, v in data.items() if k != 'development_weighted_restart'}
-        if sha(data) != plan.sha256 or sha(freeze(data['config'], root)) != sha(base):
-            raise ValueError('Plan/current RF inputs mismatch')
-
-    @staticmethod
-    def _validate_arm(chosen):
-        if chosen is None or not chosen['steps']:
-            raise ValueError('Plan arm with steps required')
+class DevelopmentWorker:
+    """Run a frozen RF-T009 Job once. The caller owns durable reservation and raw."""
 
     def __init__(self, plan, definition, policy, arm, seed, vector, expected_vector_sha,
-                 *, root, checkpoint, checkpoint_interval=1000, spot_checks=None, search_bounds=None,
-                 objective_mode=None):
-        # Recording policy is frozen in the Plan; it does not control restarts.
-        self.sequential_recording = 'development_weighted_restart' in plan.data
-        if self.sequential_recording and objective_mode != 'weighted_violation':
-            raise ValueError('Sequential recording requires weighted development mode')
-        self.local_run_index = 0
+                 *, root, checkpoint, checkpoint_interval=1000, spot_checks=None, search_bounds=None):
+        data = plan.data
+        cfg = data['config']
+        if cfg['rf'] != {'constraint_id': 'RF-T009', 'allow_trial': True} or 'rf_profile' not in data:
+            raise ValueError('STOP: DevelopmentWorker requires an explicit RF-T009 performance profile; legacy performance is unsupported')
+        if (cfg['objective'] != 'full_lpf' or 'campaign' in cfg or 'selection' in cfg or cfg['anytime_samples']):
+            raise ValueError('STOP: RF-T009 G2 requires a standalone Search→Terminal Plan')
+        self.root = Path(root).resolve()
+        self.source = source_identity(self.root)
+        self.source_sha256 = sha(self.source)
+        current, self.profile = _freeze_with_profile(cfg, self.root)
+        if sha(data) != plan.sha256 or sha(current) != plan.sha256:
+            raise ValueError('Plan/current RF inputs mismatch')
+        if (self.profile.fingerprint != data['rf_profile']['effective_sha256'] or
+                constraint_fingerprint(policy) != self.profile.base_sha256):
+            raise ValueError('RF profile/physical base mismatch')
+        if sha(asdict(definition)) != definition_sha(cfg['definition']):
+            raise ValueError('Definition/Plan mismatch')
+        steps = next((a['steps'] for a in cfg['arms'] if a['name'] == arm), None)
+        if not steps:
+            raise ValueError('Plan arm with steps required')
+        if type(seed) is not int or seed not in cfg['seeds'] or vector_sha(vector) != expected_vector_sha:
+            raise ValueError('Seed/start SHA mismatch')
+        self.plan, self.data, self.arm, self.seed, self.steps = plan, data, arm, seed, steps
+        self.definition = definition
+        self.policy = json.loads(self.profile.base_json)
+        self.physical_model = build_rf_model(definition, self.policy)
+        self.model = self.profile.build_model(definition)
+        self.physical_bounds = physical_bounds(definition, self.model.schema, self.policy)
+        self.bounds = self.physical_bounds if search_bounds is None else _normalize_search_bounds(search_bounds)
+        validate_search_box(self.bounds, self.physical_bounds)
+        self.x = _check_vector_box(vector, self.bounds).astype(float, copy=True)
+        self.x.setflags(write=False)
+        self._physical(self.x)
+        self.grids = {stage: plan.requested_grid(stage) for stage in
+                      [f"{arm}/{step['name']}" for step in steps] + ['terminal']}
+        if any(grid_fingerprint(g) != data['grids'][stage]['sha256'] for stage, g in self.grids.items()):
+            raise ValueError('Grid/Plan mismatch')
+        if not isinstance(spot_checks, dict) or not spot_checks.get('terminal'):
+            raise ValueError('RF-T009 requires terminal MNA spots')
+        self.spot_checks = {}
+        for stage, indices in spot_checks.items():
+            if (stage not in self.grids or not isinstance(indices, list) or not indices or
+                    any(type(i) is not int or not 0 <= i < len(self.grids[stage].frequency_hz) for i in indices) or
+                    len(set(indices)) != len(indices)):
+                raise ValueError('Invalid independent spot checks')
+            self.spot_checks[stage] = tuple(indices)
         self.path = Path(checkpoint).resolve()
-        root = Path(root).resolve()
         if (not self.path.is_relative_to(Path(tempfile.gettempdir()).resolve()) or
-                self.path.is_relative_to(root) or self.path.exists()):
+                self.path.is_relative_to(self.root) or self.path.exists()):
             raise ValueError('Fresh temporary checkpoint outside repository required')
         if type(checkpoint_interval) is not int or checkpoint_interval < 1:
             raise ValueError('Positive checkpoint interval required')
-        if plan.data['config']['objective'] != 'full_lpf':
-            raise ValueError('DevelopmentWorker requires all full-LPF intervals')
-        if objective_mode not in (None, 'weighted_violation', 'profile_signed_margin'):
-            raise ValueError('Unknown development objective mode')
-        self.objective_mode = objective_mode
-        if 'selection' not in plan.data['config'] and not objective_mode:
-            raise ValueError('Search→Terminal development requires an explicit objective; fail closed')
-        self.plan, self.arm, self.root = plan, arm, root
-        self.checkpoint_interval = checkpoint_interval
-        self.spot_checks = {} if spot_checks is None else dict(spot_checks)
-        self.audit_samples = {}
-        self._running = False
-        self._started = False
-        super().__init__(plan, definition, policy, arm, seed, vector, expected_vector_sha, root=root)
-        if search_bounds is not None:
-            box = _normalize_search_bounds(search_bounds)
-            validate_search_box(box, self._physical_bounds)
-            _check_vector_box(self.x, box)
-            self.bounds = box
-        self.steps = next(a['steps'] for a in plan.data['config']['arms'] if a['name'] == arm)
-        if self.objective_mode == 'weighted_violation':
-            step = self.steps[0]
-            opts = step['options']
-            costs = plan.data['costs']['jobs'][arm]
-            n = opts['max_search_forwards']
-            if (len(plan.data['config']['arms']) != 1 or
-                    (not self.sequential_recording and len(plan.data['config']['seeds']) != 1) or
-                    plan.data['config']['anytime_samples'] != [] or
-                    costs['stages'][step['name']]['upper_reservation'] != n * 70 or
-                    'selection_upper_reservation' in costs or costs['terminal_fixed_reservation'] != 476 or
-                    costs['total_upper_reservation'] != n * 70 + 476 or
-                    plan.data['config']['rf'] != {'constraint_id': 'RF-T008', 'allow_trial': True} or
-                    len(self.steps) != 1 or step['solver'] != 'hybrid' or step['aggregation'] != 'sum' or
-                    step['points_per_interval'] != 2 or step.get('stop_points_per_interval') != 3 or
-                    len(self.grid.frequency_hz) != 70 or
-                    'selection' in plan.data['config'] or
-                    len(plan.requested_grid('terminal').frequency_hz) != 476):
-                raise ValueError('Invalid weighted development Plan')
-            if self.sequential_recording:
-                mode = plan.data.get('development_weighted_restart', {})
-                expected = dict(checkpoint_interval_forwards=checkpoint_interval, search_bounds=plain(self.bounds),
-                                search_bounds_sha256=sha(self.bounds), objective='weighted_violation',
-                                start_method=mode.get('start_method'))
-                if mode != expected or mode['start_method'] not in ('explicit', 'scrambled_sobol_single_point'):
-                    raise ValueError('Budget restart settings/box do not match frozen Plan')
-        if self.objective_mode == 'profile_signed_margin':
-            if (self.profile is None or 'selection' in plan.data['config'] or
-                    plan.data['config']['anytime_samples'] or not self.spot_checks.get('terminal')):
-                raise ValueError('RF-T009 requires selectionless full-LPF Plan and terminal MNA spots')
-            from ._job_evaluation import source_identity
-            self.source = source_identity(root)
-        elif self.profile is not None:
-            raise ValueError('RF-T009 requires explicit profile_signed_margin mode')
-        self._grids = {f"{arm}/{self.step['name']}":
-                       (self.grid, self.evaluator, self.prepared_requirements)}
-        valid = {f"{arm}/{s['name']}" for s in self.steps} | {'terminal'}
-        if 'selection' in plan.data['config']:
-            valid.add('selection')  # legacy fixed-step transition only
-        for stage, indices in self.spot_checks.items():
-            if (stage not in valid or not isinstance(indices, list) or not indices or
-                    len(set(indices)) != len(indices) or any(type(i) is not int or i < 0 or
-                    i >= len(plan.requested_grid(stage).frequency_hz) for i in indices)):
-                raise ValueError('Invalid independent spot checks')
         self.path.mkdir(exist_ok=False)
-        self.checkpoint_sequence = 0
+        self.checkpoint_interval = checkpoint_interval
+        self.checkpoint_files = {}
+        self.audit_samples = {}
+        self._started = False
 
-    def _activate(self, stage):
-        if stage not in self._grids:
-            grid = self.plan.requested_grid(stage)
-            if grid_fingerprint(grid) != self.plan.data['grids'][stage]['sha256']:
-                raise ValueError('Grid/Plan mismatch')
-            self._grids[stage] = (grid, self.model.evaluator(grid),
-                                  prepare_requirements(self.requirements, grid))
-        self.stage = stage
-        self.grid, self.evaluator, self.prepared_requirements = self._grids[stage]
+    def _verify_boundary(self):
+        if source_identity(self.root) != self.source:
+            raise ValueError('Source/environment changed; no retry')
+        if minimax_profile.load_minimax_profile('RF-T009', root=self.root, allow_trial=True) != self.profile:
+            raise ValueError('RF profile/base/bands/S2P changed; no retry')
+        ref = self.data['config']['definition']
+        if 'path' in ref and hashlib.sha256((self.root/ref['path']).read_bytes()).hexdigest() != ref['source_sha256']:
+            raise ValueError('Plan definition source changed; no retry')
 
-    def _evaluate(self, vector):
-        if self.bounds is not self._physical_bounds:
-            _check_vector_box(vector, self.bounds)
-        if self._running and self.objective_mode:
-            opts = self.step['options']
-            cap = opts['max_search_forwards' if self.step['solver'] == 'hybrid' else 'max_evaluations']
-            if self.forward_count >= cap:
-                raise ValueError('STOP: Search RF forward budget exhausted')
-            # Charge before entering RF Core, including a forward that raises.
-            self.forward_count += 1
-        response, assessment = super()._evaluate(vector)
-        if self._running:
-            if not self.objective_mode:
-                self.forward_count += 1
-            self.independent = self._audit(vector, response, self.stage)
-            if self.objective_mode:
-                # Optimizer will report its own objective after consuming this response.
-                self.pending_observation = (plain(vector), response, assessment)
-                return response, assessment
-            metrics = summarize_mandatory(assessment, self.prepared_requirements)
-            digest = vector_sha(vector)
-            il = assessment['worst_il_db']
-            if not np.isfinite(il) or il < 0 or np.isnan(metrics['max_violation_db']):
-                raise ValueError('Invalid RF best metrics')
-            key = ((0, il, digest) if metrics['strict_feasible'] else
-                   (1, metrics['max_violation_db'], metrics['sum_violation_db'], il, digest))
-            if self.best is None or key < self.best_key:
-                validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.physical_model)
-                self.best_key = key
-                self.best = dict(vector=plain(vector), vector_sha256=digest,
-                                 worst_il_db=il, **metrics)
-            if self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
-                                          and self.best['vector_sha256'] != self.saved_sha):
-                self._save_best()
-        return response, assessment
-
-    def _observe_objective(self, vector, objective, is_best):
-        pending, response, assessment = self.pending_observation
-        digest = vector_sha(vector)
-        if digest != vector_sha(pending) or not np.isfinite(objective):
-            raise ValueError('Optimizer objective does not match Search observation')
-        self.observed_objectives[digest] = float(objective)
-        if is_best:
-            validate_values(self.definition, self.model.schema, vector, self.policy, frozen_model=self.physical_model)
-            metrics = summarize_mandatory(assessment, self.prepared_requirements)
-            self.best = dict(vector=plain(vector), vector_sha256=digest,
-                             worst_il_db=assessment['worst_il_db'], **metrics, objective_j=float(objective))
-            if self.sequential_recording:
-                self.best.update(_harmonic_margin(response, self.prepared_requirements))
-        if self.sequential_recording:
-            if self.forward_count % self.checkpoint_interval == 0:
-                self._save_best()
-        elif self.saved_sha is None or (self.forward_count - self.saved_count >= self.checkpoint_interval
-                                       and self.best['vector_sha256'] != self.saved_sha):
-            self._save_best()
-        self.pending_observation = None
-
-    def _observe_profile(self, vector, objective, *_):
-        pending, _, _ = self.pending_observation
-        digest = vector_sha(vector)
-        if digest != vector_sha(pending) or not np.isfinite(objective):
-            raise ValueError('Optimizer objective does not match Search observation')
-        self.observed_objectives[digest] = float(objective)
-        self.best = dict(vector=plain(vector), vector_sha256=digest, objective=float(objective))
-        self.pending_observation = None
-        if self.forward_count % self.checkpoint_interval == 0:
-            self._save_best()
-
-    def _save_best(self):
-        sequence = self.checkpoint_sequence + 1
-        payload = dict(kind='development_temporary_best_v1', job_id=f'development-{self.arm}-{self.seed}',
-                       sequence=sequence, arm=self.arm, step=self.step['name'], seed=self.seed,
-                       plan_sha256=self.plan.sha256, policy_id=self.model.policy_id,
-                       policy_fingerprint=self.model.policy_fingerprint,
-                       rf_inputs=self.plan.data['rf_inputs'], grid_sha256=grid_fingerprint(self.grid),
-                       requirements_fingerprint=self.requirements.fingerprint,
-                       forward_count=self.forward_count, best=self.best)
-        if self.objective_mode == 'profile_signed_margin':
-            payload['kind'] = 'development_temporary_observation_v1'
-            payload['observation'] = payload.pop('best')
-            payload['source_sha256'] = sha(self.source)
-        if self.sequential_recording:
-            payload['local_run_index'] = self.local_run_index
-            payload['restart_count'] = self.local_run_index
-        target = self.path / f'{sequence:06d}.json'
-        _save_checkpoint(target, payload)
-        if self.objective_mode and canonical(json.loads(target.read_text())) != canonical(raw_numbers(payload)):
-            raise ValueError('Checkpoint readback mismatch')
-        self.checkpoint_sequence = sequence
-        self.saved_sha, self.saved_count = self.best['vector_sha256'], self.forward_count
-
-    def _residuals(self, evaluation):
-        if self.objective_mode == 'weighted_violation':
-            return _weighted_residuals(*evaluation, self.prepared_requirements)
-        if self.objective_mode == 'profile_signed_margin':
-            residuals = -np.asarray(evaluation[1]['mandatory_g'], dtype=float)
-            if not residuals.size or not np.all(np.isfinite(residuals)):
-                raise ValueError('Nonfinite signed-margin Search residuals')
-            return residuals
-        return super()._residuals(evaluation)
-
-    def _objective(self, vector, *, square_root):
-        _, a = self._evaluate(vector)
-        value = a['worst_il_db']
-        if not np.isfinite(value) or value < 0:
-            raise ValueError('Squared-residual solver requires finite nonnegative worst IL; no floor')
-        return np.array([np.sqrt(value) if square_root else value])
-
-    def _constraints(self, vector):
-        return np.asarray(self._evaluate(vector)[1]['mandatory_g'])
+    def _physical(self, vector):
+        return _validate_values_with_bounds(self.definition, self.model.schema, vector, self.policy,
+                                            self.physical_bounds, frozen_model=self.physical_model)
 
     def _audit(self, vector, response, stage):
-        indices = self.spot_checks.get(stage)
-        if not indices:
-            return dict(status='not_run', reason='not requested')
         from lpf.rf_core.independent import evaluate_independent_response
-        for i in indices:
-            ref = evaluate_independent_response(self.model, vector, float(self.grid.frequency_hz[i]),
-                                                int(self.grid.setting[i]))
+        spots = []
+        g = response.grid
+        for i in self.spot_checks.get(stage, ()):
+            ref = evaluate_independent_response(self.model, vector, float(g.frequency_hz[i]), int(g.setting[i]))
             for key in ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
                 if not np.allclose(getattr(response, key)[i], ref[key], rtol=0, atol=1e-9):
                     raise ValueError(f'Independent MNA mismatch: {key} sample {i}')
-        self.audit_samples[stage] = self.audit_samples.get(stage, 0) + len(indices)
-        return dict(status='pass', sample_indices=indices, passivity='pass_at_samples',
-                    power_balance='pass_at_samples', whole_band_checked=False)
+            spots.append(dict(index=i, reference=ref))
+        if not spots:
+            return dict(status='not_run', reason='not requested')
+        self.audit_samples[stage] = self.audit_samples.get(stage, 0) + len(spots)
+        result = dict(status='pass', sample_indices=list(self.spot_checks[stage]),
+                      passivity='pass_at_samples', power_balance='pass_at_samples', whole_band_checked=False)
+        if stage == 'terminal':
+            result['spots'] = spots
+        return result
+
+    def _forward(self, evaluator, vector, stage):
+        terminal = stage == 'terminal'
+        if self.forward_count >= self.forward_cap:
+            raise ValueError(f'STOP: {"Terminal" if terminal else "Search"} RF forward budget exhausted')
+        physical = None
+        if terminal:
+            _check_vector_box(vector, self.bounds)
+            physical = self._physical(vector)
+        self.forward_count += 1  # Charge before entering RF Core, even when it raises.
+        # Search callbacks are bounded by the Optimizers. RF Core still checks
+        # finite values, full L SPD and numerical failures on each evaluation.
+        response = evaluator.evaluate(vector, check_power=True) if terminal else evaluator.evaluate(vector)
+        if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
+                response.policy_fingerprint != self.model.policy_fingerprint):
+            raise ValueError('Response profile/grid mismatch')
+        return response, physical, self._audit(vector, response, stage)
+
+    def _checkpoint(self, step, stage, observation):
+        payload = dict(kind='development_temporary_observation_v1', sequence=len(self.checkpoint_files) + 1,
+                       arm=self.arm, step=step, seed=self.seed, plan_sha256=self.plan.sha256,
+                       source_sha256=self.source_sha256, rf_profile=self.data['rf_profile'],
+                       grid_sha256=self.data['grids'][stage]['sha256'],
+                       forward_count=self.forward_count, observation=observation)
+        target = self.path/f"{payload['sequence']:06d}.json"
+        digest = _save_checkpoint(target, payload)
+        data = target.read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest or canonical(json.loads(data)) != canonical(payload):
+            raise ValueError('Checkpoint readback mismatch')
+        self.checkpoint_files[target.name] = dict(bytes=len(data), sha256=digest)
+
+    def _search(self, step, x):
+        stage = f"{self.arm}/{step['name']}"
+        evaluator = self.model.evaluator(self.grids[stage])
+        threshold, direction = _margin_parameters(self.profile, evaluator.grid)
+        opts = _development_options(step)
+        self.forward_count, self.forward_cap = 0, opts['max_evaluations']
+        saved = None
+        independent = None
+
+        def residuals(vector):
+            nonlocal independent
+            response, _, independent = self._forward(evaluator, vector, stage)
+            residual = direction * (response.il_db - threshold)
+            if not np.all(np.isfinite(residual)):
+                raise ValueError('Nonfinite signed-margin Search residuals')
+            return residual
+
+        def observe(vector, objective):
+            nonlocal saved
+            if self.forward_count % self.checkpoint_interval == 0:
+                digest = vector_sha(vector)
+                self._checkpoint(step['name'], stage, dict(vector=plain(vector), vector_sha256=digest, objective=objective))
+                saved = self.forward_count, digest, objective
+
+        solver = step['solver']
+        if solver == 'hybrid':
+            out = hybrid_minimize(residuals, x, self.bounds, seed=self.seed,
+                                  aggregation=step['aggregation'], objective_callback=observe, **opts)
+        else:
+            minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
+            out = minimize(residuals, x, self.bounds, constraints=None, aggregation=step['aggregation'],
+                           objective_callback=observe, **opts)
+        if (not isinstance(out, OptimizerResult) or out.x is None or out.objective is None or
+                not np.isfinite(out.objective) or type(out.evaluations) is not int or
+                not 1 <= out.evaluations <= opts['max_evaluations'] or type(out.converged) is not bool or
+                not isinstance(out.stop_reason, str) or not out.stop_reason or out.stop_reason.startswith('invalid_') or
+                (out.converged and out.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted')) or
+                not 1 <= self.forward_count <= self.forward_cap):
+            raise ValueError('Invalid or missing Optimizer result; no replacement or retry')
+        _check_vector_box(out.x, self.bounds)
+        self._physical(out.x)
+        digest = vector_sha(out.x)
+        if saved != (self.forward_count, digest, out.objective):
+            self._checkpoint(step['name'], stage, dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective))
+        return dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
+                    solver_result=raw_numbers(out), stop_reason=out.stop_reason, converged=out.converged,
+                    forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
+                    input_vector=plain(x), input_vector_sha256=vector_sha(x),
+                    grid_sha256=self.data['grids'][stage]['sha256'], independent=independent), out.x
 
     def run(self):
         if self._started:
             raise RuntimeError('Worker cannot retry or resume')
         self._started = True
-        if self.objective_mode == 'profile_signed_margin':
-            from ._job_evaluation import source_identity
-            if source_identity(self.root) != self.source:
-                raise ValueError('Source changed before RF; no retry')
-        validate_search_box(self.bounds, self._physical_bounds)
-        _check_vector_box(self.x, self.bounds)
         x = self.x.copy()
-        candidates, steps, invalid = [], [], []
-        cfg = self.plan.data['config']
+        steps = []
         for step in self.steps:
-            self.step = step
-            stage = f"{self.arm}/{step['name']}"
-            self._activate(stage)
-            self.forward_count, self.saved_count, self.saved_sha = 0, 0, None
-            self.best = self.best_key = None
-            self.observed_objectives = {}
-            self.pending_observation = None
-            self.independent = dict(status='not_run', reason='no successful forward')
-            self._running = True
-            try:
-                opts = _development_options(step)
-                if step['solver'] == 'hybrid':
-                    from . import _worker_next
-                    extra = ({'progress_callback': self._observe_objective}
-                             if self.objective_mode == 'weighted_violation' else
-                             {'progress_callback': self._observe_profile}
-                             if self.objective_mode == 'profile_signed_margin' else {})
-                    local_runs = []
-                    local_run_stats = dict(count=0, success=0, evaluations=0)
-                    def record_local_run(run):
-                        local_run_stats['count'] += 1
-                        local_run_stats['success'] += int(run.success)
-                        local_run_stats['evaluations'] += run.nfev
-                        if not self.objective_mode:
-                            local_runs.append(run)
-                    extra['local_run_callback'] = record_local_run
-                    if self.sequential_recording:
-                        extra['run_callback'] = lambda index: setattr(self, 'local_run_index', index)
-                    out = _worker_next.hybrid_minimize(self._solver_residuals, x, self.bounds,
-                            seed=self.seed, aggregation=step['aggregation'], **opts, **extra)
-                    found = [r.end_x for r in local_runs if r.end_x is not None]
-                    if out.x is not None:
-                        found.append(out.x)
-                    next_x = out.x
-                    if self.objective_mode == 'weighted_violation':
-                        if self.best is None or out.objective is None or out.x is None:
-                            raise ValueError('No weighted best; no replacement or retry')
-                        digest = vector_sha(out.x)
-                        if (not np.isfinite(out.objective) or type(out.evaluations) is not int or
-                                out.evaluations < 1 or type(out.converged) is not bool or
-                                not isinstance(out.stop_reason, str) or not out.stop_reason or
-                                out.stop_reason.startswith('invalid_') or
-                                self.forward_count > opts['max_evaluations'] or
-                                self.observed_objectives.get(digest) != out.objective or
-                                self.best['vector_sha256'] != digest):
-                            raise ValueError('Optimizer result not observed on Search grid')
-                        found = [out.x]
-                    success = out.converged
-                    reason = out.stop_reason
-                else:
-                    solver = slsqp_minimize if step['solver'] == 'slsqp' else slp_minimize
-                    if self.objective_mode == 'profile_signed_margin':
-                        callback = lambda v: self._residuals(self._evaluate(v))
-                        out = solver(callback, x, self.bounds, constraints=None,
-                                     objective_callback=self._observe_profile,
-                                     aggregation=step['aggregation'], **opts)
-                    else:
-                        out = solver(lambda v: self._objective(v, square_root=step['solver'] == 'slsqp'),
-                                     x, self.bounds, constraints=self._constraints,
-                                     aggregation=step['aggregation'], **opts)
-                    next_x, success, found = out.x, out.converged, [out.x]
-                    reason = out.stop_reason
-                if reason.startswith('invalid_'):
-                    raise ValueError(f'Solver numerical STOP: {reason}')
-                if next_x is None:
-                    raise ValueError('No solver output; no implicit retry')
-                if self.objective_mode == 'profile_signed_margin':
-                    digest = vector_sha(out.x)
-                    if (out.objective is None or not np.isfinite(out.objective) or
-                            type(out.evaluations) is not int or not 1 <= out.evaluations <= opts['max_evaluations'] or
-                            type(out.converged) is not bool or not isinstance(out.stop_reason, str) or
-                            not out.stop_reason or (out.converged and out.stop_reason in
-                                ('evaluation_limit', 'evaluation_budget_exhausted')) or
-                            self.observed_objectives.get(digest) != out.objective):
-                        raise ValueError('Optimizer result not observed on Search grid')
-                    self.best = dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective)
-                    found = [out.x]
-                for v in found:
-                    try:
-                        _check_vector_box(v, self.bounds)
-                        validate_values(self.definition, self.model.schema, v, self.policy, frozen_model=self.physical_model)
-                    except ValueError as exc:
-                        if self.objective_mode:
-                            raise ValueError('Invalid weighted best; no replacement') from exc
-                        invalid.append(dict(vector=plain(v), status='invalid', reason=str(exc)))
-                        continue
-                    candidates.append(plain(v))
-                _check_vector_box(next_x, self.bounds)
-                validate_values(self.definition, self.model.schema, next_x, self.policy, frozen_model=self.physical_model)
-                if self.best is not None and ((self.forward_count != self.saved_count or
-                        self.best['vector_sha256'] != self.saved_sha)
-                        if self.sequential_recording or self.objective_mode == 'profile_signed_margin'
-                        else self.best['vector_sha256'] != self.saved_sha):
-                    self._save_best()
-                step_record = dict(name=step['name'], solver=step['solver'], solver_result=raw_numbers(out),
-                                   stop_reason=reason, converged=bool(success), forward_count=self.forward_count,
-                                   rf_best=plain(self.best), independent=plain(self.independent))
-                if self.objective_mode == 'profile_signed_margin':
-                    step_record.pop('rf_best')
-                    step_record.update(input_vector=plain(x), input_vector_sha256=vector_sha(x),
-                                       grid_sha256=grid_fingerprint(self.grid))
-                if step['solver'] == 'hybrid':
-                    step_record['local_run_stats'] = local_run_stats
-                steps.append(step_record)
-                x = np.asarray(next_x, dtype=float).copy()
-            finally:
-                self._running = False
-        if 'selection' not in cfg:
-            # The last search step alone determines the terminal candidate.
-            # Never substitute an earlier step or a strict-ranked candidate.
-            if self.best is None:
-                raise ValueError('Final search step has no valid best')
-            vector = plain(x)
-            if vector_sha(vector) != self.best['vector_sha256']:
-                raise ValueError('Final optimizer vector does not match Search evidence')
-            self._activate('terminal')
-            response, _ = self.evaluate(vector)
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            terminal_row = dict(vector_sha256=vector_sha(vector), assessment=assessment,
-                                independent=self._audit(vector, response, 'terminal'))
-            if self.objective_mode == 'profile_signed_margin':
-                from lpf.minimax_profile import signed_margins
-                margin, _ = signed_margins(self.profile, self.grid, response)
-                if assessment['strict_feasible'] != bool(margin <= 0):
-                    raise ValueError('Terminal signed margin/requirement mismatch')
-                terminal_row.update(terminal_signed_max_margin_db=margin,
-                    performance_feasible=bool(margin <= 0), response=raw_numbers(response),
-                    external_passivity='checked_on_terminal_grid',
-                    power_balance='checked_at_independent_mna_spots',
-                    physical=validate_values(self.definition, self.model.schema, vector, self.policy,
-                                             frozen_model=self.physical_model))
-            if self.sequential_recording:
-                terminal_row.update(_harmonic_margin(response, self.prepared_requirements))
-            terminal = dict(status='completed', forward_count=1, candidates=[raw_numbers(terminal_row)])
-            result = dict(kind='development_only', status='converged' if all(s['converged'] for s in steps)
-                          else 'not_converged', steps=steps, terminal=terminal,
-                          forward_count=sum(s['forward_count'] for s in steps) + 1,
-                          finite_grid_only=True, continuous_band_proven=False, rf_compliance_certified=False,
-                          physical_q_srf_em_checked=False)
-            if self.sequential_recording:
-                result['status'] = ('search_budget_exhausted' if steps[0]['stop_reason'] == 'evaluation_budget_exhausted'
-                                    else 'incomplete')
-            if self.objective_mode == 'profile_signed_margin':
-                if source_identity(self.root) != self.source:
-                    raise ValueError('Source changed during RF; no retry')
-                result.update(plan=self.plan.data, plan_sha256=self.plan.sha256,
-                    source=self.source, source_sha256=sha(self.source), seed=self.seed,
-                    initial_vector=plain(self.x), initial_vector_sha256=vector_sha(self.x),
-                    rf_profile=self.plan.data['rf_profile'],
-                    solver_objective=dict(residual='per-sample signed margin in dB',
-                        slp='max(residual), dB', slsqp_hybrid='configured sum or max of residual**2, dB^2',
-                        weights='unit', note='solver objectives are not cross-step comparable'),
-                    costs=dict(search_forwards=sum(s['forward_count'] for s in steps),
-                        search_requested_samples=sum(s['forward_count'] * len(self.plan.requested_grid(
-                            f"{self.arm}/{s['name']}").frequency_hz) for s in steps),
-                        terminal_forwards=1, terminal_requested_samples=len(self.grid.frequency_hz),
-                        independent_mna_samples_by_stage=self.audit_samples),
-                    terminal_grid_sha256=grid_fingerprint(self.grid))
-            if self.objective_mode == 'weighted_violation':
-                search_samples = sum(s['forward_count'] * len(self.plan.requested_grid(
-                    f"{self.arm}/{s['name']}").frequency_hz) for s in steps)
-                result.update(weighted_objective=WEIGHTED_OBJECTIVE,
-                              weighted_objective_sha256=sha(WEIGHTED_OBJECTIVE),
-                              plan_sha256=self.plan.sha256,
-                              best_tie_policy='first exact J, matching Hybrid',
-                              costs=dict(search_forwards=sum(s['forward_count'] for s in steps),
-                                         search_requested_samples=search_samples,
-                                         search_completed_samples=search_samples,
-                                         terminal_requested_samples=len(self.grid.frequency_hz),
-                                         dense='not_run', independent_mna_samples_by_stage=self.audit_samples))
-            return result
-        selection = dict(status='not_run', forward_count=0, ranked=[], excluded=invalid)
-        assessed = []
-        self._activate('selection')
-        for i, (digest, vector) in enumerate(sorted({vector_sha(v): v for v in candidates}.items())):
-            if i >= cfg['selection']['max_candidates']:
-                selection['excluded'].append(dict(vector_sha256=digest, status='unrun', reason='max_candidates'))
-                continue
-            response, _ = self.evaluate(vector)
-            selection['forward_count'] += 1
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            keys = ('status', 'policy_id', 'policy_fingerprint', 'mode', 'requirements_fingerprint',
-                    'grid_fingerprint', 'strict_feasible', 'worst_il_db', 'max_violation_db', 'sum_violation_db')
-            compact = {key: assessment[key] for key in keys}
-            row = dict(vector=vector, vector_sha256=digest, model=self.model, assessment=compact,
-                       independent=self._audit(vector, response, 'selection'))
-            assessed.append(row)
-            del assessment, response
-        ranked = rank_candidates(assessed)
-        selection['ranked'] = [raw_numbers({k: v for k, v in r.items() if k != 'model'}) for r in ranked['ranked']]
-        selection['excluded'].extend(raw_numbers(ranked['excluded']))
-        if candidates:
-            selection['status'] = 'completed'
-        terminal = dict(status='not_run', forward_count=0, candidates=[])
-        self._activate('terminal')
-        for row in ranked['ranked'][:cfg['selection']['top_k']]:
-            response, _ = self.evaluate(row['vector'])
-            terminal['forward_count'] += 1
-            assessment = evaluate_requirements(response, self.requirements, requested_grid=self.grid)
-            terminal_row = dict(vector_sha256=row['vector_sha256'], assessment=assessment,
-                                independent=self._audit(row['vector'], response, 'terminal'))
-            terminal['candidates'].append(raw_numbers(terminal_row))
-        if terminal['candidates']:
-            terminal['status'] = 'completed'
-        result = dict(kind='development_only', status='converged' if all(s['converged'] for s in steps)
-                    else 'not_converged', steps=steps, selection=selection, terminal=terminal,
-                    forward_count=sum(s['forward_count'] for s in steps) + selection['forward_count'] + terminal['forward_count'],
-                    finite_grid_only=True, continuous_band_proven=False, rf_compliance_certified=False,
-                    physical_q_srf_em_checked=False)
-        return result
+            record, x = self._search(step, x.copy())
+            steps.append(record)
+        self.forward_count, self.forward_cap = 0, 1
+        evaluator = self.model.evaluator(self.grids['terminal'])
+        response, physical, independent = self._forward(evaluator, x, 'terminal')
+        margin, margins = signed_margins(self.profile, evaluator.grid, response)
+        terminal_row = raw_numbers(dict(vector=x, vector_sha256=vector_sha(x), physical=physical,
+            terminal_signed_max_margin_db=margin, signed_margins_db=margins, performance_feasible=margin <= 0,
+            response=response, independent=independent, external_passivity='checked_on_terminal_grid',
+            power_balance='checked_on_terminal_grid', independent_power_balance='checked_at_independent_mna_spots'))
+        self._verify_boundary()
+        search_forwards = sum(s['forward_count'] for s in steps)
+        return dict(kind='development_only', status='converged' if all(s['converged'] for s in steps) else 'not_converged',
+            steps=steps, terminal=dict(status='completed', forward_count=1, candidates=[terminal_row]),
+            forward_count=search_forwards + 1, plan=self.data, plan_sha256=self.plan.sha256,
+            source=self.source, source_sha256=self.source_sha256, arm=self.arm, seed=self.seed,
+            definition=plain(self.definition), parameter_schema=plain(self.model.schema),
+            initial_vector=plain(self.x), initial_vector_sha256=vector_sha(self.x),
+            search_bounds=plain(self.bounds), search_bounds_sha256=sha(self.bounds), rf_profile=self.data['rf_profile'],
+            performance_profile=self.profile.profile, terminal_grid_sha256=self.data['grids']['terminal']['sha256'],
+            solver_objective=dict(residual='signed_margin_db', slp='signed max [dB]',
+                                  slsqp_hybrid='configured sum or max of squared residuals [dB^2]', weights='unit'),
+            costs=dict(search_forwards=search_forwards, search_requested_samples=sum(s['requested_samples'] for s in steps),
+                       terminal_forwards=1, terminal_requested_samples=len(evaluator.grid.frequency_hz),
+                       independent_mna_samples_by_stage=self.audit_samples),
+            finite_grid_only=True, continuous_band_proven=False, rf_compliance_certified=False,
+            physical_q_srf_em_checked=False)

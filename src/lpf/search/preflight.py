@@ -55,6 +55,11 @@ def _solver(step):
 
 
 def freeze(d, root):
+    return _freeze_with_profile(d, root)[0]
+
+
+def _freeze_with_profile(d, root):
+    """Return the frozen Plan data and the same verified profile used to compile it."""
     from .plan import fields, positive
     base_fields = 'schema_version rf objective definition seeds arms max_trial_requested_samples validation anytime_samples anytime_points_per_interval'
     fields(d, base_fields + (' selection' if isinstance(d, dict) and 'selection' in d else '') +
@@ -99,12 +104,10 @@ def freeze(d, root):
     if d['rf']['constraint_id'] == 'RF-T009':
         if 'campaign' in d or 'selection' in d or d['objective'] != 'full_lpf':
             raise ValueError('RF-T009 is a standalone full-LPF development profile')
-        from lpf.minimax_profile import load_minimax_profile
-        from .performance import compile_profile_requirements
-        profile = load_minimax_profile('RF-T009', root=root, allow_trial=d['rf']['allow_trial'])
-        policy = json.loads(profile.base_json)
-        bands = rf_input_file(root, profile.profile['bands_file'])
-        req = compile_profile_requirements(profile)
+        from lpf import minimax_profile
+        from .performance import compile_profile_grid
+        profile = minimax_profile.load_minimax_profile('RF-T009', root=root, allow_trial=d['rf']['allow_trial'])
+        req = compile_profile_grid(profile)
     else:
         policy = load_constraint(d['rf']['constraint_id'], root=root, allow_trial=d['rf']['allow_trial'])
         bands = rf_input_file(root, policy['bands_file'])
@@ -131,15 +134,19 @@ def freeze(d, root):
             raise ValueError('Definition source SHA mismatch')
         if sha(json.loads(raw)) != ref['definition_sha256']:
             raise ValueError('Definition canonical SHA mismatch')
-    inputs = {'bands': {'path': profile.profile['bands_file'] if profile else policy['bands_file'],
-                        'sha256': hashlib.sha256(bands.read_bytes()).hexdigest()}}
-    for key in ('input_parasitic', 'output_parasitic'):
-        spec = (profile.profile['external_s2p'][key.removesuffix('_parasitic')] if profile
-                else policy['external_port_parasitics'][key])
-        actual = hashlib.sha256(rf_input_file(root, spec['path']).read_bytes()).hexdigest()
-        if actual != spec['sha256']:
-            raise ValueError('Fixed S2P SHA mismatch')
-        inputs[key] = {'path': spec['path'], 'sha256': actual}
+    if profile is not None:
+        # The profile loader already verified these bytes, not just the declarations.
+        p = profile.profile
+        inputs = {'bands': {'path': p['bands_file'], 'sha256': profile.bands_sha256},
+                  **{f'{role}_parasitic': spec for role, spec in p['external_s2p'].items()}}
+    else:
+        inputs = {'bands': {'path': policy['bands_file'], 'sha256': hashlib.sha256(bands.read_bytes()).hexdigest()}}
+        for key in ('input_parasitic', 'output_parasitic'):
+            spec = policy['external_port_parasitics'][key]
+            actual = hashlib.sha256(rf_input_file(root, spec['path']).read_bytes()).hexdigest()
+            if actual != spec['sha256']:
+                raise ValueError('Fixed S2P SHA mismatch')
+            inputs[key] = {'path': spec['path'], 'sha256': actual}
     grids = {}
 
     def grid(name, points, stop_points=None):
@@ -275,4 +282,4 @@ def freeze(d, root):
                                     effective_sha256=profile.fingerprint,
                                     base_constraint_sha256=profile.base_sha256,
                                     bands_sha256=profile.bands_sha256)
-    return result
+    return result, profile

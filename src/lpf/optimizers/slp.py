@@ -127,7 +127,9 @@ def _minimize_core(
                 if forward < fd_step * width[j] and backward > forward:
                     h = -min(fd_step * width[j], backward)
                 trial = x.copy()
-                trial[j] += h
+                # Subtracting and then adding a distance to a bound can
+                # round just outside the closed box.
+                trial[j] = min(hi[j], max(lo[j], x[j] + h))
                 h = trial[j] - x[j]  # actual representable displacement
                 if h == 0:
                     reason = "finite_difference_step_unrepresentable"

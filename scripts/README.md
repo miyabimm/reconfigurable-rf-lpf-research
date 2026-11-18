@@ -44,7 +44,7 @@ uv run --frozen python scripts/run_rf_search.py develop \
   --checkpoint-interval-forwards 1000
 ```
 
-Planは1 arm・1 seed、複数step可、Selectionなし。各stepに`objective: signed_margin_db`とsolverごとの予算・aggregationを明示する。詳細と目的式の違いは[profile文書](../project/minimax_profile.md)。Search boundsは任意の `--search-bounds PATH.json`、checkpoint間隔は任意正整数（既定1000）。Terminal spotの指定は必須。事前予約・hard cap・停止・readbackを伴う限定APIを呼び、outputに予約を含む`input.json`、checkpointと`result.json`を保存する。成功時のledgerはRF sampleと独立MNA sampleを別計上し、未使用予約を解放する。失敗時は`failure.json`に予約全額をunknownの保守的上限として記録し、途中で記録できなかった場合も`input.json`の予約は残る。完走コード4は開発Jobの終了を意味し、数値収束・RF適合の認定ではない。既存outputへの再試行や正式Campaignは対象外。
+Planは1 arm・1 seed、複数step可、Selectionなし。各stepに`objective: signed_margin_db`とsolverごとの予算・aggregationを明示する。詳細と目的式の違いは[profile文書](../project/minimax_profile.md)。Search boundsは任意の `--search-bounds PATH.json`、checkpoint間隔は任意正整数（既定1000）。Terminal spotの指定は必須。事前予約・hard cap・停止・readbackを伴う限定APIを呼び、outputに予約を含む`input.json`、checkpointと`result.json`を保存する。成功時のledgerはRF forward・RF sample・独立MNA sampleを別計上する。`receipt.json` のinput／raw／checkpoint実byte数とSHAが全て一致し、`failure.json` がない場合のみ未使用予約を解放できる。失敗・receipt欠落時は予約全額をunknownとして扱う。完走コード4は開発Jobの終了を意味し、数値収束・RF適合の認定ではない。既存outputへの再試行や正式Campaignは対象外。
 
 ## 複数seed weighted開発のcheckpoint
 

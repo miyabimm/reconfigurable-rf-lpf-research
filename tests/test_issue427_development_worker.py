@@ -8,7 +8,7 @@ from unittest.mock import patch
 import numpy as np
 
 import test_issue315_fixed_stage as fixtures
-from lpf.search._development_worker import DevelopmentWorker
+from lpf.search._legacy_development_worker import LegacyDevelopmentWorker as DevelopmentWorker
 from lpf.search._worker_next import MinimalWorker
 from lpf.search.worker import _development_options
 from lpf.search.problem import Problem
@@ -194,8 +194,8 @@ class DevelopmentWorkerTests(unittest.TestCase):
                 return fn(callback, start, bounds, **kw)
             return call
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=observe(hybrid_minimize)), \
-             patch('lpf.search._development_worker.slsqp_minimize', side_effect=observe(slsqp_minimize)), \
-             patch('lpf.search._development_worker.slp_minimize', side_effect=observe(slp_minimize)):
+             patch('lpf.search._legacy_development_worker.slsqp_minimize', side_effect=observe(slsqp_minimize)), \
+             patch('lpf.search._legacy_development_worker.slp_minimize', side_effect=observe(slp_minimize)):
             result = w.run()
         self.assertEqual(seen, [box] * 3)
         for step in result['steps']:
@@ -245,8 +245,8 @@ class DevelopmentWorkerTests(unittest.TestCase):
             return None, {'worst_il_db': next(ils), 'mandatory_g': ()}
         summary = dict(strict_feasible=True, max_violation_db=0., sum_violation_db=0.)
         with patch.object(MinimalWorker, '_evaluate', fake_forward), \
-             patch('lpf.search._development_worker.summarize_mandatory', return_value=summary), \
-             patch('lpf.search._development_worker.validate_values'), \
+             patch('lpf.search._legacy_development_worker.summarize_mandatory', return_value=summary), \
+             patch('lpf.search._legacy_development_worker.validate_values'), \
              patch.object(w, '_save_best', wraps=w._save_best) as save:
             for v in vectors[:3]:
                 w._evaluate(v)
@@ -282,7 +282,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
         summaries = iter([dict(strict_feasible=False, max_violation_db=v, sum_violation_db=v)
                           for v in (2., 1.)])
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
-             patch('lpf.search._development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
+             patch('lpf.search._legacy_development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
              patch.object(w, '_save_best', wraps=w._save_best) as save:
             output = w.run()
         self.assertEqual(save.call_count, 2)
@@ -321,7 +321,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             seen.extend(rows)
             return rank_candidates(rows)
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
-             patch('lpf.search._development_worker.rank_candidates', side_effect=rank):
+             patch('lpf.search._legacy_development_worker.rank_candidates', side_effect=rank):
             actual = w.run()
         identity_keys = {'status', 'policy_id', 'policy_fingerprint', 'mode', 'requirements_fingerprint',
                          'grid_fingerprint', 'strict_feasible', 'worst_il_db', 'max_violation_db', 'sum_violation_db'}
@@ -362,7 +362,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
             self.fail('must stop on checkpoint failure')
         summaries = iter([dict(strict_feasible=False, max_violation_db=v, sum_violation_db=v)
                           for v in (2., 1.)])
-        from lpf.search._development_worker import _save_checkpoint
+        from lpf.search._legacy_development_worker import _save_checkpoint
         saved = []
         def write(path, payload):
             if saved:
@@ -370,8 +370,8 @@ class DevelopmentWorkerTests(unittest.TestCase):
             _save_checkpoint(path, payload)
             saved.append(path.read_bytes())
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
-             patch('lpf.search._development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
-             patch('lpf.search._development_worker._save_checkpoint', side_effect=write):
+             patch('lpf.search._legacy_development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
+             patch('lpf.search._legacy_development_worker._save_checkpoint', side_effect=write):
             with self.assertRaisesRegex(OSError, 'disk full after first event'):
                 w.run()
         self.assertEqual((w.path/'000001.json').read_bytes(), saved[0])
@@ -383,7 +383,7 @@ class DevelopmentWorkerTests(unittest.TestCase):
 
     def test_checkpoint_failure_stops_without_retry(self):
         _, _, _, _, w = self.make_worker()
-        with patch('lpf.search._development_worker._save_checkpoint', side_effect=OSError('disk full')) as save:
+        with patch('lpf.search._legacy_development_worker._save_checkpoint', side_effect=OSError('disk full')) as save:
             with self.assertRaisesRegex(OSError, 'disk full'):
                 w.run()
             self.assertEqual(save.call_count, 1)

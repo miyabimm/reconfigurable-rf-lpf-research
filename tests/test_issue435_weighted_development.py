@@ -15,7 +15,8 @@ from lpf.search._development_runner import _weighted_plan
 from lpf.search.runner import run_weighted_development
 from lpf.search.component_constraints import physical_bounds
 from lpf.rf_core import build_rf_model
-from lpf.search._development_worker import DevelopmentWorker, _weighted_residuals, WEIGHTED_OBJECTIVE
+from lpf.search._legacy_development_worker import (LegacyDevelopmentWorker as DevelopmentWorker,
+                                                   _weighted_residuals, WEIGHTED_OBJECTIVE)
 from lpf.search.plan import ROOT
 from lpf.search.storage import sha, vector_sha
 from lpf.optimizers.hybrid import LocalRun
@@ -137,10 +138,10 @@ class WeightedTests(unittest.TestCase):
             assessment['strict_feasible'] = False  # force terminal FAIL; no candidate substitution
             return assessment
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
-             patch('lpf.search._development_worker._weighted_residuals', side_effect=score), \
-             patch('lpf.search._development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
-             patch('lpf.search._development_worker.evaluate_requirements', side_effect=terminal_fail), \
-             patch('lpf.search._development_worker.rank_candidates', side_effect=AssertionError('must not rank')):
+             patch('lpf.search._legacy_development_worker._weighted_residuals', side_effect=score), \
+             patch('lpf.search._legacy_development_worker.summarize_mandatory', side_effect=lambda *a: next(summaries)), \
+             patch('lpf.search._legacy_development_worker.evaluate_requirements', side_effect=terminal_fail), \
+             patch('lpf.search._legacy_development_worker.rank_candidates', side_effect=AssertionError('must not rank')):
             result = w.run()
         self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(y))
         self.assertFalse(result['steps'][0]['rf_best']['strict_feasible'])
@@ -176,7 +177,7 @@ class WeightedTests(unittest.TestCase):
         w = DevelopmentWorker(plan, d, p, 'demo', 23, x, vector_sha(x), root=ROOT,
                               checkpoint=Path(self.raw.name)/'ties', objective_mode='weighted_violation')
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=solver), \
-             patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
+             patch('lpf.search._legacy_development_worker._weighted_residuals', return_value=np.array([1.])):
             result = w.run()
         self.assertEqual(result['steps'][0]['rf_best']['vector_sha256'], vector_sha(first))
         self.assertEqual(vector_sha(result['steps'][0]['solver_result']['x']), vector_sha(first))
@@ -187,7 +188,7 @@ class WeightedTests(unittest.TestCase):
             from dataclasses import replace
             return replace(out, x=second.tolist())  # not Hybrid's first equal-score point
         with patch('lpf.search._worker_next.hybrid_minimize', side_effect=bad), \
-             patch('lpf.search._development_worker._weighted_residuals', return_value=np.array([1.])):
+             patch('lpf.search._legacy_development_worker._weighted_residuals', return_value=np.array([1.])):
             with self.assertRaisesRegex(ValueError, 'not observed on Search grid'):
                 w.run()
 
