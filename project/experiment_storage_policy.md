@@ -1,6 +1,6 @@
 # 新規EXPのGitHub-only保存ポリシー v1
 
-**ポリシーID：`phase2-git-only-v1`。対象は新規EXP-050以降。** EXP-001〜049には新形式を遡及要求せず、元manifestの実績を改竄しない。過去資産の削減は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)が別途承認済みであり、現行正式実験・新規G0〜G5を緩和しない。運用権限は[instructions](instructions.md)、明示APIは[Campaignガイド](campaign_workflow.md)。
+**ポリシーID：`phase2-git-only-v1`。対象は新規EXP-050以降。** EXP-001〜049には新形式を遡及要求せず、元manifestの実績を改竄しない。過去資産の削減は[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)が別途承認済みであり、現行正式実験・新規G0〜G5を緩和しない。運用権限は[instructions](instructions.md)、正式EXPの外部管理境界と現役APIは[正式EXP外部管理](campaign_workflow.md)を参照する。旧Campaign実行APIは廃止済み。
 
 ## 1. A/B/Cの役割
 
@@ -42,7 +42,7 @@ results/EXP-NNN/        # Git管理外の一時raw
 
 G5は削除可否の判定のみ。A/Bがremote mainで実byte確認済み、rawが不要で再開予定がなく、担当者が削除対象と残す証拠を確認した場合に限り、Git管理外の当該EXPのCを**別操作で**処分できる。誤分類・保存不完全なら保持する。
 
-正式Campaignを呼ぶ前に[操作ガイド](campaign_workflow.md#3-正式expg0g1を先に満たし明示g2を呼ぶ)のG0/G1を満たす。孤立spotチェックや隔離Git fixtureを、全帯域MNA/本物の正式EXPと呼ばない。
+**新形式の正式Campaign G2は未接続。** RF-T009の[開発Run](../scripts/README.md#rf-t009-開発run)はG0予約も正式G2認定も行わない。新規正式EXPでは、この保存ポリシーのG0/G1と[外部管理](campaign_workflow.md)の別工程を満たす。孤立spotチェックや隔離Git fixtureを、全帯域MNA/本物の正式EXPと呼ばない。
 
 ## 4. 容量・例外とCI
 

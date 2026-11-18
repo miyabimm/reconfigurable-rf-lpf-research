@@ -1,19 +1,11 @@
-# ChatGPT回路探索 — 作業フォルダ
+# ChatGPT回路探索 — EXP記録・歴史資料の入口
 
-**新しいChatGPT主導の回路トポロジー探索はここで行う。**
+このディレクトリの[`runs/EXP-NNN/`](runs/)は正式実験の記録と過去研究の証拠を置く領域です。**新しい開発Runの自動生成先ではありません。** 以前の`config.json`／`circuit.json`／`optimize.py`／`results.json`／`summary.md`の一律作成テンプレート、`matching_limit/`を現役探索Runnerとする案内は廃止しています。保存済みの歴史的ファイルは元のRF条件・ソース・検証状態の証拠として読みます。
 
-各実験は`runs/EXP-NNN/`（未作成の場合は開始時に作成）に分け、以下を置く。
+## 現行の実行入口
 
-| ファイル | 内容 |
-|---|---|
-| `config.json` | 仮説、探索モード、RF制約への参照、seed、評価回数・計算予算、ソースSHA |
-| `circuit.json` | 回路グラフ、固定素子値/Q、6設定の可変C値と**対GND接続ノード**、チップ物理列・結合 |
-| `optimize.py` | 構造専用の高速・縮約最適化器（必要時のみ） |
-| `results.json` | **実行済み**計算結果、IL、H2/H3、収束、評価回数、検証状態 |
-| `summary.md` | 回路の狙い、LPF-007との同条件比較、結論・次の検討 |
+- **RF-T009試験profileの逐次開発Run:** [`scripts/run_rf_search.py develop`](../../scripts/README.md#rf-t009-開発run)。全seed×armの入力・Plan・予算を凍結し、Search→Terminalの結果をGit管理外の開発rawとして記録します。正式EXPへの自動登録・G0予約・正式G2認定は行いません。
+- **正式RFの数値正本:** [`rf/constraints/registry.json`](../../rf/constraints/registry.json)の`active_formal_id`（現在RF-F003）、[bands](../../rf/bands.csv)とSHA固定[S2P](../../rf/parasitics/)。RF-T009は別登録の[試験`rf_performance_profile`](../../project/minimax_profile.md)であり、正式RFの性能条件とは混同しません。旧`data/design_constraints.json`は互換参照であり正本ではありません。
+- **新規正式EXP:** [運用正本](../../project/instructions.md)・[G0〜G5保存ポリシー](../../project/experiment_storage_policy.md)・[外部管理手順](../../project/campaign_workflow.md)に従い、main番号予約、完全checkout、RF ID/実効SHA、全6設定の完全vector、ソース/格子/seed・実行/検証状態・選別証拠を残します。新形式の正式Campaign G2は未接続です。
 
-共通MNA・評価・制約は`../../src/lpf/`を使い、汎用化できるコードはここに移す。自動グラフ探索は`../matching_limit/`で継続する。独立検証を通過して比較価値がある候補だけ`../../candidates/`に登録する。
-
-**当面の目標**：現行制約でLPF-007（最大IL 0.513168414dB、H2/H3約35.07dB）を超えること。必須30dB、公称35dBの減衰目標を区別する。有限探索結果を大域最適値と呼ばない。
-
-過去の実験結果はGit履歴を参照する。RF設計仕様は`../../data/design_constraints.json`が正本。Phase 2継続、Phase 3停止。
+過去のEXP manifestや記録済み条件は、現行RF-T009仕様に合わせて遡及変更しません。歴史的な候補値を現行正式RF適合とみなさず、研究上の代表成果と限界は[methods](../../project/methods.md)・[results](../../project/results.md)、残存原本は[EXP索引](../../data/experiment_index.csv)とGit固定履歴で確認します。

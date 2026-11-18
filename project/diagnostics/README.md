@@ -1,13 +1,13 @@
 # 診断・旧仕様の索引
 
-**通常の操作入口は [Campaignガイド](../campaign_workflow.md)**。本ディレクトリのIssue番号付き資料は
-そのIssueのスコープ・当時の検証結果・レビュー証拠であり、現行状態は[ロードマップ](../roadmap.md)とmain実装を確認する。
+**現行の開発Run入口は [RF-T009 CLI](../../scripts/README.md#rf-t009-開発run)、正式EXPは[外部管理](../campaign_workflow.md)。** 本ディレクトリのIssue番号付き資料は
+そのIssueのスコープ・当時の検証結果・レビュー証拠であり、現行状態は[Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)／[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)と最新main実装を確認する。
 古い「Draft」「レビュー待ち」「未接続」を現況へ読み替えない。[Issue #397](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues/397)では知見抽出済みの旧診断原資料を削減する。削減後の主要解釈は[methods](../methods.md)・[results](../results.md)、逐語原文は固定Git履歴を参照。
 #343で隔離された旧Pythonコピーは#362で現行treeから削除済み。[履歴索引](../../archive/issue343/README.md)の元commit・元パスから `git show` で取得する。
 
-## MinimalWorkerの現役性能診断
+## 旧MinimalWorker性能診断（実装は固定履歴）
 
-[単一ベンチ入口](../../scripts/benchmark_minimal_worker.py)のplain/timed/deep、[操作・出力境界](../../scripts/README.md#minimalworker開発ベンチ)、[#401の方法](../methods.md#minimalworker性能診断の運用401408)・[結果](../results.md#minimalworker性能診断issue-401)。固定入力 [starts](issue401_starts_1002.json) と [baseline](issue377/baseline.yaml) は保持。#401専用raw・報告・単発driverは[PR #402時点の固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)にあり、現役treeへ移動・複製しない。他Issueの歴史診断はこの整理の対象外。
+当時の[単一ベンチ実装（固定履歴）](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/26427c9ce08fe166d5dec31640f417c8dfe2ec79/scripts/benchmark_minimal_worker.py)のplain/timed/deep、[#401の方法](../methods.md#minimalworker性能診断の運用401408)・[結果](../results.md#minimalworker性能診断issue-401)。固定入力 [starts](issue401_starts_1002.json) と [baseline](issue377/baseline.yaml) は保持。#401専用raw・報告・単発driverは[PR #402時点の固定履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/26427c9ce08fe166d5dec31640f417c8dfe2ec79/project/diagnostics)にあり、現役treeへ移動・複製しない。他Issueの歴史診断はこの整理の対象外。
 
 ### Issue #410：完全RFResponse維持のC組立て診断
 
@@ -19,7 +19,7 @@
 
 ### Issue #413：枝Qスタンプ前計算の3方式
 
-[報告・全runへのリンク・再現方法](issue413_report.md)、[明示opt-in試作](issue413_probe.py)、[限定診断driver](issue413_benchmark.py)。固定100 vectorの実RF forwardで3案、Solver plainで上位2案を旧新交互・2batch比較。six-matmulをレビュー第一候補とするが本番未採用。 大容量測定raw5件は現役treeから整理し、報告中の固定commitリンクで全run原本を参照する（数値同値性rawは現役treeに保持）。全S／全指標／mandatoryを許容差内で保持し、代表全70点独立MNA・異常STOPを回帰。ビット非一致、Solver経路差、全Solver未収束、正式RFへの一般化不可を区別する。
+[報告・全runへのリンク・再現方法](issue413_report.md)、[明示opt-in試作](issue413_probe.py)、[限定診断driver](issue413_benchmark.py)。固定100 vectorの実RF forwardで3案、Solver plainで上位2案を旧新交互・2batch比較。six-matmulを当時レビュー第一候補とした（その時点では本番未採用）。後続[PR #416](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pull/416)で本番採用。大容量測定raw5件は現役treeから整理し、報告中の固定commitリンクで全run原本を参照する（数値同値性rawは現役treeに保持）。全S／全指標／mandatoryを許容差内で保持し、代表全70点独立MNA・異常STOPを回帰。ビット非一致、Solver経路差、全Solver未収束、正式RFへの一般化不可を区別する。
 
 ### Issue #417：six-matmul採用後mainのRF forward内訳
 
@@ -32,10 +32,10 @@
 
 | 分類 | 所在 | 用途・現行ガイドとの関係 |
 |---|---|---|
-| 現行汎用フロー | [campaign_workflow.md](../campaign_workflow.md) | 操作を一読する入口。承認・数値・保存の正本は参照のみ |
+| 現行RF-T009開発Run／正式EXPの外部管理 | [scripts/README.md](../../scripts/README.md#rf-t009-開発run)／[campaign_workflow.md](../campaign_workflow.md) | 開発Runと正式EXP G0〜G5は別経路。旧schema2 Campaign G2は撤去済み |
 | 限定実証・レビュー証拠 | [#307](issue307_constraints.md)、[#309](issue309_rf_core.md)、[#311](issue311_performance.md) | 制約移行・科学コア・性能評価の実装と限定回帰 |
-| 限定実証・レビュー証拠 | [#313](issue313_preflight.md)、[#315](issue315_fixed_stage.md)、[#317](issue317_fixed_worker.md)、[#319](issue319_parent_runner.md)、[#321](issue321_development_cli.md) | schema2静的検査→固定stage→Worker→親→固定definition CLIの実装契約 |
-| 限定実証・レビュー証拠 | [#323](issue323_layer_dependencies.md)、[#325](issue325_campaign.md) | 現役依存境界、Campaign各増分と隔離G0〜G5検査。実験の実施指示ではない |
+| 限定実証・レビュー証拠 | [#313](issue313_preflight.md)、[#315](issue315_fixed_stage.md)、[#317](issue317_fixed_worker.md)、[#319](issue319_parent_runner.md)、[#321](issue321_development_cli.md) | 当時のschema2静的検査→固定stage→Worker→親→固定definition CLI。旧経路は#448で撤去 |
+| 限定実証・レビュー証拠 | [#323](issue323_layer_dependencies.md)、[#325](issue325_campaign.md) | 当時の依存境界と旧Campaign各増分、隔離G0〜G5検査。旧Campaign実行経路は撤去済みで、実験の実施指示ではない |
 | 限定実証・レビュー証拠 | [#343 PR-C](issue343_pr_c_cleanup.md)、[D1](issue343_d1.md)、[D2](issue343_d2.md)、[D3](issue343_d3_cleanup.md)、[D4](issue343_d4_cleanup.md)、[E1](issue343_e1_cleanup.md)、[E2](issue343_e2_cleanup.md) | 構造正本・保存ゲートの旧caller分離、科学回帰の現役API化、旧入口・候補・RF wrapper撤去と歴史資料の隔離。D4の残存matching旧layoutと未検証範囲に注意 |
 | 限定実証・レビュー証拠 | [#330報告](issue330_real_scipy.md)・[再現コード](issue330_real_scipy.py) | 実SciPy callback非EXP検証、旧実行との差、source/import制限。再現コードはRF計算を行うので文書確認時に起動しない |
 | 限定実証・レビュー証拠 | [#361 Pilot中断レビュー](issue361_pilot_review.md)、[#367少数forward時間診断](issue367_timing.md)、[#369開発用100-forward予約](issue369_forward_window.md) | 中断・未照合費用・原本所在不明、時間診断とmock限定の保存比較。Pilot再実行の指示ではない |
@@ -51,7 +51,7 @@
 | 歴史・旧仕様 | [#259 dense JSON](issue259-source-dense1001.json) | 旧2候補のread-only診断。新Campaignの最終検証ではない |
 | 限定実証・レビュー証拠 | [#281](issue281_hybrid.md)、[#282](issue282_minimax.md)、[#283](issue283_pipeline.md)、[#291](issue291_generic_slsqp.md) | 汎用solver／合成関数の検証。RFの収束・適合とは別 |
 | 歴史・旧仕様 | [#284](issue284_rf_pipeline_adapter.md)、[#285](issue285_rf_comparison_plan.md) | 旧RF adapterの限定検証と未実行比較案。実行承認・凍結済みPlanではない |
-| 歴史・旧仕様 | [#302](issue302_sequential_search.md) | schema1 fixture runnerの実装時契約。現Campaignの正式G2とは別 |
+| 歴史・旧仕様 | [#302](issue302_sequential_search.md) | schema1 fixture runnerの実装時契約。新形式の正式EXP G2とは別 |
 | 限定実証・レビュー証拠 | [静的schema2 fixture](../fixtures/issue313_preflight.yaml) | #313/#315等のテスト入力。`definition: null`の基底例であってCampaign研究計画ではない |
 | 歴史・旧仕様 | [旧Stage候補記録](../stage4_candidate_records.md)・[有限列挙](../stage4_topology_enumeration.md)、[legacy Git replay](../legacy_git_replay.md) | 旧候補／履歴再取得の詳細。現ガイドの通常事前参照にはしない |
 | 歴史・旧仕様 | [旧共通CLI入力](../experiments/) | Issue限定YAML/starts/definitionとschema1 fixture。旧実験CLIは廃止済み（[project README](../README.md#廃止済み旧探索入口)）。未凍結templateを起動しない |
@@ -89,7 +89,7 @@ GitHub上のIssue/PR全リンクや全EXPの参照完結性までは監査して
 | 候補 | 参照・証拠性の確認 | 判断／別途必要な確認 |
 |---|---|---|
 | 旧StageごとのREADME長文（#317/#319/#325） | 各診断にAPI/費用/ゲートが残る。READMEは入口の重複説明 | 今回は短い索引へ置換。原診断と固定definition CLIの契約は保持 |
-| #302の一時的な「本番未接続」説明 | READMEと専用schema1 fixture/testsが参照。現Campaignには古いが旧CLIの説明には必要 | 将来の旧schema1経路廃止時に文書削除候補。先にcaller/テスト廃止とGit復元リンクを確認 |
+| #302の一時的な「本番未接続」説明 | READMEと専用schema1 fixture/testsが参照。旧Campaignは#448で撤去済みだが当時のCLI説明として参照価値があった | 将来の旧schema1経路廃止時に文書削除候補。先にcaller/テスト廃止とGit復元リンクを確認 |
 | #235/#248診断のmd/JSON/py | #239が#235 JSONのvector/SHAを参照。#248 mdがJSON・再現コードを参照。単なる一時ログではない | **削除候補から除外**。証拠分類・復元性の審査なく分離しない |
 | #259 dense JSON、#254容量診断 | 旧CLI注意書き／旧保存比較の根拠。dense値や容量実測はガイドに転記しない | **保持**。旧経路廃止後も科学的/保存レビュー証拠性を別途審査 |
 | #330 md/py | mdに実行ログ/raw SHA・旧失敗との区別、コード再現手順がある。tmpは永続保管ではない | **保持**。再現コードだけの削除も根拠喪失になる。rawの自動削除・移動はしない |

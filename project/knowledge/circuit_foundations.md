@@ -41,7 +41,7 @@ EXP-050、056/057、059～067の保存済みスクリプトに残るEXP間直接
 
 ## 独立枝電流MNAと検証レベル
 
-Issue #163/#168の開発記録を統合します。現役実装・対応条件・完了ゲートは[roadmap](../roadmap.md)を確認し、旧WIPの「未実装／レビュー待ち」を現在の状態としません。
+Issue #163/#168の開発記録を統合します。現役実装・対応条件・完了ゲートは[GitHub Issues](https://github.com/miyabimm/reconfigurable-rf-lpf-research/issues)・[PR](https://github.com/miyabimm/reconfigurable-rf-lpf-research/pulls)とmainコード・CIを確認し、旧WIPの「未実装／レビュー待ち」を現在の状態としません。
 
 - hot-node電圧V、向き付きL電流I、incidence Bに対し `[Yc+Yterm, B; B.T, −Z] [V; I] = [J; 0]`、`Z=ω(diag(L/Q)+jM)`、`Mij=kij√(LiLj)`。Cは個別に`ωC/(1/Q−j)`でstamp。L方向反転では関連k符号も反転する。裸のsolverは部品適合ゲートではなく、`validate_components`等を別途実施する。
 - 50Ω行／電流スケーリング後の条件数≥1e12、非有限、非SPDはfail closed。この条件数閾値は数値ガードでありRF制約や物理的不可能性ではない。
