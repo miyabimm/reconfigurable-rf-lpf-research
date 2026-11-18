@@ -94,28 +94,26 @@ def run_profile_development(plan, definition, policy, seed, arm, start, output, 
         independent_upper += (costs['stages'][step['name']]['upper_reservation'] // samples) * len(spots.get(stage, []))
     reservation = dict(rf_samples=costs['total_upper_reservation'], independent_mna_samples=independent_upper,
                        rf_forwards=1 + sum(s['solver_max_evaluations'] for s in costs['stages'].values()))
-    source = source_identity(root)
-    record = dict(kind='development_rf_profile_input_v1', plan=plan.data, plan_sha256=plan.sha256,
-                  definition=asdict(definition), definition_sha256=sha(asdict(definition)),
-                  physical_policy_id=policy['active_constraint_id'],
-                  physical_policy_sha256=constraint_fingerprint(policy), seed=seed, arm=arm,
-                  start=start, spot_checks=spot_checks, search_bounds=search_bounds, reservation=reservation,
-                  checkpoint_interval=checkpoint_interval, source=source, source_sha256=sha(source),
-                  reservation_status='unknown_until_verified_receipt')
     output.mkdir(exist_ok=False)
     try:
+        # Construction verifies inputs but does not execute any RF forwards.
+        worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
+            root=root, checkpoint=output/'checkpoints', checkpoint_interval=checkpoint_interval,
+            spot_checks=spot_checks, search_bounds=search_bounds)
+        record = dict(kind='development_rf_profile_input_v1', plan=data, plan_sha256=plan.sha256,
+                      definition=asdict(definition), definition_sha256=sha(asdict(definition)),
+                      physical_policy_id=policy['active_constraint_id'],
+                      physical_policy_sha256=constraint_fingerprint(policy), seed=seed, arm=arm,
+                      start=start, spot_checks=spot_checks, search_bounds=search_bounds, reservation=reservation,
+                      checkpoint_interval=checkpoint_interval, source=worker.source, source_sha256=worker.source_sha256,
+                      reservation_status='unknown_until_verified_receipt')
         _save_checkpoint(output/'input.json', record)
         input_bytes = (output/'input.json').read_bytes()
         if canonical(json.loads(input_bytes)) != canonical(record):
             raise ValueError('Input readback mismatch')
-        worker = DevelopmentWorker(plan, definition, policy, arm, seed, start['vector'], start['vector_sha256'],
-            root=root, checkpoint=output/'checkpoints', checkpoint_interval=checkpoint_interval,
-            spot_checks=spot_checks, search_bounds=search_bounds)
-        if worker.source != source:
-            raise ValueError('Source changed before Job')
         result = worker.run()
-        if source_identity(root) != source or result['source_sha256'] != sha(source):
-            raise ValueError('Source changed during Job')
+        if result['source_sha256'] != record['source_sha256']:
+            raise ValueError('Result source/Job mismatch')
         actual = result['costs']
         rf_used = actual['search_requested_samples'] + actual['terminal_requested_samples']
         independent_used = sum(actual['independent_mna_samples_by_stage'].values())

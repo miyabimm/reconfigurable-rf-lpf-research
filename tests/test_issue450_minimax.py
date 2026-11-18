@@ -363,13 +363,54 @@ class MinimaxTests(unittest.TestCase):
             from lpf.search._job_evaluation import source_identity
             source = source_identity(ROOT)
             for name, target, values, reason in (
-                    ('source', 'source_identity', [source, source, {**source, 'head': 'changed'}], 'Source/environment'),
-                    ('rf', 'load_minimax_profile', [self.p, self.p, replace(self.p, fingerprint='changed')], 'RF profile/base')):
-                with self.subTest(boundary=name), patch(f'lpf.search._development_worker.{target}', side_effect=values):
+                    ('source', 'lpf.search._development_worker.source_identity',
+                     [source, {**source, 'head': 'changed'}], 'Source/environment'),
+                    ('rf', 'lpf.minimax_profile.load_minimax_profile',
+                     [self.p, replace(self.p, fingerprint='changed')], 'RF profile/base'),
+                    ('rf-entry', 'lpf.minimax_profile.load_minimax_profile',
+                     [replace(self.p, fingerprint='changed')], 'Plan/current RF inputs mismatch')):
+                with self.subTest(boundary=name), patch(target, side_effect=values) as boundary:
                     with self.assertRaisesRegex(ValueError, reason):
                         run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/name,
                             root=ROOT, spot_checks={'terminal': [0]})
+                self.assertEqual(boundary.call_count, len(values))
                 failure = json.loads((Path(tmp)/name/'failure.json').read_text())
+                self.assertEqual(failure['rf_forwards_unknown_upper_bound'], failure['reservation']['rf_forwards'])
+                self.assertFalse((Path(tmp)/name/'receipt.json').exists())
+            from lpf.rf_core.model import power_response
+            def reject_terminal_power(*args, check_power=False):
+                if check_power:
+                    args = (np.broadcast_to([[0, 0], [1.1, 0]], args[0].shape), *args[1:])
+                return power_response(*args, check_power=check_power)
+            with patch('lpf.rf_core.model.power_response', side_effect=reject_terminal_power) as waves:
+                with self.assertRaisesRegex(ValueError, 'non-passive or fail power balance'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'waves',
+                        root=ROOT, spot_checks={'terminal': [0]})
+            self.assertEqual([c.kwargs['check_power'] for c in waves.call_args_list], [False, False, True])
+            for name, operation, side_effect, reason in (
+                    ('spd', 'eigvalsh', lambda _: np.array([-1., 1.]), 'not SPD'),
+                    ('numeric', 'solve', np.linalg.LinAlgError, 'admittance solve failed')):
+                def simulate_search(callback, *_args, **_kwargs):
+                    with patch(f'numpy.linalg.{operation}', side_effect=side_effect):
+                        callback(x)
+                with self.subTest(search=name), patch('lpf.search._development_worker.hybrid_minimize',
+                                                      side_effect=simulate_search):
+                    with self.assertRaisesRegex(ValueError, reason):
+                        run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/name,
+                            root=ROOT, spot_checks={'terminal': [0]})
+            from lpf.optimizers.result import OptimizerResult
+            def invalid_final(callback, *_args, **_kwargs):
+                residual = callback(x)
+                outside = x.copy()
+                outside[0] = -1
+                return OptimizerResult(outside, float(residual @ residual), False, 'solver_failure', 1)
+            with patch('lpf.search._development_worker.hybrid_minimize', side_effect=invalid_final):
+                with self.assertRaisesRegex(ValueError, 'within closed physical bounds'):
+                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'box',
+                        root=ROOT, spot_checks={'terminal': [0]})
+            for name in ('waves', 'spd', 'numeric', 'box'):
+                failure = json.loads((Path(tmp)/name/'failure.json').read_text())
+                self.assertEqual(failure['status'], 'STOP')
                 self.assertEqual(failure['rf_forwards_unknown_upper_bound'], failure['reservation']['rf_forwards'])
                 self.assertFalse((Path(tmp)/name/'receipt.json').exists())
             from lpf.search.storage import _save_checkpoint
@@ -420,12 +461,13 @@ class MinimaxTests(unittest.TestCase):
             self.assertEqual(refused.returncode, 2)
             self.assertIn('opt-in', refused.stderr)
 
-    def test_profile_worker_no_legacy_assessment_and_checks_every_forward(self):
+    def test_profile_worker_separates_search_and_terminal_checks(self):
         from dataclasses import asdict
         from unittest.mock import patch
         import yaml
         from lpf.search._development_worker import DevelopmentWorker
-        from lpf.search.component_constraints import _validate_values_with_bounds
+        from lpf.search.component_constraints import _validate_values_with_bounds, _check_vector_box
+        from lpf.rf_core.model import RFEvaluator
         from lpf.search.plan import Plan
         from lpf.search.preflight import freeze
         from lpf.search.storage import canonical, plain, sha, vector_sha
@@ -438,15 +480,25 @@ class MinimaxTests(unittest.TestCase):
             objective='signed_margin_db', options=dict(max_search_forwards=2))
         frozen = freeze(cfg, ROOT)
         with tempfile.TemporaryDirectory(prefix='issue447-worker-') as tmp:
-            worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
-                23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
-                spot_checks={'terminal': [0]})
+            evaluate = RFEvaluator.evaluate
+            events = []
+            def forward(evaluator, vector, *, check_power=False):
+                events.append('terminal' if check_power else 'search')
+                return evaluate(evaluator, vector, check_power=check_power)
+            def audit(*args, **kwargs):
+                events.append('physical')
+                return _validate_values_with_bounds(*args, **kwargs)
             with patch('lpf.search.performance.evaluate_requirements', side_effect=AssertionError('legacy')), \
                  patch('lpf.search.performance.summarize_mandatory', side_effect=AssertionError('legacy')), \
-                 patch('lpf.search._development_worker._validate_values_with_bounds',
-                       wraps=_validate_values_with_bounds) as physical:
+                 patch('lpf.search._development_worker._validate_values_with_bounds', side_effect=audit), \
+                 patch('lpf.search._development_worker._check_vector_box', wraps=_check_vector_box) as box, \
+                 patch.object(RFEvaluator, 'evaluate', forward):
+                worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
+                    23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
+                    spot_checks={'terminal': [0]})
                 result = worker.run()
-            self.assertEqual(physical.call_count, result['forward_count'])
+            self.assertEqual(events, ['physical', 'search', 'search', 'physical', 'physical', 'terminal'])
+            self.assertEqual(box.call_count, 3)
             self.assertNotIn('assessment', result['terminal']['candidates'][0])
             # Even a rehashed Plan cannot silently change the grid or reservation.
             frozen['grids']['terminal']['frequency_hz'][0] += 1
@@ -484,7 +536,7 @@ class MinimaxTests(unittest.TestCase):
                         residual = callback(x)
                         value = float(np.max(residual) if solver == 'slp' else residual @ residual)
                         if solver == 'hybrid':
-                            kw['progress_callback'](x, value, False)
+                            kw['objective_callback'](x, value)
                         else:
                             kw['objective_callback'](x, value)
                     self.fail('hard cap was not enforced')
@@ -500,7 +552,6 @@ class MinimaxTests(unittest.TestCase):
         from dataclasses import asdict
         import copy
         import yaml
-        from lpf.search._development_worker import DevelopmentWorker
         from lpf.search.plan import Plan
         from lpf.search.preflight import freeze
         from lpf.search.storage import canonical, plain, sha, vector_sha
@@ -524,18 +575,27 @@ class MinimaxTests(unittest.TestCase):
             arm['steps'].append(step)
         frozen = freeze(cfg, ROOT)
         plan = Plan(canonical(frozen), sha(frozen))
+        from unittest.mock import patch
+        from lpf.search._development_runner import run_profile_development
+        from lpf.search._job_evaluation import source_identity
         with tempfile.TemporaryDirectory(prefix='issue446-multistep-') as tmp:
-            worker = DevelopmentWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x),
-                                       root=ROOT, checkpoint=Path(tmp)/'checkpoints', checkpoint_interval=1,
-                                       spot_checks={'terminal': [0]})
-            result = worker.run()
+            path = Path(tmp)/'job'
+            with patch('lpf.search._development_worker.source_identity', wraps=source_identity) as source, \
+                 patch('lpf.search._development_runner.source_identity', wraps=source_identity) as runner_source, \
+                 patch('lpf.minimax_profile.load_minimax_profile', wraps=load_minimax_profile) as rf:
+                result = run_profile_development(plan, definition, policy, 23, 'demo',
+                    dict(vector=plain(x), vector_sha256=vector_sha(x)), path, root=ROOT,
+                    spot_checks={'terminal': [0]}, checkpoint_interval=1)
+            self.assertEqual(source.call_count, 2)
+            self.assertEqual(rf.call_count, 2)
+            runner_source.assert_not_called()
             self.assertEqual(len(result['steps']), 3)
             for previous, step in zip(result['steps'], result['steps'][1:]):
                 self.assertEqual(vector_sha(previous['solver_result']['x']), step['input_vector_sha256'])
             self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'],
                              vector_sha(result['steps'][-1]['solver_result']['x']))
             self.assertEqual(len(result['terminal']['candidates']), 1)
-            checkpoints = [json.loads(p.read_text()) for p in sorted((Path(tmp)/'checkpoints').glob('*.json'))]
+            checkpoints = [json.loads(p.read_text()) for p in sorted((path/'checkpoints').glob('*.json'))]
             self.assertEqual(set(c['step'] for c in checkpoints), {'step0', 'step1', 'step2'})
             self.assertTrue(all(c['kind'] == 'development_temporary_observation_v1' for c in checkpoints))
 

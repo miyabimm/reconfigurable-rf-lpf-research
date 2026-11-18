@@ -8,7 +8,8 @@ import tempfile
 import numpy as np
 
 from lpf.constraint_versions import constraint_fingerprint
-from lpf.minimax_profile import load_minimax_profile, signed_margins, _margin_parameters
+from lpf import minimax_profile
+from lpf.minimax_profile import signed_margins, _margin_parameters
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
@@ -19,7 +20,7 @@ from .component_constraints import (_check_vector_box, _validate_values_with_bou
                                     physical_bounds, validate_search_box)
 from .evaluation import raw_numbers
 from .performance import grid_fingerprint
-from .preflight import definition_sha, freeze
+from .preflight import definition_sha, _freeze_with_profile
 from .storage import _normalize_search_bounds, _save_checkpoint, canonical, plain, sha, vector_sha
 from .worker import _development_options
 
@@ -38,9 +39,9 @@ class DevelopmentWorker:
         self.root = Path(root).resolve()
         self.source = source_identity(self.root)
         self.source_sha256 = sha(self.source)
-        if sha(data) != plan.sha256 or sha(freeze(cfg, self.root)) != plan.sha256:
+        current, self.profile = _freeze_with_profile(cfg, self.root)
+        if sha(data) != plan.sha256 or sha(current) != plan.sha256:
             raise ValueError('Plan/current RF inputs mismatch')
-        self.profile = load_minimax_profile('RF-T009', root=self.root, allow_trial=True)
         if (self.profile.fingerprint != data['rf_profile']['effective_sha256'] or
                 constraint_fingerprint(policy) != self.profile.base_sha256):
             raise ValueError('RF profile/physical base mismatch')
@@ -90,7 +91,7 @@ class DevelopmentWorker:
     def _verify_boundary(self):
         if source_identity(self.root) != self.source:
             raise ValueError('Source/environment changed; no retry')
-        if load_minimax_profile('RF-T009', root=self.root, allow_trial=True) != self.profile:
+        if minimax_profile.load_minimax_profile('RF-T009', root=self.root, allow_trial=True) != self.profile:
             raise ValueError('RF profile/base/bands/S2P changed; no retry')
         ref = self.data['config']['definition']
         if 'path' in ref and hashlib.sha256((self.root/ref['path']).read_bytes()).hexdigest() != ref['source_sha256']:
@@ -120,12 +121,17 @@ class DevelopmentWorker:
         return result
 
     def _forward(self, evaluator, vector, stage):
-        _check_vector_box(vector, self.bounds)
-        physical = self._physical(vector)
+        terminal = stage == 'terminal'
         if self.forward_count >= self.forward_cap:
-            raise ValueError(f'STOP: {"Terminal" if stage == "terminal" else "Search"} RF forward budget exhausted')
+            raise ValueError(f'STOP: {"Terminal" if terminal else "Search"} RF forward budget exhausted')
+        physical = None
+        if terminal:
+            _check_vector_box(vector, self.bounds)
+            physical = self._physical(vector)
         self.forward_count += 1  # Charge before entering RF Core, even when it raises.
-        response = evaluator.evaluate(vector, check_power=True)
+        # Search callbacks are bounded by the Optimizers. RF Core still checks
+        # finite values, full L SPD and numerical failures on each evaluation.
+        response = evaluator.evaluate(vector, check_power=True) if terminal else evaluator.evaluate(vector)
         if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
                 response.policy_fingerprint != self.model.policy_fingerprint):
             raise ValueError('Response profile/grid mismatch')
@@ -150,36 +156,28 @@ class DevelopmentWorker:
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = _development_options(step)
         self.forward_count, self.forward_cap = 0, opts['max_evaluations']
-        pending, saved = None, None
-        observed = set()
+        saved = None
         independent = None
 
         def residuals(vector):
-            nonlocal pending, independent
-            if pending is not None:
-                raise ValueError('Optimizer did not report its previous Search observation')
+            nonlocal independent
             response, _, independent = self._forward(evaluator, vector, stage)
             residual = direction * (response.il_db - threshold)
             if not np.all(np.isfinite(residual)):
                 raise ValueError('Nonfinite signed-margin Search residuals')
-            pending = vector_sha(vector)
             return residual
 
-        def observe(vector, objective, *_):
-            nonlocal pending, saved
-            digest = vector_sha(vector)
-            if digest != pending or not np.isfinite(objective):
-                raise ValueError('Optimizer objective does not match Search observation')
-            pending = None
-            observed.add((digest, objective))
+        def observe(vector, objective):
+            nonlocal saved
             if self.forward_count % self.checkpoint_interval == 0:
+                digest = vector_sha(vector)
                 self._checkpoint(step['name'], stage, dict(vector=plain(vector), vector_sha256=digest, objective=objective))
                 saved = self.forward_count, digest, objective
 
         solver = step['solver']
         if solver == 'hybrid':
             out = hybrid_minimize(residuals, x, self.bounds, seed=self.seed,
-                                  aggregation=step['aggregation'], progress_callback=observe, **opts)
+                                  aggregation=step['aggregation'], objective_callback=observe, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = minimize(residuals, x, self.bounds, constraints=None, aggregation=step['aggregation'],
@@ -188,11 +186,12 @@ class DevelopmentWorker:
                 not np.isfinite(out.objective) or type(out.evaluations) is not int or
                 not 1 <= out.evaluations <= opts['max_evaluations'] or type(out.converged) is not bool or
                 not isinstance(out.stop_reason, str) or not out.stop_reason or out.stop_reason.startswith('invalid_') or
-                (out.converged and out.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted')) or pending is not None):
+                (out.converged and out.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted')) or
+                not 1 <= self.forward_count <= self.forward_cap):
             raise ValueError('Invalid or missing Optimizer result; no replacement or retry')
+        _check_vector_box(out.x, self.bounds)
+        self._physical(out.x)
         digest = vector_sha(out.x)
-        if (digest, out.objective) not in observed:
-            raise ValueError('Optimizer result not observed on Search grid')
         if saved != (self.forward_count, digest, out.objective):
             self._checkpoint(step['name'], stage, dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective))
         return dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
@@ -208,10 +207,8 @@ class DevelopmentWorker:
         x = self.x.copy()
         steps = []
         for step in self.steps:
-            self._verify_boundary()
             record, x = self._search(step, x.copy())
             steps.append(record)
-        self._verify_boundary()
         self.forward_count, self.forward_cap = 0, 1
         evaluator = self.model.evaluator(self.grids['terminal'])
         response, physical, independent = self._forward(evaluator, x, 'terminal')

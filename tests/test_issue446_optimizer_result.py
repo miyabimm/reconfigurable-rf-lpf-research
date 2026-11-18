@@ -47,6 +47,69 @@ class OptimizerResultTests(unittest.TestCase):
                 if result.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted'):
                     self.assertFalse(result.converged)
 
+    def test_closed_box_and_observed_pair_at_solver_boundaries(self):
+        for solver, fn in (('slsqp', slsqp_minimize), ('slp', slp_minimize), ('hybrid', hybrid_minimize)):
+            for case, cap in (('normal', 80), ('budget', 1), ('nonconverged', 80), ('fixed', 4)):
+                with self.subTest(solver=solver, case=case):
+                    bounds = np.array([(0., 0. if case == 'fixed' else 1.), (2., 2.)])
+                    seen = []
+
+                    def residual(x):
+                        self.assertTrue(np.all(np.isfinite(x)))
+                        self.assertTrue(np.all((bounds[:, 0] <= x) & (x <= bounds[:, 1])), x)
+                        r = np.array([.375 - x[0] if solver == 'slp' else x[0] - .375])
+                        seen.append((tuple(x), float(r[0] if solver == 'slp' else r @ r)))
+                        if case == 'nonconverged' and solver != 'slp' and len(seen) == 2:
+                            seen.pop()  # Invalid output is not an objective observation.
+                            return np.array([np.nan])
+                        return r
+
+                    restarts = []
+                    if solver == 'hybrid':
+                        opts = dict(seed=23, restart_sigma=.6, event_callback=restarts.append)
+                    else:
+                        opts = dict(max_iterations=1 if case == 'nonconverged' else 12)
+                    if solver == 'slp':
+                        opts['aggregation'] = 'signed_max'
+                    out = fn(residual, [0., 2.], bounds, max_evaluations=cap, **opts)
+                    self.assertIn((tuple(out.x), out.objective), seen)
+                    if case == 'fixed':
+                        self.assertEqual(len(seen), 1)
+                    elif case in ('budget', 'nonconverged'):
+                        self.assertFalse(out.converged)
+                    elif solver == 'hybrid':
+                        self.assertTrue(any(e['event'] == 'restart_start_generated' for e in restarts))
+                        self.assertEqual(out.objective, min(f for _, f in seen))
+                        self.assertLess(out.objective, seen[-1][1])
+                    else:
+                        self.assertTrue(out.converged)
+
+    def test_slp_finite_difference_rounding_at_bound(self):
+        lo, hi = -.7985927959630463, .7923910268913666
+        self.assertGreater(lo + (hi - lo), hi)
+
+        def residual(x):
+            self.assertLessEqual(x[0], hi)
+            self.assertGreaterEqual(x[0], lo)
+            return [-x[0]]
+
+        slp_minimize(residual, [lo], [(lo, hi)], fd_step=1., max_iterations=1, max_evaluations=4)
+
+    def test_slsqp_epigraph_callbacks_at_upper_boundary(self):
+        seen = []
+
+        def residual(x):
+            self.assertTrue(np.all(np.isfinite(x)))
+            self.assertTrue(0. <= x[0] <= 1.)
+            value = x[0] + 1.
+            seen.append((tuple(x), float(value**2)))
+            return [value]
+
+        out = slsqp_minimize(residual, [1.], [(0., 1.)], aggregation='max',
+                             max_iterations=12, max_evaluations=80)
+        self.assertIn((tuple(out.x), out.objective), seen)
+        self.assertTrue(out.converged)
+
     def test_constraint_callbacks_are_in_native_counts(self):
         for solver in ('slsqp', 'slp'):
             with self.subTest(solver=solver):
