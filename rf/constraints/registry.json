@@ -52,6 +52,14 @@
       "base_constraint_sha256": "e12c42b11d12db7f20983c48cfa441ea96e362e533450d5862aa8a271c82af86",
       "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
       "effective_constraint_sha256": "d1ebefaf4cb6735898467b9c2affcc57b9590d4a6c9f53a0dd84d1f1f2f8b18d"
+    },
+    "RF-T010": {
+      "file": "rf/constraints/trial/RF-T010.json",
+      "state": "study_authorized",
+      "base_physical_constraint_id": "RF-T008",
+      "base_constraint_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+      "effective_constraint_sha256": "d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417"
     }
   },
   "historical": {

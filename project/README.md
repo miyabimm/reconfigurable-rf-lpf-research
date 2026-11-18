@@ -26,9 +26,9 @@
 - 共通数値入口は`src/lpf/rf_core/`、設計検査は`src/lpf/search/`、結合/接続の構造は`src/lpf/topology_management/`。現役の動作と回帰はコードとテストを確認する。
 - RF Coreの一致・CI PASS・solver success・保存完了は、それぞれ**全帯域RF適合、独立MNA、連続帯域保証、実測**と同義ではない。SPD、受動性・電力保存、固定S2P、全6設定の別区間評価を維持する。
 
-### RF-T009開発用固定definition CLI
+### RF profile開発用固定definition CLI
 
-[RF-T009逐次開発CLI](../scripts/README.md#rf-t009-開発run)は、明示opt-inのRF-T009のみを受け付ける。全seed×armの初期値・共通boundsと予算を一度だけ凍結し、同じRunnerで逐次実行する。正式EXPのG0〜G5とは独立しており、新形式の正式Campaignには未接続。
+[逐次開発CLI](../scripts/README.md#rf-profile-開発run)は、明示opt-inの登録済みschema 1 profileを受け付ける。全seed×armの初期値・共通boundsと予算を一度だけ凍結し、同じRunnerで逐次実行する。正式EXPのG0〜G5とは独立しており、新形式の正式Campaignには未接続。
 
 ## 廃止済み旧探索入口
 

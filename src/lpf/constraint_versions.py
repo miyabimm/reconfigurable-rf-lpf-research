@@ -224,7 +224,8 @@ def validate_registry(*, root=ROOT):
                                   'base_constraint_sha256', 'bands_sha256', 'effective_constraint_sha256'}
                 or entry['file'] != f'rf/constraints/trial/{cid}.json'
                 or entry['state'] != 'study_authorized'
-                or entry['base_physical_constraint_id'] not in registry['formal']):
+                or (entry['base_physical_constraint_id'] not in registry['formal']
+                    and registry['trial'].get(entry['base_physical_constraint_id'], {}).get('state') != 'study_authorized')):
             raise ValueError('Invalid minimax profile registration')
     if registry.get("active_formal_id") not in registry["formal"]:
         raise ValueError("Active constraint must be a registered approved formal version")

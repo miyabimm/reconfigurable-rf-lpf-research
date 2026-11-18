@@ -4,14 +4,14 @@
 
 | 用途 | スクリプト／扱い |
 |---|---|
-| RF-T009固定definitionの逐次開発 | [run_rf_search.py](run_rf_search.py)、下記。正式EXPへ自動昇格しない |
+| 登録済みRF profile固定definitionの逐次開発 | [run_rf_search.py](run_rf_search.py)、下記。正式EXPへ自動昇格しない |
 | RF評価・保存済み候補の監査 | [audit_results.py](audit_results.py)。旧EXP-047非標準manifestは[experiment_manifest.py](../src/lpf/experiment_manifest.py)のSHA固定index-only viewで索引照合 |
 | 候補の台帳照合 | [audit_research_catalog.py](audit_research_catalog.py)、[report_research_pareto.py](report_research_pareto.py)。同条件・同格子・同検証深度のみ比較 |
 | 新規EXP番号の予約・照合 | [reserve_experiment_number.py](reserve_experiment_number.py)、[experiment_id_registry.py](experiment_id_registry.py) |
 | 新規EXP保存ゲート | [audit_new_experiment_storage.py](audit_new_experiment_storage.py)、[experiment_manifests.py](experiment_manifests.py) |
 | CI差分・選択回帰 | [classify_storage_ci.py](classify_storage_ci.py)、[select_ci_tests.py](select_ci_tests.py)、[audit.yml](../.github/workflows/audit.yml) |
 
-## RF-T009 開発Run
+## RF profile 開発Run
 
 ```bash
 uv run --frozen python scripts/run_rf_search.py develop \
@@ -19,7 +19,7 @@ uv run --frozen python scripts/run_rf_search.py develop \
   --output /tmp/未存在のrun --spot-checks '{"terminal":[0]}'
 ```
 
-Plan入力例（`definition`は完全なCircuitDefinitionのインラインmapping、またはここに示すリポジトリ内JSON参照）：
+登録済みschema 1 profile（RF-T009、RF-T010等）を明示opt-inする。未対応の物理baseはRF Coreが拒否する。Plan入力例（`definition`は完全なCircuitDefinitionのインラインmapping、またはここに示すリポジトリ内JSON参照）：
 
 ```yaml
 schema_version: 1

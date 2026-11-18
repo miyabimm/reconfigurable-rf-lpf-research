@@ -213,7 +213,7 @@ class CommonRunnerTests(unittest.TestCase):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             with self.subTest(cid=cid), patch.object(RFEvaluator, 'evaluate') as forward:
                 self.cfg['rf']['constraint_id'] = cid
-                with self.assertRaisesRegex(ValueError, 'RF-T009 trial opt-in'):
+                with self.assertRaisesRegex(ValueError, 'Unknown minimax profile'):
                     self.launch()
                 self.assertFalse(self.out.exists())
                 forward.assert_not_called()
