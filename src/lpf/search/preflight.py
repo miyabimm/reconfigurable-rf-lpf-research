@@ -37,63 +37,15 @@ def check_next_batch(batch_samples, *, step_remaining, job_remaining, trial_rema
         raise ValueError('STOP: next full batch exceeds unreserved sample budget')
 
 
-def _solver(step):
-    from .plan import fields, positive
-    solver, agg, options = step['solver'], step['aggregation'], step['options']
-    if solver == 'hybrid':
-        fields(options, 'max_search_forwards')
-        positive(options['max_search_forwards'])
-    elif solver in ('slsqp', 'slp'):
-        fields(options, 'max_iterations max_evaluations')
-        positive(options['max_iterations'])
-    else:
-        raise ValueError('Unknown solver')
-    if agg not in (('signed_max',) if solver == 'slp' else ('sum', 'max')):
-        raise ValueError('Unknown solver aggregation')
-    if solver != 'hybrid':
-        positive(options['max_evaluations'])
-
-
 def freeze(d, root):
     return _freeze_with_profile(d, root)[0]
 
 
 def _freeze_with_profile(d, root):
     """Return the frozen Plan data and the same verified profile used to compile it."""
-    from .plan import fields, positive
+    from .plan import fields, positive, validate_solver
     base_fields = 'schema_version rf objective definition seeds arms max_trial_requested_samples validation anytime_samples anytime_points_per_interval'
-    fields(d, base_fields + (' selection' if isinstance(d, dict) and 'selection' in d else '') +
-           (' campaign' if isinstance(d, dict) and 'campaign' in d else ''))
-    if 'campaign' in d:
-        envelope = d['campaign']
-        fields(envelope, 'max_topologies max_rf_samples structure independent')
-        positive(envelope['max_topologies']); positive(envelope['max_rf_samples'])
-        structure = envelope['structure']
-        fields(structure, 'max_nodes max_fixed_capacitors max_variable_capacitors inductor_types fixed_c_types variable_roles allow_coupling allow_ic_fixed')
-        positive(structure['max_nodes'])
-        nonnegative(structure['max_fixed_capacitors'])
-        nonnegative(structure['max_variable_capacitors'])
-        for key in ('inductor_types', 'fixed_c_types', 'variable_roles'):
-            if (not isinstance(structure[key], list) or not structure[key] or
-                    any(type(v) is not str for v in structure[key]) or
-                    len(set(structure[key])) != len(structure[key])):
-                raise ValueError('Explicit unique allowed structural types/roles required')
-        if any(type(structure[k]) is not bool for k in ('allow_coupling', 'allow_ic_fixed')):
-            raise ValueError('Explicit structural capability booleans required')
-        independent = envelope['independent']
-        fields(independent, 'stage max_candidates sample_indices')
-        if independent['stage'] not in ('not_run', 'terminal'):
-            raise ValueError('Only bounded terminal independent spots supported')
-        nonnegative(independent['max_candidates'])
-        indices = independent['sample_indices']
-        if (not isinstance(indices, list) or any(type(i) is not int or i < 0 for i in indices) or
-                len(set(indices)) != len(indices)):
-            raise ValueError('Unique independent sample indices required')
-        if independent['stage'] == 'not_run':
-            if independent['max_candidates'] or indices:
-                raise ValueError('not_run independent validation cannot request samples')
-        elif not independent['max_candidates'] or not indices:
-            raise ValueError('Bounded independent candidate/sample request required')
+    fields(d, base_fields + (' selection' if isinstance(d, dict) and 'selection' in d else ''))
     if type(d['schema_version']) is not int or d['schema_version'] != 2:
         raise ValueError('Stage-4A requires schema_version 2')
     fields(d['rf'], 'constraint_id allow_trial')
@@ -102,7 +54,7 @@ def _freeze_with_profile(d, root):
         raise ValueError('Explicit RF ID and boolean trial opt-in required')
     profile = None
     if d['rf']['constraint_id'] == 'RF-T009':
-        if 'campaign' in d or 'selection' in d or d['objective'] != 'full_lpf':
+        if 'selection' in d or d['objective'] != 'full_lpf':
             raise ValueError('RF-T009 is a standalone full-LPF development profile')
         from lpf import minimax_profile
         from .performance import compile_profile_grid
@@ -184,11 +136,6 @@ def _freeze_with_profile(d, root):
     positive(validation['max_requested_samples'])
     terminal_one = grid('terminal', validation['terminal_points'])
     dense_one = grid('dense', validation['dense_points'])
-    if 'campaign' in d:
-        independent = d['campaign']['independent']
-        if (any(i >= terminal_one for i in independent['sample_indices']) or
-                independent['max_candidates'] > (selection['top_k'] if selection is not None else 1)):
-            raise ValueError('Independent candidate/sample request exceeds terminal selection')
     dense_upper = validation['max_candidates']*dense_one
     if dense_upper > validation['max_requested_samples']:
         raise ValueError('Dense validation cap cannot reserve its candidate upper bound')
@@ -225,7 +172,7 @@ def _freeze_with_profile(d, root):
             if not isinstance(sname, str) or not sname.isidentifier() or sname in stage_names:
                 raise ValueError('Unique identifier step names required')
             stage_names.add(sname)
-            _solver(step)
+            validate_solver(step)
             positive(step['max_requested_samples'])
             one = grid(f'{name}/{sname}', step['points_per_interval'],
                        step.get('stop_points_per_interval'))

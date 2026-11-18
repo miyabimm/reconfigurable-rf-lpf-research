@@ -23,7 +23,7 @@ class SelectionTests(unittest.TestCase):
         self.git('config', 'user.email', 'test@example.com')
         self.git('config', 'user.name', 'Test')
         for path in ('README.md', 'rf/bands.csv', 'src/lpf/search/starts.py',
-                     'src/lpf/search/worker.py', 'src/lpf/search/gates.py',
+                     'src/lpf/search/_development_worker.py', 'src/lpf/search/source.py',
                      'project/experiment_storage_policy.md', '.github/workflows/audit.yml',
                      'src/lpf/search/proposals.py',
                      'tests/test_issue309_rf_core.py', 'unknown.txt'):
@@ -58,8 +58,8 @@ class SelectionTests(unittest.TestCase):
     def test_responsibility_examples(self):
         examples = {
             'README.md': set(), 'rf/bands.csv': {'RF'},
-            'src/lpf/search/starts.py': {'OPT'}, 'src/lpf/search/worker.py': {'RUN', 'STORE'},
-            'src/lpf/search/gates.py': {'GATE'}, 'project/experiment_storage_policy.md': {'STORE'},
+            'src/lpf/search/starts.py': {'OPT'}, 'src/lpf/search/_development_worker.py': {'RUN', 'RF'},
+            'src/lpf/search/source.py': {'RUN', 'GATE'}, 'project/experiment_storage_policy.md': {'STORE'},
         }
         for path, expected in examples.items():
             with self.subTest(path=path):
@@ -185,12 +185,11 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(selector.path_classes('tests/test_constraint_versioning.py'), {'RF'})
         self.assertEqual(selector.path_classes('tests/test_issue307_constraints.py'), {'RF'})
         self.assertEqual(selector.path_classes('src/lpf/phase2_models/limited_candidate_evidence.py'), {'FULL'})
-        self.assertIn('test_issue317_fixed_worker.py', selector.SUITES['RUN'])
-        self.assertNotIn('test_issue317_fixed_worker.py', selector.SUITES['GATE'])
-        self.assertNotIn('test_issue325_campaign.py', selector.SUITES['GATE'])
-        self.assertIn('test_issue325_campaign_gates.py', selector.SUITES['GATE'])
-        self.assertIn('test_issue325_campaign_gates.py', selector.SUITES['STORE'])
-        self.assertTrue(any('FixedWorkerTests' in name for name in selector.RF_RUN_BOUNDARY))
+        self.assertIn('test_issue448_common_runner.py', selector.SUITES['RUN'])
+        self.assertNotIn('test_issue448_common_runner.py', selector.SUITES['GATE'])
+        self.assertIn('test_issue448_checkout.py', selector.SUITES['GATE'])
+        self.assertIn('test_issue448_checkout.py', selector.SUITES['STORE'])
+        self.assertTrue(any('test_profile_worker_all_solvers' in name for name in selector.RF_RUN_BOUNDARY))
         self.assertEqual(selector.path_classes('project/instructions.md'), {'FULL'})
         self.assertEqual(selector.path_classes('project/specification.md'), {'RF'})
         self.assertEqual(selector.path_classes('src/lpf/phase2_models/branch_mna.py'), {'FULL'})
@@ -202,7 +201,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_reviewed_source_changes_select_direct_regressions(self):
         examples = [
-            ('src/lpf/search/proposals.py', {'RUN', 'GATE'}, 'test_issue325_campaign.py'),
+            ('src/lpf/search/proposals.py', {'RUN', 'GATE'}, 'test_issue448_common_runner.py'),
             ('rf/bands.csv', {'RF'}, 'test_issue313_preflight.py'),
         ]
         for path, expected, normal_test in examples:

@@ -35,6 +35,29 @@ def response(profile, g, offset=-.2):
     return RFResponse(g, 'RF-T009', profile.fingerprint, s, il, il, il, il)
 
 
+def effective_fixture(cfg):
+    # Keep #447's exact deterministic grids and solver inputs for numerical A/B.
+    return dict(schema_version=1, rf=cfg['rf'], definition=cfg['definition'], seeds=cfg['seeds'],
+                terminal_points=cfg['validation']['terminal_points'],
+                budget=dict(rf_samples=10000, rf_forwards=100, independent_mna_samples=100),
+                arms=[dict(name=arm['name'], steps=[{k: v for k, v in step.items() if k != 'max_requested_samples'}
+                                                   for step in arm['steps']]) for arm in cfg['arms']])
+
+
+def compile_fixture(cfg, x, *, checkpoint_interval=1000):
+    from lpf.search.development_plan import freeze_run
+    from lpf.search.storage import plain, vector_sha
+    return freeze_run(effective_fixture(cfg), {'23': {'demo': dict(vector=plain(x), vector_sha256=vector_sha(x))}},
+                      root=ROOT, spot_checks={'terminal': [0]}, search_bounds=None,
+                      checkpoint_interval=checkpoint_interval)
+
+
+def fixture_worker(compiled, path):
+    from lpf.search._development_worker import DevelopmentWorker
+    from lpf.search.source import source_identity
+    return DevelopmentWorker(compiled, 0, source_identity(ROOT), root=ROOT, checkpoint=path)
+
+
 class MinimaxTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -141,72 +164,10 @@ class MinimaxTests(unittest.TestCase):
         self.assertEqual(req.s2p_span_hz, base.s2p_span_hz)
         self.assertEqual(len(build_evaluation_grid(req, 2).frequency_hz), 56)
 
-    def test_development_worker_rejects_each_legacy_policy_before_rf(self):
-        from dataclasses import asdict
-        from unittest.mock import patch
-        import yaml
-        from lpf.search._development_worker import DevelopmentWorker
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
-        _, definition, _, _, x = make('RF-F003')
-        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
-        cfg.pop('selection')
-        cfg.update(definition=plain(asdict(definition)), anytime_samples=[])
-        with tempfile.TemporaryDirectory(prefix='issue447-legacy-') as tmp:
-            for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
-                with self.subTest(cid=cid):
-                    trial = cid.startswith('RF-T')
-                    cfg['rf'] = dict(constraint_id=cid, allow_trial=trial)
-                    cfg['validation']['max_requested_samples'] = 50000
-                    cfg['arms'][0]['steps'][0]['max_requested_samples'] = 25000
-                    cfg['arms'][0]['max_requested_samples'] = cfg['max_trial_requested_samples'] = 100000
-                    frozen = freeze(cfg, ROOT)
-                    with patch('lpf.search._development_worker.source_identity') as source:
-                        with self.assertRaisesRegex(ValueError, 'legacy performance is unsupported'):
-                            DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition,
-                                load_constraint(cid, allow_trial=trial), 'demo', 23, x, vector_sha(x),
-                                root=ROOT, checkpoint=Path(tmp)/cid, spot_checks={'terminal': [0]})
-                    source.assert_not_called()
-                    self.assertFalse((Path(tmp)/cid).exists())
-
-    def test_profile_preflight_and_minimal_worker_inputs(self):
-        from dataclasses import asdict
-        import copy
-        import yaml
-        from lpf.search._worker_next import MinimalWorker
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
-        policy, definition, _, _, x = make('RF-F003')
-        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
-        cfg.pop('selection')
-        cfg['rf'] = dict(constraint_id='RF-T009', allow_trial=True)
-        cfg['definition'] = plain(asdict(definition))
-        cfg['anytime_samples'] = []
-        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-                                          objective='signed_margin_db', options=dict(max_search_forwards=2))
-        frozen = freeze(cfg, ROOT)
-        self.assertEqual(frozen['rf_profile']['effective_sha256'], self.p.fingerprint)
-        self.assertEqual(frozen['requirements']['policy_id'], 'RF-T009')
-        self.assertEqual(frozen['requirements']['limits'], ())
-        plan = Plan(canonical(frozen), sha(frozen))
-        with self.assertRaisesRegex(ValueError, 'Use DevelopmentWorker'):
-            MinimalWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x), root=ROOT)
-        rejected = copy.deepcopy(cfg)
-        rejected['rf']['allow_trial'] = False
-        with self.assertRaises(ValueError): freeze(rejected, ROOT)
-        rejected = copy.deepcopy(cfg)
-        rejected['objective'] = 'matching_only'
-        with self.assertRaises(ValueError): freeze(rejected, ROOT)
-
     def test_profile_worker_all_solvers_and_one_terminal(self):
         from dataclasses import asdict
         import yaml
-        from lpf.search._development_worker import DevelopmentWorker
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
+        from lpf.search.storage import plain, vector_sha
         policy, definition, _, _, x = make('RF-F003')
         for solver in ('slsqp', 'slp', 'hybrid'):
             with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-profile-') as tmp:
@@ -218,11 +179,9 @@ class MinimaxTests(unittest.TestCase):
                 step.update(solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
                             objective='signed_margin_db', options=(dict(max_search_forwards=2)
                             if solver == 'hybrid' else dict(max_iterations=1, max_evaluations=2)))
-                frozen = freeze(cfg, ROOT)
-                plan = Plan(canonical(frozen), sha(frozen))
-                worker = DevelopmentWorker(plan, definition, policy, 'demo', 23, x, vector_sha(x),
-                                           root=ROOT, checkpoint=Path(tmp)/'checkpoints',
-                                           checkpoint_interval=1, spot_checks={'terminal': [0]})
+                compiled = compile_fixture(cfg, x, checkpoint_interval=1)
+                plan = compiled[0]
+                worker = fixture_worker(compiled, Path(tmp)/'checkpoints')
                 from unittest.mock import patch
                 from lpf.rf_core.independent import evaluate_independent_response
                 with patch('lpf.rf_core.independent.evaluate_independent_response',
@@ -263,214 +222,13 @@ class MinimaxTests(unittest.TestCase):
                 self.assertEqual(terminal['independent']['spots'][0]['index'], 0)
                 self.assertGreaterEqual(len(list((Path(tmp)/'checkpoints').glob('*.json'))), 1)
 
-    def test_profile_runner_persists_and_readbacks_or_stops(self):
-        from dataclasses import asdict
-        from unittest.mock import patch
-        import yaml
-        from lpf.search._development_runner import run_profile_development
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
-        policy, definition, _, _, x = make('RF-F003')
-        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
-        cfg.pop('selection')
-        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
-                   definition=plain(asdict(definition)), anytime_samples=[])
-        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-            objective='signed_margin_db', options=dict(max_search_forwards=2))
-        frozen = freeze(cfg, ROOT)
-        plan = Plan(canonical(frozen), sha(frozen))
-        start = dict(vector=plain(x), vector_sha256=vector_sha(x))
-        with tempfile.TemporaryDirectory(prefix='issue446-runner-') as tmp:
-            output = Path(tmp)/'job'
-            result = run_profile_development(plan, definition, policy, 23, 'demo', start, output,
-                root=ROOT, spot_checks={'terminal': [0], 'demo/coarse': [0]}, checkpoint_interval=1)
-            self.assertEqual(json.loads((output/'result.json').read_text()), result)
-            receipt = json.loads((output/'receipt.json').read_text())
-            for name, info in receipt['files'].items():
-                contents = (output/name).read_bytes()
-                self.assertEqual(info, dict(bytes=len(contents), sha256=hashlib.sha256(contents).hexdigest()))
-            self.assertIn('result.json', receipt['files'])
-            self.assertTrue(any(name.startswith('checkpoints/') for name in receipt['files']))
-            self.assertEqual(result['terminal']['candidates'][0]['vector'], result['steps'][-1]['solver_result']['x'])
-            self.assertEqual(len(result['terminal']['candidates'][0]['signed_margins_db']), 112)
-            stored_input = json.loads((output/'input.json').read_text())
-            self.assertEqual(stored_input['start'], start)
-            self.assertEqual(stored_input['reservation_status'], 'unknown_until_verified_receipt')
-            # A later reader can reconstruct the full vector and grid from raw alone.
-            from lpf.rf_core.coupled_lc import ParameterVectorSchema
-            from lpf.search.proposals import definition_from_data
-            terminal = result['terminal']['candidates'][0]
-            schema = ParameterVectorSchema(**result['parameter_schema'])
-            values = schema.decode(terminal['vector'])
-            self.assertEqual(len(values.capacitors_pf_by_setting), 6)
-            self.assertEqual(vector_sha(schema.encode(values)), terminal['vector_sha256'])
-            self.assertEqual(definition_from_data(result['definition']), definition)
-            frozen_grid = Plan(canonical(result['plan']), result['plan_sha256']).requested_grid('terminal')
-            np.testing.assert_array_equal(terminal['response']['grid']['frequency_hz'], frozen_grid.frequency_hz)
-            ledger = result['ledger']
-            self.assertEqual(result['costs']['independent_mna_samples_by_stage']['demo/coarse'],
-                             result['costs']['search_forwards'])
-            self.assertEqual(ledger['independent_mna_samples']['completed'],
-                             1 + result['costs']['search_forwards'])
-            self.assertEqual(ledger['reservation']['independent_mna_samples'],
-                             1 + plan.data['costs']['jobs']['demo']['stages']['coarse']['upper_reservation'] // 56)
-            self.assertEqual(ledger['reservation'], stored_input['reservation'])
-            for name in ('rf_forwards', 'rf_samples', 'independent_mna_samples'):
-                self.assertEqual(ledger[name]['unknown'], 0)
-                self.assertEqual(ledger[name]['completed'] + ledger[name]['released'], ledger['reservation'][name])
-            with self.assertRaisesRegex(ValueError, 'Fresh temporary'):
-                run_profile_development(plan, definition, policy, 23, 'demo', start, output,
-                                        root=ROOT, spot_checks={'terminal': [0]})
-            failed = Path(tmp)/'failed'
-            with patch('lpf.search._development_worker.hybrid_minimize', side_effect=RuntimeError('solver failed')):
-                with self.assertRaisesRegex(RuntimeError, 'solver failed'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, failed,
-                                            root=ROOT, spot_checks={'terminal': [0]})
-            failure = json.loads((failed/'failure.json').read_text())
-            failed_input = json.loads((failed/'input.json').read_text())
-            self.assertEqual(failure['status'], 'STOP')
-            self.assertFalse(failure['retry_allowed'])
-            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failed_input['reservation']['rf_samples'])
-            self.assertEqual(failure['independent_mna_samples_unknown_upper_bound'],
-                             failed_input['reservation']['independent_mna_samples'])
-            self.assertFalse((failed/'result.json').exists())
-            spot_failed = Path(tmp)/'spot-failed'
-            with patch('lpf.rf_core.independent.evaluate_independent_response',
-                       side_effect=ValueError('Power balance failed')) as audit:
-                with self.assertRaisesRegex(ValueError, 'Power balance failed'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, spot_failed,
-                                            root=ROOT, spot_checks={'terminal': [0]})
-            self.assertEqual(audit.call_count, 1)
-            failed_spot_record = json.loads((spot_failed/'failure.json').read_text())
-            self.assertEqual(failed_spot_record['status'], 'STOP')
-            self.assertEqual(failed_spot_record['independent_mna_samples_unknown_upper_bound'], 1)
-            self.assertFalse((spot_failed/'result.json').exists())
-            from lpf.search._development_worker import DevelopmentWorker
-            original_run = DevelopmentWorker.run
-            def tamper(worker):
-                value = original_run(worker)
-                next(worker.path.glob('*.json')).write_text('{}\n')
-                return value
-            corrupt = Path(tmp)/'corrupt'
-            with patch.object(DevelopmentWorker, 'run', tamper):
-                with self.assertRaisesRegex(ValueError, 'Checkpoint bytes changed'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, corrupt,
-                                            root=ROOT, spot_checks={'terminal': [0]}, checkpoint_interval=1)
-            failure = json.loads((corrupt/'failure.json').read_text())
-            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failure['reservation']['rf_samples'])
-            self.assertFalse((corrupt/'receipt.json').exists())
-            from lpf.search._job_evaluation import source_identity
-            source = source_identity(ROOT)
-            for name, target, values, reason in (
-                    ('source', 'lpf.search._development_worker.source_identity',
-                     [source, {**source, 'head': 'changed'}], 'Source/environment'),
-                    ('rf', 'lpf.minimax_profile.load_minimax_profile',
-                     [self.p, replace(self.p, fingerprint='changed')], 'RF profile/base'),
-                    ('rf-entry', 'lpf.minimax_profile.load_minimax_profile',
-                     [replace(self.p, fingerprint='changed')], 'Plan/current RF inputs mismatch')):
-                with self.subTest(boundary=name), patch(target, side_effect=values) as boundary:
-                    with self.assertRaisesRegex(ValueError, reason):
-                        run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/name,
-                            root=ROOT, spot_checks={'terminal': [0]})
-                self.assertEqual(boundary.call_count, len(values))
-                failure = json.loads((Path(tmp)/name/'failure.json').read_text())
-                self.assertEqual(failure['rf_forwards_unknown_upper_bound'], failure['reservation']['rf_forwards'])
-                self.assertFalse((Path(tmp)/name/'receipt.json').exists())
-            from lpf.rf_core.model import power_response
-            def reject_terminal_power(*args, check_power=False):
-                if check_power:
-                    args = (np.broadcast_to([[0, 0], [1.1, 0]], args[0].shape), *args[1:])
-                return power_response(*args, check_power=check_power)
-            with patch('lpf.rf_core.model.power_response', side_effect=reject_terminal_power) as waves:
-                with self.assertRaisesRegex(ValueError, 'non-passive or fail power balance'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'waves',
-                        root=ROOT, spot_checks={'terminal': [0]})
-            self.assertEqual([c.kwargs['check_power'] for c in waves.call_args_list], [False, False, True])
-            for name, operation, side_effect, reason in (
-                    ('spd', 'eigvalsh', lambda _: np.array([-1., 1.]), 'not SPD'),
-                    ('numeric', 'solve', np.linalg.LinAlgError, 'admittance solve failed')):
-                def simulate_search(callback, *_args, **_kwargs):
-                    with patch(f'numpy.linalg.{operation}', side_effect=side_effect):
-                        callback(x)
-                with self.subTest(search=name), patch('lpf.search._development_worker.hybrid_minimize',
-                                                      side_effect=simulate_search):
-                    with self.assertRaisesRegex(ValueError, reason):
-                        run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/name,
-                            root=ROOT, spot_checks={'terminal': [0]})
-            from lpf.optimizers.result import OptimizerResult
-            def invalid_final(callback, *_args, **_kwargs):
-                residual = callback(x)
-                outside = x.copy()
-                outside[0] = -1
-                return OptimizerResult(outside, float(residual @ residual), False, 'solver_failure', 1)
-            with patch('lpf.search._development_worker.hybrid_minimize', side_effect=invalid_final):
-                with self.assertRaisesRegex(ValueError, 'within closed physical bounds'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'box',
-                        root=ROOT, spot_checks={'terminal': [0]})
-            for name in ('waves', 'spd', 'numeric', 'box'):
-                failure = json.loads((Path(tmp)/name/'failure.json').read_text())
-                self.assertEqual(failure['status'], 'STOP')
-                self.assertEqual(failure['rf_forwards_unknown_upper_bound'], failure['reservation']['rf_forwards'])
-                self.assertFalse((Path(tmp)/name/'receipt.json').exists())
-            from lpf.search.storage import _save_checkpoint
-            def fail_result(path, payload):
-                if path.name == 'result.json':
-                    raise OSError('result storage unavailable')
-                return _save_checkpoint(path, payload)
-            with patch('lpf.search._development_runner._save_checkpoint', side_effect=fail_result):
-                with self.assertRaisesRegex(OSError, 'result storage unavailable'):
-                    run_profile_development(plan, definition, policy, 23, 'demo', start, Path(tmp)/'disk',
-                        root=ROOT, spot_checks={'terminal': [0]})
-            failure = json.loads((Path(tmp)/'disk'/'failure.json').read_text())
-            self.assertEqual(failure['rf_samples_unknown_upper_bound'], failure['reservation']['rf_samples'])
-            self.assertFalse((Path(tmp)/'disk'/'receipt.json').exists())
-
-    def test_profile_cli_runs_explicit_single_job_and_rejects_bad_inputs(self):
-        from dataclasses import asdict
-        import subprocess
-        import yaml
-        from lpf.search.storage import plain, vector_sha
-        _, definition, _, _, x = make('RF-F003')
-        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
-        cfg.pop('selection')
-        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
-                   definition=plain(asdict(definition)), anytime_samples=[])
-        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-            objective='signed_margin_db', options=dict(max_search_forwards=2))
-        with tempfile.TemporaryDirectory(prefix='issue446-cli-') as tmp:
-            tmp = Path(tmp)
-            config, starts, output = tmp/'plan.yaml', tmp/'starts.json', tmp/'run'
-            config.write_text(yaml.safe_dump(cfg))
-            starts.write_text(json.dumps({'23': dict(vector=plain(x), vector_sha256=vector_sha(x))}))
-            command = [sys.executable, str(ROOT/'scripts/run_rf_search.py'), 'develop', '--config', str(config),
-                       '--starts', str(starts), '--output', str(output), '--spot-checks', '{"terminal":[0]}',
-                       '--checkpoint-interval-forwards', '1']
-            proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-            self.assertEqual(proc.returncode, 4, proc.stderr)
-            self.assertEqual(json.loads(proc.stdout)['status'], 'completed')
-            result = json.loads((output/'result.json').read_text())
-            self.assertEqual(len(result['terminal']['candidates']), 1)
-            self.assertEqual(json.loads((output/'input.json').read_text())['checkpoint_interval'], 1)
-            retry = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-            self.assertEqual(retry.returncode, 2)
-            self.assertIn('Fresh temporary', retry.stderr)
-            cfg['rf']['allow_trial'] = False
-            config.write_text(yaml.safe_dump(cfg))
-            refused = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-            self.assertEqual(refused.returncode, 2)
-            self.assertIn('opt-in', refused.stderr)
-
     def test_profile_worker_separates_search_and_terminal_checks(self):
         from dataclasses import asdict
         from unittest.mock import patch
         import yaml
-        from lpf.search._development_worker import DevelopmentWorker
         from lpf.search.component_constraints import _validate_values_with_bounds, _check_vector_box
         from lpf.rf_core.model import RFEvaluator
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
+        from lpf.search.storage import plain, vector_sha
         policy, definition, _, _, x = make('RF-F003')
         cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
         cfg.pop('selection')
@@ -478,7 +236,7 @@ class MinimaxTests(unittest.TestCase):
                    definition=plain(asdict(definition)), anytime_samples=[])
         cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
             objective='signed_margin_db', options=dict(max_search_forwards=2))
-        frozen = freeze(cfg, ROOT)
+        compiled = compile_fixture(cfg, x)
         with tempfile.TemporaryDirectory(prefix='issue447-worker-') as tmp:
             evaluate = RFEvaluator.evaluate
             events = []
@@ -493,29 +251,25 @@ class MinimaxTests(unittest.TestCase):
                  patch('lpf.search._development_worker._validate_values_with_bounds', side_effect=audit), \
                  patch('lpf.search._development_worker._check_vector_box', wraps=_check_vector_box) as box, \
                  patch.object(RFEvaluator, 'evaluate', forward):
-                worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
-                    23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
-                    spot_checks={'terminal': [0]})
+                worker = fixture_worker(compiled, Path(tmp)/'checkpoints')
                 result = worker.run()
             self.assertEqual(events, ['physical', 'search', 'search', 'physical', 'physical', 'terminal'])
             self.assertEqual(box.call_count, 3)
             self.assertNotIn('assessment', result['terminal']['candidates'][0])
             # Even a rehashed Plan cannot silently change the grid or reservation.
+            from lpf.search.plan import Plan
+            from lpf.search.storage import canonical, sha
+            frozen = compiled[0].data
             frozen['grids']['terminal']['frequency_hz'][0] += 1
-            with self.assertRaisesRegex(ValueError, 'Plan/current RF inputs mismatch'):
-                DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy,
-                    'demo', 23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'bad-plan',
-                    spot_checks={'terminal': [0]})
+            with self.assertRaisesRegex(ValueError, 'Frozen grid SHA mismatch'):
+                fixture_worker((Plan(canonical(frozen), sha(frozen)), *compiled[1:]), Path(tmp)/'bad-plan')
             self.assertFalse((Path(tmp)/'bad-plan').exists())
 
     def test_profile_worker_hard_forward_cap_and_no_retry(self):
         from dataclasses import asdict
         from unittest.mock import patch
         import yaml
-        from lpf.search._development_worker import DevelopmentWorker
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
+        from lpf.search.storage import plain, vector_sha
         policy, definition, _, _, x = make('RF-F003')
         for solver in ('slsqp', 'slp', 'hybrid'):
             with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-cap-') as tmp:
@@ -527,10 +281,7 @@ class MinimaxTests(unittest.TestCase):
                     aggregation='signed_max' if solver == 'slp' else 'sum', objective='signed_margin_db',
                     options=dict(max_search_forwards=2) if solver == 'hybrid' else
                             dict(max_iterations=1, max_evaluations=2))
-                frozen = freeze(cfg, ROOT)
-                worker = DevelopmentWorker(Plan(canonical(frozen), sha(frozen)), definition, policy, 'demo',
-                    23, x, vector_sha(x), root=ROOT, checkpoint=Path(tmp)/'checkpoints',
-                    checkpoint_interval=1, spot_checks={'terminal': [0]})
+                worker = fixture_worker(compile_fixture(cfg, x, checkpoint_interval=1), Path(tmp)/'checkpoints')
                 def overrunning(callback, start, bounds, **kw):
                     for _ in range(3):
                         residual = callback(x)
@@ -547,57 +298,6 @@ class MinimaxTests(unittest.TestCase):
                 self.assertEqual(worker.forward_count, 2)
                 with self.assertRaisesRegex(RuntimeError, 'retry'):
                     worker.run()
-
-    def test_profile_worker_multistep_passes_only_final_x(self):
-        from dataclasses import asdict
-        import copy
-        import yaml
-        from lpf.search.plan import Plan
-        from lpf.search.preflight import freeze
-        from lpf.search.storage import canonical, plain, sha, vector_sha
-        policy, definition, _, _, x = make('RF-F003')
-        cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
-        cfg.pop('selection')
-        cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
-                   definition=plain(asdict(definition)), anytime_samples=[], max_trial_requested_samples=4000)
-        cfg['validation']['terminal_points'] = 5
-        arm = cfg['arms'][0]
-        arm['max_requested_samples'] = 4000
-        template = arm['steps'][0]
-        arm['steps'] = []
-        for index, solver in enumerate(('slsqp', 'slp', 'hybrid')):
-            step = copy.deepcopy(template)
-            step.update(name=f'step{index}', solver=solver,
-                        aggregation='signed_max' if solver == 'slp' else 'sum',
-                        objective='signed_margin_db', points_per_interval=2+index,
-                        options=dict(max_search_forwards=2) if solver == 'hybrid' else
-                                dict(max_iterations=1, max_evaluations=2))
-            arm['steps'].append(step)
-        frozen = freeze(cfg, ROOT)
-        plan = Plan(canonical(frozen), sha(frozen))
-        from unittest.mock import patch
-        from lpf.search._development_runner import run_profile_development
-        from lpf.search._job_evaluation import source_identity
-        with tempfile.TemporaryDirectory(prefix='issue446-multistep-') as tmp:
-            path = Path(tmp)/'job'
-            with patch('lpf.search._development_worker.source_identity', wraps=source_identity) as source, \
-                 patch('lpf.search._development_runner.source_identity', wraps=source_identity) as runner_source, \
-                 patch('lpf.minimax_profile.load_minimax_profile', wraps=load_minimax_profile) as rf:
-                result = run_profile_development(plan, definition, policy, 23, 'demo',
-                    dict(vector=plain(x), vector_sha256=vector_sha(x)), path, root=ROOT,
-                    spot_checks={'terminal': [0]}, checkpoint_interval=1)
-            self.assertEqual(source.call_count, 2)
-            self.assertEqual(rf.call_count, 2)
-            runner_source.assert_not_called()
-            self.assertEqual(len(result['steps']), 3)
-            for previous, step in zip(result['steps'], result['steps'][1:]):
-                self.assertEqual(vector_sha(previous['solver_result']['x']), step['input_vector_sha256'])
-            self.assertEqual(result['terminal']['candidates'][0]['vector_sha256'],
-                             vector_sha(result['steps'][-1]['solver_result']['x']))
-            self.assertEqual(len(result['terminal']['candidates']), 1)
-            checkpoints = [json.loads(p.read_text()) for p in sorted((path/'checkpoints').glob('*.json'))]
-            self.assertEqual(set(c['step'] for c in checkpoints), {'step0', 'step1', 'step2'})
-            self.assertTrue(all(c['kind'] == 'development_temporary_observation_v1' for c in checkpoints))
 
     def test_real_forward_equals_formal_external_cascade(self):
         _, definition, old, _, x = make('RF-F003')

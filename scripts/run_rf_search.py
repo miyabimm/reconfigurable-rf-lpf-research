@@ -1,203 +1,50 @@
 #!/usr/bin/env python3
-"""Schema2 development run only; no EXP or production authorization."""
+"""Run a bounded RF-T009 development plan; not an EXP entry point."""
 import argparse
+import json
 from pathlib import Path
 import sys
+
+import yaml
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-import json
-from lpf.search.plan import load_preflight, ROOT
-from lpf.search.runner import run_development, finalize_development
-from lpf.search.starts import load_explicit
+from lpf.search._development_runner import run
+from lpf.search.plan import Loader, ROOT
 from lpf.search.storage import canonical
 
 
-def _timing_path(value, output):
-    import subprocess
-    path = Path(value).expanduser().resolve()
-    if not path.parent.is_dir() or path.exists():
-        raise ValueError('timing output must be a fresh file in an existing directory')
-    if output:
-        raw = Path(output).expanduser().resolve()
-        if path == raw or path.is_relative_to(raw) or raw.is_relative_to(path):
-            raise ValueError('timing output and scientific output must be separate')
-    check = subprocess.run(['git', '-C', str(path.parent), 'rev-parse', '--is-inside-work-tree'],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    if check.returncode == 0:
-        raise ValueError('timing output must be outside Git repositories')
-    return path
+def _unique(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'Duplicate JSON key: {key}')
+        result[key] = value
+    return result
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('develop',))
-    parser.add_argument('--config', required=True)
-    parser.add_argument('--output')
-    parser.add_argument('--starts', help='JSON seed→{vector, vector_sha256}')
-    parser.add_argument('--sobol', action='store_true', help='weighted development: one unmodified Sobol point per seed')
-    parser.add_argument('--objective-mode', choices=('weighted_violation',))
-    parser.add_argument('--max-search-forwards', type=int, help='weighted development per-Job search cap')
-    parser.add_argument('--checkpoint-interval-forwards', type=int,
-                        help='weighted development checkpoint interval (default: 1000 forwards)')
-    parser.add_argument('--search-bounds', help='weighted development: complete vector-order JSON box')
-    parser.add_argument('--spot-checks', help='JSON stage→sample-index list')
-    parser.add_argument('--storage-mode', choices=('legacy', 'window100'), default='legacy',
-                        help='window100 is opt-in development-only; requires a persistent Git-external output')
-    parser.add_argument('--debug-forward-history', action='store_true',
-                        help='window100 only: persist compact search history at checkpoints')
-    parser.add_argument('--monitor-dir', help='fresh Git-external monitoring directory')
-    parser.add_argument('--profile', action='store_true', help='use optional py-spy child profiling (requires --monitor-dir)')
-    parser.add_argument('--timing-output', help='fresh Git-external JSON file for internal inclusive timings')
+    parser.add_argument('--config', required=True, type=Path)
+    parser.add_argument('--starts', required=True, type=Path, help='JSON seed→arm→{vector, vector_sha256}')
+    parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--spot-checks', required=True, help='JSON stage→sample-index list')
+    parser.add_argument('--search-bounds', type=Path, help='One complete vector-order JSON box for all Jobs')
+    parser.add_argument('--checkpoint-interval-forwards', type=int, default=1000)
     args = parser.parse_args(argv)
-    if args.profile and not args.monitor_dir:
-        parser.error('--profile requires --monitor-dir')
-    if args.timing_output and args.monitor_dir:
-        parser.error('--timing-output and --monitor-dir are separate modes')
-    timing_path = None
-    timing_jobs = []
-    timing_status = 'incomplete'
-    timing_summary = None
     try:
-        if args.timing_output:
-            from time import perf_counter_ns
-            timing_path = _timing_path(args.timing_output, args.output)
-            timing_start = perf_counter_ns()
-        if args.monitor_dir:
-            from lpf.search.monitor import supervise
-            raw = list(sys.argv[1:] if argv is None else argv)
-            forwarded = []
-            i = 0
-            while i < len(raw):
-                token = raw[i]
-                option, separator, _ = token.partition('=')
-                # argparse accepts unique long-option abbreviations as well as =.
-                if option.startswith('--') and len(option) > 2 and '--monitor-dir'.startswith(option):
-                    i += 1 if separator else 2
-                elif option.startswith('--') and len(option) > 2 and '--profile'.startswith(option):
-                    i += 1
-                else:
-                    forwarded.append(raw[i])
-                    i += 1
-            return supervise([sys.executable, str(Path(__file__).resolve()), *forwarded],
-                             args.monitor_dir, args.output, profile=args.profile, root=ROOT)
-        if args.objective_mode:
-            if (not args.output or not args.max_search_forwards or bool(args.starts) == args.sobol or
-                    args.storage_mode != 'legacy' or args.debug_forward_history or args.monitor_dir or args.timing_output):
-                raise ValueError('weighted development requires output, positive budget, exactly one of starts/Sobol, and legacy storage')
-            import yaml
-            from lpf.search.plan import Loader
-            from lpf.search._development_runner import _weighted_plan
-            from lpf.search.storage import _normalize_search_bounds
-            from lpf.search.proposals import definition_from_data
-            from lpf.search.starts import generate_for_definition
-            from lpf.search.component_constraints import physical_bounds
-            from lpf.search.runner import run_weighted_development
-            from lpf.rf_core import build_rf_model
-            from lpf.constraint_versions import load_constraint
-            with Path(args.config).open() as stream:
-                config = yaml.load(stream, Loader=Loader)
-            ref = config['definition']
-            data = ref if 'inductor_tree' in ref else json.loads((ROOT / ref['path']).read_bytes())
-            definition = definition_from_data(data)
-            policy = load_constraint('RF-T008', root=ROOT, allow_trial=True)
-            model = build_rf_model(definition, policy)
-            box = (_normalize_search_bounds(json.loads(Path(args.search_bounds).read_text())) if args.search_bounds
-                   else physical_bounds(definition, model.schema, policy))
-            box = [list(pair) for pair in box]
-            arm = config['arms'][0]['name']
-            plan = _weighted_plan(args.config, ROOT, arm, args.max_search_forwards,
-                                  search_bounds=box,
-                                  checkpoint_interval_forwards=(1000 if args.checkpoint_interval_forwards is None
-                                                                else args.checkpoint_interval_forwards),
-                                  start_method='scrambled_sobol_single_point' if args.sobol else 'explicit')
-            if args.sobol:
-                generated = [generate_for_definition(definition, policy, seed, bounds=box)
-                             for seed in plan.data['config']['seeds']]
-                starts = {r['seed']: {k: r[k] for k in ('vector', 'vector_sha256')} for r in generated}
-            else:
-                starts = load_explicit(args.starts)
-            spots = json.loads(args.spot_checks) if args.spot_checks else None
-            summary = run_weighted_development(plan, definition, policy, starts, args.output, spot_checks=spots)
-            print(canonical(summary))
-            return 4 if summary['status'] == 'completed' else 2
-        if args.sobol or args.max_search_forwards is not None:
-            raise ValueError('Sobol and CLI forward budget require weighted objective mode')
-        if not args.output or not args.starts:
-            raise ValueError('develop requires --starts and a fresh system tmp --output')
-        plan = load_preflight(args.config)
-        config = plan.data['config']
-        if config['rf']['constraint_id'] == 'RF-T009':
-            if (len(config['arms']) != 1 or len(config['seeds']) != 1 or args.storage_mode != 'legacy'
-                    or args.debug_forward_history or args.monitor_dir or args.timing_output):
-                raise ValueError('RF-T009 CLI requires one arm and seed, legacy storage, and no monitor or timing')
-            from lpf.minimax_profile import load_minimax_profile
-            from lpf.search._development_runner import run_profile_development
-            from lpf.search.proposals import definition_from_data
-            from lpf.constraint_versions import load_constraint
-            ref = config['definition']
-            if ref is None:
-                raise ValueError('develop requires an explicit complete definition')
-            definition = definition_from_data(ref if 'inductor_tree' in ref else
-                                              json.loads((ROOT / ref['path']).read_bytes()))
-            profile = load_minimax_profile('RF-T009', allow_trial=config['rf']['allow_trial'])
-            policy = load_constraint(profile.profile['base_physical_constraint_id'])
-            starts = load_explicit(args.starts)
-            seed = config['seeds'][0]
-            if set(starts) != {seed}:
-                raise ValueError('RF-T009 requires exactly the configured seed start')
-            spots = json.loads(args.spot_checks) if args.spot_checks else None
-            box = json.loads(Path(args.search_bounds).read_text()) if args.search_bounds else None
-            result = run_profile_development(plan, definition, policy, seed, config['arms'][0]['name'],
-                starts[seed], args.output, root=ROOT, spot_checks=spots, search_bounds=box,
-                checkpoint_interval=1000 if args.checkpoint_interval_forwards is None else args.checkpoint_interval_forwards)
-            print(canonical(dict(status='completed', kind=result['kind'], output=str(Path(args.output).resolve()),
-                                 plan_sha256=plan.sha256, rf_compliance_certified=False)))
-            return 4
-        if args.search_bounds is not None or args.checkpoint_interval_forwards is not None:
-            raise ValueError('Search bounds and checkpoint interval require weighted or RF-T009 development mode')
-        if config['definition'] is None:
-            raise ValueError('develop requires an explicit complete definition')
-        from lpf.constraint_versions import load_constraint
-        from lpf.search.proposals import definition_from_data
-        ref = config['definition']
-        definition = definition_from_data(ref if 'inductor_tree' in ref else
-                                          json.loads((ROOT / ref['path']).read_bytes()))
-        policy = load_constraint(config['rf']['constraint_id'], allow_trial=config['rf']['allow_trial'])
-        starts = load_explicit(args.starts)
-        spots = json.loads(args.spot_checks) if args.spot_checks else None
-        options = {'timing_jobs': timing_jobs} if timing_path is not None else {}
-        state = run_development(plan, definition, policy, starts, args.output, spot_checks=spots,
-                                storage_mode=args.storage_mode, debug_forward_history=args.debug_forward_history,
-                                **options)
-        summary = finalize_development(state, args.output)
-        timing_summary = {k: summary.get(k) for k in ('exit_code', 'development_flow', 'plan_sha256', 'source_sha256')}
-        timing_status = 'completed' if summary['development_flow'] == 'completed' else 'incomplete'
-        print(canonical(summary))
-        return summary['exit_code']
+        config = yaml.load(args.config.read_text(), Loader=Loader)
+        starts = json.loads(args.starts.read_text(), object_pairs_hook=_unique)
+        spots = json.loads(args.spot_checks, object_pairs_hook=_unique)
+        bounds = json.loads(args.search_bounds.read_text()) if args.search_bounds else None
+        state = run(config, starts, args.output, root=ROOT, spot_checks=spots, search_bounds=bounds,
+                    checkpoint_interval=args.checkpoint_interval_forwards)
+        print(canonical(dict(status=state['status'], plan_sha256=state['plan_sha256'],
+                             output=str(args.output.resolve()), rf_compliance_certified=False)))
+        return 0 if all(j['scientific_status'] == 'converged' for j in state['jobs']) else 4
     except (Exception, KeyboardInterrupt) as exc:
         print(f'STOP: {exc}', file=sys.stderr)
         return 2
-    finally:
-        if timing_path is not None:
-            elapsed = perf_counter_ns() - timing_start
-            try:
-                jobs = [{**{k: v for k, v in job.items() if k != 'timer'},
-                         'regions': job['timer'].snapshot()} for job in timing_jobs]
-                report = dict(kind='development_internal_timing_v1', status=timing_status,
-                    summary=timing_summary, total_wall_ns=elapsed,
-                    total=dict(count=1, wall_ns=elapsed, mean_wall_ns=elapsed), jobs=jobs,
-                    missing='Absent regions were not observed; Hybrid events are unverified; '
-                            'forced termination may leave no file',
-                    containment='Inclusive: total excludes diagnostic JSON save and contains jobs; '
-                                'job_worker contains solver; solver contains solver_callback; '
-                                'solver_callback contains evaluation; evaluation contains physical_validation, '
-                                'rf_forward, requirements and some checkpoint work. '
-                                'window_checkpoint_save contains source_contract and can also occur outside evaluation; '
-                                'Hybrid local runs/restarts are inside solver. Regions overlap: do not sum.')
-                with timing_path.open('x', encoding='utf-8') as stream:
-                    json.dump(report, stream, sort_keys=True, allow_nan=False)
-                    stream.write('\n')
-            except Exception as exc:
-                print(f'internal timing incomplete: {exc}', file=sys.stderr)
 
 
 if __name__ == '__main__':

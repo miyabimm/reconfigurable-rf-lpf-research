@@ -1,4 +1,4 @@
-"""Shared explicit G3/G4 preservation; no optimizer or legacy circuit imports."""
+"""Independent explicit G3–G5 checks; no optimizer or Campaign imports."""
 import csv
 import hashlib
 import io
@@ -56,8 +56,7 @@ def aggregate_selected(candidate_ids, outcomes):
 def _post_search_finalize_guard(root, run, manifest, storage, summary):
     """Bind new opt-in post-search evidence and index before G3 Git commits."""
     if 'campaign' in manifest['search_scope']:
-        from lpf.search.preservation import campaign_index_guard
-        return campaign_index_guard(root, run, manifest, storage, summary)
+        raise ValueError('Legacy Campaign finalization retired; no new formal Campaign connection')
     planned = manifest['search_scope'].get('post_search_validation')
     post = summary.get('post_search')
     if planned is None and post is None:
@@ -123,6 +122,58 @@ def _post_search_finalize_guard(root, run, manifest, storage, summary):
     if found != 1:
         raise ValueError('Post-search experiment index row missing or duplicated')
     return index
+
+
+def cleanup_eligibility(root, experiment_id, *, inventory_path, resume_needed, classification_complete):
+    """Read-only G5: compare curated bytes on fresh main and exact C inventory.
+
+    inventory_path is a manifest-listed JSON file mapping raw-relative paths
+    to SHA256. No inventory is synthesized and nothing is deleted here.
+    """
+    from lpf.search.checkout import _complete_checkout, _fresh_main
+
+    root = Path(root).resolve()
+    if resume_needed is not False or classification_complete is not True:
+        raise ValueError('Resume/classification unresolved; retain raw')
+    _complete_checkout(root)
+    if subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=all'], cwd=root).strip():
+        raise ValueError('Dirty preservation checkout; retain raw')
+    main = _fresh_main(root)
+    run = find_run(root, experiment_id)
+    validate_run(root, experiment_id, mode='finalize')
+    audit_all(root, main_ref='origin/main')
+    manifest = read_json(run/'manifest.json')
+    evidence = {item['path'] for item in manifest['evidence']}
+    if inventory_path not in evidence:
+        raise ValueError('Raw inventory is not classified as retained evidence')
+    for name in evidence | {(run/name).relative_to(root).as_posix() for name in ('manifest.json', 'storage_record.json')} | {'data/experiment_index.csv'}:
+        remote = subprocess.check_output(['git', 'show', f'{main}:{name}'], cwd=root)
+        if remote != (root/name).read_bytes():
+            raise ValueError(f'Remote main preservation bytes mismatch: {name}; retain raw')
+    expected = read_json(root/inventory_path)
+    directory = root/'results'/experiment_id
+    if not directory.is_dir() or directory.resolve() != directory:
+        raise ValueError('Missing or redirected raw directory; retain raw')
+    relative = directory.relative_to(root).as_posix()
+    if subprocess.check_output(['git', 'ls-files', '--', relative], cwd=root).strip():
+        raise ValueError('Raw must be Git-external; retain raw')
+    actual = {}
+    for path in directory.rglob('*'):
+        if path.is_symlink() or path.resolve() != path:
+            raise ValueError('Raw symlink/redirect; retain raw')
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise ValueError('Nonregular raw file; retain raw')
+        name = path.relative_to(root).as_posix()
+        if subprocess.run(['git', 'check-ignore', '-q', '--', name], cwd=root).returncode:
+            raise ValueError('Raw must be Git ignored; retain raw')
+        with path.open('rb') as stream:
+            actual[path.relative_to(directory).as_posix()] = hashlib.file_digest(stream, 'sha256').hexdigest()
+    if not actual or actual != expected:
+        raise ValueError('Raw changed/unclassified; retain raw')
+    return dict(experiment_id=experiment_id, eligible=True, deleted=False, remote_main=main,
+                retained_evidence=sorted(evidence), temporary_c=sorted(actual))
 
 
 def finalize_experiment(root, experiment_id):

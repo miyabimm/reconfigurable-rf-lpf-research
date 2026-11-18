@@ -15,16 +15,15 @@ CLASSES = ('RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 SUITES = {
     'RF': '''test_issue450_minimax.py test_constraint_versioning.py test_issue307_constraints.py test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_issue309_rf_core.py test_issue415_production_stamps.py test_issue421_schur.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_rf_f002_t004.py test_research_catalog.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
     'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
-    'RUN': '''test_issue315_fixed_stage.py test_issue317_fixed_worker.py test_issue319_parent_runner.py test_issue321_development_cli.py test_issue325_campaign.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_shared_checkpoint_io.py test_issue445_development_terminal.py''',
-    'GATE': '''test_issue313_preflight.py test_issue325_campaign_gates.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py''',
-    'STORE': '''test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue325_campaign_gates.py test_issue343_d2_preservation.py''',
+    'RUN': 'test_issue448_common_runner.py test_issue450_minimax.py test_issue315_fixed_stage.py test_issue323_dependencies.py test_shared_checkpoint_io.py',
+    'GATE': 'test_issue313_preflight.py test_issue448_checkout.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py',
+    'STORE': 'test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue448_checkout.py test_issue343_d2_preservation.py',
     'CI': '''test_github_actions_yaml_keys.py test_storage_ci_classification.py test_ci_test_selection.py''',
 }
 SUITES = {k: tuple(v.split()) for k, v in SUITES.items()}
 EXTRA_FULL = '''test_shared_graph_core.py test_graph_instantiation.py test_shared_graph_builder.py'''.split()
 RF_RUN_BOUNDARY = (
-    'test_issue317_fixed_worker.FixedWorkerTests.test_frozen_independent_samples_in_worker',
-    'test_issue325_campaign.CampaignTests.test_real_rf_f003_and_explicit_trial_392_with_one_independent_spot',
+    'test_issue450_minimax.MinimaxTests.test_profile_worker_all_solvers_and_one_terminal',
 )
 BOUNDARY = ['test_issue343_d3_science']
 
@@ -33,13 +32,12 @@ PATHS = {
     'project/specification.md': 'RF', 'src/lpf/minimax_profile.py': 'RF', 'project/slsqp_iteration_policy.md': 'OPT',
     'project/experiment_storage_policy.md': 'STORE', 'project/campaign_workflow.md': 'GATE RUN STORE',
     'project/instructions.md': 'FULL',
-    'src/lpf/search/gates.py': 'GATE', 'src/lpf/search/preflight.py': 'GATE',
-    'src/lpf/search/checkout.py': 'GATE STORE',
+    'src/lpf/search/preflight.py': 'GATE', 'src/lpf/search/checkout.py': 'GATE STORE',
     'src/lpf/experiment_preservation.py': 'STORE FULL',
-    'src/lpf/search/worker.py': 'RUN STORE', 'src/lpf/search/runner.py': 'RUN STORE',
-    'src/lpf/search/_job_evaluation.py': 'RUN RF', 'src/lpf/search/evaluation.py': 'RUN RF',
-    'src/lpf/search/campaign.py': 'RUN GATE STORE', 'src/lpf/search/controller.py': 'RUN GATE',
-    'src/lpf/search/storage.py': 'STORE RUN', 'src/lpf/search/preservation.py': 'STORE RUN',
+    'src/lpf/search/_development_worker.py': 'RUN RF', 'src/lpf/search/_development_runner.py': 'RUN',
+    'src/lpf/search/development_plan.py': 'RUN RF', 'src/lpf/search/source.py': 'RUN GATE',
+    'src/lpf/search/evaluation.py': 'RUN RF', 'src/lpf/search/controller.py': 'RUN',
+    'src/lpf/search/storage.py': 'STORE RUN',
     'src/lpf/search/starts.py': 'OPT', 'src/lpf/search/proposals.py': 'RUN GATE',
     'src/lpf/search/performance.py': 'RF RUN', 'src/lpf/search/problem.py': 'OPT RF',
     'src/lpf/search/component_constraints.py': 'RF OPT', 'src/lpf/search/validation.py': 'RF RUN',
