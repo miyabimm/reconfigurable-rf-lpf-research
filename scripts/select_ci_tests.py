@@ -27,6 +27,19 @@ RF_RUN_BOUNDARY = (
 )
 BOUNDARY = ['test_issue343_d3_science']
 
+# Frozen historical numerical replays are available by explicit unittest
+# invocation, but must not be scheduled by routine or FULL CI.
+MANUAL_HISTORICAL_NUMERIC = {
+    'test_area7_reference.py', 'test_legacy_gap.py',
+    'test_r2_shared_model.py', 'test_r2_independent_validation.py',
+    'test_rft003_loss.py',
+}
+
+
+def manual_historical_numeric(name):
+    return (name in MANUAL_HISTORICAL_NUMERIC
+            or re.fullmatch(r'test_exp[0-9]{3}(?:_[A-Za-z0-9_]+)?\.py', name) is not None)
+
 # Explicit ownership, with unknowns failing closed rather than guessing by suffix.
 PATHS = {
     'project/specification.md': 'RF', 'src/lpf/minimax_profile.py': 'RF', 'project/slsqp_iteration_policy.md': 'OPT',
@@ -172,6 +185,9 @@ def execute(plan_data):
     if plan_data['full']:
         modules.update(EXTRA_FULL)
     modules.update(Path(p).name for p in plan_data['changed_tests'])
+    # The historical numeric replays are manual-only even when their files
+    # change; keep their source diff visible in changed_tests.
+    modules = {name for name in modules if not manual_historical_numeric(name)}
     print('Selection:', json.dumps(plan_data, ensure_ascii=False), flush=True)
     print('Unselected classes:', ', '.join(x for x in CLASSES if x not in groups) or '(none)', flush=True)
     print('Test units:', ', '.join(sorted(modules)) or '(none)', flush=True)
