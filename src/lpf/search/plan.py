@@ -1,6 +1,7 @@
 """Single strict YAML schema; read-only preflight is not G0/G1 approval."""
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 import yaml
 
@@ -39,8 +40,16 @@ def positive(value):
 def validate_solver(step):
     solver, agg, options = step['solver'], step['aggregation'], step['options']
     if solver == 'hybrid':
-        fields(options, 'max_search_forwards')
+        fields(options, 'max_search_forwards' + (' restart_sigma' if isinstance(options, dict) and 'restart_sigma' in options else ''))
         positive(options['max_search_forwards'])
+        if 'restart_sigma' in options:
+            sigma = options['restart_sigma']
+            try:
+                valid = type(sigma) in (int, float) and math.isfinite(sigma) and sigma > 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError('restart_sigma must be finite and positive')
     elif solver in ('slsqp', 'slp'):
         fields(options, 'max_iterations max_evaluations')
         positive(options['max_iterations'])
