@@ -24,8 +24,9 @@ class TimingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='issue468-test-') as tmp:
             base = Path(tmp)
             args = dict(root=ROOT, spot_checks={'terminal': [0, 57]}, checkpoint_interval=1)
-            plain = runner.run(self.cfg, self.starts, base/'plain', **args)
-            timed = runner.run(self.cfg, self.starts, base/'timed', timing_output=base/'timing.json', **args)
+            with patch('lpf.search._development_worker.search_rf_timing', side_effect=AssertionError('unexpected L3')):
+                plain = runner.run(self.cfg, self.starts, base/'plain', **args)
+                timed = runner.run(self.cfg, self.starts, base/'timed', timing_output=base/'timing.json', **args)
             deep = runner.run(self.cfg, self.starts, base/'deep', timing_output=base/'deep.json', timing_level='deep', **args)
             self.assertEqual(plain, timed)
             self.assertEqual(plain, deep)
@@ -94,6 +95,7 @@ class TimingTests(unittest.TestCase):
                 self.assertEqual(cli.main(argv), 4)
                 # Fresh output, then a scientific STOP; a diagnostic write failure must not mask it.
                 argv[argv.index('--output') + 1] = str(base/'stopped')
+                argv += ['--timing-level', 'deep']
                 with patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('injected')):
                     self.assertEqual(cli.main(argv), 2)
             without_output = argv[:argv.index('--timing-output')] + ['--timing-level', 'deep']
