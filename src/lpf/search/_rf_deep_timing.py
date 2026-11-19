@@ -2,7 +2,7 @@
 from contextlib import ExitStack, contextmanager
 from functools import wraps
 
-from lpf.rf_core import model
+from lpf.rf_core import model, coupled_lc
 from lpf.rf_core.coupled_lc import CoupledLCTopology
 
 
@@ -25,9 +25,12 @@ def search_rf_timing(timer, stage):
             def wrapped(*args, **kwargs):
                 nonlocal active
                 previous, active = active, True
+                previous_model, previous_coupled = model._deep_timing, coupled_lc._deep_timing
+                model._deep_timing = coupled_lc._deep_timing = (timer, f'{stage}/rf')
                 try:
                     return original(*args, **kwargs)
                 finally:
+                    model._deep_timing, coupled_lc._deep_timing = previous_model, previous_coupled
                     active = previous
             return wrapped
 

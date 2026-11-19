@@ -138,7 +138,7 @@ class DevelopmentWorker:
 
     def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"
-        evaluator = self.model.evaluator(self.grids[stage])
+        evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage])
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = step['effective_options']
         self.forward_count, self.forward_cap = 0, opts['max_evaluations']
