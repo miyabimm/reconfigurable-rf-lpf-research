@@ -1,9 +1,8 @@
-"""Run deterministic Phase-2 theory tests under the repository's unittest CI.
+"""Run the historical Phase-2 theory function tests via manual unittest discovery.
 
-The six theory modules use pytest-style top-level functions.  The repository
-CI runs `python -m unittest discover -s tests -v`; without this bridge, those
-functions are imported but never executed.  This bridge is deliberately
-explicit: future additions must be reviewed rather than silently skipped.
+The six theory modules use pytest-style top-level functions that unittest
+discovery does not execute directly. This bridge executes them when explicitly
+selected; normal CI uses the scoped selector and does not invoke this module.
 """
 import importlib.util
 import inspect
