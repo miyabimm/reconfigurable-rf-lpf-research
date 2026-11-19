@@ -67,7 +67,7 @@ for x,y in zip(a,b):
                  **{'new_'+k:v for k,v in y.items() if k!='seed'}, 'delta_J': y['J']-x['J'],
                  'delta_vs_EXP062_A6':y['J']-0.07784114846285017})
 with output.open('w', newline='') as f:
-    w=csv.DictWriter(f,fieldnames=rows[0].keys()); w.writeheader(); w.writerows(rows)
+    w=csv.DictWriter(f,fieldnames=rows[0].keys(),lineterminator='\n'); w.writeheader(); w.writerows(rows)
 for name, data in [('old',a),('new',b)]:
     print(name,'median',statistics.median(x['J'] for x in data),'best',min((x['J'],x['seed']) for x in data),
           'pass',sum(x['J']<=0 for x in data),'search forwards',sum(x['search_forwards'] for x in data),
