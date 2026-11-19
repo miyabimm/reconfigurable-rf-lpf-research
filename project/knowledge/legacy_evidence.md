@@ -80,4 +80,18 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 
 **旧P4-A探索実装の退役（Issue #397、2026-11-20）：** 有限な旧グラフ列挙・P4 sharding・RF-F002 full-LPF再最適化の専用Runnerは現役探索の入口ではなく、既に存在しない `lpf.coupling_layout`／`lpf.variable_c_layouts` を参照する互換shim経由の旧入口を含んでいた。再利用時は[削減前の固定Git実装](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/6f2720037ccfa7cdce9220dac75aaca99be31695/experiments/matching_limit)で旧条件・入力・依存の欠落を確認すること。旧shard/checkpoint検査の削減は現役の `lpf.checkpoint_io` のハッシュ・原子的書込検証を削除するものではない。 EXP-027/030/031の元manifestで証拠SHAが固定された `scripts/reopt_lpf007_rf_f002.py`・`scripts/reopt_rft004_seed_rf_f002.py` は原バイトのまま保持するが、旧 `full_lpf.py` が退役した現環境での再実行可能性を意味しない。旧P4の有限探索や数値結果を現行RF-T009探索の品質・正式RF適合の証拠に読み替えない。
 
+## LPF-007〜009の旧損失会計（2026-10-12、Issue #397 第5D）
+
+これは**2026-10-10版の旧候補・旧一定Qモデルによる履歴結果**であり、現行の正式RF-F003の性能検証ではない。6設定のUL/DL通過帯域を各区間7,001点で評価し、各候補の最大IL点で9×9独立枝電流MNAから損失を算出したとする**保存済み解析報告**（本整理では再計算していない）。50Ω信号源の利用可能電力5mW、負荷60−j40Ω、L Q25、GJM01/IC可変C Q80、PCB固定C Q40のモデル。旧候補はIL 0.30dB目標未達で、SLSQPの収束・EM/SRF/Q(f)/公差/実測・連続周波数域の成立を証明しない。
+
+| 旧候補 | 保存最悪IL dB・設定/周波数 | 保存H2/H3最小 dB | 最悪点の反射 / L / C損失 dB |
+|---|---|---|---|
+| LPF-007 | **0.513168**、B71 UL 698MHz | 35.069970 / 35.069996 | 0.128343 / 0.300085 / 0.084740 |
+| LPF-008 | **0.518587**、B71 UL 698MHz | 35.099999 / 35.099995 | 0.135267 / 0.299298 / 0.084022 |
+| LPF-009 | **0.516062**、B8 DL 960MHz | 35.099269 / 35.105702 | 0.043962 / 0.355957 / 0.116143 |
+
+旧記録上、LPF-007/008の最悪点ではL3の散逸会計配分がそれぞれ0.155155/0.148902dB、LPF-009ではL3が0.179839dBと比較的大きい。LPF-009のPCB固定C自身の配分は0.000760dBだが、回路全体のILはLPF-007より良くない。これは**最悪周波数での電力会計**であって、素子削除・Q変更・再配置時のIL改善量や因果感度ではない。反射損失と回路内散逸のdB配分は加算可能と定義され、元報告の代表最悪点の電力収支残差は最大約8.1×10⁻¹⁸W（当時の有限桁データ）。検証深度は旧報告の申告であり、今回独立に再評価した値ではない。
+
+回路の完全なL/C/k・6設定は現行の [LPF-007](../../candidates/LPF-007.json)／[LPF-008](../../candidates/LPF-008.json)／[LPF-009](../../candidates/LPF-009.json) と旧候補台帳を参照。元の[損失内訳JSON](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/4e66a7e14528a03055d2c20bc81c76c26c92ed91/candidates/LOSS_BREAKDOWN.json)・[解釈報告](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/4e66a7e14528a03055d2c20bc81c76c26c92ed91/candidates/LOSS_REVIEW.md)は削減前の固定Git履歴で参照できるが、現行treeで全レポート数値を再現済みという意味ではない。手動の計算・参考検証には `scripts/loss_decomposition.py` と `tests/test_loss_decomposition.py` を保持する（後者はCI自動実行から除外）。
+
 Phase 2継続、Phase 3未承認。この整理で新しい科学的結論、RF条件、原EXPの実行／検証状態を変更しません。
