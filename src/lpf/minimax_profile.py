@@ -60,7 +60,7 @@ class MinimaxProfile:
                     'output_parasitic': p['external_s2p']['output']}}
 
     def build_model(self, definition):
-        """Build physical stamps from the formal base; use only profile RF inputs.
+        """Build physical stamps from the approved base; use only profile RF inputs.
 
         No solver or old Worker integration is implied. RF evaluator cascades
         input P1->P2, LPF, output P1->P2 and uses external transducer power.
@@ -88,7 +88,7 @@ def load_minimax_profile(constraint_id, *, allow_trial=False, root=ROOT):
             or p['base_physical_constraint_id'] != entry['base_physical_constraint_id']
             or p['bands_file'] != 'rf/bands.csv'):
         raise ValueError('Invalid minimax profile schema/identity')
-    base = load_constraint(p['base_physical_constraint_id'], root=root)
+    base = load_constraint(p['base_physical_constraint_id'], root=root, allow_trial=True)
     base_sha = constraint_fingerprint(base)
     if base_sha != entry['base_constraint_sha256']:
         raise ValueError('Physical base fingerprint mismatch')

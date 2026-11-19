@@ -22,7 +22,7 @@ class HybridTests(unittest.TestCase):
     def test_aggregation_values_and_default_compatibility(self):
         residual = lambda x: [2, -3, 4]
         for weights, expected_sum, expected_max in (
-                (None, 29, 16), ([1, 1, 1], 29, 16), ([2, 3, 0.5], 43, 27)):
+                (None, 20, 16), ([1, 1, 1], 20, 16), ([2, 3, 0.5], 16, 8)):
             for mode, expected in (('sum', expected_sum), ('max', expected_max)):
                 with self.subTest(weights=weights, mode=mode):
                     result = self.run_hybrid(residual, [0], [(0, 0)],
@@ -34,7 +34,7 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(asdict(default), asdict(explicit))
 
     def test_sum_and_max_have_distinct_best_found(self):
-        residual = lambda x: [x[0], 2 * (x[0] - 1)]
+        residual = lambda x: [x[0], 2 * (1 - x[0])]
         summed = self.run_hybrid(residual, [0.1], [(0, 1)], aggregation='sum')
         maximum = self.run_hybrid(residual, [0.1], [(0, 1)], aggregation='max')
         self.assertAlmostEqual(summed.x[0], 0.8, places=5)
@@ -53,7 +53,7 @@ class HybridTests(unittest.TestCase):
             return OptimizeResult(x=x, fun=value, success=False, status=2,
                                   message='line search failed', nit=1)
         with patch('lpf.optimizers.hybrid.minimize', side_effect=failed_solver):
-            result = self.run_hybrid(lambda x: [x[0], 2 * (x[0] - 1)],
+            result = self.run_hybrid(lambda x: [x[0], 2 * (1 - x[0])],
                                      [0.1], [(0, 1)], aggregation='max')
         self.assertAlmostEqual(result.x[0], 2 / 3)
         self.assertFalse(self.runs[0].success)
@@ -97,7 +97,7 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(result.evaluations, len(seen))
 
     def test_weights_change_the_solution(self):
-        residual = lambda x: [x[0], x[0] - 1]
+        residual = lambda x: [x[0], 1 - x[0]]
         result = self.run_hybrid(residual, [0.8], [(0, 1)], weights=[3, 1])
         self.assertAlmostEqual(result.x[0], 0.25, places=5)
         self.assertAlmostEqual(result.objective, 0.75, places=8)
@@ -106,7 +106,7 @@ class HybridTests(unittest.TestCase):
         seen = []
         def residual(x):
             seen.append(x.copy())
-            return [x[0] ** 2 - 1]
+            return [abs(x[0] ** 2 - 1)]
         options = dict(seed=11, restart_sigma=0.8)
         a = self.run_hybrid(residual, [0.8], [(-2, 2)], **options)
         runs = self.runs

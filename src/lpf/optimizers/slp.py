@@ -196,8 +196,9 @@ def slp_minimize(
     tolerance: float = 1e-7, constraint_tolerance: float = 1e-7,
     objective_callback=None,
 ) -> OptimizerResult:
-    """Minimize a weighted squared residual sum or max, or a signed maximum.
+    """Minimize weighted squared positive violations, or a signed maximum.
 
+    'sum' and 'max' aggregate weights * maximum(residuals, 0)**2.
     'sum' linearizes the total scalar; 'max' linearizes each weighted square
     in an epigraph. Weights default to one, and must be finite, nonnegative,
     and match the residual length. 'signed_max' uses max(residuals) unchanged

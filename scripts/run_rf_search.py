@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a bounded RF-T009 development plan; not an EXP entry point."""
+"""Run a bounded RF profile development plan; not an EXP entry point."""
 import argparse
 import json
 from pathlib import Path

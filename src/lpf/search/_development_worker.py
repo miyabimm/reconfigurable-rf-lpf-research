@@ -1,4 +1,4 @@
-"""RF-T009 Search→Terminal science for a single frozen Job."""
+"""RF profile Search→Terminal science for a single frozen Job."""
 from dataclasses import asdict
 import hashlib
 import json
@@ -21,7 +21,7 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 
 
 class DevelopmentWorker:
-    """Run a frozen RF-T009 Job once. The caller owns durable reservation and raw."""
+    """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
     def __init__(self, compiled, job_index, source, *, root, checkpoint):
         self.plan, self.definition, self.profile, self.model, self.physical_bounds = compiled
@@ -62,7 +62,7 @@ class DevelopmentWorker:
     def _verify_boundary(self):
         if source_identity(self.root) != self.source:
             raise ValueError('Source/environment changed; no retry')
-        if minimax_profile.load_minimax_profile('RF-T009', root=self.root, allow_trial=True) != self.profile:
+        if minimax_profile.load_minimax_profile(self.data['rf_profile']['constraint_id'], root=self.root, allow_trial=True) != self.profile:
             raise ValueError('RF profile/base/bands/S2P changed; no retry')
         ref = self.data['config']['definition']
         if 'path' in ref and hashlib.sha256((self.root/ref['path']).read_bytes()).hexdigest() != ref['source_sha256']:
@@ -146,9 +146,16 @@ class DevelopmentWorker:
                 saved = self.forward_count, digest, objective
 
         solver = step['solver']
+        local_runs = 0
+
+        def count_local_run(_run):
+            nonlocal local_runs
+            local_runs += 1
+
         if solver == 'hybrid':
             out = hybrid_minimize(residuals, x, self.bounds, seed=self.seed,
-                                  aggregation=step['aggregation'], objective_callback=observe, **opts)
+                                  aggregation=step['aggregation'], objective_callback=observe,
+                                  local_run_callback=count_local_run, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = minimize(residuals, x, self.bounds, constraints=None, aggregation=step['aggregation'],
@@ -165,11 +172,14 @@ class DevelopmentWorker:
         digest = vector_sha(out.x)
         if saved != (self.forward_count, digest, out.objective):
             self._checkpoint(step['name'], stage, dict(vector=plain(out.x), vector_sha256=digest, objective=out.objective))
-        return dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
-                    solver_result=raw_numbers(out), stop_reason=out.stop_reason, converged=out.converged,
-                    forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
-                    input_vector=plain(x), input_vector_sha256=vector_sha(x),
-                    grid_sha256=self.data['grids'][stage]['sha256'], independent=independent), out.x
+        record = dict(name=step['name'], solver=solver, solver_options=opts, aggregation=step['aggregation'],
+                      solver_result=raw_numbers(out), stop_reason=out.stop_reason, converged=out.converged,
+                      forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
+                      input_vector=plain(x), input_vector_sha256=vector_sha(x),
+                      grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
+        if solver == 'hybrid':
+            record['local_runs'] = local_runs
+        return record, out.x
 
     def run(self):
         if self._started:
@@ -199,7 +209,7 @@ class DevelopmentWorker:
             search_bounds=plain(self.bounds), search_bounds_sha256=sha(self.bounds), rf_profile=self.data['rf_profile'],
             performance_profile=self.profile.profile, terminal_grid_sha256=self.data['grids']['terminal']['sha256'],
             solver_objective=dict(residual='signed_margin_db', slp='signed max [dB]',
-                                  slsqp_hybrid='configured sum or max of squared residuals [dB^2]', weights='unit'),
+                                  slsqp_hybrid='configured sum or max of squared positive violations max(0, e)^2 [dB^2]', weights='unit'),
             costs=dict(search_forwards=search_forwards, search_requested_samples=sum(s['requested_samples'] for s in steps),
                        terminal_forwards=1, terminal_requested_samples=len(evaluator.grid.frequency_hz),
                        independent_mna_samples_by_stage=self.audit_samples),

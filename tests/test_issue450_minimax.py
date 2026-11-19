@@ -196,7 +196,7 @@ class MinimaxTests(unittest.TestCase):
                 g = plan.requested_grid('demo/coarse')
                 response_at_result = worker.model.evaluator(g).evaluate(out['x'])
                 _, residual = signed_margins(self.p, g, response_at_result)
-                expected = float(np.max(residual) if solver == 'slp' else np.sum(residual**2))
+                expected = float(np.max(residual) if solver == 'slp' else np.sum(np.maximum(residual, 0)**2))
                 self.assertAlmostEqual(out['objective'], expected, places=10)
                 self.assertNotIn('response', record)
                 self.assertNotIn('selection', result)
@@ -285,7 +285,7 @@ class MinimaxTests(unittest.TestCase):
                 def overrunning(callback, start, bounds, **kw):
                     for _ in range(3):
                         residual = callback(x)
-                        value = float(np.max(residual) if solver == 'slp' else residual @ residual)
+                        value = float(np.max(residual) if solver == 'slp' else np.maximum(residual, 0) @ np.maximum(residual, 0))
                         if solver == 'hybrid':
                             kw['objective_callback'](x, value)
                         else:

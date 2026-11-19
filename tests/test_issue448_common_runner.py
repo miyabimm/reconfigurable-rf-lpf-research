@@ -118,6 +118,10 @@ class CommonRunnerTests(unittest.TestCase):
                               options=dict(max_iterations=1, max_evaluations=2)))
         self.launch()
         result = self.read('job-0001/result.json')
+        self.assertEqual(result['steps'][0]['local_runs'], 1)
+        self.assertEqual(result['steps'][0]['solver_options']['restart_sigma'], .1)
+        for step in result['steps'][1:]:
+            self.assertNotIn('local_runs', step)
         for previous, step in zip(result['steps'], result['steps'][1:]):
             self.assertEqual(vector_sha(previous['solver_result']['x']), step['input_vector_sha256'])
         terminal, = result['terminal']['candidates']
@@ -213,7 +217,7 @@ class CommonRunnerTests(unittest.TestCase):
         for cid in ('RF-F003', 'RF-T005', 'RF-T006', 'RF-T007', 'RF-T008'):
             with self.subTest(cid=cid), patch.object(RFEvaluator, 'evaluate') as forward:
                 self.cfg['rf']['constraint_id'] = cid
-                with self.assertRaisesRegex(ValueError, 'RF-T009 trial opt-in'):
+                with self.assertRaisesRegex(ValueError, 'Unknown minimax profile'):
                     self.launch()
                 self.assertFalse(self.out.exists())
                 forward.assert_not_called()

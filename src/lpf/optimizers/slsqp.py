@@ -1,4 +1,4 @@
-"""Generic bounded SLSQP for weighted squared residuals; not the RF runner."""
+"""Generic bounded SLSQP for weighted squared positive violations; not the RF runner."""
 from typing import Callable
 
 import numpy as np
@@ -17,7 +17,7 @@ def slsqp_minimize(residuals: Callable, x0, bounds, *, aggregation='sum',
                    max_iterations: int, max_evaluations: int,
                    tolerance: float = 1e-9, constraint_tolerance: float = 1e-7,
                    objective_callback=None) -> OptimizerResult:
-    """Minimize weighted squared residual sum or maximum under g(x) >= 0.
+    """Minimize sum or max of weights * maximum(residuals(x), 0)**2 under g(x) >= 0.
 
     Both budgets are mandatory. Each actual residual or physical-constraint
     invocation, including finite differences and final verification, consumes

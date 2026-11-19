@@ -23,7 +23,7 @@ class OptimizerResultTests(unittest.TestCase):
                 def callback(x):
                     # Signed SLP uses a different objective from squared solvers.
                     r = np.array([x[0] - .4, .1 - x[0]])
-                    seen[tuple(x)] = float(np.max(r) if solver == 'slp' else np.sum(r*r))
+                    seen[tuple(x)] = float(np.max(r) if solver == 'slp' else np.sum(np.maximum(r, 0)**2))
                     return r
                 if solver == 'slsqp':
                     native = slsqp_minimize(callback, [.6], [(0., 1.)], max_iterations=3, max_evaluations=20,
@@ -57,8 +57,9 @@ class OptimizerResultTests(unittest.TestCase):
                     def residual(x):
                         self.assertTrue(np.all(np.isfinite(x)))
                         self.assertTrue(np.all((bounds[:, 0] <= x) & (x <= bounds[:, 1])), x)
-                        r = np.array([.375 - x[0] if solver == 'slp' else x[0] - .375])
-                        seen.append((tuple(x), float(r[0] if solver == 'slp' else r @ r)))
+                        r = (np.array([.375 - x[0]]) if solver == 'slp' else
+                             np.array([x[0] - .375, .375 - x[0]]))
+                        seen.append((tuple(x), float(r[0] if solver == 'slp' else np.maximum(r, 0) @ np.maximum(r, 0))))
                         if case == 'nonconverged' and solver != 'slp' and len(seen) == 2:
                             seen.pop()  # Invalid output is not an objective observation.
                             return np.array([np.nan])
@@ -117,7 +118,7 @@ class OptimizerResultTests(unittest.TestCase):
                 seen = {}
                 def objective(x):
                     calls['objective'] += 1
-                    seen[tuple(x)] = (x[0] - .4)**2
+                    seen[tuple(x)] = max(0, x[0] - .4)**2
                     return np.array([x[0] - .4])
                 def constraint(x):
                     calls['constraint'] += 1

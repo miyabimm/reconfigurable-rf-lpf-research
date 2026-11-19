@@ -37,10 +37,10 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     weights=None, aggregation: str = 'sum', event_callback=None,
                     run_callback=None, objective_callback=None, progress_callback=None,
                     local_run_callback=None) -> OptimizerResult:
-    """Minimize sum or max of weights * residuals(x)**2 with bounded L-BFGS-B.
+    """Minimize sum or max of weights * maximum(residuals(x), 0)**2.
 
-    The default 'sum' is weighted least squares; 'max' is the maximum weighted
-    squared residual, not the maximum signed error. The 'max' objective is
+    Bounded L-BFGS-B penalizes positive violations only; negative residuals
+    contribute zero. 'max' is not the maximum signed error. The 'max' objective is
     nonsmooth, so L-BFGS-B may fail to converge or stop in its line search.
 
     max_evaluations is the hard total cap on residual calls; the per-local-run

@@ -18,7 +18,7 @@ class SlpTest(unittest.TestCase):
 
     def test_known_sum_and_max(self):
         def residual(x):
-            return [x[0], 2 * (x[0] - 1)]
+            return [x[0], 2 * (1 - x[0])]
         for mode, expected in [('sum', .8), ('max', 2/3)]:
             with self.subTest(mode=mode):
                 r = self.solve(residual, aggregation=mode)
@@ -29,7 +29,7 @@ class SlpTest(unittest.TestCase):
                 self.assertTrue(r.converged or r.stop_reason in ('step_too_small', 'iteration_limit'))
 
     def test_weighted_and_default(self):
-        residual = lambda x: [x[0], 2 * (x[0] - 1)]
+        residual = lambda x: [x[0], 2 * (1 - x[0])]
         for mode, expected in [('sum', 4/13), ('max', .4)]:
             r = self.solve(residual, weights=[9, 1], aggregation=mode)
             self.assertAlmostEqual(r.x[0], expected, places=3)
@@ -63,7 +63,7 @@ class SlpTest(unittest.TestCase):
             calls = []
             def residual(x):
                 calls.append(x.copy())
-                return [x[0], 2 * (x[0] - 1)]
+                return [x[0], 2 * (1 - x[0])]
             with patch('lpf.optimizers.slp.linprog', wraps=linprog) as lp:
                 r = slp_minimize(residual, [.1], [(0, 1)], aggregation=mode,
                                  max_iterations=1, max_evaluations=2)

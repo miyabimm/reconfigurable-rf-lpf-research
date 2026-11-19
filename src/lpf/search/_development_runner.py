@@ -1,4 +1,4 @@
-"""Single fixed-order RF-T009 development Runner. No formal EXP integration."""
+"""Single fixed-order RF profile development Runner. No formal EXP integration."""
 import hashlib
 import json
 from pathlib import Path
@@ -149,7 +149,7 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
     output.mkdir(exist_ok=False)
     sync_directory(output.parent)
     plan_raw = _save_raw(output/'plan.json', data)
-    state = dict(kind='rf_t009_development_run_v1', plan_sha256=plan.sha256, plan_raw=plan_raw,
+    state = dict(kind='development_rf_profile_run_v1', plan_sha256=plan.sha256, plan_raw=plan_raw,
                  source_sha256=sha(source), budget=data['config']['budget'], jobs=rows,
                  status='incomplete', retry_allowed=False,
                  boundary_limit='Changes reverted between Job boundary checks may go undetected.')
