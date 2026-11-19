@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 import subprocess
 import tempfile
+import sys
+
+from lpf.timing import TimerCollector, timed_call
 
 from ._development_worker import DevelopmentWorker
 from .controller import actions
@@ -24,14 +27,15 @@ def _save_raw(path, record):
     return _bytes_info(blob)
 
 
-def _run_job(compiled, index, source, root, output):
+def _run_job(compiled, index, source, root, output, collector=None, timing_steps=None):
     plan = compiled[0]
     data = plan.data
     job = data['jobs'][index]
     reservation = job['reservation']
     output.mkdir(exist_ok=False)
     try:
-        worker = DevelopmentWorker(compiled, index, source, root=root, checkpoint=output/'checkpoints')
+        worker = DevelopmentWorker(compiled, index, source, root=root, checkpoint=output/'checkpoints',
+                                   timer=collector, timing_steps=timing_steps)
         record = dict(kind='development_rf_profile_input_v1', plan=data, plan_sha256=plan.sha256,
                       definition=data['definition'], definition_sha256=sha(data['definition']),
                       physical_policy_id=data['rf_profile']['base_constraint_id'],
@@ -125,8 +129,44 @@ def _publish(path, state, previous=None):
     return canonical(state).encode() + b'\n'
 
 
-def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkpoint_interval=1000):
+def _timing_path(path, output, root):
+    path = Path(path).expanduser().resolve()
+    output, root = Path(output).expanduser().resolve(), Path(root).resolve()
+    if (path.exists() or not path.parent.is_dir() or path == output or path.is_relative_to(output)
+            or output.is_relative_to(path) or path.is_relative_to(root)):
+        raise ValueError('Timing output must be a fresh file outside the scientific output and Git')
+    git = subprocess.run(['git', '-C', str(path.parent), 'rev-parse', '--is-inside-work-tree'],
+                         capture_output=True, text=True, check=False)
+    if git.returncode == 0:
+        raise ValueError('Timing output must be outside Git repositories')
+    return path
+
+
+def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkpoint_interval=1000,
+        timing_output=None):
     """Freeze once, reserve all Jobs, and execute each at most once in seed→arm order."""
+    timing_path = None if timing_output is None else _timing_path(timing_output, output, root)
+    diagnostics = None if timing_path is None else dict(kind='development_timing_v1', status='incomplete',
+        plan_sha256=None, source_sha256=None, jobs=[],
+        semantics='Inclusive regions overlap; do not sum. Missing regions/events were not observed. '
+                  'Local run wall is absent when no end event was emitted; residual time is not identified.')
+    try:
+        result = _run(config, starts, output, root=root, spot_checks=spot_checks, search_bounds=search_bounds,
+                      checkpoint_interval=checkpoint_interval, diagnostics=diagnostics)
+        if diagnostics is not None:
+            diagnostics['status'] = 'completed'
+        return result
+    finally:
+        if diagnostics is not None:
+            try:
+                with timing_path.open('x', encoding='utf-8') as f:
+                    json.dump(diagnostics, f, sort_keys=True, allow_nan=False)
+                    f.write('\n')
+            except Exception as exc:
+                print(f'Warning: timing output unavailable: {exc}', file=sys.stderr)
+
+
+def _run(config, starts, output, *, root, spot_checks, search_bounds, checkpoint_interval, diagnostics):
     output, root = Path(output).expanduser().resolve(), Path(root).resolve()
     if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or output.is_relative_to(root)
             or output.exists() or not output.parent.is_dir()):
@@ -140,6 +180,10 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
                           checkpoint_interval=checkpoint_interval)
     plan = compiled[0]
     data = plan.data
+    if diagnostics is not None:
+        diagnostics.update(plan_sha256=plan.sha256, source_sha256=sha(source),
+                           jobs=[dict(seed=j['seed'], arm=j['arm'], status='not_started', regions={}, steps={})
+                                 for j in data['jobs']])
     order = [(a.seed, data['config']['arms'][a.arm_index]['name']) for a in actions(plan)]
     if order != [(j['seed'], j['arm']) for j in data['jobs']]:
         raise ValueError('Frozen Jobs/order mismatch')
@@ -159,7 +203,16 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
         row.update(status='unknown', unknown=row['reservation'])
         previous = _publish(path, state, previous)
         directory = output/row['job_id']
-        receipt = _run_job(compiled, index, source, root, directory)
+        diagnostic = None if diagnostics is None else diagnostics['jobs'][index]
+        timer = None if diagnostic is None else TimerCollector()
+        if diagnostic is not None:
+            diagnostic['status'] = 'incomplete'
+        try:
+            receipt = timed_call(timer, 'job', _run_job, compiled, index, source, root, directory,
+                                 collector=timer, timing_steps=None if diagnostic is None else diagnostic['steps'])
+        finally:
+            if diagnostic is not None:
+                diagnostic['regions'] = timer.snapshot()
         verified = _verify_receipt(directory, receipt, row, state)
         if _bytes_info((output/'plan.json').read_bytes()) != plan_raw:
             raise ValueError('Frozen Plan raw bytes changed')
@@ -167,4 +220,6 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
         if index == len(rows) - 1:
             state['status'] = 'completed'
         previous = _publish(path, state, previous)
+        if diagnostic is not None:
+            diagnostic['status'] = 'completed'
     return state
