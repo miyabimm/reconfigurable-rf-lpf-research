@@ -1,4 +1,5 @@
 """Opt-in diagnostics must not alter the scientific path."""
+import importlib.util
 import json
 from pathlib import Path
 import tempfile
@@ -61,6 +62,32 @@ class TimingTests(unittest.TestCase):
                 state = runner.run(self.cfg, self.starts, out, timing_output=base/'timing.json', **args)
             self.assertEqual(state['jobs'][0]['scientific_status'], 'not_converged')
             self.assertEqual((base/'exists').read_text(), 'keep')
+
+    def test_cli_exit_codes_when_timing_write_fails(self):
+        spec = importlib.util.spec_from_file_location('issue468_cli', ROOT/'scripts/run_rf_search.py')
+        cli = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cli)
+        with tempfile.TemporaryDirectory(prefix='issue468-cli-') as tmp:
+            base = Path(tmp)
+            (base/'config.json').write_text(json.dumps(self.cfg))
+            (base/'starts.json').write_text(json.dumps(self.starts))
+            argv = ['develop', '--config', str(base/'config.json'), '--starts', str(base/'starts.json'),
+                    '--output', str(base/'run'), '--spot-checks', '{"terminal":[0,57]}',
+                    '--timing-output', str(base/'timing.json')]
+            original_open = Path.open
+            def fail_timing(path, *args, **kwargs):
+                if path == base/'timing.json':
+                    raise OSError('injected')
+                return original_open(path, *args, **kwargs)
+            with patch.object(Path, 'open', fail_timing):
+                self.assertEqual(cli.main(argv), 4)
+                # Fresh output, then a scientific STOP; a diagnostic write failure must not mask it.
+                argv[argv.index('--output') + 1] = str(base/'stopped')
+                with patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('injected')):
+                    self.assertEqual(cli.main(argv), 2)
+            with self.assertRaises(SystemExit) as help_exit:
+                cli.main(['develop', '--help'])
+            self.assertEqual(help_exit.exception.code, 0)
 
     def test_stop_diagnostic(self):
         with tempfile.TemporaryDirectory(prefix='issue468-stop-') as tmp:
