@@ -31,6 +31,7 @@ def main(argv=None):
     parser.add_argument('--spot-checks', required=True, help='JSON stage→sample-index list')
     parser.add_argument('--search-bounds', type=Path, help='One complete vector-order JSON box for all Jobs')
     parser.add_argument('--checkpoint-interval-forwards', type=int, default=1000)
+    parser.add_argument('--timing-output', type=Path, help='Fresh non-Git JSON file for opt-in inclusive L1/L2 timing')
     args = parser.parse_args(argv)
     try:
         config = yaml.load(args.config.read_text(), Loader=Loader)
@@ -38,7 +39,7 @@ def main(argv=None):
         spots = json.loads(args.spot_checks, object_pairs_hook=_unique)
         bounds = json.loads(args.search_bounds.read_text()) if args.search_bounds else None
         state = run(config, starts, args.output, root=ROOT, spot_checks=spots, search_bounds=bounds,
-                    checkpoint_interval=args.checkpoint_interval_forwards)
+                    checkpoint_interval=args.checkpoint_interval_forwards, timing_output=args.timing_output)
         print(canonical(dict(status=state['status'], plan_sha256=state['plan_sha256'],
                              output=str(args.output.resolve()), rf_compliance_certified=False)))
         return 0 if all(j['scientific_status'] == 'converged' for j in state['jobs']) else 4

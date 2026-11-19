@@ -13,6 +13,7 @@ from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.rf_core.model import build_rf_model
+from lpf.timing import timed_call
 from .plan import grid_from_record
 from .source import source_identity
 from .component_constraints import _check_vector_box, _validate_values_with_bounds
@@ -23,7 +24,9 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 class DevelopmentWorker:
     """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
-    def __init__(self, compiled, job_index, source, *, root, checkpoint):
+    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None):
+        self.timer = timer
+        self.timing_steps = timing_steps
         self.plan, self.definition, self.profile, self.model, self.physical_bounds = compiled
         self.data = self.plan.data
         if sha(self.data) != self.plan.sha256:
@@ -102,13 +105,16 @@ class DevelopmentWorker:
         self.forward_count += 1  # Charge before entering RF Core, even when it raises.
         # Search callbacks are bounded by the Optimizers. RF Core still checks
         # finite values, full L SPD and numerical failures on each evaluation.
-        response = evaluator.evaluate(vector, check_power=True) if terminal else evaluator.evaluate(vector)
+        response = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector, **({'check_power': True} if terminal else {}))
         if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
                 response.policy_fingerprint != self.model.policy_fingerprint):
             raise ValueError('Response profile/grid mismatch')
         return response, physical, self._audit(vector, response, stage)
 
     def _checkpoint(self, step, stage, observation):
+        return timed_call(self.timer, f'{stage}/checkpoint', self._checkpoint_impl, step, stage, observation)
+
+    def _checkpoint_impl(self, step, stage, observation):
         payload = dict(kind='development_temporary_observation_v1', sequence=len(self.checkpoint_files) + 1,
                        arm=self.arm, step=step, seed=self.seed, plan_sha256=self.plan.sha256,
                        source_sha256=self.source_sha256, rf_profile=self.data['rf_profile'],
@@ -122,6 +128,9 @@ class DevelopmentWorker:
         self.checkpoint_files[target.name] = dict(bytes=len(data), sha256=digest)
 
     def _search(self, step, x):
+        return timed_call(self.timer, f"{self.arm}/{step['name']}/search", self._search_impl, step, x)
+
+    def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"
         evaluator = self.model.evaluator(self.grids[stage])
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
@@ -146,20 +155,27 @@ class DevelopmentWorker:
                 saved = self.forward_count, digest, objective
 
         solver = step['solver']
-        local_runs = 0
+        local_details = []
+        local_walls = []
 
-        def count_local_run(_run):
-            nonlocal local_runs
-            local_runs += 1
+        def count_local_run(run):
+            local_details.append(asdict(run))
 
+        def event(event):
+            if event['event'] == 'local_run_end':
+                local_walls.append(dict(run_index=event['run_index'], wall_ns=round(event['wall_s'] * 1e9),
+                                        interrupted=event['interrupted']))
+
+        if self.timing_steps is not None:
+            self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event')
         if solver == 'hybrid':
-            out = hybrid_minimize(residuals, x, self.bounds, seed=self.seed,
-                                  aggregation=step['aggregation'], objective_callback=observe,
-                                  local_run_callback=count_local_run, **opts)
+            out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
+                             aggregation=step['aggregation'], objective_callback=observe,
+                             local_run_callback=count_local_run, event_callback=event if self.timer else None, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
-            out = minimize(residuals, x, self.bounds, constraints=None, aggregation=step['aggregation'],
-                           objective_callback=observe, **opts)
+            out = timed_call(self.timer, f'{stage}/solver', minimize, residuals, x, self.bounds, constraints=None,
+                             aggregation=step['aggregation'], objective_callback=observe, **opts)
         if (not isinstance(out, OptimizerResult) or out.x is None or out.objective is None or
                 not np.isfinite(out.objective) or type(out.evaluations) is not int or
                 not 1 <= out.evaluations <= opts['max_evaluations'] or type(out.converged) is not bool or
@@ -178,7 +194,10 @@ class DevelopmentWorker:
                       input_vector=plain(x), input_vector_sha256=vector_sha(x),
                       grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
         if solver == 'hybrid':
-            record['local_runs'] = local_runs
+            if sum(run['nfev'] for run in local_details) != self.forward_count:
+                raise ValueError('Hybrid local run forward count mismatch')
+            record['local_runs'] = len(local_details)
+            record['local_run_details'] = local_details
         return record, out.x
 
     def run(self):
