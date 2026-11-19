@@ -138,6 +138,32 @@ class TimingTests(unittest.TestCase):
             self.assertEqual(diag['status'], 'incomplete')
             self.assertEqual(diag['jobs'][0]['regions']['demo/coarse/rf/matrices']['failed'], 1)
 
+    def test_deep_subregion_failure_and_restoration(self):
+        import numpy as np
+        from lpf.minimax_profile import load_minimax_profile
+        from lpf.rf_core import model, coupled_lc
+        from lpf.search._rf_deep_timing import search_rf_timing
+        from lpf.search.performance import build_evaluation_grid, compile_profile_grid
+        from lpf.search.proposals import definition_from_data
+        from lpf.timing import TimerCollector
+        fixture = Profile458Tests()
+        fixture.setUp()
+        profile = load_minimax_profile('RF-T010', allow_trial=True)
+        evaluator = profile.build_model(definition_from_data(fixture.data)).evaluator(
+            build_evaluation_grid(compile_profile_grid(profile), 2))
+        timer = TimerCollector()
+        with self.assertRaisesRegex(ValueError, 'injected eig'):
+            with search_rf_timing(timer, 'test'):
+                with patch.object(np.linalg, 'eigvalsh', side_effect=ValueError('injected eig')):
+                    evaluator.evaluate(fixture.x)
+        self.assertEqual(timer.snapshot()['test/rf/matrices/spd_eigvalsh']['failed'], 1)
+        self.assertEqual(timer.snapshot()['test/rf/matrices']['failed'], 1)
+        self.assertIsNone(model._deep_timing)
+        self.assertIsNone(coupled_lc._deep_timing)
+        before = timer.snapshot()
+        evaluator.evaluate(fixture.x)
+        self.assertEqual(before, timer.snapshot())
+
     def test_stop_diagnostic(self):
         with tempfile.TemporaryDirectory(prefix='issue468-stop-') as tmp:
             base = Path(tmp)

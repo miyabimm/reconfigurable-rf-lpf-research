@@ -98,13 +98,13 @@ def power_response(s, zs, zl, *, check_power=False):
     if timing: timing[0].add(timing[1] + '/power/wave_build', perf_counter_ns() - start)
     if timing: start, failed = perf_counter_ns(), False
     try:
-        try:
-            result = np.linalg.solve(a.transpose(0, 2, 1), b.transpose(0, 2, 1)).transpose(0, 2, 1)
-        except BaseException:
-            if timing: failed = True
-            raise
+        result = np.linalg.solve(a.transpose(0, 2, 1), b.transpose(0, 2, 1)).transpose(0, 2, 1)
     except np.linalg.LinAlgError as exc:
+        if timing: failed = True
         raise CircuitNumericalError('wave_singular', 'Singular power-wave conversion') from exc
+    except BaseException:
+        if timing: failed = True
+        raise
     finally:
         if timing: timing[0].add(timing[1] + '/power/wave_solve', perf_counter_ns() - start, failed=failed)
     if not np.all(np.isfinite(result)):
