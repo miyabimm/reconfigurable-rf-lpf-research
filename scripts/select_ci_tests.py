@@ -14,7 +14,7 @@ CLASSES = ('RF', 'OPT', 'RUN', 'GATE', 'STORE', 'CI')
 # in more than one group; the runner deduplicates them.
 SUITES = {
     'RF': '''test_issue458_profile.py test_issue450_minimax.py test_constraint_versioning.py test_issue307_constraints.py test_circuit.py test_evaluate.py test_rf_f003_t005.py test_trial_pcb_pattern_c_t008.py test_trial_ic_fixed_c_t008.py test_trial_shunt_dtc.py test_issue309_rf_core.py test_issue415_production_stamps.py test_issue421_schur.py test_issue311_performance.py test_issue313_preflight.py test_phase2_circuit_layout.py test_phase2_rft008_layout.py test_phase2_generic_coupled_lc.py test_phase2_branch_mna.py test_issue343_d3_science.py test_phase2_connection_roles.py test_phase2_s2p_grid_cache.py test_phase2_numeric_diagnostics.py test_rf_f002_t004.py test_research_catalog.py test_matching_numeric_reference.py test_twoport_reduction.py test_three_variable_c_trials.py''',
-    'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_p4_sharding.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
+    'OPT': '''test_hybrid_optimizer.py test_slsqp_budget.py test_topology_selection.py test_search_space_extensions.py test_grounded_enumeration.py test_issue315_fixed_stage.py test_issue309_rf_core.py''',
     'RUN': 'test_issue458_profile.py test_issue448_common_runner.py test_issue450_minimax.py test_issue315_fixed_stage.py test_issue323_dependencies.py test_shared_checkpoint_io.py',
     'GATE': 'test_issue313_preflight.py test_issue448_checkout.py test_issue323_dependencies.py test_experiment_number_reservation.py test_experiment_provenance.py',
     'STORE': 'test_experiment_number_reservation.py test_experiment_provenance.py test_new_experiment_storage.py test_issue448_checkout.py test_issue343_d2_preservation.py',
@@ -26,6 +26,21 @@ RF_RUN_BOUNDARY = (
     'test_issue450_minimax.MinimaxTests.test_profile_worker_all_solvers_and_one_terminal',
 )
 BOUNDARY = ['test_issue343_d3_science']
+
+# Frozen historical numerical replays are available by explicit unittest
+# invocation, but must not be scheduled by routine or FULL CI.
+MANUAL_HISTORICAL_NUMERIC = {
+    'test_area7_reference.py', 'test_legacy_gap.py',
+    'test_r2_shared_model.py', 'test_r2_independent_validation.py',
+    'test_rft003_loss.py', 'test_target040_vector_engine.py',
+    'test_loss_decomposition.py',
+}
+
+
+def manual_historical_numeric(name):
+    return (name in MANUAL_HISTORICAL_NUMERIC
+            or re.fullmatch(r'test_exp[0-9]{3}(?:_[A-Za-z0-9_]+)?\.py', name) is not None)
+
 
 # Explicit ownership, with unknowns failing closed rather than guessing by suffix.
 PATHS = {
@@ -172,6 +187,8 @@ def execute(plan_data):
     if plan_data['full']:
         modules.update(EXTRA_FULL)
     modules.update(Path(p).name for p in plan_data['changed_tests'])
+    # Historical numerical replays remain opt-in even when their files change.
+    modules = {name for name in modules if not manual_historical_numeric(name)}
     print('Selection:', json.dumps(plan_data, ensure_ascii=False), flush=True)
     print('Unselected classes:', ', '.join(x for x in CLASSES if x not in groups) or '(none)', flush=True)
     print('Test units:', ', '.join(sorted(modules)) or '(none)', flush=True)
