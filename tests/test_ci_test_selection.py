@@ -123,7 +123,8 @@ class SelectionTests(unittest.TestCase):
                      'test_area7_reference.py', 'test_target040_vector_engine.py',
                      'test_loss_decomposition.py'):
             self.assertTrue(selector.manual_historical_numeric(name))
-        for name in ('test_experiment_provenance.py', 'test_issue343_d3_science.py'):
+        for name in ('test_experiment_provenance.py', 'test_issue343_d3_science.py',
+                     'test_shared_checkpoint_io.py'):
             self.assertFalse(selector.manual_historical_numeric(name))
         plan = {'full': False, 'classes': [], 'changed_tests': [
             'tests/test_exp011.py', 'tests/test_legacy_gap.py'
