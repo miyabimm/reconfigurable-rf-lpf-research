@@ -26,10 +26,13 @@ class SharedObjectiveTest(unittest.TestCase):
 
     def test_fixed_objectives(self):
         for residual, weights, expected in (
-            ([2., -3., 4.], [2., 0., .5], (16., 8.)),
-            ([1e300, -3.], [0., 2.], (18., 18.)),
-            ([1e150, -2e150], [2., .5], (4e300, 2e300)),
-            ([2., -3.], None, (13., 9.)),
+            ([-10., 1.], None, (1., 1.)),
+            ([-10., -1.], None, (0., 0.)),
+            ([1., 2.], None, (5., 4.)),
+            ([2., -3., 4.], [2., 3., .5], (16., 8.)),
+            ([1e300, 3.], [0., 2.], (18., 18.)),
+            ([1e150, 2e150], [2., .5], (4e300, 2e300)),
+            ([-1e300, 2.], None, (4., 4.)),
         ):
             for mode, value in zip(('sum', 'max'), expected):
                 with self.subTest(residual=residual, weights=weights, mode=mode):
@@ -39,6 +42,40 @@ class SharedObjectiveTest(unittest.TestCase):
                     # HiGHS may reject enormous LP coefficients; objective
                     # agreement does not imply that SLP converged.
                     self.assertTrue(hybrid.converged and slsqp.converged)
+
+    def test_callbacks_match_transformed_objectives(self):
+        for solver in (slp_minimize, hybrid_minimize, slsqp_minimize):
+            for mode in ('sum', 'max'):
+                with self.subTest(solver=solver.__name__, mode=mode):
+                    observed = []
+                    def residual(x):
+                        return [-10., 1. + x[0], 2. - x[0]]
+                    def observe(x, value):
+                        terms = np.array([3., 2., .5]) * np.maximum(residual(x), 0)**2
+                        expected = np.sum(terms) if mode == 'sum' else np.max(terms)
+                        self.assertAlmostEqual(value, expected)
+                        observed.append((x.copy(), value))
+                    options = (dict(seed=0, restart_sigma=.1) if solver is hybrid_minimize
+                               else dict(max_iterations=3))
+                    result = solver(residual, [.3], [(0., 1.)], weights=[3., 2., .5],
+                                    aggregation=mode, max_evaluations=20,
+                                    objective_callback=observe, **options)
+                    self.assertTrue(observed)
+                    terms = np.array([3., 2., .5]) * np.maximum(residual(result.x), 0)**2
+                    self.assertAlmostEqual(result.objective, np.sum(terms) if mode == 'sum' else np.max(terms))
+
+    def test_nonfinite_residuals_are_not_masked(self):
+        for value in (np.nan, np.inf, -np.inf):
+            for mode in ('sum', 'max'):
+                with self.subTest(value=value, mode=mode):
+                    with self.assertRaises(ValueError):
+                        slp_minimize(lambda x: [value], [0], [(0, 0)], aggregation=mode,
+                                     weights=[0], max_iterations=2, max_evaluations=10)
+                    for solver, opts in ((hybrid_minimize, dict(seed=0, restart_sigma=.1)),
+                                         (slsqp_minimize, dict(max_iterations=2))):
+                        result = solver(lambda x: [value], [0], [(0, 0)], aggregation=mode,
+                                        weights=[0], max_evaluations=10, **opts)
+                        self.assertEqual(result.stop_reason, 'invalid_residual')
 
     def test_invalid_weights_keep_solver_contracts(self):
         for weights in ([-1], [np.inf], [np.nan], [], [[1]]):

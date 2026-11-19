@@ -17,7 +17,7 @@ class GenericSLSQPTests(unittest.TestCase):
         return slsqp_minimize(residuals, x0, bounds, **options)
 
     def test_known_optima_and_weights(self):
-        residual = lambda x: [x[0], 2 * (x[0] - 1)]
+        residual = lambda x: [x[0], 2 * (1 - x[0])]
         for mode, weights, x, fun in (
             ('sum', None, 0.8, 0.8), ('max', None, 2/3, 4/9),
             ('sum', [4, 1], 0.5, 2), ('max', [4, 1], 0.5, 1),
@@ -33,7 +33,7 @@ class GenericSLSQPTests(unittest.TestCase):
             self.assertEqual(kw['method'], 'SLSQP')
             self.assertEqual(fun(np.array([0.5, 3.])), 3.)
             cs = kw['constraints']
-            np.testing.assert_allclose(cs[0]['fun'](np.array([0.5, 3.])), [2, 2, -1])
+            np.testing.assert_allclose(cs[0]['fun'](np.array([0.5, 3.])), [2, 3, -1])
             np.testing.assert_allclose(cs[1]['fun'](np.array([0.5, 3.])), [0.25])
             return OptimizeResult(x=np.array([0.5, 4.]), success=True, status=0,
                                   message='fake', nit=1)
@@ -66,7 +66,7 @@ class GenericSLSQPTests(unittest.TestCase):
         seen = []
         def residual(x):
             seen.append(x.copy())
-            return [x[0] - 0.3, x[1] - 2]
+            return [x[0] - 0.3, 0.3 - x[0], x[1] - 2]
         r = self.run_solver(residual, [0.9, 2], [(0, 1), (2, 2)], aggregation='max')
         self.assertTrue(r.converged, r)
         self.assertAlmostEqual(r.x[0], 0.3, places=4)
@@ -153,7 +153,7 @@ class GenericSLSQPTests(unittest.TestCase):
         self.assertEqual(r.evaluations, 2)
 
     def test_determinism_and_iteration_limit(self):
-        residual = lambda x: [x[0], 2 * (x[0] - 1)]
+        residual = lambda x: [x[0], 2 * (1 - x[0])]
         for mode in ('sum', 'max'):
             a = self.run_solver(residual, aggregation=mode)
             b = self.run_solver(residual, aggregation=mode)

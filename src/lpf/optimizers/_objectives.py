@@ -1,4 +1,4 @@
-"""Pure weighted squared-residual calculations shared by synthetic solvers."""
+"""Weighted squared positive-violation calculations shared by solvers."""
 import numpy as np
 
 
@@ -13,8 +13,9 @@ def validate_weights(weights):
 
 def squared_terms(residuals, weights):
     # Multiplication order matters: zero weight must suppress even huge residuals.
+    positive = np.maximum(residuals, 0)
     with np.errstate(over='ignore', invalid='ignore'):
-        return residuals * residuals if weights is None else weights * residuals * residuals
+        return positive * positive if weights is None else weights * positive * positive
 
 
 def aggregate(terms, aggregation):

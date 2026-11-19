@@ -1,5 +1,6 @@
 """Issue 458: bounded profile and existing-candidate checks; no scientific EXP."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -113,7 +114,38 @@ class Profile458Tests(unittest.TestCase):
                 self.assertEqual(row['actual'][key]+row['released'][key], row['reservation'][key])
             self.assertTrue(list((out/'job-0001/checkpoints').iterdir()))
             result = json.loads((out/'job-0001/result.json').read_text())
-            self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
+            terminal = result['terminal']['candidates'][0]
+            self.assertEqual(terminal['independent']['status'], 'pass')
+            self.assertEqual(terminal['independent']['sample_indices'], [0, 57])
+            self.assertEqual(terminal['external_passivity'], 'checked_on_terminal_grid')
+            self.assertEqual(terminal['power_balance'], 'checked_on_terminal_grid')
+            self.assertTrue(terminal['physical']['component_policy_pass'])
+            self.assertGreater(terminal['physical']['min_L_eigenvalue_H'], 0)
+            self.assertEqual(terminal['terminal_signed_max_margin_db'], max(terminal['signed_margins_db']))
+            self.assertEqual(terminal['performance_feasible'], terminal['terminal_signed_max_margin_db'] <= 0)
+            self.assertEqual(set(terminal['response']['grid']['setting']), set(range(6)))
+            self.assertEqual(set(terminal['response']['grid']['segment']), set(range(28)))
+            self.assertEqual(plan['config']['arms'][0]['steps'][0]['effective_objective'],
+                             'sum_squared_positive_violation_db2_unit_weights')
+            self.assertIn('squared positive violations', result['solver_objective']['slsqp_hybrid'])
+            step = result['steps'][0]
+            profile = load_minimax_profile('RF-T010', allow_trial=True)
+            model = profile.build_model(definition_from_data(self.data))
+            from lpf.search.plan import grid_from_record
+            g = grid_from_record(plan['grids']['demo/coarse'])
+            _, residual = signed_margins(profile, g, model.evaluator(g).evaluate(step['solver_result']['x']))
+            self.assertAlmostEqual(step['solver_result']['objective'], np.sum(np.maximum(residual, 0)**2), places=9)
+            self.assertEqual(row['actual'], dict(rf_samples=step['requested_samples'] + 112,
+                                                rf_forwards=step['forward_count'] + 1,
+                                                independent_mna_samples=2))
+            receipt = json.loads((out/'job-0001/receipt.json').read_text())
+            for name, info in receipt['files'].items():
+                blob = (out/'job-0001'/name).read_bytes()
+                self.assertEqual(info, dict(bytes=len(blob), sha256=hashlib.sha256(blob).hexdigest()))
+                self.assertEqual(row['raw'][name], info)
+            receipt_blob = (out/'job-0001/receipt.json').read_bytes()
+            self.assertEqual(row['raw']['receipt.json'], dict(bytes=len(receipt_blob),
+                             sha256=hashlib.sha256(receipt_blob).hexdigest()))
             self.assertEqual(plan['config']['arms'][0]['steps'][0]['effective_options']['restart_sigma'], .03)
             self.assertEqual(result['steps'][0]['solver_options']['restart_sigma'], .03)
             self.assertEqual(result['steps'][0]['local_runs'], 1)
