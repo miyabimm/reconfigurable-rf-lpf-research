@@ -104,7 +104,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
             n, k = grid(stage, points, stop)
             step['effective_options'] = solver_options(step)
             step['effective_objective'] = ('signed_max_db' if step['solver'] == 'slp'
-                                           else f"{step['aggregation']}_squared_db2_unit_weights")
+                                           else f"{step['aggregation']}_squared_positive_violation_db2_unit_weights")
             limit = step['effective_options']['max_evaluations']
             samples += n * limit
             forwards += limit

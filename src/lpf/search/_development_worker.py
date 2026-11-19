@@ -209,7 +209,7 @@ class DevelopmentWorker:
             search_bounds=plain(self.bounds), search_bounds_sha256=sha(self.bounds), rf_profile=self.data['rf_profile'],
             performance_profile=self.profile.profile, terminal_grid_sha256=self.data['grids']['terminal']['sha256'],
             solver_objective=dict(residual='signed_margin_db', slp='signed max [dB]',
-                                  slsqp_hybrid='configured sum or max of squared residuals [dB^2]', weights='unit'),
+                                  slsqp_hybrid='configured sum or max of squared positive violations max(0, e)^2 [dB^2]', weights='unit'),
             costs=dict(search_forwards=search_forwards, search_requested_samples=sum(s['requested_samples'] for s in steps),
                        terminal_forwards=1, terminal_requested_samples=len(evaluator.grid.frequency_hz),
                        independent_mna_samples_by_stage=self.audit_samples),
