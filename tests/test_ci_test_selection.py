@@ -195,6 +195,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_suite_boundaries(self):
         self.assertIn('test_phase2_branch_mna.py', selector.SUITES['RF'])
+        self.assertNotIn('test_p4_sharding.py', selector.SUITES['OPT'])
         self.assertIn('test_issue343_d3_science.py', selector.SUITES['RF'])
         self.assertIn('test_constraint_versioning.py', selector.SUITES['RF'])
         self.assertIn('test_issue307_constraints.py', selector.SUITES['RF'])
