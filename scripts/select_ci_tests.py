@@ -33,6 +33,7 @@ MANUAL_HISTORICAL_NUMERIC = {
     'test_area7_reference.py', 'test_legacy_gap.py',
     'test_r2_shared_model.py', 'test_r2_independent_validation.py',
     'test_rft003_loss.py', 'test_target040_vector_engine.py',
+    'test_loss_decomposition.py',
 }
 
 
