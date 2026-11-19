@@ -120,7 +120,7 @@ class SelectionTests(unittest.TestCase):
     def test_historical_experiment_numerics_remain_manual_only(self):
         for name in ('test_exp009_checkpoints.py', 'test_exp011.py',
                      'test_exp057_graph_neighbors.py', 'test_legacy_gap.py',
-                     'test_area7_reference.py'):
+                     'test_area7_reference.py', 'test_target040_vector_engine.py'):
             self.assertTrue(selector.manual_historical_numeric(name))
         for name in ('test_experiment_provenance.py', 'test_issue343_d3_science.py'):
             self.assertFalse(selector.manual_historical_numeric(name))
