@@ -10,6 +10,7 @@ class Lqp02SeriesPolicyTest(unittest.TestCase):
     def test_rules_match_machine_readable_constraints(self):
         p = load_policy()
         self.assertIsNone(p["q"])
+        self.assertEqual(p["legacy_baseline_q"], 25)
         self.assertEqual(p["preferred_series"], "LQP02HV")
         self.assertEqual(p["series"]["LQP02HV"]["q"], 25)
         self.assertEqual(p["series"]["LQP02HQ"]["q"], 20)
