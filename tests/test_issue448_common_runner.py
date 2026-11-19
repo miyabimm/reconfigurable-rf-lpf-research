@@ -170,8 +170,8 @@ class CommonRunnerTests(unittest.TestCase):
                 raise OSError('raw storage unavailable')
             return save(path, record)
         def tamper(name):
-            def job(*args):
-                receipt = real_job(*args)
+            def job(*args, **kwargs):
+                receipt = real_job(*args, **kwargs)
                 path = args[-1]/name
                 if name == 'checkpoints':
                     path = next(path.iterdir())

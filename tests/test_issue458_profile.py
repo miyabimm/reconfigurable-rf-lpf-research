@@ -156,9 +156,10 @@ class Profile458Tests(unittest.TestCase):
         from lpf.optimizers.hybrid import hybrid_minimize
 
         def multiple_runs(*args, **kwargs):
+            from lpf.optimizers.hybrid import LocalRun
             callback = kwargs['local_run_callback']
-            callback(None)
-            callback(None)
+            callback(LocalRun([], None, None, None, False, None, 'interrupted', 0, 0))
+            callback(LocalRun([], None, None, None, False, None, 'interrupted', 0, 0))
             return hybrid_minimize(*args, **kwargs)
 
         with tempfile.TemporaryDirectory(prefix='issue461-callback-') as tmp, \
@@ -167,7 +168,11 @@ class Profile458Tests(unittest.TestCase):
             runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks={'terminal': [0, 57]},
                        search_bounds=None, checkpoint_interval=1)
             result = json.loads((out/'job-0001/result.json').read_text())
-            self.assertEqual(result['steps'][0]['local_runs'], 3)
+            step = result['steps'][0]
+            self.assertEqual(step['local_runs'], 3)
+            self.assertEqual(sum(r['nfev'] for r in step['local_run_details']), step['forward_count'])
+            self.assertIsNone(step['local_run_details'][0]['status'])
+            self.assertFalse(step['local_run_details'][0]['success'])
 
     def test_generic_alias_and_fail_closed(self):
         with tempfile.TemporaryDirectory(prefix='issue458-registry-') as tmp:
