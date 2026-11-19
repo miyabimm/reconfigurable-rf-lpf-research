@@ -78,4 +78,6 @@ RF-T003は旧F001基準（effective SHA256 `e0c45f7094ced1ed2ccb91cae474c7c3c1a6
 **#343旧sourceの教訓：** 撤去済みの旧post-searchの17点／84点／dense、`independent_scan.py`の区間内spot極値、旧ABCD sampled forward・旧matching列挙は、それぞれ検査目的・入力・モデルが異なる。現役G3/G4、独立枝電流MNA、現行RF適合の代替としない。旧RF-T008の移行前effective SHAは `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4` で、同名の現行trialと非同値。旧40件のpath/blob/SHA-256対応と復元時点は[#343固定履歴索引](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/676e915cd82d14c4910aedbda435e6c308a00c37/archive/issue343/README.md)で参照できるが、Git objectの取得だけでは元EXPを再実行・独立検証したことにならない。元manifestと#307移行表の条件・source・環境を別途照合する。
 
 
+**旧P4-A探索実装の退役（Issue #397、2026-11-20）：** 有限な旧グラフ列挙・P4 sharding・RF-F002 full-LPF再最適化の専用Runnerは現役探索の入口ではなく、既に存在しない `lpf.coupling_layout`／`lpf.variable_c_layouts` を参照する互換shim経由の旧入口を含んでいた。再利用時は[削減前の固定Git実装](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/6f2720037ccfa7cdce9220dac75aaca99be31695/experiments/matching_limit)で旧条件・入力・依存の欠落を確認すること。旧shard/checkpoint検査の削減は現役の `lpf.checkpoint_io` のハッシュ・原子的書込検証を削除するものではない。旧P4の有限探索や数値結果を現行RF-T009探索の品質・正式RF適合の証拠に読み替えない。
+
 Phase 2継続、Phase 3未承認。この整理で新しい科学的結論、RF条件、原EXPの実行／検証状態を変更しません。
