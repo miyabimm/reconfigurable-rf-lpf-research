@@ -27,7 +27,7 @@ def _save_raw(path, record):
     return _bytes_info(blob)
 
 
-def _run_job(compiled, index, source, root, output, collector=None, timing_steps=None):
+def _run_job(compiled, index, source, root, output, collector=None, timing_steps=None, timing_level='timed'):
     plan = compiled[0]
     data = plan.data
     job = data['jobs'][index]
@@ -35,7 +35,7 @@ def _run_job(compiled, index, source, root, output, collector=None, timing_steps
     output.mkdir(exist_ok=False)
     try:
         worker = DevelopmentWorker(compiled, index, source, root=root, checkpoint=output/'checkpoints',
-                                   timer=collector, timing_steps=timing_steps)
+                                   timer=collector, timing_steps=timing_steps, timing_level=timing_level)
         record = dict(kind='development_rf_profile_input_v1', plan=data, plan_sha256=plan.sha256,
                       definition=data['definition'], definition_sha256=sha(data['definition']),
                       physical_policy_id=data['rf_profile']['base_constraint_id'],
@@ -143,16 +143,21 @@ def _timing_path(path, output, root):
 
 
 def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkpoint_interval=1000,
-        timing_output=None):
+        timing_output=None, timing_level=None):
     """Freeze once, reserve all Jobs, and execute each at most once in seed→arm order."""
+    if timing_level not in (None, 'timed', 'deep') or (timing_level is not None and timing_output is None):
+        raise ValueError('timing level requires timing output and must be timed or deep')
+    timing_level = timing_level or 'timed'
     timing_path = None if timing_output is None else _timing_path(timing_output, output, root)
     diagnostics = None if timing_path is None else dict(kind='development_timing_v1', status='incomplete',
-        plan_sha256=None, source_sha256=None, jobs=[],
-        semantics='Inclusive regions overlap; do not sum. Missing regions/events were not observed. '
+        plan_sha256=None, source_sha256=None, jobs=[], level=timing_level,
+        semantics='Inclusive regions overlap; do not sum. Search RF port_admittance contains node_admittance, '
+                  'which contains matrices; cascade is called twice per forward. RF regions exclude Terminal. '
+                  'Same-run differences include instrumentation overhead. Missing regions/events were not observed. '
                   'Local run wall is absent when no end event was emitted; residual time is not identified.')
     try:
         result = _run(config, starts, output, root=root, spot_checks=spot_checks, search_bounds=search_bounds,
-                      checkpoint_interval=checkpoint_interval, diagnostics=diagnostics)
+                      checkpoint_interval=checkpoint_interval, diagnostics=diagnostics, timing_level=timing_level)
         if diagnostics is not None:
             diagnostics['status'] = 'completed'
         return result
@@ -166,7 +171,7 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
                 print(f'Warning: timing output unavailable: {exc}', file=sys.stderr)
 
 
-def _run(config, starts, output, *, root, spot_checks, search_bounds, checkpoint_interval, diagnostics):
+def _run(config, starts, output, *, root, spot_checks, search_bounds, checkpoint_interval, diagnostics, timing_level):
     output, root = Path(output).expanduser().resolve(), Path(root).resolve()
     if (not output.is_relative_to(Path(tempfile.gettempdir()).resolve()) or output.is_relative_to(root)
             or output.exists() or not output.parent.is_dir()):
@@ -209,7 +214,8 @@ def _run(config, starts, output, *, root, spot_checks, search_bounds, checkpoint
             diagnostic['status'] = 'incomplete'
         try:
             receipt = timed_call(timer, 'job', _run_job, compiled, index, source, root, directory,
-                                 collector=timer, timing_steps=None if diagnostic is None else diagnostic['steps'])
+                                 collector=timer, timing_steps=None if diagnostic is None else diagnostic['steps'],
+                                 timing_level=timing_level)
         finally:
             if diagnostic is not None:
                 diagnostic['regions'] = timer.snapshot()

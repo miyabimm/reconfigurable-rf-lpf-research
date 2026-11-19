@@ -14,6 +14,7 @@ from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
 from lpf.rf_core.model import build_rf_model
 from lpf.timing import timed_call
+from ._rf_deep_timing import search_rf_timing
 from .plan import grid_from_record
 from .source import source_identity
 from .component_constraints import _check_vector_box, _validate_values_with_bounds
@@ -24,8 +25,9 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 class DevelopmentWorker:
     """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
-    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None):
+    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None, timing_level='timed'):
         self.timer = timer
+        self.timing_level = timing_level
         self.timing_steps = timing_steps
         self.plan, self.definition, self.profile, self.model, self.physical_bounds = compiled
         self.data = self.plan.data
@@ -128,7 +130,11 @@ class DevelopmentWorker:
         self.checkpoint_files[target.name] = dict(bytes=len(data), sha256=digest)
 
     def _search(self, step, x):
-        return timed_call(self.timer, f"{self.arm}/{step['name']}/search", self._search_impl, step, x)
+        stage = f"{self.arm}/{step['name']}"
+        if self.timing_level == 'deep':
+            with search_rf_timing(self.timer, stage):
+                return timed_call(self.timer, f'{stage}/search', self._search_impl, step, x)
+        return timed_call(self.timer, f'{stage}/search', self._search_impl, step, x)
 
     def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"

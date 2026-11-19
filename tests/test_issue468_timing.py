@@ -24,9 +24,14 @@ class TimingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='issue468-test-') as tmp:
             base = Path(tmp)
             args = dict(root=ROOT, spot_checks={'terminal': [0, 57]}, checkpoint_interval=1)
-            plain = runner.run(self.cfg, self.starts, base/'plain', **args)
-            timed = runner.run(self.cfg, self.starts, base/'timed', timing_output=base/'timing.json', **args)
+            with patch('lpf.search._development_worker.search_rf_timing', side_effect=AssertionError('unexpected L3')):
+                plain = runner.run(self.cfg, self.starts, base/'plain', **args)
+                timed = runner.run(self.cfg, self.starts, base/'timed', timing_output=base/'timing.json', **args)
+            deep = runner.run(self.cfg, self.starts, base/'deep', timing_output=base/'deep.json', timing_level='deep', **args)
             self.assertEqual(plain, timed)
+            self.assertEqual(plain, deep)
+            deep_diag = json.loads((base/'deep.json').read_text())
+            self.assertEqual(deep_diag['level'], 'deep')
             diag = json.loads((base/'timing.json').read_text())
             self.assertEqual(diag['status'], 'completed')
             self.assertEqual(diag['plan_sha256'], plain['plan_sha256'])
@@ -36,7 +41,14 @@ class TimingTests(unittest.TestCase):
                 a = json.loads((base/f'plain/job-{i:04d}/result.json').read_text())
                 b = json.loads((base/f'timed/job-{i:04d}/result.json').read_text())
                 self.assertEqual(a, b)
+                self.assertEqual(a, json.loads((base/f'deep/job-{i:04d}/result.json').read_text()))
                 step = a['steps'][0]
+                regions = deep_diag['jobs'][i-1]['regions']
+                for name, factor in [('decode', 1), ('port_admittance', 1), ('node_admittance', 1),
+                                     ('matrices', 1), ('cascade', 2), ('power_response', 1)]:
+                    self.assertEqual(regions[f'demo/coarse/rf/{name}']['count'], factor * step['forward_count'])
+                self.assertFalse(any('/rf/' in name for name in job['regions']))
+                self.assertFalse(any(name.startswith('terminal/rf/') for name in regions))
                 self.assertEqual(len(step['local_run_details']), step['local_runs'])
                 self.assertEqual(sum(r['nfev'] for r in step['local_run_details']), step['forward_count'])
                 self.assertEqual(job['regions']['demo/coarse/rf_evaluate']['count'], step['forward_count'])
@@ -83,11 +95,35 @@ class TimingTests(unittest.TestCase):
                 self.assertEqual(cli.main(argv), 4)
                 # Fresh output, then a scientific STOP; a diagnostic write failure must not mask it.
                 argv[argv.index('--output') + 1] = str(base/'stopped')
+                argv += ['--timing-level', 'deep']
                 with patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('injected')):
                     self.assertEqual(cli.main(argv), 2)
+            without_output = argv[:argv.index('--timing-output')] + ['--timing-level', 'deep']
+            with self.assertRaises(SystemExit) as invalid:
+                cli.main(without_output)
+            self.assertEqual(invalid.exception.code, 2)
             with self.assertRaises(SystemExit) as help_exit:
                 cli.main(['develop', '--help'])
             self.assertEqual(help_exit.exception.code, 0)
+
+    def test_deep_exception_restores_functions(self):
+        from lpf.rf_core import model
+        from lpf.rf_core.coupled_lc import CoupledLCTopology
+        original = (model.RFEvaluator.evaluate, model.RFModel.decode, CoupledLCTopology.port_admittance,
+                    CoupledLCTopology.node_admittance, CoupledLCTopology.matrices, model._cascade, model.power_response)
+        with tempfile.TemporaryDirectory(prefix='issue470-stop-') as tmp:
+            base = Path(tmp)
+            with patch.object(CoupledLCTopology, 'matrices', side_effect=ValueError('RF injected')):
+                injected = CoupledLCTopology.matrices
+                with self.assertRaisesRegex(ValueError, 'RF injected'):
+                    runner.run(self.cfg, self.starts, base/'run', root=ROOT, spot_checks={'terminal': [0, 57]},
+                               timing_output=base/'timing.json', timing_level='deep')
+                self.assertIs(CoupledLCTopology.matrices, injected)
+            self.assertEqual(original, (model.RFEvaluator.evaluate, model.RFModel.decode, CoupledLCTopology.port_admittance,
+                                        CoupledLCTopology.node_admittance, CoupledLCTopology.matrices, model._cascade, model.power_response))
+            diag = json.loads((base/'timing.json').read_text())
+            self.assertEqual(diag['status'], 'incomplete')
+            self.assertEqual(diag['jobs'][0]['regions']['demo/coarse/rf/matrices']['failed'], 1)
 
     def test_stop_diagnostic(self):
         with tempfile.TemporaryDirectory(prefix='issue468-stop-') as tmp:
