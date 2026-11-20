@@ -25,7 +25,8 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 class DevelopmentWorker:
     """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
-    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None, timing_level='timed'):
+    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None, timing_level='timed', rf_cache_mode='off'):
+        self.rf_cache_mode = rf_cache_mode
         self.timer = timer
         self.timing_level = timing_level
         self.timing_steps = timing_steps
@@ -138,7 +139,8 @@ class DevelopmentWorker:
 
     def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"
-        evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage])
+        cache_options = {} if self.rf_cache_mode == 'off' else {'cache_mode': self.rf_cache_mode}
+        evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage], **cache_options)
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = step['effective_options']
         self.forward_count, self.forward_cap = 0, opts['max_evaluations']
@@ -173,7 +175,8 @@ class DevelopmentWorker:
                                         interrupted=event['interrupted']))
 
         if self.timing_steps is not None:
-            self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event')
+            self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event',
+                                                   rf_cache=dict(mode=self.rf_cache_mode, counters=evaluator.cache_stats))
         if solver == 'hybrid':
             out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
                              aggregation=step['aggregation'], objective_callback=observe,

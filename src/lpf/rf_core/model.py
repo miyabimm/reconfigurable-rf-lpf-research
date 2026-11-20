@@ -7,6 +7,7 @@ GA=GT/(1-|S22|²) allows conjugate output matching with the source held
 fixed. IL=-10 log10(GT), APL=-10 log10(GA), RL=-20 log10(|Sii|).
 Exact zero gain/reflection gives +inf dB (not a numerical failure or floor).
 """
+from collections import OrderedDict
 from dataclasses import dataclass, field
 import json
 from time import perf_counter_ns
@@ -187,22 +188,33 @@ class RFModel:
     def encode(self, values):
         return self.schema.encode(values)
 
-    def evaluator(self, grid):
-        return RFEvaluator(self, grid)
+    def evaluator(self, grid, *, cache_mode='off'):
+        return RFEvaluator(self, grid, cache_mode=cache_mode)
 
 
 @dataclass(frozen=True)
 class RFEvaluator:
     model: RFModel
     grid: EvaluationGrid
+    cache_mode: str = 'off'
     pre: np.ndarray = field(init=False, repr=False)
     post: np.ndarray = field(init=False, repr=False)
     source_ohms: complex = field(init=False, repr=False)
     load_ohms: complex = field(init=False, repr=False)
+    _lk_cache: object = field(init=False, repr=False, compare=False)
+    _response_cache: object = field(init=False, repr=False, compare=False)
+    cache_stats: dict = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.grid, EvaluationGrid):
             raise TypeError('Expected frozen EvaluationGrid')
+        if self.cache_mode not in ('off', 'lk', 'response', 'both'):
+            raise ValueError('Invalid RF cache mode')
+        object.__setattr__(self, '_lk_cache', OrderedDict())
+        object.__setattr__(self, '_response_cache', [OrderedDict() for _ in range(6)])
+        object.__setattr__(self, 'cache_stats', dict(lk_lookups=0, lk_hits=0, lk_misses=0,
+            lk_computations=0, response_lookups=0, response_hits=0, response_misses=0,
+            computed_samples=0, capacity=16))
         policy = self.model.resolved_policy
         object.__setattr__(self, 'source_ohms', _fixed_port_impedance(policy, 'source_ohms'))
         object.__setattr__(self, 'load_ohms', _fixed_port_impedance(policy, 'load_ohms'))
@@ -217,10 +229,93 @@ class RFEvaluator:
             values = x
         else:
             values = m.decode(x)
-        if check_power:
-            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting, check_power=True)
+        if check_power or self.cache_mode == 'off':
+            data = self._compute(values, slice(None), check_power=check_power)
         else:
-            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
+            data = self._cached(values)
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
+        arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
+                  for j, a in enumerate(data)]
+        response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
+        if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
+        return response
+
+    @staticmethod
+    def _put(cache, key, value):
+        cache[key] = value
+        cache.move_to_end(key)
+        if len(cache) > 16:
+            cache.popitem(last=False)
+
+    def _cached(self, values):
+        g, stats = self.grid, self.cache_stats
+        lk_key = np.asarray(values.inductances_nh + values.coupling_k, dtype=np.float64).tobytes()
+        use_response = self.cache_mode in ('response', 'both')
+        use_lk = self.cache_mode in ('lk', 'both')
+        keys, hits, missing = {}, {}, []
+        for setting in np.unique(g.setting):
+            setting = int(setting)
+            indices = np.flatnonzero(g.setting == setting)
+            key = lk_key + np.asarray(values.capacitors_pf_by_setting[setting], dtype=np.float64).tobytes()
+            keys[setting] = key
+            cache = self._response_cache[setting]
+            if use_response:
+                stats['response_lookups'] += 1
+            if use_response and key in cache:
+                stats['response_hits'] += 1
+                cache.move_to_end(key)
+                hits[setting] = cache[key]
+            else:
+                if use_response: stats['response_misses'] += 1
+                missing.extend(indices)
+        if missing:
+            indices = np.sort(np.asarray(missing, dtype=int))
+            matrices = None
+            if use_lk:
+                stats['lk_lookups'] += 1
+                if lk_key in self._lk_cache:
+                    stats['lk_hits'] += 1
+                    self._lk_cache.move_to_end(lk_key)
+                    matrices = self._lk_cache[lk_key]
+                else:
+                    stats['lk_misses'] += 1
+                    stats['lk_computations'] += 1
+                    matrices = self.model.topology.matrices(values)
+            try:
+                data = self._compute(values, indices, matrices=matrices)
+            except (CircuitNumericalError, np.linalg.LinAlgError):
+                # Re-run the original full grid to preserve error precedence and sample_index.
+                if len(indices) != len(g.setting):
+                    return self._compute(values, slice(None))
+                raise
+            if use_lk:
+                self._put(self._lk_cache, lk_key, matrices)
+            if use_response:
+                for setting in keys:
+                    if setting not in hits:
+                        mask = g.setting[indices] == setting
+                        entry = tuple(_frozen(a[mask], a.dtype) for a in data)
+                        self._put(self._response_cache[setting], keys[setting], entry)
+                        hits[setting] = entry
+            else:
+                return data
+        result = [np.empty((len(g.setting), 2, 2), complex)] + [np.empty(len(g.setting)) for _ in range(4)]
+        for setting, entry in hits.items():
+            mask = g.setting == setting
+            for dest, src in zip(result, entry):
+                dest[mask] = src
+        return tuple(result)
+
+    def _compute(self, values, indices, *, check_power=False, matrices=None):
+        m, g = self.model, self.grid
+        self.cache_stats['computed_samples'] += len(g.setting) if isinstance(indices, slice) else len(indices)
+        if matrices is None:
+            self.cache_stats['lk_computations'] += 1
+        kwargs = {}
+        if check_power: kwargs['check_power'] = True
+        if matrices is not None: kwargs['matrices'] = matrices
+        r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz[indices], g.setting[indices], **kwargs)
         eye = np.eye(2)
         timing = _deep_timing
         if timing: start, failed = perf_counter_ns(), False
@@ -239,14 +334,8 @@ class RFEvaluator:
             absorbed = _adjoint(voltage) @ ((r + _adjoint(r)) / 2) @ voltage
             if not np.allclose(_wave_loss(core), absorbed, rtol=1e-9, atol=1e-10):
                 raise CircuitNumericalError('core_power_balance', 'Core power waves fail nodal power balance')
-        full = _cascade(_cascade(self.pre, core, check_power=check_power), self.post, check_power=check_power)
-        data = power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
-        if timing: start = perf_counter_ns()
-        arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
-                  for j, a in enumerate(data)]
-        response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
-        if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
-        return response
+        full = _cascade(_cascade(self.pre[indices], core, check_power=check_power), self.post[indices], check_power=check_power)
+        return power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
 
 
 def build_rf_model(definition, policy):
