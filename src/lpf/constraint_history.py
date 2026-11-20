@@ -30,6 +30,19 @@ def archived_binding(constraint_id, digest, *, root):
 
 def archived_evidence_file(relative, digest, *, root):
     """Locate original RF snapshot bytes referenced by an old evidence record."""
+    # Old manifests are immutable: resolve the two relocated source blobs
+    # without weakening their recorded SHA-256 checks in validate_manifest.
+    moved_sources = {
+        ('scripts/reopt_lpf007_rf_f002.py',
+         'afbac10abdff7450fd04f1c8151a38051d50a480fcdbf54f11b490ce20f2e1dc'):
+            'experiments/chatgpt_topology_search/runs/EXP-027/reopt_lpf007_rf_f002.py',
+        ('scripts/reopt_rft004_seed_rf_f002.py',
+         '6728dfc8e06fb313db516e75cfba051c52326100b62dcc97628cc188cd299bd2'):
+            'experiments/chatgpt_topology_search/runs/EXP-030/reopt_rft004_seed_rf_f002.py',
+    }
+    moved = moved_sources.get((relative, digest))
+    if moved is not None:
+        return Path(root) / moved
     prefix = 'data/constraints/'
     if not relative.startswith(prefix):
         return None

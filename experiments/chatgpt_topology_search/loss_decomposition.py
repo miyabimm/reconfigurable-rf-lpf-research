@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Independent, exact power-budget accounting at each candidate's worst passband frequency.
 
-Run from a checked-out repository: python scripts/loss_decomposition.py --output-dir results/loss_20261012
+Run from a checked-out repository: python experiments/chatgpt_topology_search/loss_decomposition.py --output-dir results/loss_20261012
 No EM, continuous-frequency or global-optimization certification.
 """
 import argparse
@@ -163,7 +163,7 @@ def analyze(c,bands,n=7001):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--root',default=str(Path(__file__).resolve().parents[1]));p.add_argument('--output-dir',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--root',default=str(Path(__file__).resolve().parents[2]));p.add_argument('--output-dir',required=True)
     p.add_argument('--filter',nargs='*',default=[]);args=p.parse_args()
     root=Path(args.root);out=Path(args.output_dir);out.mkdir(parents=True,exist_ok=True)
     bands=list(csv.DictReader((root/'data/bands.csv').open()))

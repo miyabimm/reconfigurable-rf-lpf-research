@@ -2,12 +2,18 @@
 
 Never modifies the original EXP-017 manifest or promotes a 3-C RF-T004 trial.
 """
+import importlib.util
 import json
 import math
 import unittest
 from pathlib import Path
 
-from scripts.verify_exp017_recovered_mna import replay, CANDIDATE, ROOT
+ROOT = Path(__file__).resolve().parents[1]
+MODULE = ROOT / 'experiments/chatgpt_topology_search/runs/EXP-017/verify_exp017_recovered_mna.py'
+spec = importlib.util.spec_from_file_location('verify_exp017_recovered_mna', MODULE)
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+replay, CANDIDATE = mod.replay, mod.CANDIDATE
 
 
 class RecoveredFormalCheckpointTests(unittest.TestCase):
