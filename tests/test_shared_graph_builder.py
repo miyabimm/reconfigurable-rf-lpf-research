@@ -1,4 +1,4 @@
-"""Historical graph builder import compatibility and independent MNA parity."""
+"""Historical graph builder and independent MNA parity."""
 import sys
 import unittest
 from pathlib import Path
@@ -7,9 +7,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "experiments" / "matching_limit"))
 
-import instantiate_graph as old
 from lpf import legacy_graph_builder as shared
 from lpf.circuit import solve
 from lpf.evaluate import CASES
@@ -18,14 +16,6 @@ from lpf.constraint_versions import load_constraint
 
 
 class SharedGraphBuilderTests(unittest.TestCase):
-    def test_all_legacy_builder_entrypoints_delegate_to_shared_core(self):
-        for name in ("branch_q", "check_graph", "build_settings",
-                     "build_grounded_settings", "_fixed_parts", "_build_settings"):
-            with self.subTest(name=name):
-                self.assertIs(getattr(old, name), getattr(shared, name))
-        for name in ("Q", "DEFAULT", "AREA_THIRDS", "CAP_TYPES"):
-            self.assertIs(getattr(old, name), getattr(shared, name))
-
     def test_historical_grounded_network_is_six_setting_and_independently_verified(self):
         graph = (3, ((1, 2, "LQP02"), (2, 0, "GJM01")))
         policy = load_constraint("RF-F003")
@@ -38,9 +28,6 @@ class SharedGraphBuilderTests(unittest.TestCase):
                     1000e6: 0.5100971607067548}
         for case in CASES:
             with self.subTest(case=case):
-                self.assertEqual(states[case], old.build_grounded_settings(
-                    graph, values, caps=np.zeros((6, 2)), resolved_policy=policy
-                )[case])
                 for f_hz, expected_db in expected.items():
                     main = solve(f_hz, **states[case])
                     independent = solve_gain(f_hz, **states[case])
