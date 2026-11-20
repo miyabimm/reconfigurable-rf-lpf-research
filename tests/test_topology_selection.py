@@ -1,7 +1,7 @@
 import sys,unittest
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'experiments'/'matching_limit'))
-from topology_selection import select_balanced,has_signal_path,has_unproductive_internal_leaf
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+from lpf.legacy_graph_search import select_balanced,has_signal_path,has_unproductive_internal_leaf
 class TestSelection(unittest.TestCase):
     def test_no_ground_only_path(self):
         self.assertFalse(has_signal_path((3,((0,1,'GJM01'),(0,2,'GJM01')))))
