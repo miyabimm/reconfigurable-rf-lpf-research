@@ -5,8 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
-sys.path.insert(0, str(ROOT / 'experiments' / 'matching_limit'))
-from instantiate_graph import build_grounded_settings
+from lpf.legacy_graph_builder import build_grounded_settings
 from lpf.circuit import solve
 
 
