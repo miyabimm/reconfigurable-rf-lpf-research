@@ -33,8 +33,8 @@ def main(argv=None):
     parser.add_argument('--checkpoint-interval-forwards', type=int, default=1000)
     parser.add_argument('--timing-output', type=Path, help='Fresh non-Git JSON file for opt-in inclusive timing')
     parser.add_argument('--timing-level', choices=('timed', 'deep'), help='Requires --timing-output; deep adds Search RF timings')
-    parser.add_argument('--rf-cache-mode', choices=('off', 'lk', 'response', 'both'), default='off',
-                        help='Search evaluator cache (default: off); Terminal is always uncached')
+    parser.add_argument('--rf-cache-mode', choices=('off', 'lk', 'response', 'both'), default='lk',
+                        help='Search evaluator cache (default: lk); Terminal is always uncached')
     args = parser.parse_args(argv)
     if args.timing_level is not None and args.timing_output is None:
         parser.error('--timing-level requires --timing-output')
