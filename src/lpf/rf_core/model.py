@@ -334,7 +334,8 @@ class RFEvaluator:
                     self._put(self._response_cache[setting], keys[setting], entry)
                     hits[setting] = entry
             if timing: timing[0].add(timing[1] + '/cache/store', perf_counter_ns() - start)
-            if not use_response:
+            if not use_response or len(missing_settings) == len(keys):
+                # All grid rows were computed in original order; caches own frozen copies.
                 return data
         elif timing:
             timing[0].add(timing[1] + '/cache/lk_lookup', lk_ns)
