@@ -9,12 +9,16 @@ The parametric vector schema is explicit and is deliberately distinct
 from the RF policy's admissible component ranges and topology restrictions.
 """
 from dataclasses import dataclass, field
+from time import perf_counter_ns
 
 import numpy as np
 
 from ._grid import CASES
 from lpf.topology_management.circuit_layout import InductorTree, incidence_matrix
 from .numerical_diagnostics import CircuitNumericalError
+
+# Installed only during the sequential development runner's deep Search.
+_deep_timing = None
 
 
 def _floats(values, *, label, positive=False, nonnegative=False):
@@ -199,13 +203,23 @@ class CoupledLCTopology:
         n = len(self.inductor_tree.edges)
         if L.shape != (n,) or k.shape != (len(self.coupling_pairs),):
             raise ValueError("L/k dimensions do not match topology")
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
         M = np.diag(L.copy())
         for (a, b), coeff in zip(self.coupling_pairs, k):
             M[a, b] = M[b, a] = coeff * np.sqrt(L[a] * L[b])
         if not np.all(np.isfinite(M)):
             raise CircuitNumericalError("mutual_nonfinite", "Non-finite mutual L matrix")
+        if timing: timing[0].add(timing[1] + '/matrices/build', perf_counter_ns() - start)
         try:
-            eigenvalues = np.linalg.eigvalsh(M)
+            if timing: start, failed = perf_counter_ns(), False
+            try:
+                eigenvalues = np.linalg.eigvalsh(M)
+            except BaseException:
+                if timing: failed = True
+                raise
+            finally:
+                if timing: timing[0].add(timing[1] + '/matrices/spd_eigvalsh', perf_counter_ns() - start, failed=failed)
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError(
                 "mutual_eigensolve_failed", "Mutual L eigensolver failed"
@@ -214,14 +228,23 @@ class CoupledLCTopology:
             raise CircuitNumericalError("mutual_nonfinite", "Non-finite L eigenvalues")
         if eigenvalues[0] <= eigenvalues[-1] * 1e-12:
             raise CircuitNumericalError("mutual_not_spd", "Coupled L matrix is not SPD")
+        if timing: start = perf_counter_ns()
         H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
         B = self.inductor_tree.incidence()
+        if timing: timing[0].add(timing[1] + '/matrices/build_h_incidence', perf_counter_ns() - start)
+        if timing: start, failed = perf_counter_ns(), False
         try:
-            numerator = B @ np.linalg.solve(H, B.T)
+            try:
+                numerator = B @ np.linalg.solve(H, B.T)
+            except BaseException:
+                if timing: failed = True
+                raise
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError(
                 "inductor_solve_failed", "Coupled L admittance solve failed"
             ) from exc
+        finally:
+            if timing: timing[0].add(timing[1] + '/matrices/inductor_solve', perf_counter_ns() - start, failed=failed)
         if not np.all(np.isfinite(numerator)):
             raise CircuitNumericalError(
                 "inductor_admittance_nonfinite", "Non-finite L admittance"
@@ -246,14 +269,19 @@ class CoupledLCTopology:
                 len(self.capacitor_edges)):
             raise ValueError("Capacitor count does not match topology")
         K, _ = self.matrices(values)
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
         Y = np.broadcast_to(
             K, (omega.size, self.inductor_tree.node_count,
                 self.inductor_tree.node_count)
         ).copy() / (omega[:, None, None] * 1e-9)
+        if timing: timing[0].add(timing[1] + '/node/l_expand', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         C = np.asarray(values.capacitors_pf_by_setting, dtype=float)
         n = self.inductor_tree.node_count
         D = (C @ self._capacitor_stamps_flat).reshape(len(CASES), n, n)[setting]
         Y += omega[:, None, None] * D
+        if timing: timing[0].add(timing[1] + '/node/c_stamping', perf_counter_ns() - start)
         if not np.all(np.isfinite(Y)):
             raise CircuitNumericalError(
                 "node_nonfinite", "Non-finite nodal admittance",
@@ -266,6 +294,8 @@ class CoupledLCTopology:
     def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False):
         """Shared forward Schur reduction; never used by independent MNA."""
         Y = self.node_admittance(values, omega_rad_s, setting_indices)
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
         ports = (self.inductor_tree.source_node, self.inductor_tree.load_node)
         middle = tuple(i for i in range(self.inductor_tree.node_count) if i not in ports)
         order = np.asarray(ports + middle)
@@ -275,11 +305,23 @@ class CoupledLCTopology:
             U = reordered[:, :2, 2:]
             V = reordered[:, 2:, :2]
             E = reordered[:, 2:, 2:]
+            if timing: timing[0].add(timing[1] + '/port/reorder', perf_counter_ns() - start)
             try:
-                internal = np.linalg.solve(E, V)
+                if timing: start, failed = perf_counter_ns(), False
+                try:
+                    internal = np.linalg.solve(E, V)
+                except BaseException:
+                    if timing: failed = True
+                    raise
+                finally:
+                    if timing: timing[0].add(timing[1] + '/port/schur_solve', perf_counter_ns() - start, failed=failed)
+                if timing: start = perf_counter_ns()
                 R = R - U @ internal
+                if timing: timing[0].add(timing[1] + '/port/schur_update', perf_counter_ns() - start)
             except np.linalg.LinAlgError as exc:
                 raise CircuitNumericalError('schur_solve_failed', 'Internal-node Schur solve failed') from exc
+        elif timing:
+            timing[0].add(timing[1] + '/port/reorder', perf_counter_ns() - start)
         if not np.all(np.isfinite(R)):
             raise CircuitNumericalError('schur_nonfinite', 'Non-finite port admittance',
                 sample_index=int(np.flatnonzero(~np.all(np.isfinite(R), axis=(1, 2)))[0]))

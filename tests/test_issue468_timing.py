@@ -47,6 +47,17 @@ class TimingTests(unittest.TestCase):
                 for name, factor in [('decode', 1), ('port_admittance', 1), ('node_admittance', 1),
                                      ('matrices', 1), ('cascade', 2), ('power_response', 1)]:
                     self.assertEqual(regions[f'demo/coarse/rf/{name}']['count'], factor * step['forward_count'])
+                for name in ('matrices/build', 'matrices/build_h_incidence', 'matrices/spd_eigvalsh',
+                             'matrices/inductor_solve', 'node/l_expand', 'node/c_stamping',
+                             'port/reorder', 'port/schur_solve', 'port/schur_update',
+                             'y_to_s_solve', 'response_build', 'power/wave_build',
+                             'power/wave_solve', 'power/db_metrics'):
+                    row = regions[f'demo/coarse/rf/{name}']
+                    self.assertEqual(row['count'], step['forward_count'], name)
+                    self.assertEqual(row['failed'], 0, name)
+                    self.assertGreater(row['wall_ns'], 0, name)
+                self.assertEqual(regions['demo/coarse/evaluator_setup']['count'], 1)
+                self.assertEqual(job['regions']['demo/coarse/evaluator_setup']['count'], 1)
                 self.assertFalse(any('/rf/' in name for name in job['regions']))
                 self.assertFalse(any(name.startswith('terminal/rf/') for name in regions))
                 self.assertEqual(len(step['local_run_details']), step['local_runs'])
@@ -107,7 +118,7 @@ class TimingTests(unittest.TestCase):
             self.assertEqual(help_exit.exception.code, 0)
 
     def test_deep_exception_restores_functions(self):
-        from lpf.rf_core import model
+        from lpf.rf_core import model, coupled_lc
         from lpf.rf_core.coupled_lc import CoupledLCTopology
         original = (model.RFEvaluator.evaluate, model.RFModel.decode, CoupledLCTopology.port_admittance,
                     CoupledLCTopology.node_admittance, CoupledLCTopology.matrices, model._cascade, model.power_response)
@@ -121,9 +132,37 @@ class TimingTests(unittest.TestCase):
                 self.assertIs(CoupledLCTopology.matrices, injected)
             self.assertEqual(original, (model.RFEvaluator.evaluate, model.RFModel.decode, CoupledLCTopology.port_admittance,
                                         CoupledLCTopology.node_admittance, CoupledLCTopology.matrices, model._cascade, model.power_response))
+            self.assertIsNone(model._deep_timing)
+            self.assertIsNone(coupled_lc._deep_timing)
             diag = json.loads((base/'timing.json').read_text())
             self.assertEqual(diag['status'], 'incomplete')
             self.assertEqual(diag['jobs'][0]['regions']['demo/coarse/rf/matrices']['failed'], 1)
+
+    def test_deep_subregion_failure_and_restoration(self):
+        import numpy as np
+        from lpf.minimax_profile import load_minimax_profile
+        from lpf.rf_core import model, coupled_lc
+        from lpf.search._rf_deep_timing import search_rf_timing
+        from lpf.search.performance import build_evaluation_grid, compile_profile_grid
+        from lpf.search.proposals import definition_from_data
+        from lpf.timing import TimerCollector
+        fixture = Profile458Tests()
+        fixture.setUp()
+        profile = load_minimax_profile('RF-T010', allow_trial=True)
+        evaluator = profile.build_model(definition_from_data(fixture.data)).evaluator(
+            build_evaluation_grid(compile_profile_grid(profile), 2))
+        timer = TimerCollector()
+        with self.assertRaisesRegex(ValueError, 'injected eig'):
+            with search_rf_timing(timer, 'test'):
+                with patch.object(np.linalg, 'eigvalsh', side_effect=ValueError('injected eig')):
+                    evaluator.evaluate(fixture.x)
+        self.assertEqual(timer.snapshot()['test/rf/matrices/spd_eigvalsh']['failed'], 1)
+        self.assertEqual(timer.snapshot()['test/rf/matrices']['failed'], 1)
+        self.assertIsNone(model._deep_timing)
+        self.assertIsNone(coupled_lc._deep_timing)
+        before = timer.snapshot()
+        evaluator.evaluate(fixture.x)
+        self.assertEqual(before, timer.snapshot())
 
     def test_stop_diagnostic(self):
         with tempfile.TemporaryDirectory(prefix='issue468-stop-') as tmp:

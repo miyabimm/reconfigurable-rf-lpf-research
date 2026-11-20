@@ -9,6 +9,7 @@ Exact zero gain/reflection gives +inf dB (not a numerical failure or floor).
 """
 from dataclasses import dataclass, field
 import json
+from time import perf_counter_ns
 import numpy as np
 
 from lpf.constraint_versions import load_constraint, constraint_fingerprint
@@ -23,6 +24,9 @@ from .rft008_layout import RFT008CapacitorLayout, policy_edges
 from lpf.constraint_versions import validate_variable_c_connections
 from lpf.trial_shunt_dtc import shunt_dtc_parasitic_branches
 from .numerical_diagnostics import CircuitNumericalError
+
+# Installed only during the sequential development runner's deep Search.
+_deep_timing = None
 
 
 def _frozen(array, dtype):
@@ -84,15 +88,25 @@ def power_response(s, zs, zl, *, check_power=False):
     z = np.asarray([zs, zl], complex)
     if not np.all(np.isfinite(z)) or np.any(z.real <= 0):
         raise ValueError('Non-passive reference impedance')
+    timing = _deep_timing
+    if timing: start = perf_counter_ns()
     eye = np.eye(2)
     v = np.sqrt(50.) * (eye + s)
     i = (eye - s) / np.sqrt(50.)
     a = (v + z[None, :, None] * i) / (2*np.sqrt(z.real)[None, :, None])
     b = (v - z.conj()[None, :, None] * i) / (2*np.sqrt(z.real)[None, :, None])
+    if timing: timing[0].add(timing[1] + '/power/wave_build', perf_counter_ns() - start)
+    if timing: start, failed = perf_counter_ns(), False
     try:
         result = np.linalg.solve(a.transpose(0, 2, 1), b.transpose(0, 2, 1)).transpose(0, 2, 1)
     except np.linalg.LinAlgError as exc:
+        if timing: failed = True
         raise CircuitNumericalError('wave_singular', 'Singular power-wave conversion') from exc
+    except BaseException:
+        if timing: failed = True
+        raise
+    finally:
+        if timing: timing[0].add(timing[1] + '/power/wave_solve', perf_counter_ns() - start, failed=failed)
     if not np.all(np.isfinite(result)):
         raise CircuitNumericalError('wave_nonfinite', 'Non-finite power waves')
     if check_power:
@@ -101,6 +115,7 @@ def power_response(s, zs, zl, *, check_power=False):
         if (np.any(np.linalg.eigvalsh(loss) < -2e-8) or
                 not np.allclose(_adjoint(a) @ loss @ a, _wave_loss(s), rtol=1e-9, atol=1e-10)):
             raise CircuitNumericalError('external_power_balance', 'External waves are non-passive or fail power balance')
+    if timing: start = perf_counter_ns()
     magnitude = np.abs(result)
     if not np.all(np.isfinite(magnitude)):
         raise CircuitNumericalError('wave_nonfinite', 'Power-wave magnitude overflow')
@@ -116,6 +131,7 @@ def power_response(s, zs, zl, *, check_power=False):
                    -20*np.log10(magnitude[:, 1, 1]))
     if not np.all(np.concatenate(metrics) > -np.inf):
         raise CircuitNumericalError('db_invalid', 'Undefined dB response')
+    if timing: timing[0].add(timing[1] + '/power/db_metrics', perf_counter_ns() - start)
     return (result, *metrics)
 
 
@@ -206,10 +222,18 @@ class RFEvaluator:
         else:
             r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
         eye = np.eye(2)
+        timing = _deep_timing
+        if timing: start, failed = perf_counter_ns(), False
         try:
-            core = np.linalg.solve(eye + 50*r, eye - 50*r)
+            try:
+                core = np.linalg.solve(eye + 50*r, eye - 50*r)
+            except BaseException:
+                if timing: failed = True
+                raise
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError('s_singular', 'Singular Y-to-S conversion') from exc
+        finally:
+            if timing: timing[0].add(timing[1] + '/y_to_s_solve', perf_counter_ns() - start, failed=failed)
         if check_power:
             voltage = np.sqrt(50.) * (eye + core)
             absorbed = _adjoint(voltage) @ ((r + _adjoint(r)) / 2) @ voltage
@@ -217,9 +241,12 @@ class RFEvaluator:
                 raise CircuitNumericalError('core_power_balance', 'Core power waves fail nodal power balance')
         full = _cascade(_cascade(self.pre, core, check_power=check_power), self.post, check_power=check_power)
         data = power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
+        if timing: start = perf_counter_ns()
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
                   for j, a in enumerate(data)]
-        return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
+        response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
+        if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
+        return response
 
 
 def build_rf_model(definition, policy):
