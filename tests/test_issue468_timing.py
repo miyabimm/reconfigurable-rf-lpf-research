@@ -23,7 +23,8 @@ class TimingTests(unittest.TestCase):
         self.cfg['budget'] = {k: 2*v for k, v in self.cfg['budget'].items()}
         with tempfile.TemporaryDirectory(prefix='issue468-test-') as tmp:
             base = Path(tmp)
-            args = dict(root=ROOT, spot_checks={'terminal': [0, 57]}, checkpoint_interval=1)
+            args = dict(root=ROOT, spot_checks={'terminal': [0, 57]}, checkpoint_interval=1,
+                        rf_cache_mode='off')
             with patch('lpf.search._development_worker.search_rf_timing', side_effect=AssertionError('unexpected L3')):
                 plain = runner.run(self.cfg, self.starts, base/'plain', **args)
                 timed = runner.run(self.cfg, self.starts, base/'timed', timing_output=base/'timing.json', **args)
