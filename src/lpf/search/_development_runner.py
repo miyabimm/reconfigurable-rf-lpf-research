@@ -143,7 +143,7 @@ def _timing_path(path, output, root):
 
 
 def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkpoint_interval=1000,
-        timing_output=None, timing_level=None, rf_cache_mode='off'):
+        timing_output=None, timing_level=None, rf_cache_mode='lk'):
     """Freeze once, reserve all Jobs, and execute each at most once in seed→arm order."""
     if timing_level not in (None, 'timed', 'deep') or (timing_level is not None and timing_output is None):
         raise ValueError('timing level requires timing output and must be timed or deep')
