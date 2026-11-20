@@ -140,6 +140,8 @@ class DevelopmentWorker:
     def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"
         cache_options = {} if self.rf_cache_mode == 'off' else {'cache_mode': self.rf_cache_mode}
+        if self.timing_steps is not None and self.rf_cache_mode in ('response', 'both'):
+            cache_options['cache_diagnostics'] = True
         evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage], **cache_options)
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = step['effective_options']

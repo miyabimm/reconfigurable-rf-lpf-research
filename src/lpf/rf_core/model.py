@@ -188,8 +188,8 @@ class RFModel:
     def encode(self, values):
         return self.schema.encode(values)
 
-    def evaluator(self, grid, *, cache_mode='off'):
-        return RFEvaluator(self, grid, cache_mode=cache_mode)
+    def evaluator(self, grid, *, cache_mode='off', cache_diagnostics=False):
+        return RFEvaluator(self, grid, cache_mode=cache_mode, cache_diagnostics=cache_diagnostics)
 
 
 @dataclass(frozen=True)
@@ -197,6 +197,7 @@ class RFEvaluator:
     model: RFModel
     grid: EvaluationGrid
     cache_mode: str = 'off'
+    cache_diagnostics: bool = False
     pre: np.ndarray = field(init=False, repr=False)
     post: np.ndarray = field(init=False, repr=False)
     source_ohms: complex = field(init=False, repr=False)
@@ -217,6 +218,10 @@ class RFEvaluator:
         object.__setattr__(self, 'cache_stats', dict(lk_lookups=0, lk_hits=0, lk_misses=0,
             lk_computations=0, response_lookups=0, response_hits=0, response_misses=0,
             computed_samples=0, capacity=16))
+        if self.cache_diagnostics:
+            self.cache_stats['response_distribution'] = {
+                name: dict(forwards=0, computed_samples=0)
+                for name in ('all_miss', 'partial_hit', 'all_hit')}
         policy = self.model.resolved_policy
         object.__setattr__(self, 'source_ohms', _fixed_port_impedance(policy, 'source_ohms'))
         object.__setattr__(self, 'load_ohms', _fixed_port_impedance(policy, 'load_ohms'))
@@ -251,43 +256,45 @@ class RFEvaluator:
             cache.popitem(last=False)
 
     def _cached(self, values):
-        g, stats = self.grid, self.cache_stats
+        g, stats, timing = self.grid, self.cache_stats, _deep_timing
+        if timing: start = perf_counter_ns()
         lk_key = np.asarray(values.inductances_nh + values.coupling_k, dtype=np.float64).tobytes()
         use_response = self.cache_mode in ('response', 'both')
         use_lk = self.cache_mode in ('lk', 'both')
-        if not use_response:
-            stats['lk_lookups'] += 1
-            if lk_key in self._lk_cache:
-                stats['lk_hits'] += 1
-                self._lk_cache.move_to_end(lk_key)
-                matrices = self._lk_cache[lk_key]
-            else:
-                stats['lk_misses'] += 1
-                stats['lk_computations'] += 1
-                matrices = self.model.topology.matrices(values)
-            data = self._compute(values, slice(None), matrices=matrices)
-            self._put(self._lk_cache, lk_key, matrices)
-            return data
-        keys, hits, missing = {}, {}, []
-        for setting, indices in enumerate(self._setting_indices):
-            if not len(indices):
-                continue
-            key = lk_key + np.asarray(values.capacitors_pf_by_setting[setting], dtype=np.float64).tobytes()
-            keys[setting] = key
-            cache = self._response_cache[setting]
-            if use_response:
+        lk_ns = perf_counter_ns() - start if timing else 0
+        keys, hits, missing_settings = {}, {}, []
+        if use_response:
+            if timing: start = perf_counter_ns()
+            for setting, indices in enumerate(self._setting_indices):
+                if not len(indices):
+                    continue
+                key = lk_key + np.asarray(values.capacitors_pf_by_setting[setting], dtype=np.float64).tobytes()
+                keys[setting] = key
+                cache = self._response_cache[setting]
                 stats['response_lookups'] += 1
-            if use_response and key in cache:
-                stats['response_hits'] += 1
-                cache.move_to_end(key)
-                hits[setting] = cache[key]
-            else:
-                if use_response: stats['response_misses'] += 1
-                missing.extend(indices)
-        if missing:
-            indices = np.sort(np.asarray(missing, dtype=int))
+                if key in cache:
+                    stats['response_hits'] += 1
+                    cache.move_to_end(key)
+                    hits[setting] = cache[key]
+                else:
+                    stats['response_misses'] += 1
+                    missing_settings.append(setting)
+            if timing: timing[0].add(timing[1] + '/cache/response_lookup', perf_counter_ns() - start)
+            distribution = stats.get('response_distribution')
+            if distribution is not None:
+                category = 'all_miss' if not hits else ('all_hit' if not missing_settings else 'partial_hit')
+                distribution = distribution[category]
+                distribution['forwards'] += 1
+        else:
+            distribution = None
+        if not use_response or missing_settings:
+            if timing: start = perf_counter_ns()
+            indices = (np.sort(np.asarray([i for s in missing_settings for i in self._setting_indices[s]], dtype=int))
+                       if use_response else slice(None))
+            if timing and use_response: timing[0].add(timing[1] + '/cache/missing_select', perf_counter_ns() - start)
             matrices = None
             if use_lk:
+                if timing: start = perf_counter_ns()
                 stats['lk_lookups'] += 1
                 if lk_key in self._lk_cache:
                     stats['lk_hits'] += 1
@@ -295,29 +302,49 @@ class RFEvaluator:
                     matrices = self._lk_cache[lk_key]
                 else:
                     stats['lk_misses'] += 1
+                if timing: lk_ns += perf_counter_ns() - start
+            if timing:
+                timing[0].add(timing[1] + '/cache/lk_lookup', lk_ns)
+                start, failed = perf_counter_ns(), False
+            try:
+                if use_lk and matrices is None:
                     stats['lk_computations'] += 1
                     matrices = self.model.topology.matrices(values)
-            try:
-                data = self._compute(values, indices, matrices=matrices)
-            except (ValueError, np.linalg.LinAlgError):
-                # Re-run the original full grid to preserve error precedence and sample_index.
-                if len(indices) != len(g.setting):
-                    return self._compute(values, slice(None))
+                try:
+                    if distribution is not None: distribution['computed_samples'] += len(indices)
+                    data = self._compute(values, indices, matrices=matrices)
+                except (ValueError, np.linalg.LinAlgError):
+                    # Re-run the original full grid to preserve error precedence and sample_index.
+                    if use_response and len(indices) != len(g.setting):
+                        if distribution is not None: distribution['computed_samples'] += len(g.setting)
+                        return self._compute(values, slice(None))
+                    raise
+            except BaseException:
+                if timing: failed = True
                 raise
+            finally:
+                if timing: timing[0].add(timing[1] + '/cache/missing_compute', perf_counter_ns() - start, failed=failed)
+            if timing: start = perf_counter_ns()
             if use_lk:
                 self._put(self._lk_cache, lk_key, matrices)
             if use_response:
-                for setting in keys:
-                    if setting not in hits:
-                        mask = g.setting[indices] == setting
-                        entry = tuple(_frozen(a[mask], a.dtype) for a in data)
-                        self._put(self._response_cache[setting], keys[setting], entry)
-                        hits[setting] = entry
+                for setting in missing_settings:
+                    mask = g.setting[indices] == setting
+                    entry = tuple(_frozen(a[mask], a.dtype) for a in data)
+                    self._put(self._response_cache[setting], keys[setting], entry)
+                    hits[setting] = entry
+            if timing: timing[0].add(timing[1] + '/cache/store', perf_counter_ns() - start)
+            if not use_response:
+                return data
+        elif timing:
+            timing[0].add(timing[1] + '/cache/lk_lookup', lk_ns)
+        if timing: start = perf_counter_ns()
         result = [np.empty((len(g.setting), 2, 2), complex)] + [np.empty(len(g.setting)) for _ in range(4)]
         for setting, entry in hits.items():
             mask = g.setting == setting
             for dest, src in zip(result, entry):
                 dest[mask] = src
+        if timing: timing[0].add(timing[1] + '/cache/assemble', perf_counter_ns() - start)
         return tuple(result)
 
     def _compute(self, values, indices, *, check_power=False, matrices=None):

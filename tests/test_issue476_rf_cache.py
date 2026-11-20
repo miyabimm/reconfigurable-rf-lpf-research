@@ -81,6 +81,31 @@ class RFCacheTests(unittest.TestCase):
         bad[0] = np.nan
         with self.assertRaises(ValueError): evaluator.evaluate(bad)
 
+    def test_distribution_on_incomplete_grid_and_deep_timing(self):
+        from lpf.rf_core import EvaluationGrid
+        from lpf.search._rf_deep_timing import search_rf_timing
+        from lpf.timing import TimerCollector
+        mask = np.isin(self.grid.setting, (0, 2))
+        grid = EvaluationGrid(self.grid.frequency_hz[mask], self.grid.setting[mask], self.grid.segment[mask])
+        evaluator = self.model.evaluator(grid, cache_mode='both', cache_diagnostics=True)
+        timer = TimerCollector()
+        s = self.model.schema
+        changed = self.x.copy()
+        start = s.n_inductors + s.n_fixed + s.n_coupling + s.n_ic_fixed
+        changed[start + 2*s.n_variable] += .01
+        with search_rf_timing(timer, 'search'):
+            for x in (self.x, self.x, changed):
+                self.assert_response_equal(evaluator.evaluate(x), self.model.evaluator(grid).evaluate(x))
+        dist = evaluator.cache_stats['response_distribution']
+        self.assertEqual(dist, {'all_miss': {'forwards': 1, 'computed_samples': len(grid.setting)},
+                                'all_hit': {'forwards': 1, 'computed_samples': 0},
+                                'partial_hit': {'forwards': 1, 'computed_samples': int(np.sum(grid.setting == 2))}})
+        regions = timer.snapshot()
+        for name in ('lk_lookup', 'response_lookup', 'missing_select', 'missing_compute', 'store', 'assemble'):
+            self.assertIn('search/rf/cache/' + name, regions)
+        with patch('lpf.rf_core.model.perf_counter_ns', side_effect=AssertionError('clock called')):
+            evaluator.evaluate(changed)  # plain: no additional clock calls
+
     def test_capacity(self):
         e = self.model.evaluator(self.grid, cache_mode='both')
         for i in range(17):
