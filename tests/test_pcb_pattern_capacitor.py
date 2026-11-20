@@ -5,13 +5,12 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src'))
-sys.path.insert(0,str(ROOT/'experiments'/'matching_limit'))
 
 from lpf.constraints import (check_counts, chip_area, load_policy,
                              validate_pcb_pattern_caps)
 from lpf.circuit import solve
 from lpf.evaluate import CASES
-from instantiate_graph import check_graph, build_grounded_settings
+from lpf.legacy_graph_builder import check_graph, build_grounded_settings
 
 
 class PCBPatternCPolicyTests(unittest.TestCase):
