@@ -329,8 +329,8 @@ class RFEvaluator:
                 self._put(self._lk_cache, lk_key, matrices)
             if use_response:
                 for setting in missing_settings:
-                    mask = g.setting[indices] == setting
-                    entry = tuple(_frozen(a[mask], a.dtype) for a in data)
+                    positions = np.searchsorted(indices, self._setting_indices[setting])
+                    entry = tuple(_frozen(a[positions], a.dtype) for a in data)
                     self._put(self._response_cache[setting], keys[setting], entry)
                     hits[setting] = entry
             if timing: timing[0].add(timing[1] + '/cache/store', perf_counter_ns() - start)
@@ -342,9 +342,9 @@ class RFEvaluator:
         if timing: start = perf_counter_ns()
         result = [np.empty((len(g.setting), 2, 2), complex)] + [np.empty(len(g.setting)) for _ in range(4)]
         for setting, entry in hits.items():
-            mask = g.setting == setting
+            positions = self._setting_indices[setting]
             for dest, src in zip(result, entry):
-                dest[mask] = src
+                dest[positions] = src
         if timing: timing[0].add(timing[1] + '/cache/assemble', perf_counter_ns() - start)
         return tuple(result)
 
