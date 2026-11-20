@@ -6,7 +6,7 @@ from pathlib import Path
 import importlib.util
 
 ROOT=Path(__file__).resolve().parents[1]
-MODULE=ROOT/'scripts/loss_decomposition.py'
+MODULE=ROOT/'experiments/chatgpt_topology_search/loss_decomposition.py'
 spec=importlib.util.spec_from_file_location('loss_decomposition',MODULE)
 mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
 
