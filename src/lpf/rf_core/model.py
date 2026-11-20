@@ -248,6 +248,84 @@ class RFEvaluator:
         if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
         return response
 
+    def evaluate_batch(self, vectors):
+        """Evaluate a candidate-major batch on the Search grid.
+
+        Failures are replayed in candidate order through the scalar path so its
+        error precedence and sample indices remain authoritative. The L/k LRU
+        and counters are committed only after the whole vectorized calculation.
+        """
+        x = np.asarray(vectors)
+        if (x.ndim != 2 or not len(x) or x.shape[1] != self.model.schema.vector_length
+                or x.dtype.kind not in 'fiu'):
+            raise ValueError('Expected real numeric vectors[B, vector_length], B >= 1')
+        if self.cache_mode in ('response', 'both'):
+            return tuple(self.evaluate(row) for row in x)
+        try:
+            return self._compute_batch(x)
+        except (ValueError, np.linalg.LinAlgError, FloatingPointError):
+            return tuple(self.evaluate(row) for row in x)
+
+    def _compute_batch(self, x):
+        m, g, topology = self.model, self.grid, self.model.topology
+        values = [m.decode(row) for row in x]
+        # Stage LRU mutations so even a late wave/Schur failure cannot cache
+        # matrices belonging to a failed evaluation.
+        cache = self._lk_cache.copy()
+        hits = misses = computations = 0
+        numerators = []
+        for value in values:
+            if self.cache_mode == 'lk':
+                key = np.asarray(value.inductances_nh + value.coupling_k, dtype=np.float64).tobytes()
+                if key in cache:
+                    hits += 1
+                    cache.move_to_end(key)
+                    matrices = cache[key]
+                else:
+                    misses += 1
+                    computations += 1
+                    matrices = topology.matrices(value)
+                    self._put(cache, key, matrices)
+            else:
+                computations += 1
+                matrices = topology.matrices(value)
+            numerators.append(matrices[0])
+        omega = 2*np.pi*g.frequency_hz
+        n = topology.inductor_tree.node_count
+        C = np.asarray([v.capacitors_pf_by_setting for v in values])
+        D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[:, g.setting]
+        Y = np.asarray(numerators)[:, None] / (omega[None, :, None, None] * 1e-9)
+        Y = Y + omega[None, :, None, None] * D
+        if not np.all(np.isfinite(Y)):
+            raise ValueError('Non-finite batch nodal admittance')
+        ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
+        middle = tuple(i for i in range(n) if i not in ports)
+        order = np.asarray(ports + middle)
+        Y = Y[..., order[:, None], order]
+        r = Y[..., :2, :2]
+        if middle:
+            r = r - Y[..., :2, 2:] @ np.linalg.solve(Y[..., 2:, 2:], Y[..., 2:, :2])
+        if not np.all(np.isfinite(r)):
+            raise ValueError('Non-finite batch port admittance')
+        eye = np.eye(2)
+        core = np.linalg.solve(eye + 50*r, eye - 50*r).reshape(-1, 2, 2)
+        pre = np.broadcast_to(self.pre, (len(x), *self.pre.shape)).reshape(-1, 2, 2)
+        post = np.broadcast_to(self.post, (len(x), *self.post.shape)).reshape(-1, 2, 2)
+        data = power_response(_cascade(_cascade(pre, core), post), self.source_ohms, self.load_ohms)
+        data = [a.reshape(len(x), len(g.setting), *a.shape[1:]) for a in data]
+        responses = tuple(RFResponse(g, m.policy_id, m.policy_fingerprint,
+            *(_frozen(a[i], np.complex128 if j == 0 else np.float64)
+              for j, a in enumerate(data))) for i in range(len(x)))
+        if self.cache_mode == 'lk':
+            self._lk_cache.clear()
+            self._lk_cache.update(cache)
+            self.cache_stats['lk_lookups'] += len(x)
+            self.cache_stats['lk_hits'] += hits
+            self.cache_stats['lk_misses'] += misses
+        self.cache_stats['lk_computations'] += computations
+        self.cache_stats['computed_samples'] += len(x) * len(g.setting)
+        return responses
+
     @staticmethod
     def _put(cache, key, value):
         cache[key] = value
