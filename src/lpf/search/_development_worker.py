@@ -25,7 +25,7 @@ from .storage import _save_checkpoint, canonical, plain, sha, vector_sha
 class DevelopmentWorker:
     """Run a frozen RF profile Job once. The caller owns durable reservation and raw."""
 
-    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None, timing_level='timed', rf_cache_mode='off'):
+    def __init__(self, compiled, job_index, source, *, root, checkpoint, timer=None, timing_steps=None, timing_level='timed', rf_cache_mode='lk'):
         self.rf_cache_mode = rf_cache_mode
         self.timer = timer
         self.timing_level = timing_level
