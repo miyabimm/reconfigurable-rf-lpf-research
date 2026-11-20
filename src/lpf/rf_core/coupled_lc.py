@@ -251,7 +251,7 @@ class CoupledLCTopology:
             )
         return numerator, M
 
-    def node_admittance(self, values, omega_rad_s, setting_indices):
+    def node_admittance(self, values, omega_rad_s, setting_indices, *, matrices=None):
         """Assemble independent lossy L and C contributions for each sample."""
         if not isinstance(values, CircuitValues):
             raise TypeError("Expected CircuitValues")
@@ -268,7 +268,7 @@ class CoupledLCTopology:
         if (len(values.capacitors_pf_by_setting[0]) !=
                 len(self.capacitor_edges)):
             raise ValueError("Capacitor count does not match topology")
-        K, _ = self.matrices(values)
+        K, _ = self.matrices(values) if matrices is None else matrices
         timing = _deep_timing
         if timing: start = perf_counter_ns()
         Y = np.broadcast_to(
@@ -291,9 +291,12 @@ class CoupledLCTopology:
             )
         return Y
 
-    def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False):
+    def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False, matrices=None):
         """Shared forward Schur reduction; never used by independent MNA."""
-        Y = self.node_admittance(values, omega_rad_s, setting_indices)
+        if matrices is None:
+            Y = self.node_admittance(values, omega_rad_s, setting_indices)
+        else:
+            Y = self.node_admittance(values, omega_rad_s, setting_indices, matrices=matrices)
         timing = _deep_timing
         if timing: start = perf_counter_ns()
         ports = (self.inductor_tree.source_node, self.inductor_tree.load_node)

@@ -7,6 +7,7 @@ GA=GT/(1-|S22|²) allows conjugate output matching with the source held
 fixed. IL=-10 log10(GT), APL=-10 log10(GA), RL=-20 log10(|Sii|).
 Exact zero gain/reflection gives +inf dB (not a numerical failure or floor).
 """
+from collections import OrderedDict
 from dataclasses import dataclass, field
 import json
 from time import perf_counter_ns
@@ -187,22 +188,40 @@ class RFModel:
     def encode(self, values):
         return self.schema.encode(values)
 
-    def evaluator(self, grid):
-        return RFEvaluator(self, grid)
+    def evaluator(self, grid, *, cache_mode='off', cache_diagnostics=False):
+        return RFEvaluator(self, grid, cache_mode=cache_mode, cache_diagnostics=cache_diagnostics)
 
 
 @dataclass(frozen=True)
 class RFEvaluator:
     model: RFModel
     grid: EvaluationGrid
+    cache_mode: str = 'off'
+    cache_diagnostics: bool = False
     pre: np.ndarray = field(init=False, repr=False)
     post: np.ndarray = field(init=False, repr=False)
     source_ohms: complex = field(init=False, repr=False)
     load_ohms: complex = field(init=False, repr=False)
+    _lk_cache: object = field(init=False, repr=False, compare=False)
+    _response_cache: object = field(init=False, repr=False, compare=False)
+    _setting_indices: object = field(init=False, repr=False, compare=False)
+    cache_stats: dict = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.grid, EvaluationGrid):
             raise TypeError('Expected frozen EvaluationGrid')
+        if self.cache_mode not in ('off', 'lk', 'response', 'both'):
+            raise ValueError('Invalid RF cache mode')
+        object.__setattr__(self, '_lk_cache', OrderedDict())
+        object.__setattr__(self, '_response_cache', [OrderedDict() for _ in range(6)])
+        object.__setattr__(self, '_setting_indices', tuple(np.flatnonzero(self.grid.setting == s) for s in range(6)))
+        object.__setattr__(self, 'cache_stats', dict(lk_lookups=0, lk_hits=0, lk_misses=0,
+            lk_computations=0, response_lookups=0, response_hits=0, response_misses=0,
+            computed_samples=0, capacity=16))
+        if self.cache_diagnostics:
+            self.cache_stats['response_distribution'] = {
+                name: dict(forwards=0, computed_samples=0)
+                for name in ('all_miss', 'partial_hit', 'all_hit')}
         policy = self.model.resolved_policy
         object.__setattr__(self, 'source_ohms', _fixed_port_impedance(policy, 'source_ohms'))
         object.__setattr__(self, 'load_ohms', _fixed_port_impedance(policy, 'load_ohms'))
@@ -217,10 +236,127 @@ class RFEvaluator:
             values = x
         else:
             values = m.decode(x)
-        if check_power:
-            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting, check_power=True)
+        if check_power or self.cache_mode == 'off':
+            data = self._compute(values, slice(None), check_power=check_power)
         else:
-            r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz, g.setting)
+            data = self._cached(values)
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
+        arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
+                  for j, a in enumerate(data)]
+        response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
+        if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
+        return response
+
+    @staticmethod
+    def _put(cache, key, value):
+        cache[key] = value
+        cache.move_to_end(key)
+        if len(cache) > 16:
+            cache.popitem(last=False)
+
+    def _cached(self, values):
+        g, stats, timing = self.grid, self.cache_stats, _deep_timing
+        if timing: start = perf_counter_ns()
+        lk_key = np.asarray(values.inductances_nh + values.coupling_k, dtype=np.float64).tobytes()
+        use_response = self.cache_mode in ('response', 'both')
+        use_lk = self.cache_mode in ('lk', 'both')
+        lk_ns = perf_counter_ns() - start if timing else 0
+        keys, hits, missing_settings = {}, {}, []
+        if use_response:
+            if timing: start = perf_counter_ns()
+            for setting, indices in enumerate(self._setting_indices):
+                if not len(indices):
+                    continue
+                key = lk_key + np.asarray(values.capacitors_pf_by_setting[setting], dtype=np.float64).tobytes()
+                keys[setting] = key
+                cache = self._response_cache[setting]
+                stats['response_lookups'] += 1
+                if key in cache:
+                    stats['response_hits'] += 1
+                    cache.move_to_end(key)
+                    hits[setting] = cache[key]
+                else:
+                    stats['response_misses'] += 1
+                    missing_settings.append(setting)
+            if timing: timing[0].add(timing[1] + '/cache/response_lookup', perf_counter_ns() - start)
+            distribution = stats.get('response_distribution')
+            if distribution is not None:
+                category = 'all_miss' if not hits else ('all_hit' if not missing_settings else 'partial_hit')
+                distribution = distribution[category]
+                distribution['forwards'] += 1
+        else:
+            distribution = None
+        if not use_response or missing_settings:
+            if timing: start = perf_counter_ns()
+            indices = (np.sort(np.asarray([i for s in missing_settings for i in self._setting_indices[s]], dtype=int))
+                       if use_response else slice(None))
+            if timing and use_response: timing[0].add(timing[1] + '/cache/missing_select', perf_counter_ns() - start)
+            matrices = None
+            if use_lk:
+                if timing: start = perf_counter_ns()
+                stats['lk_lookups'] += 1
+                if lk_key in self._lk_cache:
+                    stats['lk_hits'] += 1
+                    self._lk_cache.move_to_end(lk_key)
+                    matrices = self._lk_cache[lk_key]
+                else:
+                    stats['lk_misses'] += 1
+                if timing: lk_ns += perf_counter_ns() - start
+            if timing:
+                timing[0].add(timing[1] + '/cache/lk_lookup', lk_ns)
+                start, failed = perf_counter_ns(), False
+            try:
+                if use_lk and matrices is None:
+                    stats['lk_computations'] += 1
+                    matrices = self.model.topology.matrices(values)
+                try:
+                    if distribution is not None: distribution['computed_samples'] += len(indices)
+                    data = self._compute(values, indices, matrices=matrices)
+                except (ValueError, np.linalg.LinAlgError):
+                    # Re-run the original full grid to preserve error precedence and sample_index.
+                    if use_response and len(indices) != len(g.setting):
+                        if distribution is not None: distribution['computed_samples'] += len(g.setting)
+                        return self._compute(values, slice(None))
+                    raise
+            except BaseException:
+                if timing: failed = True
+                raise
+            finally:
+                if timing: timing[0].add(timing[1] + '/cache/missing_compute', perf_counter_ns() - start, failed=failed)
+            if timing: start = perf_counter_ns()
+            if use_lk:
+                self._put(self._lk_cache, lk_key, matrices)
+            if use_response:
+                for setting in missing_settings:
+                    positions = np.searchsorted(indices, self._setting_indices[setting])
+                    entry = tuple(_frozen(a[positions], a.dtype) for a in data)
+                    self._put(self._response_cache[setting], keys[setting], entry)
+                    hits[setting] = entry
+            if timing: timing[0].add(timing[1] + '/cache/store', perf_counter_ns() - start)
+            if not use_response or len(missing_settings) == len(keys):
+                # All grid rows were computed in original order; caches own frozen copies.
+                return data
+        elif timing:
+            timing[0].add(timing[1] + '/cache/lk_lookup', lk_ns)
+        if timing: start = perf_counter_ns()
+        result = [np.empty((len(g.setting), 2, 2), complex)] + [np.empty(len(g.setting)) for _ in range(4)]
+        for setting, entry in hits.items():
+            positions = self._setting_indices[setting]
+            for dest, src in zip(result, entry):
+                dest[positions] = src
+        if timing: timing[0].add(timing[1] + '/cache/assemble', perf_counter_ns() - start)
+        return tuple(result)
+
+    def _compute(self, values, indices, *, check_power=False, matrices=None):
+        m, g = self.model, self.grid
+        self.cache_stats['computed_samples'] += len(g.setting) if isinstance(indices, slice) else len(indices)
+        if matrices is None:
+            self.cache_stats['lk_computations'] += 1
+        kwargs = {}
+        if check_power: kwargs['check_power'] = True
+        if matrices is not None: kwargs['matrices'] = matrices
+        r = m.topology.port_admittance(values, 2*np.pi*g.frequency_hz[indices], g.setting[indices], **kwargs)
         eye = np.eye(2)
         timing = _deep_timing
         if timing: start, failed = perf_counter_ns(), False
@@ -239,14 +375,8 @@ class RFEvaluator:
             absorbed = _adjoint(voltage) @ ((r + _adjoint(r)) / 2) @ voltage
             if not np.allclose(_wave_loss(core), absorbed, rtol=1e-9, atol=1e-10):
                 raise CircuitNumericalError('core_power_balance', 'Core power waves fail nodal power balance')
-        full = _cascade(_cascade(self.pre, core, check_power=check_power), self.post, check_power=check_power)
-        data = power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
-        if timing: start = perf_counter_ns()
-        arrays = [_frozen(a, np.complex128 if j == 0 else np.float64)
-                  for j, a in enumerate(data)]
-        response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
-        if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
-        return response
+        full = _cascade(_cascade(self.pre[indices], core, check_power=check_power), self.post[indices], check_power=check_power)
+        return power_response(full, self.source_ohms, self.load_ohms, check_power=check_power)
 
 
 def build_rf_model(definition, policy):
