@@ -106,6 +106,38 @@ class RFCacheTests(unittest.TestCase):
         with patch('lpf.rf_core.model.perf_counter_ns', side_effect=AssertionError('clock called')):
             evaluator.evaluate(changed)  # plain: no additional clock calls
 
+    def test_numerical_stop_modes_and_cached_result_ownership(self):
+        original_solve = np.linalg.solve
+
+        def singular_two_port(a, b):
+            if a.ndim == 3 and a.shape[-2:] == (2, 2):
+                raise np.linalg.LinAlgError('injected singular Y-to-S')
+            return original_solve(a, b)
+
+        schema = self.model.schema
+        for mode in ('off', 'lk', 'response', 'both'):
+            with self.subTest(mode=mode):
+                evaluator = self.model.evaluator(self.grid, cache_mode=mode)
+                x = self.x.copy()
+                first = evaluator.evaluate(x)
+                saved_s = first.s.copy()
+                x[0] += .01
+                np.testing.assert_array_equal(first.s, saved_s)
+                self.assertFalse(first.s.flags.writeable)
+                bad = self.x.copy()
+                bad[schema.n_inductors + schema.n_fixed] = 2.
+                with self.assertRaises(CircuitNumericalError) as caught:
+                    evaluator.evaluate(bad)
+                self.assertEqual(caught.exception.code, 'mutual_not_spd')
+                bad[0] = np.nan
+                with self.assertRaises(ValueError): evaluator.evaluate(bad)
+                with patch('numpy.linalg.solve', side_effect=singular_two_port):
+                    # x changes L, preventing response hits in this failure check.
+                    with self.assertRaises(CircuitNumericalError) as caught:
+                        evaluator.evaluate(x)
+                    self.assertEqual(caught.exception.code, 's_singular')
+                self.assert_response_equal(evaluator.evaluate(self.x), first)
+
     def test_capacity(self):
         e = self.model.evaluator(self.grid, cache_mode='both')
         for i in range(17):
