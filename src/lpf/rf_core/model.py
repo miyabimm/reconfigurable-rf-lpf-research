@@ -203,6 +203,7 @@ class RFEvaluator:
     load_ohms: complex = field(init=False, repr=False)
     _lk_cache: object = field(init=False, repr=False, compare=False)
     _response_cache: object = field(init=False, repr=False, compare=False)
+    _setting_indices: object = field(init=False, repr=False, compare=False)
     cache_stats: dict = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
@@ -212,6 +213,7 @@ class RFEvaluator:
             raise ValueError('Invalid RF cache mode')
         object.__setattr__(self, '_lk_cache', OrderedDict())
         object.__setattr__(self, '_response_cache', [OrderedDict() for _ in range(6)])
+        object.__setattr__(self, '_setting_indices', tuple(np.flatnonzero(self.grid.setting == s) for s in range(6)))
         object.__setattr__(self, 'cache_stats', dict(lk_lookups=0, lk_hits=0, lk_misses=0,
             lk_computations=0, response_lookups=0, response_hits=0, response_misses=0,
             computed_samples=0, capacity=16))
@@ -253,10 +255,23 @@ class RFEvaluator:
         lk_key = np.asarray(values.inductances_nh + values.coupling_k, dtype=np.float64).tobytes()
         use_response = self.cache_mode in ('response', 'both')
         use_lk = self.cache_mode in ('lk', 'both')
+        if not use_response:
+            stats['lk_lookups'] += 1
+            if lk_key in self._lk_cache:
+                stats['lk_hits'] += 1
+                self._lk_cache.move_to_end(lk_key)
+                matrices = self._lk_cache[lk_key]
+            else:
+                stats['lk_misses'] += 1
+                stats['lk_computations'] += 1
+                matrices = self.model.topology.matrices(values)
+            data = self._compute(values, slice(None), matrices=matrices)
+            self._put(self._lk_cache, lk_key, matrices)
+            return data
         keys, hits, missing = {}, {}, []
-        for setting in np.unique(g.setting):
-            setting = int(setting)
-            indices = np.flatnonzero(g.setting == setting)
+        for setting, indices in enumerate(self._setting_indices):
+            if not len(indices):
+                continue
             key = lk_key + np.asarray(values.capacitors_pf_by_setting[setting], dtype=np.float64).tobytes()
             keys[setting] = key
             cache = self._response_cache[setting]
@@ -284,7 +299,7 @@ class RFEvaluator:
                     matrices = self.model.topology.matrices(values)
             try:
                 data = self._compute(values, indices, matrices=matrices)
-            except (CircuitNumericalError, np.linalg.LinAlgError):
+            except (ValueError, np.linalg.LinAlgError):
                 # Re-run the original full grid to preserve error precedence and sample_index.
                 if len(indices) != len(g.setting):
                     return self._compute(values, slice(None))
@@ -298,8 +313,6 @@ class RFEvaluator:
                         entry = tuple(_frozen(a[mask], a.dtype) for a in data)
                         self._put(self._response_cache[setting], keys[setting], entry)
                         hits[setting] = entry
-            else:
-                return data
         result = [np.empty((len(g.setting), 2, 2), complex)] + [np.empty(len(g.setting)) for _ in range(4)]
         for setting, entry in hits.items():
             mask = g.setting == setting
