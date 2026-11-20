@@ -25,6 +25,16 @@
 
 代表値・9ペアの全記録と限界は[結果の整理](../results.md#rf-t008旧条件の多初期値と座標ab比較)および各[元集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue233_multistart_pilot/report.json)・[対照集計](https://github.com/miyabimm/reconfigurable-rf-lpf-research/blob/6ac982306cd5899dee99b40dee660d3a6986db89/data/validation/issue237_coordinate_ab/report.json)を参照する。集計README/JSONへのリンクは削減前の固定Gitコミットを指す。27件の17点検証overlayはEXP-086〜112の各`validation/17pt.json`へ元JSONのGit blob/SHA-256を変えずに移動し、保存manifest／storage_recordの**参照パスだけ**を更新した。旧metadataの原文は移動前の固定Git履歴に残る。この統合は既存結果の読取りであり、新しいRF計算・EXP・独立検証を実施していない。
 
+## 旧EXP-113〜117のPlan・初期値・周波数交換（Issue #397）
+
+**適用範囲：** RF-T008 rev3 *旧trial*、実効SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`、`full_lpf`。正式RF-F003・現行schema2 trialのRF適合結果ではない。以下は保存済み結果の読取りであり、今回の整理では再探索・RF/MNA再計算をしていない。
+
+- [EXP-113](../../experiments/chatgpt_topology_search/runs/EXP-113/run_summary.json)：固定58 start中13数値収束、45非収束。数値収束した13件にstrict30の候補なし。別選抜2回路は1,001点と84点独立MNA・電力検証をPASSしたが、いずれも**未収束**でILは41.2984/51.9134 dB。有限格子の30dB適合や独立MNA PASSを低IL候補・solver収束・全RF仕様達成と混同しない。
+- [EXP-114](../../experiments/chatgpt_topology_search/runs/EXP-114/run_summary.json)・[EXP-115](../../experiments/chatgpt_topology_search/runs/EXP-115/run_summary.json)：各4 start全て数値収束したが、17点/区間strict30は**どちらも0/4**。EXP-114の物理座標対正規化座標にRF合格の優位なし。EXP-115の周波数交換はB-31で標本上の減衰不足を一部改善したもののstrict30を満たさず、両試験とも適格候補の密格子1,001点・独立MNAは**未実施**。小標本の因果効果・一般的な性能改善は証明しない。
+- [EXP-116](../../experiments/chatgpt_topology_search/runs/EXP-116/run_summary.json)は計画8 startのうち4件を試行し、1収束・2非収束・1実行失敗、残る4は未着手（実験状態`failed`）。[EXP-117](../../experiments/chatgpt_topology_search/runs/EXP-117/run_summary.json)は2計画のうち1件を試行・失敗、他1件未着手（`partial`）。20dB段階停止や最後の合法vectorは30dB候補認定ではない。両者とも独立MNA・密格子認定は**未実施**。
+
+旧`project/experiments/`の凍結Plan/startsは当時の実行条件を記録したファイルで、新規EXPの起動設定ではない。EXP-114/115の正式manifestには実行した4 startのID・seed record・完全vector、回路定義・limitsが埋め込まれ、EXP-116/117にも回路定義と実行計画が保存されている。旧Planを削減しても**元manifest・run summary・選抜checkpoint/検証証拠は変更しない**が、元外部Plan JSONのバイト同一復元は現行treeではできない。小さな共通構造原本`project/experiments/issue270-definition.json`はEXP-116/117の出典として保持する。削減前の原ファイルは[固定Git履歴](https://github.com/miyabimm/reconfigurable-rf-lpf-research/tree/1e502ae4b8f61b35995b10aca58875ce0e432e7f/project/experiments)に残す。
+
 ## Pareto支配と配置選択の教訓（RF-T008 rev3の歴史的局所探索）
 
 **出典・有効範囲：** [EXP-058/059・062〜065の整理結果](../results.md#rf-t008-v3の横断比較2026-10-20の固定履歴)。固定外部S2Pと6設定・28区間×1,001点、必須H2/H3≥30dB、当時のRF-T008 rev3 trial実効SHA `7de08611f8dd15b40fdfb7946e8c93de5796d026641bdca0f12e992962d05fd4`の探索済み部分集合に限る。
