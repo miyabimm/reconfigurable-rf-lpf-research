@@ -15,8 +15,11 @@ COSTS = ('rf_samples', 'rf_forwards', 'independent_mna_samples')
 
 def solver_options(step):
     if step['solver'] == 'hybrid':
-        return dict(max_evaluations=step['options']['max_search_forwards'],
-                    restart_sigma=step['options'].get('restart_sigma', 0.1))
+        result = dict(max_evaluations=step['options']['max_search_forwards'],
+                      restart_sigma=step['options'].get('restart_sigma', 0.1))
+        if 'batch_fd' in step['options']:
+            result['batch_fd'] = step['options']['batch_fd']
+        return result
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
                             tolerance=1e-7, constraint_tolerance=1e-7)}
@@ -106,6 +109,10 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
             step['effective_objective'] = ('signed_max_db' if step['solver'] == 'slp'
                                            else f"{step['aggregation']}_squared_positive_violation_db2_unit_weights")
             limit = step['effective_options']['max_evaluations']
+            if step['effective_options'].get('batch_fd', False):
+                free = sum(lo < hi for lo, hi in bounds)
+                limit += max(0, free - 1)
+                step['batch_forward_cap'] = limit
             samples += n * limit
             forwards += limit
             mna += k * limit

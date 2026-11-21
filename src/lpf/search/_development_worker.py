@@ -145,8 +145,11 @@ class DevelopmentWorker:
         evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage], **cache_options)
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = step['effective_options']
-        self.forward_count, self.forward_cap = 0, opts['max_evaluations']
+        batch_fd = opts.get('batch_fd', False)
+        self.forward_count, self.forward_cap = 0, step.get('batch_forward_cap', opts['max_evaluations'])
         saved = None
+        best = None
+        last_saved_count = 0
         independent = None
 
         def residuals(vector):
@@ -157,12 +160,61 @@ class DevelopmentWorker:
                 raise ValueError('Nonfinite signed-margin Search residuals')
             return residual
 
+        def residuals_batch(vectors):
+            # The evaluator replays failures internally to preserve the scalar
+            # exception. On failure replay again lazily so preceding observations
+            # are delivered to SciPy before the first failing candidate.
+            nonlocal independent
+            if self.forward_count + len(vectors) > self.forward_cap:
+                raise ValueError('STOP: Search RF forward budget exhausted')
+            try:
+                responses = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate_batch, vectors)
+            except (ValueError, np.linalg.LinAlgError, FloatingPointError):
+                def replay():
+                    for vector in vectors:
+                        try:
+                            yield residuals(vector)
+                        except Exception as exc:
+                            yield exc
+                            return
+                return replay()
+
+            def consume():
+                nonlocal independent
+                for vector, response in zip(vectors, responses, strict=True):
+                    self.forward_count += 1
+                    if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
+                            response.policy_fingerprint != self.model.policy_fingerprint):
+                        yield ValueError('Response profile/grid mismatch')
+                        return
+                    independent = self._audit(vector, response, stage)
+                    residual = direction * (response.il_db - threshold)
+                    if not np.all(np.isfinite(residual)):
+                        yield ValueError('Nonfinite signed-margin Search residuals')
+                        return
+                    yield residual
+            return consume()
+
         def observe(vector, objective):
             nonlocal saved
             if self.forward_count % self.checkpoint_interval == 0:
                 digest = vector_sha(vector)
                 self._checkpoint(step['name'], stage, dict(vector=plain(vector), vector_sha256=digest, objective=objective))
                 saved = self.forward_count, digest, objective
+
+        def progress(vector, objective, improved):
+            nonlocal best
+            if improved:
+                best = (vector.copy(), objective)
+
+        def group_finished(*, force=False):
+            nonlocal saved, last_saved_count
+            if best is not None and (force or self.forward_count - last_saved_count >= self.checkpoint_interval):
+                vector, objective = best
+                digest = vector_sha(vector)
+                self._checkpoint(step['name'], stage, dict(vector=plain(vector), vector_sha256=digest, objective=objective))
+                saved = self.forward_count, digest, objective
+                last_saved_count = self.forward_count
 
         solver = step['solver']
         local_details = []
@@ -180,8 +232,10 @@ class DevelopmentWorker:
             self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event',
                                                    rf_cache=dict(mode=self.rf_cache_mode, counters=evaluator.cache_stats))
         if solver == 'hybrid':
+            callbacks = (dict(residuals_batch=residuals_batch, progress_callback=progress,
+                              group_callback=group_finished) if batch_fd else dict(objective_callback=observe))
             out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
-                             aggregation=step['aggregation'], objective_callback=observe,
+                             aggregation=step['aggregation'], **callbacks,
                              local_run_callback=count_local_run, event_callback=event if self.timer else None, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
@@ -189,7 +243,7 @@ class DevelopmentWorker:
                              aggregation=step['aggregation'], objective_callback=observe, **opts)
         if (not isinstance(out, OptimizerResult) or out.x is None or out.objective is None or
                 not np.isfinite(out.objective) or type(out.evaluations) is not int or
-                not 1 <= out.evaluations <= opts['max_evaluations'] or type(out.converged) is not bool or
+                not 1 <= out.evaluations <= self.forward_cap or type(out.converged) is not bool or
                 not isinstance(out.stop_reason, str) or not out.stop_reason or out.stop_reason.startswith('invalid_') or
                 (out.converged and out.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted')) or
                 not 1 <= self.forward_count <= self.forward_cap):
