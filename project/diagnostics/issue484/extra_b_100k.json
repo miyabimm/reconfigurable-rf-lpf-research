@@ -1,0 +1,9 @@
+{
+  "name": "extra-B",
+  "process_wall_s": 32.91175243607722,
+  "cpu_s": 30.692892,
+  "max_rss_kib": 91992,
+  "exit_code": 0,
+  "runner_wall_s": 32.50299324293155,
+  "result_equal_to_1_B": true
+}
