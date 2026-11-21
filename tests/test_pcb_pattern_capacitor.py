@@ -5,13 +5,12 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src'))
-sys.path.insert(0,str(ROOT/'experiments'/'matching_limit'))
 
 from lpf.constraints import (check_counts, chip_area, load_policy,
                              validate_pcb_pattern_caps)
 from lpf.circuit import solve
 from lpf.evaluate import CASES
-from instantiate_graph import check_graph, build_grounded_settings
+from lpf.legacy_graph_builder import check_graph, build_grounded_settings
 
 
 class PCBPatternCPolicyTests(unittest.TestCase):
@@ -19,10 +18,10 @@ class PCBPatternCPolicyTests(unittest.TestCase):
         p=load_policy()
         c=p['components']['PCB_PATTERN_C']
         self.assertEqual(c['q'],40)
-        self.assertAlmostEqual(c['min_pf_per_component'],0.02)
+        self.assertAlmostEqual(c['bounds']['min'],0.02)
         self.assertEqual(c['area_units'],0)
         self.assertEqual(c['max_count'],3)
-        self.assertAlmostEqual(c['max_pf_per_component'],0.2)
+        self.assertAlmostEqual(c['bounds']['max'],0.2)
         self.assertTrue(c['common_across_settings'])
 
     def test_zero_chip_cost_and_max_three(self):

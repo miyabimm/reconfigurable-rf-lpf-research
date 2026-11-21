@@ -1,8 +1,7 @@
 import sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'experiments'/'matching_limit'))
-from instantiate_graph import build_settings,check_graph
+from lpf.legacy_graph_builder import build_settings,check_graph
 from lpf.circuit import solve
 from lpf.evaluate import CASES
 class InstantiationTests(unittest.TestCase):

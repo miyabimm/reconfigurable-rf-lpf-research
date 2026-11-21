@@ -9,9 +9,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "experiments" / "matching_limit"))
 
-from instantiate_graph import build_grounded_settings, check_graph
+from lpf.legacy_graph_builder import build_grounded_settings, check_graph
 from lpf.circuit import Branch, solve
 from lpf.configuration import validate_six_settings
 from lpf.constraint_versions import load_constraint
