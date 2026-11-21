@@ -220,7 +220,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "psutil", specifier = ">=5.9" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "scipy", specifier = ">=1.12" },
+    { name = "scipy", specifier = ">=1.16" },
 ]
 
 [[package]]

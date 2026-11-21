@@ -36,14 +36,17 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     max_evaluations: int, restart_sigma: float,
                     weights=None, aggregation: str = 'sum', event_callback=None,
                     run_callback=None, objective_callback=None, progress_callback=None,
-                    local_run_callback=None) -> OptimizerResult:
+                    local_run_callback=None, batch_fd=False, residuals_batch=None,
+                    group_callback=None) -> OptimizerResult:
     """Minimize sum or max of weights * maximum(residuals(x), 0)**2.
 
     Bounded L-BFGS-B penalizes positive violations only; negative residuals
     contribute zero. 'max' is not the maximum signed error. The 'max' objective is
     nonsmooth, so L-BFGS-B may fail to converge or stop in its line search.
 
-    max_evaluations is the hard total cap on residual calls; the per-local-run
+    In batch_fd mode max_evaluations limits starting new groups, and a started
+    finite-difference group completes even if it exceeds that nominal limit.
+    Otherwise max_evaluations is the hard total cap on residual calls; the per-local-run
     maxiter safety guard is derived from it. Finite local endpoints restart
     until this cap is exhausted. The cap includes
     including finite differences. A partially evaluated gradient can interrupt
@@ -73,6 +76,10 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         raise ValueError('restart_sigma must be finite and positive')
     if not callable(residuals):
         raise ValueError('residuals must be callable')
+    if type(batch_fd) is not bool or (batch_fd and not callable(residuals_batch)):
+        raise ValueError('batch_fd requires a callable residuals_batch')
+    if group_callback is not None and not callable(group_callback):
+        raise ValueError('group_callback must be callable')
     if run_callback is not None and not callable(run_callback):
         raise ValueError('run_callback must be callable')
     if objective_callback is not None and not callable(objective_callback):
@@ -141,15 +148,18 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         start_fun = None
         last_x = last_fun = None
         local_nfev = nit = 0
+        pending = None
 
         def objective(z):
             nonlocal total, local_nfev, start_fun, last_x, last_fun, best_x, best_fun, residual_size
-            if total >= max_evaluations:
+            if pending is None and total >= max_evaluations:
                 raise _Stop('evaluation_budget_exhausted')
             x = start_x.copy() if np.array_equal(z, z_start) else physical(z)
             total += 1
             local_nfev += 1
-            raw = residuals(x.copy())
+            raw = residuals(x.copy()) if pending is None else next(pending)
+            if isinstance(raw, BaseException):
+                raise raw
             try:
                 r = np.asarray(raw, dtype=float)
             except (TypeError, ValueError):
@@ -173,7 +183,27 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 best_x, best_fun = x.copy(), value
             if progress_callback is not None:
                 progress_callback(x.copy(), value, improved)
+            if pending is None and group_callback is not None:
+                group_callback()
             return value
+
+        def batch_map(fun, iterable):
+            nonlocal pending
+            if total >= max_evaluations:
+                raise _Stop('evaluation_budget_exhausted')
+            zs = list(iterable)
+            if not zs:
+                return []
+            vectors = [start_x.copy() if np.array_equal(z, z_start) else physical(z) for z in zs]
+            results = residuals_batch(vectors)
+            pending = iter(results)
+            try:
+                values = [fun(z) for z in zs]
+            finally:
+                pending = None
+            if group_callback is not None:
+                group_callback()
+            return values
 
         def callback(_):
             nonlocal nit
@@ -191,10 +221,12 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                                True, 0, 'all coordinates fixed', 0, local_nfev)
                 reason = 'all_coordinates_fixed'
             else:
+                options = {'maxiter': maxiter, 'maxfun': max_evaluations}
+                if batch_fd:
+                    options['workers'] = batch_map
                 sol = minimize(objective, z_start, method='L-BFGS-B',
                                bounds=[(0.0, 1.0)] * int(np.sum(free)),
-                               callback=callback, options={'maxiter': maxiter,
-                                                           'maxfun': max_evaluations})
+                               callback=callback, options=options)
                 if (local_nfev == 0 or np.asarray(sol.x).shape != z_start.shape or
                         not np.all(np.isfinite(sol.x)) or not np.isfinite(sol.fun) or
                         np.any(np.asarray(sol.x) < 0) or np.any(np.asarray(sol.x) > 1)):
@@ -204,11 +236,15 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                                float(sol.fun), bool(sol.success), int(sol.status),
                                str(sol.message), int(sol.nit), local_nfev)
         except _Stop as exc:
+            if batch_fd and group_callback is not None:
+                group_callback(force=True)
             reason = str(exc)
             run = LocalRun(start_x.tolist(), start_fun,
                            None if last_x is None else last_x.tolist(), last_fun,
                            False, None, reason, nit, local_nfev)
         except BaseException as exc:
+            if batch_fd and group_callback is not None:
+                group_callback(force=True)
             if timed:
                 emit(dict(event='local_run_end', seed=seed, run_index=run_index,
                           monotonic_s=time.monotonic(), process_cpu_s=time.process_time(),

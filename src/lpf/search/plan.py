@@ -40,8 +40,12 @@ def positive(value):
 def validate_solver(step):
     solver, agg, options = step['solver'], step['aggregation'], step['options']
     if solver == 'hybrid':
-        fields(options, 'max_search_forwards' + (' restart_sigma' if isinstance(options, dict) and 'restart_sigma' in options else ''))
+        fields(options, 'max_search_forwards' + ''.join(
+            f' {name}' for name in ('restart_sigma', 'batch_fd')
+            if isinstance(options, dict) and name in options))
         positive(options['max_search_forwards'])
+        if 'batch_fd' in options and type(options['batch_fd']) is not bool:
+            raise ValueError('batch_fd must be boolean')
         if 'restart_sigma' in options:
             sigma = options['restart_sigma']
             try:

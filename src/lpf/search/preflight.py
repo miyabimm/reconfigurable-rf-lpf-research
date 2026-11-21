@@ -173,6 +173,8 @@ def _freeze_with_profile(d, root):
                 raise ValueError('Unique identifier step names required')
             stage_names.add(sname)
             validate_solver(step)
+            if step['solver'] == 'hybrid' and step['options'].get('batch_fd', False):
+                raise ValueError('batch_fd requires a development Plan with frozen search bounds')
             positive(step['max_requested_samples'])
             one = grid(f'{name}/{sname}', step['points_per_interval'],
                        step.get('stop_points_per_interval'))
