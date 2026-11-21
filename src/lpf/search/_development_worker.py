@@ -146,6 +146,8 @@ class DevelopmentWorker:
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
         opts = step['effective_options']
         batch_fd = opts.get('batch_fd', False)
+        partial_fd = opts.get('partial_fd', False)
+        base = None
         self.forward_count, self.forward_cap = 0, step.get('batch_forward_cap', opts['max_evaluations'])
         saved = None
         best = None
@@ -153,11 +155,13 @@ class DevelopmentWorker:
         independent = None
 
         def residuals(vector):
-            nonlocal independent
+            nonlocal independent, base
             response, _, independent = self._forward(evaluator, vector, stage)
             residual = direction * (response.il_db - threshold)
             if not np.all(np.isfinite(residual)):
                 raise ValueError('Nonfinite signed-margin Search residuals')
+            if partial_fd:
+                base = (np.asarray(vector).copy(), response)
             return residual
 
         def residuals_batch(vectors):
@@ -168,7 +172,19 @@ class DevelopmentWorker:
             if self.forward_count + len(vectors) > self.forward_cap:
                 raise ValueError('STOP: Search RF forward budget exhausted')
             try:
-                responses = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate_batch, vectors)
+                if partial_fd and base is not None:
+                    schema = self.model.schema
+                    start = schema.n_inductors + schema.n_fixed + schema.n_coupling + schema.n_ic_fixed
+                    mask = np.ones((len(vectors), len(evaluator.grid.setting)), dtype=bool)
+                    for i, vector in enumerate(vectors):
+                        changed = np.flatnonzero(np.asarray(vector) != base[0])
+                        if len(changed) == 1 and schema.n_variable and start <= changed[0] < schema.vector_length:
+                            setting = (changed[0] - start) // schema.n_variable
+                            mask[i] = evaluator.grid.setting == setting
+                    responses = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate_partial_batch,
+                                           vectors, base[1], mask)
+                else:
+                    responses = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate_batch, vectors)
             except (ValueError, np.linalg.LinAlgError, FloatingPointError):
                 def replay():
                     for vector in vectors:
@@ -236,7 +252,8 @@ class DevelopmentWorker:
                               group_callback=group_finished) if batch_fd else dict(objective_callback=observe))
             out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
                              aggregation=step['aggregation'], **callbacks,
-                             local_run_callback=count_local_run, event_callback=event if self.timer else None, **opts)
+                             local_run_callback=count_local_run, event_callback=event if self.timer else None,
+                             **{k: v for k, v in opts.items() if k != 'partial_fd'})
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = timed_call(self.timer, f'{stage}/solver', minimize, residuals, x, self.bounds, constraints=None,

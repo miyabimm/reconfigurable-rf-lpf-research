@@ -17,8 +17,9 @@ def solver_options(step):
     if step['solver'] == 'hybrid':
         result = dict(max_evaluations=step['options']['max_search_forwards'],
                       restart_sigma=step['options'].get('restart_sigma', 0.1))
-        if 'batch_fd' in step['options']:
-            result['batch_fd'] = step['options']['batch_fd']
+        for name in ('batch_fd', 'partial_fd'):
+            if name in step['options']:
+                result[name] = step['options'][name]
         return result
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,

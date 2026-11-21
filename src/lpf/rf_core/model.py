@@ -266,7 +266,31 @@ class RFEvaluator:
         except (ValueError, np.linalg.LinAlgError, FloatingPointError):
             return tuple(self.evaluate(row) for row in x)
 
-    def _compute_batch(self, x):
+    def evaluate_partial_batch(self, vectors, base_response, mask):
+        """Evaluate selected candidate/grid pairs, filling the rest from base_response.
+
+        The caller must select every sample affected by each candidate. Failures
+        replay complete candidates in order, just like evaluate_batch.
+        """
+        x = np.asarray(vectors)
+        if (x.ndim != 2 or not len(x) or x.shape[1] != self.model.schema.vector_length
+                or x.dtype.kind not in 'fiu'):
+            raise ValueError('Expected real numeric vectors[B, vector_length], B >= 1')
+        mask = np.asarray(mask)
+        if mask.dtype != np.bool_ or mask.shape != (len(x), len(self.grid.setting)):
+            raise ValueError('Expected boolean candidate/sample mask')
+        if (not isinstance(base_response, RFResponse) or base_response.grid is not self.grid or
+                base_response.policy_id != self.model.policy_id or
+                base_response.policy_fingerprint != self.model.policy_fingerprint):
+            raise ValueError('Base response profile/grid mismatch')
+        if self.cache_mode in ('response', 'both'):
+            return self.evaluate_batch(x)
+        try:
+            return self._compute_batch(x, mask=mask, base_response=base_response)
+        except (ValueError, np.linalg.LinAlgError, FloatingPointError):
+            return tuple(self.evaluate(row) for row in x)
+
+    def _compute_batch(self, x, *, mask=None, base_response=None):
         m, g, topology = self.model, self.grid, self.model.topology
         values = [m.decode(row) for row in x]
         # Stage LRU mutations so even a late wave/Schur failure cannot cache
@@ -290,12 +314,21 @@ class RFEvaluator:
                 computations += 1
                 matrices = topology.matrices(value)
             numerators.append(matrices[0])
-        omega = 2*np.pi*g.frequency_hz
+        if mask is None:
+            candidates = np.repeat(np.arange(len(x)), len(g.setting))
+            samples = np.tile(np.arange(len(g.setting)), len(x))
+        else:
+            candidates, samples = np.nonzero(mask)
+        # Count attempted selected samples even if a later numerical stage
+        # fails and scalar replay is needed, matching scalar _compute's counter.
+        if mask is not None:
+            self.cache_stats['computed_samples'] += len(samples)
+        omega = 2*np.pi*g.frequency_hz[samples]
         n = topology.inductor_tree.node_count
         C = np.asarray([v.capacitors_pf_by_setting for v in values])
-        D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[:, g.setting]
-        Y = np.asarray(numerators)[:, None] / (omega[None, :, None, None] * 1e-9)
-        Y = Y + omega[None, :, None, None] * D
+        D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[candidates, g.setting[samples]]
+        Y = np.asarray(numerators)[candidates] / (omega[:, None, None] * 1e-9)
+        Y = Y + omega[:, None, None] * D
         if not np.all(np.isfinite(Y)):
             raise ValueError('Non-finite batch nodal admittance')
         ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
@@ -309,10 +342,17 @@ class RFEvaluator:
             raise ValueError('Non-finite batch port admittance')
         eye = np.eye(2)
         core = np.linalg.solve(eye + 50*r, eye - 50*r).reshape(-1, 2, 2)
-        pre = np.broadcast_to(self.pre, (len(x), *self.pre.shape)).reshape(-1, 2, 2)
-        post = np.broadcast_to(self.post, (len(x), *self.post.shape)).reshape(-1, 2, 2)
-        data = power_response(_cascade(_cascade(pre, core), post), self.source_ohms, self.load_ohms)
-        data = [a.reshape(len(x), len(g.setting), *a.shape[1:]) for a in data]
+        data = power_response(_cascade(_cascade(self.pre[samples], core), self.post[samples]),
+                              self.source_ohms, self.load_ohms)
+        if mask is None:
+            data = [a.reshape(len(x), len(g.setting), *a.shape[1:]) for a in data]
+        else:
+            names = ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db')
+            assembled = [np.broadcast_to(getattr(base_response, name), (len(x), *getattr(base_response, name).shape)).copy()
+                         for name in names]
+            for dest, src in zip(assembled, data):
+                dest[candidates, samples] = src
+            data = assembled
         responses = tuple(RFResponse(g, m.policy_id, m.policy_fingerprint,
             *(_frozen(a[i], np.complex128 if j == 0 else np.float64)
               for j, a in enumerate(data))) for i in range(len(x)))
@@ -323,7 +363,8 @@ class RFEvaluator:
             self.cache_stats['lk_hits'] += hits
             self.cache_stats['lk_misses'] += misses
         self.cache_stats['lk_computations'] += computations
-        self.cache_stats['computed_samples'] += len(x) * len(g.setting)
+        if mask is None:
+            self.cache_stats['computed_samples'] += len(samples)
         return responses
 
     @staticmethod
