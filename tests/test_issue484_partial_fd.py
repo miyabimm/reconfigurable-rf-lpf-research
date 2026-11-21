@@ -146,6 +146,36 @@ class PartialBatchTest(unittest.TestCase):
         self.assertEqual(seen[0][:2], (1050, 25))
         self.assertEqual(sum(n < 70 for n in seen[0][2]), 12)
 
+    def test_worker_failure_replay_preserves_checkpoint_and_charge(self):
+        from lpf.search.development_plan import freeze_run
+        from lpf.search._development_worker import DevelopmentWorker
+        from lpf.search.source import source_identity
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
+        config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=True, max_search_forwards=2)
+        compiled = freeze_run(config, starts, root=root, spot_checks={'terminal': [0, 111]},
+                              search_bounds=None, checkpoint_interval=1000)
+        original = RFEvaluator.evaluate
+        count = 0
+        def scalar(ev, x, **kwargs):
+            nonlocal count
+            count += 1
+            if count == 3:
+                raise CircuitNumericalError('injected', 'probe failure', sample_index=7)
+            return original(ev, x, **kwargs)
+        with tempfile.TemporaryDirectory(prefix='issue484-stop-') as tmp:
+            w = DevelopmentWorker(compiled, 0, source_identity(root), root=root, checkpoint=Path(tmp)/'checkpoints')
+            with patch.object(RFEvaluator, 'evaluate_partial_batch', side_effect=ValueError('batch failure')), \
+                 patch.object(RFEvaluator, 'evaluate', scalar):
+                with self.assertRaises(CircuitNumericalError) as err:
+                    w.run()
+            self.assertEqual((err.exception.code, err.exception.sample_index), ('injected', 7))
+            self.assertEqual(w.forward_count, 3)
+            files = list((Path(tmp)/'checkpoints').glob('*.json'))
+            self.assertEqual(len(files), 1)
+            self.assertEqual(json.loads(files[0].read_text())['forward_count'], 3)
+
     def test_runner_trajectory_and_accounting(self):
         from lpf.search import _development_runner as runner, _development_worker as worker_module
         root = Path(__file__).resolve().parents[1]
