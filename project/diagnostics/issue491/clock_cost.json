@@ -1,0 +1,30 @@
+{
+  "iterations": 300000,
+  "rows": [
+    {
+      "loop_ns_per_iteration": 49.481456666666666,
+      "clock_pair_ns_per_iteration": 222.8216,
+      "clock_pair_add_ns_per_iteration": 556.98061
+    },
+    {
+      "loop_ns_per_iteration": 50.53953666666666,
+      "clock_pair_ns_per_iteration": 199.76223666666667,
+      "clock_pair_add_ns_per_iteration": 549.4707566666667
+    },
+    {
+      "loop_ns_per_iteration": 40.80387,
+      "clock_pair_ns_per_iteration": 195.90978,
+      "clock_pair_add_ns_per_iteration": 554.1830566666666
+    },
+    {
+      "loop_ns_per_iteration": 39.57392333333333,
+      "clock_pair_ns_per_iteration": 201.21750333333333,
+      "clock_pair_add_ns_per_iteration": 544.9533
+    },
+    {
+      "loop_ns_per_iteration": 39.73643,
+      "clock_pair_ns_per_iteration": 191.81403666666668,
+      "clock_pair_add_ns_per_iteration": 544.29834
+    }
+  ]
+}

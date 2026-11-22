@@ -170,6 +170,40 @@ class RFWorkerBatchTest(unittest.TestCase):
             self.assertEqual((row['count'], row['wall_ns'], row['failed']), (25, 25, 0))
             self.assertGreater(regions['baseline/search/checkpoint']['count'], 0)
 
+    def test_deep_consume_identity_and_checkpoint_failures(self):
+        from dataclasses import replace
+        from unittest.mock import patch
+        from lpf.search import _development_runner as runner
+        from lpf.rf_core.model import RFEvaluator
+        root = Path(__file__).resolve().parents[1]
+        cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        original = RFEvaluator.evaluate_batch
+        def mismatch(ev, vectors):
+            responses = list(original(ev, vectors))
+            responses[0] = replace(responses[0], policy_id='wrong')
+            return responses
+        with tempfile.TemporaryDirectory(prefix='issue491-errors-') as tmp:
+            base = Path(tmp)
+            for name, target, replacement, message in (
+                    ('identity', 'lpf.rf_core.model.RFEvaluator.evaluate_batch', mismatch, 'Response profile/grid mismatch'),
+                    ('checkpoint', 'lpf.search._development_worker.DevelopmentWorker._checkpoint_impl',
+                     unittest.mock.Mock(side_effect=RuntimeError('checkpoint failed')), 'checkpoint failed')):
+                with patch(target, replacement), self.assertRaisesRegex((ValueError, RuntimeError), message):
+                    runner.run(cfg, starts, base/name, root=root, spot_checks={'terminal': [0, 111]},
+                               checkpoint_interval=1, timing_output=base/(name+'.json'), timing_level='deep')
+                diag = json.loads((base/(name+'.json')).read_text())
+                self.assertEqual(diag['status'], 'incomplete')
+                regions = diag['jobs'][0]['regions']
+                if name == 'identity':
+                    self.assertEqual(regions['baseline/search/batch/consume']['failed'], 1)
+                else:
+                    self.assertGreaterEqual(regions['baseline/search/checkpoint']['failed'], 1)
+                from lpf.rf_core import model, coupled_lc
+                self.assertIsNone(model._deep_timing)
+                self.assertIsNone(coupled_lc._deep_timing)
+
     def test_rf_failure_replay_and_checkpoint(self):
         from lpf.search.development_plan import freeze_run
         from lpf.search._development_worker import DevelopmentWorker
