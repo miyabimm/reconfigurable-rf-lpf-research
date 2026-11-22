@@ -54,8 +54,11 @@ def search_rf_timing(timer, stage):
             def decorate(original):
                 @wraps(original)
                 def wrapped(*args, **kwargs):
-                    if active and not (batch_active and name in ('decode', 'matrices')):
-                        return timer.call(f'{stage}/rf/{name}', original, *args, **kwargs)
+                    if active:
+                        if batch_active and name == 'decode':
+                            return original(*args, **kwargs)
+                        region = 'batch/matrices' if batch_active and name == 'matrices' else name
+                        return timer.call(f'{stage}/rf/{region}', original, *args, **kwargs)
                     return original(*args, **kwargs)
                 return wrapped
             return decorate

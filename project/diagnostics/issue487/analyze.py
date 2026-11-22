@@ -44,6 +44,7 @@ for row in rows:
 trace = [r for r in rows if r['trace']]
 assert len(trace)==2 and trace[0]['callbacks']==trace[1]['callbacks'] == 100022
 assert trace[0]['trace_sha256'] == trace[1]['trace_sha256']
+batch_breakdown = {}
 for name, diag in diagnostics.items():
     if name.endswith('deep'):
         regions = diag['regions']; n = regions['baseline/search/rf/batch']['count']
@@ -52,6 +53,19 @@ for name, diag in diagnostics.items():
             assert v['count']==n and v['failed']==0
         assert regions['baseline/search/batch/mask_build']['count']==n
         assert all(v['failed']==0 for v in regions.values())
+        prefix = 'baseline/search/rf/'
+        if prefix+'batch/decode' in regions:  # older measurement HEADs lack these children
+            total = regions[prefix+'batch/decode_lk']
+            decode = regions[prefix+'batch/decode']
+            matrices = regions.get(prefix+'batch/matrices', dict(count=0, wall_ns=0, failed=0))
+            scalar_matrices = regions.get(prefix+'matrices', dict(count=0))
+            counters = diag['steps']['search']['rf_cache']['counters']
+            assert decode['count']==n and matrices['count'] + scalar_matrices['count']==counters['lk_misses']
+            residual = total['wall_ns'] - decode['wall_ns'] - matrices['wall_ns']
+            assert residual >= 0
+            batch_breakdown[name] = dict(decode_lk=total, decode=decode, matrices=matrices,
+                                         residual_wall_ns=residual,
+                                         residual_mean_ns_per_batch=residual/n)
 measured = [r for r in rows if not r['trace'] and not r['name'].startswith('warm-')]
 summary = {}
 for mode in ('plain','timed','deep'):
@@ -66,4 +80,4 @@ print(json.dumps(dict(environment=load(root/'environment.json'), rows=rows, summ
                     terminal_status=result['terminal']['status'], terminal_signed_max_margin_db=c['terminal_signed_max_margin_db'],
                     independent=c['independent'], external_passivity=c['external_passivity'], power_balance=c['power_balance'],
                     physical=c['physical'], checkpoints=len(checkpoints)),
-    diagnostics=diagnostics), indent=2, allow_nan=False))
+    diagnostics=diagnostics, batch_decode_lk_breakdown=batch_breakdown), indent=2, allow_nan=False))

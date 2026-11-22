@@ -295,7 +295,8 @@ class RFEvaluator:
         m, g, topology = self.model, self.grid, self.model.topology
         timing = _deep_timing
         with timing[0].measure(timing[1] + '/batch/decode_lk') if timing else nullcontext():
-            values = [m.decode(row) for row in x]
+            with timing[0].measure(timing[1] + '/batch/decode') if timing else nullcontext():
+                values = [m.decode(row) for row in x]
             # Stage LRU mutations so even a late wave/Schur failure cannot cache
             # matrices belonging to a failed evaluation.
             cache = self._lk_cache.copy()
