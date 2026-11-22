@@ -109,14 +109,26 @@ class PartialBatchTest(unittest.TestCase):
         self.assertEqual(ev.cache_stats['computed_samples'] - computed_before, 2 * len(self.grid.setting))
 
     def test_options(self):
+        from lpf.search.development_plan import solver_options
         step = dict(solver='hybrid', aggregation='sum', options=dict(max_search_forwards=2))
-        for value in (True, 1, 'true'):
+        validate_solver(step)
+        self.assertEqual((solver_options(step)['batch_fd'], solver_options(step)['partial_fd']), (True, True))
+        step['options']['partial_fd'] = True
+        validate_solver(step)  # batch_fd defaults to True
+        for value in (1, 'true'):
             step['options']['partial_fd'] = value
             with self.assertRaises(ValueError): validate_solver(step)
-        step['options'].update(batch_fd=True, partial_fd=True)
-        validate_solver(step)
+        step['options'].update(batch_fd=False, partial_fd=True)
+        with self.assertRaises(ValueError): validate_solver(step)
         step['options']['partial_fd'] = False
         validate_solver(step)
+        self.assertEqual((solver_options(step)['batch_fd'], solver_options(step)['partial_fd']), (False, False))
+        step['options'].pop('partial_fd')
+        self.assertFalse(solver_options(step)['partial_fd'])
+        step['options']['batch_fd'] = True
+        step['options']['partial_fd'] = False
+        validate_solver(step)
+        self.assertEqual((solver_options(step)['batch_fd'], solver_options(step)['partial_fd']), (True, False))
 
     def test_real_runner_probes_and_receipt(self):
         from lpf.search import _development_runner as runner
