@@ -34,6 +34,7 @@ class BatchTimingTests(unittest.TestCase):
                     for name in ('decode_lk', 'select', 'stamp', 'schur_solve', 'schur_update', 'y_to_s', 'output'):
                         self.assertEqual(rows['search/rf/batch/' + name]['count'], 1)
                         self.assertEqual(rows['search/rf/batch/' + name]['failed'], 0)
+                    self.assertEqual(rows['search/rf/batch']['count'], 1)
                     self.assertEqual(rows['search/rf/cascade']['count'], 2)
                     self.assertEqual(rows['search/rf/power_response']['count'], 1)
                     self.assertEqual(rows['search/rf/decode']['count'], 2)
@@ -55,6 +56,7 @@ class BatchTimingTests(unittest.TestCase):
                     ev.evaluate_batch([self.x])
         rows = timer.snapshot()
         self.assertEqual(rows['search/rf/batch/decode_lk']['failed'], 1)
+        self.assertEqual(rows['search/rf/batch']['failed'], 1)
         self.assertEqual(original, (model.RFEvaluator.evaluate, model.RFEvaluator.evaluate_batch,
                                     model.RFEvaluator.evaluate_partial_batch, model._cascade))
         self.assertIsNone(model._deep_timing)

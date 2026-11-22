@@ -47,6 +47,7 @@ def search_rf_timing(timer, stage):
         for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch'):
             replace(model.RFEvaluator, method, evaluate_wrapper)
         for owner, method, name in (
+                (model.RFEvaluator, '_compute_batch', 'batch'),
                 (model.RFModel, 'decode', 'decode'),
                 (CoupledLCTopology, 'port_admittance', 'port_admittance'),
                 (CoupledLCTopology, 'node_admittance', 'node_admittance'),
