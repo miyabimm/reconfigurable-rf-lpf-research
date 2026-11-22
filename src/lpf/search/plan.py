@@ -48,7 +48,7 @@ def validate_solver(step):
             raise ValueError('batch_fd must be boolean')
         if 'partial_fd' in options and type(options['partial_fd']) is not bool:
             raise ValueError('partial_fd must be boolean')
-        if options.get('partial_fd', False) and not options.get('batch_fd', False):
+        if options.get('partial_fd', False) and not options.get('batch_fd', True):
             raise ValueError('partial_fd requires batch_fd')
         if 'restart_sigma' in options:
             sigma = options['restart_sigma']
