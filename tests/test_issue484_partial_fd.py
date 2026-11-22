@@ -130,6 +130,32 @@ class PartialBatchTest(unittest.TestCase):
         validate_solver(step)
         self.assertEqual((solver_options(step)['batch_fd'], solver_options(step)['partial_fd']), (True, False))
 
+    def test_default_plan_reserves_batch_group(self):
+        from lpf.search.development_plan import freeze_run
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
+        options = config['arms'][0]['steps'][0]['options']
+        args = dict(root=root, spot_checks={'terminal': [0, 111]},
+                    search_bounds=None, checkpoint_interval=1000)
+        # The old exact 1000-forward reservation is insufficient for default batched FD.
+        with self.assertRaisesRegex(ValueError, 'reserve'):
+            freeze_run(config, starts, **args)
+        config['budget'] = dict(rf_samples=70*1024+476, rf_forwards=1025, independent_mna_samples=2)
+        plan = freeze_run(config, starts, **args)[0].data
+        step = plan['config']['arms'][0]['steps'][0]
+        self.assertEqual((step['effective_options']['batch_fd'], step['effective_options']['partial_fd']),
+                         (True, True))
+        self.assertEqual(step['batch_forward_cap'], 1024)
+        self.assertEqual(plan['jobs'][0]['reservation']['rf_forwards'], 1025)
+        # Explicit opt-out keeps the historical scalar reservation.
+        options['batch_fd'] = False
+        config['budget'] = dict(rf_samples=70*1000+476, rf_forwards=1001, independent_mna_samples=2)
+        scalar = freeze_run(config, starts, **args)[0].data
+        scalar_opts = scalar['config']['arms'][0]['steps'][0]['effective_options']
+        self.assertEqual((scalar_opts['batch_fd'], scalar_opts['partial_fd']), (False, False))
+        self.assertNotIn('batch_forward_cap', scalar['config']['arms'][0]['steps'][0])
+
     def test_real_runner_probes_and_receipt(self):
         from lpf.search import _development_runner as runner
         root = Path(__file__).resolve().parents[1]
