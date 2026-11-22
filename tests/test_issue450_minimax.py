@@ -177,7 +177,7 @@ class MinimaxTests(unittest.TestCase):
                            definition=plain(asdict(definition)), anytime_samples=[])
                 step = cfg['arms'][0]['steps'][0]
                 step.update(solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
-                            objective='signed_margin_db', options=(dict(max_search_forwards=2)
+                            objective='signed_margin_db', options=(dict(max_search_forwards=2, batch_fd=False)
                             if solver == 'hybrid' else dict(max_iterations=1, max_evaluations=2)))
                 compiled = compile_fixture(cfg, x, checkpoint_interval=1)
                 plan = compiled[0]
@@ -235,7 +235,7 @@ class MinimaxTests(unittest.TestCase):
         cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
                    definition=plain(asdict(definition)), anytime_samples=[])
         cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-            objective='signed_margin_db', options=dict(max_search_forwards=2))
+            objective='signed_margin_db', options=dict(max_search_forwards=2, batch_fd=False))
         compiled = compile_fixture(cfg, x)
         with tempfile.TemporaryDirectory(prefix='issue447-worker-') as tmp:
             evaluate = RFEvaluator.evaluate
@@ -279,7 +279,7 @@ class MinimaxTests(unittest.TestCase):
                            definition=plain(asdict(definition)), anytime_samples=[])
                 cfg['arms'][0]['steps'][0].update(solver=solver,
                     aggregation='signed_max' if solver == 'slp' else 'sum', objective='signed_margin_db',
-                    options=dict(max_search_forwards=2) if solver == 'hybrid' else
+                    options=dict(max_search_forwards=2, batch_fd=False) if solver == 'hybrid' else
                             dict(max_iterations=1, max_evaluations=2))
                 worker = fixture_worker(compile_fixture(cfg, x, checkpoint_interval=1), Path(tmp)/'checkpoints')
                 def overrunning(callback, start, bounds, **kw):
