@@ -63,6 +63,15 @@ def search_rf_timing(timer, stage):
                 return wrapped
             return decorate
 
+        def batch_matrices_wrapper(original):
+            @wraps(original)
+            def wrapped(*args, **kwargs):
+                if active and batch_active:
+                    return timer.call(f'{stage}/rf/batch/matrices', original, *args, **kwargs)
+                return original(*args, **kwargs)
+            return wrapped
+
+        replace(CoupledLCTopology, '_matrices_lk', batch_matrices_wrapper)
         for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch'):
             replace(model.RFEvaluator, method, evaluate_wrapper)
         replace(model.RFEvaluator, '_compute_batch', batch_wrapper)

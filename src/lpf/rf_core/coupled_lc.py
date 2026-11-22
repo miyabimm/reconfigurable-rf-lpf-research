@@ -123,6 +123,36 @@ class ParameterVectorSchema:
         )
         return CircuitValues(L, k, rows)
 
+    def decode_batch(self, vectors):
+        """Extract candidate-major L/k and six capacitor rows without objects.
+
+        The evaluator replays invalid batches through decode() in candidate order.
+        """
+        x = np.asarray(vectors, dtype=float)
+        if x.ndim != 2 or x.shape[1] != self.vector_length or not np.all(np.isfinite(x)):
+            raise ValueError(f"Expected finite vectors of length {self.vector_length}")
+        p = self.n_inductors
+        L = x[:, :p]
+        fixed = x[:, p:p + self.n_fixed]
+        p += self.n_fixed
+        k = x[:, p:p + self.n_coupling]
+        p += self.n_coupling
+        ic = x[:, p:p + self.n_ic_fixed]
+        p += self.n_ic_fixed
+        variable = x[:, p:].reshape(len(x), len(CASES), self.n_variable)
+        if np.any(L <= 0):
+            raise ValueError("Non-positive inductances")
+        if np.any(fixed < 0) or np.any(ic < 0) or np.any(variable < 0):
+            raise ValueError("Negative C")
+        C = np.empty((len(x), len(CASES), self.capacitor_count), dtype=float)
+        p = self.n_fixed
+        C[:, :, :p] = fixed[:, None, :]
+        C[:, :, p:p + self.n_variable] = variable
+        p += self.n_variable
+        C[:, :, p:p + self.n_ic_fixed] = ic[:, None, :]
+        C[:, :, p + self.n_ic_fixed:] = self.constant_caps_pf
+        return L, k, C
+
     def encode(self, values):
         """Reverse the schema; reject illegal cross-setting changes to fixed C."""
         if not isinstance(values, CircuitValues):
@@ -203,6 +233,10 @@ class CoupledLCTopology:
         n = len(self.inductor_tree.edges)
         if L.shape != (n,) or k.shape != (len(self.coupling_pairs),):
             raise ValueError("L/k dimensions do not match topology")
+        return self._matrices_lk(L, k)
+
+    def _matrices_lk(self, L, k):
+        """Shared numerical kernel; callers validate dimensions and values."""
         timing = _deep_timing
         if timing: start = perf_counter_ns()
         M = np.diag(L.copy())
