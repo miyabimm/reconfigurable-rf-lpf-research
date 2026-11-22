@@ -1,5 +1,7 @@
 # #487 Hybrid partial FD の deep 計測
 
+追補測定（新HEADでdecode/matricesを分離）は [decode_report.md](decode_report.md)。以下は初回測定の記録。
+
 正式EXPでなく、固定済み単一seed・試験条件の性能診断。測定HEAD **`882872506a50b1888a5436edcdd3ebc6c16e71ce`**、source identity `938e22c469f295b79ca7fd60c6d8fdbb4ceb7ca53e7d3e929067af91fbb00140`。実行時tracked差分なし、未追跡の本レポート草稿・集計器等4ファイルあり（測定コード/RF sourceへの差分なし）。測定後のレポート等のコミットは測定HEADではない。RF式・予算・探索方式は変更していない。試験RF-T010 effective SHA `d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417`、物理base RF-T008 rev3 `e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532`。formal RFの結果ではない。
 
 ## 再現・条件
