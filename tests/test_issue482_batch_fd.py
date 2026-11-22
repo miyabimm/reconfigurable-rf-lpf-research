@@ -61,6 +61,33 @@ class BatchFDTest(unittest.TestCase):
         self.assertEqual(out.evaluations, 1)
         self.assertEqual(out.stop_reason, 'all_coordinates_fixed')
 
+    def test_deep_objective_regions_and_callback_failure(self):
+        from lpf.timing import TimerCollector
+        timer = TimerCollector()
+        out = hybrid_minimize(lambda x: [1.], [.5, .5], [(0, 1)] * 2, seed=0,
+                              max_evaluations=2, restart_sigma=.1, batch_fd=True,
+                              residuals_batch=lambda xs: [[1.]] * len(xs), _timing=(timer, 's'))
+        regions = timer.snapshot()
+        self.assertEqual(regions['s/batch/vectors']['count'], 1)
+        for name in ('s/objective/value', 's/objective/state'):
+            self.assertEqual(regions[name]['count'], out.evaluations)
+            self.assertEqual(regions[name]['failed'], 0)
+        timer = TimerCollector()
+        def fail(*args):
+            raise RuntimeError('checkpoint failed')
+        with self.assertRaisesRegex(RuntimeError, 'checkpoint failed'):
+            hybrid_minimize(lambda x: [1.], [.5], [(0, 1)], seed=0,
+                            max_evaluations=2, restart_sigma=.1, group_callback=fail,
+                            _timing=(timer, 's'))
+        self.assertEqual(timer.snapshot()['s/objective/state']['failed'], 1)
+        self.assertEqual(timer.snapshot()['s/objective/group_callback']['failed'], 1)
+        timer = TimerCollector()
+        out = hybrid_minimize(lambda x: [float('nan')], [.5], [(0, 1)], seed=0,
+                              max_evaluations=2, restart_sigma=.1, _timing=(timer, 's'))
+        self.assertEqual(out.stop_reason, 'invalid_residual')
+        self.assertEqual(timer.snapshot()['s/objective/value']['failed'], 1)
+        self.assertNotIn('s/objective/state', timer.snapshot())
+
     def test_failure_preserves_prior_observations(self):
         observed = []
         def batch(xs):
@@ -113,12 +140,43 @@ class RFWorkerBatchTest(unittest.TestCase):
                 self.assertTrue(all(c['forward_count'] in (1, 26) for c in checkpoints))
                 self.assertEqual(checkpoints[-1]['observation']['vector_sha256'], result['terminal']['candidates'][0]['vector_sha256'])
 
+    def test_consume_clock_stops_before_yield(self):
+        from lpf.search import _development_runner as runner, _development_worker as worker
+        from unittest.mock import patch
+        root = Path(__file__).resolve().parents[1]
+        cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        clock = [0]
+        def tick():
+            clock[0] += 1
+            return clock[0]
+        original = worker.hybrid_minimize
+        def instrument(*args, **kwargs):
+            progress = kwargs['progress_callback']
+            def pause(*args):
+                clock[0] += 1_000_000  # time spent outside consume, including generator suspension
+                return progress(*args)
+            kwargs['progress_callback'] = pause
+            return original(*args, **kwargs)
+        with tempfile.TemporaryDirectory(prefix='issue491-clock-') as tmp, \
+             patch.object(worker, 'perf_counter_ns', tick), \
+             patch.object(worker, 'hybrid_minimize', instrument):
+            base = Path(tmp)
+            runner.run(cfg, starts, base/'run', root=root, spot_checks={'terminal': [0, 111]},
+                       checkpoint_interval=1, timing_output=base/'timing.json', timing_level='deep')
+            regions = json.loads((base/'timing.json').read_text())['jobs'][0]['regions']
+            row = regions['baseline/search/batch/consume']
+            self.assertEqual((row['count'], row['wall_ns'], row['failed']), (25, 25, 0))
+            self.assertGreater(regions['baseline/search/checkpoint']['count'], 0)
+
     def test_rf_failure_replay_and_checkpoint(self):
         from lpf.search.development_plan import freeze_run
         from lpf.search._development_worker import DevelopmentWorker
         from lpf.search.source import source_identity
         from lpf.rf_core.model import RFEvaluator
         from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
+        from lpf.timing import TimerCollector
         from unittest.mock import patch
 
         root = Path(__file__).resolve().parents[1]
@@ -136,14 +194,19 @@ class RFWorkerBatchTest(unittest.TestCase):
                 raise CircuitNumericalError('injected', 'probe failure', sample_index=7)
             return original(ev, x, **kwargs)
         with tempfile.TemporaryDirectory(prefix='issue482-stop-') as tmp:
+            timer = TimerCollector()
             worker = DevelopmentWorker(compiled, 0, source_identity(root), root=root,
-                                       checkpoint=Path(tmp)/'checkpoints')
+                                       checkpoint=Path(tmp)/'checkpoints', timer=timer, timing_level='deep')
             with patch.object(RFEvaluator, 'evaluate_batch', side_effect=ValueError('batch failure')), \
                  patch.object(RFEvaluator, 'evaluate', scalar):
                 with self.assertRaises(CircuitNumericalError) as error:
                     worker.run()
             self.assertEqual(error.exception.sample_index, 7)
             self.assertEqual(worker.forward_count, 3)
+            regions = timer.snapshot()
+            self.assertEqual(regions['baseline/search/batch/vectors']['count'], 1)
+            self.assertNotIn('baseline/search/batch/consume', regions)  # scalar replay
+            self.assertEqual(regions['baseline/search/objective/value']['count'], 2)
             files = list((Path(tmp)/'checkpoints').glob('*.json'))
             self.assertEqual(len(files), 1)
             checkpoint = json.loads(files[0].read_text())
