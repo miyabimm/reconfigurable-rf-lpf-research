@@ -296,15 +296,18 @@ class RFEvaluator:
         timing = _deep_timing
         with timing[0].measure(timing[1] + '/batch/decode_lk') if timing else nullcontext():
             with timing[0].measure(timing[1] + '/batch/decode') if timing else nullcontext():
-                values = [m.decode(row) for row in x]
+                L, k, C = m.schema.decode_batch(x)
+            if (L.shape[1] != len(topology.inductor_tree.edges) or
+                    k.shape[1] != len(topology.coupling_pairs)):
+                raise ValueError('L/k dimensions do not match topology')
             # Stage LRU mutations so even a late wave/Schur failure cannot cache
             # matrices belonging to a failed evaluation.
             cache = self._lk_cache.copy()
             hits = misses = computations = 0
             numerators = []
-            for value in values:
+            for inductances, coupling in zip(L, k):
                 if self.cache_mode == 'lk':
-                    key = np.asarray(value.inductances_nh + value.coupling_k, dtype=np.float64).tobytes()
+                    key = np.concatenate((inductances, coupling)).tobytes()
                     if key in cache:
                         hits += 1
                         cache.move_to_end(key)
@@ -312,11 +315,11 @@ class RFEvaluator:
                     else:
                         misses += 1
                         computations += 1
-                        matrices = topology.matrices(value)
+                        matrices = topology._matrices_lk(inductances, coupling)
                         self._put(cache, key, matrices)
                 else:
                     computations += 1
-                    matrices = topology.matrices(value)
+                    matrices = topology._matrices_lk(inductances, coupling)
                 numerators.append(matrices[0])
         with timing[0].measure(timing[1] + '/batch/select') if timing else nullcontext():
             if mask is None:
@@ -331,7 +334,6 @@ class RFEvaluator:
         with timing[0].measure(timing[1] + '/batch/stamp') if timing else nullcontext():
             omega = 2*np.pi*g.frequency_hz[samples]
             n = topology.inductor_tree.node_count
-            C = np.asarray([v.capacitors_pf_by_setting for v in values])
             D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[candidates, g.setting[samples]]
             Y = np.asarray(numerators)[candidates] / (omega[:, None, None] * 1e-9)
             Y = Y + omega[:, None, None] * D

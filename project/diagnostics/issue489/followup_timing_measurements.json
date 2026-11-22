@@ -1,0 +1,2642 @@
+{
+  "environment": {
+    "head": "f96f5fbbdfe9ffb68bd95bf3759b3ebf27ce1c57",
+    "status": "",
+    "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpuinfo": "AMD Ryzen 7 PRO 4750G with Radeon Graphics",
+    "affinity": 0,
+    "threads": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "order": [
+      "plain,timed,deep",
+      "timed,deep,plain",
+      "deep,plain,timed"
+    ],
+    "count": 100000
+  },
+  "rows": [
+    {
+      "name": "warm-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.486743472982198,
+      "cpu_s": 1.13445,
+      "max_rss_kib": 92104,
+      "exit_code": 0,
+      "log": "warm-plain.log",
+      "runner_wall_s": 0.6325466559501365,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 312,
+      "requested_samples": 21840,
+      "plan_sha256": "e780b01ddb38f3907af21f4985782c8e666431fc44645926cd1bb36dba48d59e",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "a9235365835e9f0dfd5b1bb98f43b6e631999b6c90ae997c7ea2179c097c9809",
+      "checkpoints": 1,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "warm-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0284621049650013,
+      "cpu_s": 0.9696389999999999,
+      "max_rss_kib": 92240,
+      "exit_code": 0,
+      "log": "warm-timed.log",
+      "runner_wall_s": 0.6219433939550072,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 312,
+      "requested_samples": 21840,
+      "plan_sha256": "e780b01ddb38f3907af21f4985782c8e666431fc44645926cd1bb36dba48d59e",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "a9235365835e9f0dfd5b1bb98f43b6e631999b6c90ae997c7ea2179c097c9809",
+      "checkpoints": 1,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "warm-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 0.9883721600053832,
+      "cpu_s": 0.929626,
+      "max_rss_kib": 92040,
+      "exit_code": 0,
+      "log": "warm-deep.log",
+      "runner_wall_s": 0.5877329459181055,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 312,
+      "requested_samples": 21840,
+      "plan_sha256": "e780b01ddb38f3907af21f4985782c8e666431fc44645926cd1bb36dba48d59e",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "a9235365835e9f0dfd5b1bb98f43b6e631999b6c90ae997c7ea2179c097c9809",
+      "checkpoints": 1,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "1-plain",
+      "mode": "plain",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.437755741993897,
+      "cpu_s": 19.470557,
+      "max_rss_kib": 93608,
+      "exit_code": 0,
+      "log": "1-plain.log",
+      "runner_wall_s": 20.03641883691307,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "1-timed",
+      "mode": "timed",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.44266885390971,
+      "cpu_s": 19.48258,
+      "max_rss_kib": 93392,
+      "exit_code": 0,
+      "log": "1-timed.log",
+      "runner_wall_s": 20.0470486440463,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "1-deep",
+      "mode": "deep",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 21.215532278991304,
+      "cpu_s": 20.221753000000003,
+      "max_rss_kib": 93504,
+      "exit_code": 0,
+      "log": "1-deep.log",
+      "runner_wall_s": 20.81321115209721,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "2-timed",
+      "mode": "timed",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.48288193694316,
+      "cpu_s": 19.51174,
+      "max_rss_kib": 93176,
+      "exit_code": 0,
+      "log": "2-timed.log",
+      "runner_wall_s": 20.082775313057937,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "2-deep",
+      "mode": "deep",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 21.130645542987622,
+      "cpu_s": 20.137496,
+      "max_rss_kib": 93624,
+      "exit_code": 0,
+      "log": "2-deep.log",
+      "runner_wall_s": 20.73713151307311,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "2-plain",
+      "mode": "plain",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.446637187968008,
+      "cpu_s": 19.350267000000002,
+      "max_rss_kib": 93344,
+      "exit_code": 0,
+      "log": "2-plain.log",
+      "runner_wall_s": 20.051561629981734,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "3-deep",
+      "mode": "deep",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 21.63777348899748,
+      "cpu_s": 20.643106,
+      "max_rss_kib": 93532,
+      "exit_code": 0,
+      "log": "3-deep.log",
+      "runner_wall_s": 21.16429982695263,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "3-plain",
+      "mode": "plain",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.392843945068307,
+      "cpu_s": 19.428781,
+      "max_rss_kib": 93596,
+      "exit_code": 0,
+      "log": "3-plain.log",
+      "runner_wall_s": 19.84895895200316,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "3-timed",
+      "mode": "timed",
+      "nominal_forwards": 100000,
+      "trace": false,
+      "process_wall_s": 20.73145077098161,
+      "cpu_s": 19.771895,
+      "max_rss_kib": 93316,
+      "exit_code": 0,
+      "log": "3-timed.log",
+      "runner_wall_s": 20.303378237062134,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null,
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "trace-plain",
+      "mode": "plain",
+      "nominal_forwards": 100000,
+      "trace": true,
+      "process_wall_s": 21.0308632790111,
+      "cpu_s": 20.020019,
+      "max_rss_kib": 93564,
+      "exit_code": 0,
+      "log": "trace-plain.log",
+      "runner_wall_s": 20.58024280902464,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    },
+    {
+      "name": "trace-deep",
+      "mode": "deep",
+      "nominal_forwards": 100000,
+      "trace": true,
+      "process_wall_s": 22.527734064962715,
+      "cpu_s": 21.115124,
+      "max_rss_kib": 93692,
+      "exit_code": 0,
+      "log": "trace-deep.log",
+      "runner_wall_s": 22.078269485966302,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "search_forwards": 100022,
+      "requested_samples": 7001540,
+      "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+      "source_sha256": "0c0ab2d37328a79940f6c75b2bdabe07f27fa16116a2644cf6d99e86905dd939",
+      "final_vector_sha256": "8cfdf946543a7f56a50b346b219d06e4b56060c1d3d65dd568308e61ae0f982e",
+      "checkpoints": 99,
+      "stop": "evaluation_budget_exhausted"
+    }
+  ],
+  "summary": {
+    "plain": {
+      "median": 20.03641883691307,
+      "mean": 19.97897980629932,
+      "minimum": 19.84895895200316,
+      "maximum": 20.051561629981734,
+      "sample_sd": 0.11285562883351483
+    },
+    "timed": {
+      "median": 20.082775313057937,
+      "mean": 20.14440073138879,
+      "minimum": 20.0470486440463,
+      "maximum": 20.303378237062134,
+      "sample_sd": 0.13883257615651795
+    },
+    "deep": {
+      "median": 20.81321115209721,
+      "mean": 20.90488083070765,
+      "minimum": 20.73713151307311,
+      "maximum": 21.16429982695263,
+      "sample_sd": 0.22786111905736323
+    }
+  },
+  "scientific": {
+    "results_and_checkpoints_equal": true,
+    "trace_equal": true,
+    "costs": {
+      "independent_mna_samples_by_stage": {
+        "terminal": 2
+      },
+      "search_forwards": 100022,
+      "search_requested_samples": 7001540,
+      "terminal_forwards": 1,
+      "terminal_requested_samples": 476
+    },
+    "ledger": {
+      "independent_mna_samples": {
+        "completed": 2,
+        "released": 0,
+        "unknown": 0
+      },
+      "reservation": {
+        "independent_mna_samples": 2,
+        "rf_forwards": 100025,
+        "rf_samples": 7002156
+      },
+      "rf_forwards": {
+        "completed": 100023,
+        "released": 2,
+        "unknown": 0
+      },
+      "rf_samples": {
+        "completed": 7002016,
+        "released": 140,
+        "unknown": 0
+      },
+      "status": "completed"
+    },
+    "stop": "evaluation_budget_exhausted",
+    "solver_result": {
+      "converged": false,
+      "evaluations": 100022,
+      "objective": 2.929380163370666,
+      "stop_reason": "evaluation_budget_exhausted",
+      "x": [
+        2.5940907030845226,
+        1.8636239119516742,
+        2.7235456242204164,
+        10.603240580763712,
+        3.6226219165562648,
+        1.8408549287479534,
+        0.38642140799976843,
+        0.958353892762132,
+        -0.05749442266583047,
+        0.09898438690794892,
+        0.09613187145673038,
+        0.9505712789834375,
+        0.22960408255626616,
+        0.928129912859009,
+        0.31500730321870885,
+        0.38149055175672403,
+        0.23724278284375497,
+        0.539321553878136,
+        0.24510442900302787,
+        1.8055439818616963,
+        0.2735696222443984,
+        0.9492628760694255,
+        0.16767115681335365,
+        1.1966631856900372,
+        0.08428753246764914
+      ]
+    },
+    "local_run_details": [
+      {
+        "end_fun": 301.15299169798703,
+        "end_x": [
+          0.4,
+          2.569819829327104,
+          27.0,
+          17.191052936841473,
+          0.1,
+          100.0,
+          0.11925052032550383,
+          1.0,
+          0.06477973866287007,
+          0.1,
+          0.1,
+          0.2,
+          0.2024753306763394,
+          0.7264258444714857,
+          0.4464164872612992,
+          0.5984634821664195,
+          0.38737995027733707,
+          0.49257560124225896,
+          0.36798061401311755,
+          0.23188386562492536,
+          0.2609526540069966,
+          0.07455409266979741,
+          0.2081782022456251,
+          0.0,
+          0.13418922505667086
+        ],
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "nfev": 29874,
+        "nit": 953,
+        "start_fun": 28654.23931390905,
+        "start_x": [
+          25.069460975006223,
+          19.794233663007617,
+          18.103064330108463,
+          12.416737582720817,
+          3.0299490544945002,
+          53.45506618674845,
+          51.1338349128142,
+          0.524605446178466,
+          -0.06054136622697115,
+          0.03272583335638046,
+          -0.006051441095769411,
+          2.593041021004319,
+          0.2148330044001341,
+          1.0259622763842344,
+          2.549306519329548,
+          2.876562693156302,
+          1.7550270175561309,
+          1.3270753724500537,
+          2.920755780301988,
+          2.074327968992293,
+          2.6108880657702684,
+          2.887052829377353,
+          1.6693790657445788,
+          2.0085713267326355,
+          2.5054074190557003
+        ],
+        "status": 0,
+        "success": true
+      },
+      {
+        "end_fun": 1322.2092035035776,
+        "end_x": [
+          27.0,
+          0.4,
+          27.0,
+          27.0,
+          0.1,
+          100.0,
+          1.965813807202009,
+          1.0,
+          -0.1,
+          -0.1,
+          0.1,
+          0.2,
+          0.2,
+          0.11898561722617691,
+          3.0,
+          0.08458709804394379,
+          2.0286185298964208,
+          0.05536684174047454,
+          1.7234389565117847,
+          0.0,
+          1.4895354022364171,
+          0.0,
+          0.587887705257035,
+          0.0,
+          0.0
+        ],
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "nfev": 24648,
+        "nit": 924,
+        "start_fun": 18169.98405718125,
+        "start_x": [
+          2.2416543274499565,
+          0.4,
+          25.694933809388818,
+          21.660322055448596,
+          5.233771187938919,
+          100.0,
+          3.3205263135249887,
+          1.0,
+          0.06963796520213639,
+          0.08235986958473249,
+          0.0657625410025709,
+          0.2,
+          0.2,
+          0.31202037706887276,
+          0.15863107702789558,
+          0.32115930637399526,
+          0.0019153016073518159,
+          0.08959419047400519,
+          0.7677839333229353,
+          0.5563210124432738,
+          0.2025959209810155,
+          0.4057717003552078,
+          0.042629700700622324,
+          0.0,
+          0.0
+        ],
+        "status": 0,
+        "success": true
+      },
+      {
+        "end_fun": 2.9293817726930604,
+        "end_x": [
+          2.5940907030845226,
+          1.8636239119516742,
+          2.7235456242204164,
+          10.603240580763712,
+          3.6226219165562648,
+          1.8408539297479534,
+          0.38642140799976843,
+          0.958353892762132,
+          -0.05749442266583047,
+          0.09898438690794892,
+          0.09613187145673038,
+          0.9505712789834375,
+          0.22960408255626616,
+          0.928129912859009,
+          0.31500730321870885,
+          0.38149055175672403,
+          0.23724278284375497,
+          0.539321553878136,
+          0.24510442900302787,
+          1.8055439818616963,
+          0.2735696222443984,
+          0.9492628760694255,
+          0.16767115681335365,
+          1.1966631856900372,
+          0.08428756246764915
+        ],
+        "message": "evaluation_budget_exhausted",
+        "nfev": 45500,
+        "nit": 1314,
+        "start_fun": 25034.854588579834,
+        "start_x": [
+          27.0,
+          0.4200844796451501,
+          27.0,
+          26.97231361045097,
+          7.671313462040254,
+          97.9109491840616,
+          4.446075395278249,
+          0.9714917145568055,
+          -0.082842506224626,
+          -0.08919891902349705,
+          0.1,
+          0.2,
+          0.2,
+          0.0,
+          3.0,
+          0.0,
+          1.9282393254503563,
+          0.3292024950763794,
+          2.0624127897811637,
+          0.36263586849862356,
+          0.8153170106388798,
+          0.0,
+          0.16379031103155614,
+          0.0,
+          0.0
+        ],
+        "status": null,
+        "success": false
+      }
+    ],
+    "terminal_status": "completed",
+    "terminal_signed_max_margin_db": 0.747758285205661,
+    "independent": {
+      "passivity": "pass_at_samples",
+      "power_balance": "pass_at_samples",
+      "sample_indices": [
+        0,
+        111
+      ],
+      "spots": [
+        {
+          "index": 0,
+          "reference": {
+            "apl_db": 0.8216615406407282,
+            "candidate_promotion_blocked": true,
+            "capacitor_loss_w": 3.478956608931852e-05,
+            "gain": 0.8162357012213937,
+            "il_db": 0.8818441360053089,
+            "in_rl_db": 18.590801753193084,
+            "independent_mna_checked": true,
+            "inductor_loss_w": 0.00015631804261393307,
+            "input_power_w": 0.0024654172254581783,
+            "input_s2p_loss_w": 0.00014987302414136384,
+            "load_power_w": 0.002040589253053484,
+            "out_rl_db": 18.61319053456214,
+            "output_s2p_loss_w": 8.384733956008205e-05,
+            "power_residual_w": -3.3610267347050637e-18,
+            "rf_compliance_certified": false,
+            "s": [
+              [
+                {
+                  "imag": -0.09948701747223423,
+                  "real": -0.06273311064507925
+                },
+                {
+                  "imag": -0.682019068703354,
+                  "real": 0.5925248443284081
+                }
+              ],
+              [
+                {
+                  "imag": -0.6820190687033535,
+                  "real": 0.5925248443284077
+                },
+                {
+                  "imag": -0.1128053471235404,
+                  "real": -0.032201466219520414
+                }
+              ]
+            ]
+          }
+        },
+        {
+          "index": 111,
+          "reference": {
+            "apl_db": 25.830449272310762,
+            "candidate_promotion_blocked": true,
+            "capacitor_loss_w": 0.0001902578892825235,
+            "gain": 0.0004899775993593679,
+            "il_db": 33.09823774455151,
+            "in_rl_db": 1.8827154810582787,
+            "independent_mna_checked": true,
+            "inductor_loss_w": 0.0004873701012799362,
+            "input_power_w": 0.0008794275163773932,
+            "input_s2p_loss_w": 0.0002005242462858475,
+            "load_power_w": 1.2249439983984196e-06,
+            "out_rl_db": 0.9022738786516844,
+            "output_s2p_loss_w": 5.033553068678352e-08,
+            "power_residual_w": 8.159044864427048e-19,
+            "rf_compliance_certified": false,
+            "s": [
+              [
+                {
+                  "imag": -0.7330422535428002,
+                  "real": 0.3329835551043572
+                },
+                {
+                  "imag": 0.013294366452690777,
+                  "real": -0.01769851462640124
+                }
+              ],
+              [
+                {
+                  "imag": 0.013294366452690274,
+                  "real": -0.017698514626401596
+                },
+                {
+                  "imag": -0.17647987519158603,
+                  "real": 0.8838890764584816
+                }
+              ]
+            ]
+          }
+        }
+      ],
+      "status": "pass",
+      "whole_band_checked": false
+    },
+    "external_passivity": "checked_on_terminal_grid",
+    "power_balance": "checked_on_terminal_grid",
+    "physical": {
+      "candidate_promotion_blocked": true,
+      "checked_settings": 6,
+      "component_policy_pass": true,
+      "connection_role_audit": {
+        "all_declared_roles_supported_by_l_tree": true,
+        "branches": [
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              0,
+              3
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          },
+          {
+            "declared_role": "bridge",
+            "declared_role_supported_by_l_tree": true,
+            "edge": [
+              1,
+              2
+            ],
+            "electrical_class": "inductor_tree_chord",
+            "evidence": "verified_L_path_between_terminals"
+          }
+        ],
+        "physical_layout_checked": false,
+        "unsupported_role_indices": []
+      },
+      "connection_role_evidence_incomplete": false,
+      "constraint_fingerprint": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+      "constraint_id": "RF-T008",
+      "independent_mna_checked": false,
+      "installed_shunt_parasites": 0,
+      "installed_variable_c_branches": 2,
+      "min_L_eigenvalue_H": 1.8201641978975692e-09,
+      "physical_q_srf_em_checked": false,
+      "promotion_blockers": [
+        "independent_mna_not_checked",
+        "dense_rf_not_checked"
+      ],
+      "rf_performance_checked": false
+    },
+    "checkpoints": 99
+  },
+  "diagnostics": {
+    "warm-timed": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4882241.0,
+          "wall_ns": 4882241
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21734971.0,
+          "wall_ns": 21734971
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 1633490.25,
+          "wall_ns": 39203766
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 85811673.0,
+          "wall_ns": 85811673
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 63287566.0,
+          "wall_ns": 63287566
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 483283593.0,
+          "wall_ns": 483283593
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4434672.0,
+          "wall_ns": 4434672
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 63073458
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "warm-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 85898.0,
+          "wall_ns": 1030776
+        },
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4712311.0,
+          "wall_ns": 4712311
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20328227.0,
+          "wall_ns": 20328227
+        },
+        "baseline/search/rf/batch": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 2749536.0833333335,
+          "wall_ns": 32994433
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 37681.833333333336,
+          "wall_ns": 452182
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 457406.75,
+          "wall_ns": 5488881
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 84,
+          "failed": 0,
+          "mean_wall_ns": 48306.05952380953,
+          "wall_ns": 4057709
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 371315.3333333333,
+          "wall_ns": 4455784
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 379041.5833333333,
+          "wall_ns": 4548499
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 127872.08333333333,
+          "wall_ns": 1534465
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 9551.666666666666,
+          "wall_ns": 114620
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 347075.5833333333,
+          "wall_ns": 4164907
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 313973.9166666667,
+          "wall_ns": 3767687
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 4863.5,
+          "wall_ns": 58362
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 538744.9166666666,
+          "wall_ns": 6464939
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3221.9166666666665,
+          "wall_ns": 38663
+        },
+        "baseline/search/rf/cascade": {
+          "count": 48,
+          "failed": 0,
+          "mean_wall_ns": 43207.041666666664,
+          "wall_ns": 2073938
+        },
+        "baseline/search/rf/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 116531.08333333333,
+          "wall_ns": 1398373
+        },
+        "baseline/search/rf/matrices": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 131922.58333333334,
+          "wall_ns": 1583071
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 23453.833333333332,
+          "wall_ns": 281446
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 19889.583333333332,
+          "wall_ns": 238675
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 31268.75,
+          "wall_ns": 375225
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 32176.416666666668,
+          "wall_ns": 386117
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 23247.666666666668,
+          "wall_ns": 278972
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 25511.25,
+          "wall_ns": 306135
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 77668.08333333333,
+          "wall_ns": 932017
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 10376.5,
+          "wall_ns": 124518
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 37660.166666666664,
+          "wall_ns": 451922
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 13717.0,
+          "wall_ns": 164604
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 153843.83333333334,
+          "wall_ns": 1846126
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 63988.708333333336,
+          "wall_ns": 1535729
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 77019.0,
+          "wall_ns": 1848456
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 164819.0,
+          "wall_ns": 3955656
+        },
+        "baseline/search/rf/power_response": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 338571.4166666667,
+          "wall_ns": 8125714
+        },
+        "baseline/search/rf/response_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 14349.833333333334,
+          "wall_ns": 172198
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 38026.833333333336,
+          "wall_ns": 456322
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 1730913.0416666667,
+          "wall_ns": 41541913
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 86610673.0,
+          "wall_ns": 86610673
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 65334009.0,
+          "wall_ns": 65334009
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 450848415.0,
+          "wall_ns": 450848415
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4533690.0,
+          "wall_ns": 4533690
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 65126824
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "1-timed": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 10036324.02020202,
+          "wall_ns": 993596078
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21267174.0,
+          "wall_ns": 21267174
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1627772.120873408,
+          "wall_ns": 12524078698
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19565412151.0,
+          "wall_ns": 19565412151
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19543353558.0,
+          "wall_ns": 19543353558
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19916672763.0,
+          "wall_ns": 19916672763
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4446923.0,
+          "wall_ns": 4446923
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 5908587673
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4617962310
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9016429540
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "1-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 92529.33298674291,
+          "wall_ns": 355960344
+        },
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 10163228.929292928,
+          "wall_ns": 1006159664
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21745118.0,
+          "wall_ns": 21745118
+        },
+        "baseline/search/rf/batch": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 2770233.878866649,
+          "wall_ns": 10657089732
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 39518.293215492595,
+          "wall_ns": 152026874
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 441288.80946191837,
+          "wall_ns": 1697638050
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 23555,
+          "failed": 0,
+          "mean_wall_ns": 52133.08439821694,
+          "wall_ns": 1227994803
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 336268.26306212635,
+          "wall_ns": 1293624008
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 411669.24720561475,
+          "wall_ns": 1583691594
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 141970.55913698988,
+          "wall_ns": 546160741
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10512.454380036392,
+          "wall_ns": 40441412
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 322115.8887444762,
+          "wall_ns": 1239179824
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 325711.4918118014,
+          "wall_ns": 1253012109
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 5389.882505848714,
+          "wall_ns": 20734878
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 526607.529763452,
+          "wall_ns": 2025859167
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 3554.2958149207175,
+          "wall_ns": 13673376
+        },
+        "baseline/search/rf/cascade": {
+          "count": 15388,
+          "failed": 0,
+          "mean_wall_ns": 46293.06186638939,
+          "wall_ns": 712357636
+        },
+        "baseline/search/rf/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 86188.22563036132,
+          "wall_ns": 331566104
+        },
+        "baseline/search/rf/matrices": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 118324.85349182764,
+          "wall_ns": 398163132
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 22148.1676077266,
+          "wall_ns": 74528584
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 19350.236552748887,
+          "wall_ns": 65113546
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 27299.418127786033,
+          "wall_ns": 91862542
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 31151.211292719167,
+          "wall_ns": 104823826
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 25873.73901741617,
+          "wall_ns": 99536274
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 27623.680270340526,
+          "wall_ns": 106268298
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 84134.83987522745,
+          "wall_ns": 323666729
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10613.482193917338,
+          "wall_ns": 40830066
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 39250.67299194177,
+          "wall_ns": 150997339
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 14224.187418767871,
+          "wall_ns": 54720449
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 161529.37769690668,
+          "wall_ns": 621403516
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 69368.31648037431,
+          "wall_ns": 533719827
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 83567.38003639199,
+          "wall_ns": 642967422
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 167859.9212373278,
+          "wall_ns": 1291514234
+        },
+        "baseline/search/rf/power_response": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 352762.5452300494,
+          "wall_ns": 2714155023
+        },
+        "baseline/search/rf/response_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 16252.691707824279,
+          "wall_ns": 62524105
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 35218.062906160645,
+          "wall_ns": 135483888
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1726259.5807122432,
+          "wall_ns": 13281841214
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20323887804.0,
+          "wall_ns": 20323887804
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20301267187.0,
+          "wall_ns": 20301267187
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20677931584.0,
+          "wall_ns": 20677931584
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4840460.0,
+          "wall_ns": 4840460
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 6065266083
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4795468824
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9440112669
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "2-timed": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 10106960.494949495,
+          "wall_ns": 1000589089
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20626015.0,
+          "wall_ns": 20626015
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1632496.4600987784,
+          "wall_ns": 12560427764
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19547801279.0,
+          "wall_ns": 19547801279
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19526144635.0,
+          "wall_ns": 19526144635
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19937262776.0,
+          "wall_ns": 19937262776
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4593975.0,
+          "wall_ns": 4593975
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 5868217268
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4637600933
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9019901083
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "2-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 90662.96594749155,
+          "wall_ns": 348780430
+        },
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 10262769.808080807,
+          "wall_ns": 1016014211
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20273271.0,
+          "wall_ns": 20273271
+        },
+        "baseline/search/rf/batch": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 2754278.1796204834,
+          "wall_ns": 10595708157
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 39168.316610345726,
+          "wall_ns": 150680514
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 437799.6482973746,
+          "wall_ns": 1684215247
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 23555,
+          "failed": 0,
+          "mean_wall_ns": 51481.17507960094,
+          "wall_ns": 1212639079
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 334292.4980504289,
+          "wall_ns": 1286023240
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 414798.9607486353,
+          "wall_ns": 1595731602
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 136800.0371718222,
+          "wall_ns": 526269743
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10479.287236807902,
+          "wall_ns": 40313818
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 321725.5697946452,
+          "wall_ns": 1237678267
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 320211.78034832334,
+          "wall_ns": 1231854719
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 4921.2019755653755,
+          "wall_ns": 18931864
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 523336.48999220174,
+          "wall_ns": 2013275477
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 3664.3995321029374,
+          "wall_ns": 14096945
+        },
+        "baseline/search/rf/cascade": {
+          "count": 15388,
+          "failed": 0,
+          "mean_wall_ns": 46480.07362880166,
+          "wall_ns": 715235373
+        },
+        "baseline/search/rf/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 85512.76345204056,
+          "wall_ns": 328967601
+        },
+        "baseline/search/rf/matrices": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 114487.00386329867,
+          "wall_ns": 385248768
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 20631.805349182763,
+          "wall_ns": 69426025
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 19340.481129271917,
+          "wall_ns": 65080719
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 26059.391381872214,
+          "wall_ns": 87689852
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 30697.51233283804,
+          "wall_ns": 103297129
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 25569.680270340526,
+          "wall_ns": 98366560
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 27851.783727579932,
+          "wall_ns": 107145812
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 84206.75019495712,
+          "wall_ns": 323943368
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10813.478814660775,
+          "wall_ns": 41599453
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 39076.362880166365,
+          "wall_ns": 150326768
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 13954.163763971927,
+          "wall_ns": 53681668
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 161527.85287236806,
+          "wall_ns": 621397650
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 68024.73407850273,
+          "wall_ns": 523382304
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 84446.21991161944,
+          "wall_ns": 649729216
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 167309.63309072005,
+          "wall_ns": 1287280317
+        },
+        "baseline/search/rf/power_response": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 351321.5669352742,
+          "wall_ns": 2703068136
+        },
+        "baseline/search/rf/response_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 15437.04029113595,
+          "wall_ns": 59386294
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 35238.70574473616,
+          "wall_ns": 135563301
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1711932.615154666,
+          "wall_ns": 13171609541
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20194283880.0,
+          "wall_ns": 20194283880
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20173187127.0,
+          "wall_ns": 20173187127
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20600463519.0,
+          "wall_ns": 20600463519
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 5097289.0,
+          "wall_ns": 5097289
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 6094889223
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4814679926
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9263238353
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "3-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 92064.03405250845,
+          "wall_ns": 354170339
+        },
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 10397062.434343435,
+          "wall_ns": 1029309181
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21001980.0,
+          "wall_ns": 21001980
+        },
+        "baseline/search/rf/batch": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 2819943.2420067587,
+          "wall_ns": 10848321652
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 41250.16090460099,
+          "wall_ns": 158689369
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 452330.3020535482,
+          "wall_ns": 1740114672
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 23555,
+          "failed": 0,
+          "mean_wall_ns": 53083.854850350246,
+          "wall_ns": 1250390201
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 343303.102677411,
+          "wall_ns": 1320687036
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 416122.7657915259,
+          "wall_ns": 1600824280
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 140495.84611385496,
+          "wall_ns": 540487520
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10504.622822978945,
+          "wall_ns": 40411284
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 330233.5703145308,
+          "wall_ns": 1270408545
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 328247.04704964906,
+          "wall_ns": 1262766390
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 4952.367299194178,
+          "wall_ns": 19051757
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 537722.5336625943,
+          "wall_ns": 2068618587
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 3695.7358981024177,
+          "wall_ns": 14217496
+        },
+        "baseline/search/rf/cascade": {
+          "count": 15388,
+          "failed": 0,
+          "mean_wall_ns": 47226.80634260463,
+          "wall_ns": 726726096
+        },
+        "baseline/search/rf/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 88067.6612945152,
+          "wall_ns": 338796293
+        },
+        "baseline/search/rf/matrices": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 120777.39197622586,
+          "wall_ns": 406415924
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 22582.833283803862,
+          "wall_ns": 75991234
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 20130.81307578009,
+          "wall_ns": 67740186
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 26925.81485884101,
+          "wall_ns": 90605367
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 32734.50074294205,
+          "wall_ns": 110151595
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 25917.46711723421,
+          "wall_ns": 99704496
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 28756.46633740577,
+          "wall_ns": 110626126
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 85973.62100337926,
+          "wall_ns": 330740520
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10870.749935014297,
+          "wall_ns": 41819775
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 39466.12997140629,
+          "wall_ns": 151826202
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 14419.59422926956,
+          "wall_ns": 55472179
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 164088.12425266442,
+          "wall_ns": 631247014
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 70293.12152326488,
+          "wall_ns": 540835277
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 85436.79620483493,
+          "wall_ns": 657350710
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 170492.74837535742,
+          "wall_ns": 1311771206
+        },
+        "baseline/search/rf/power_response": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 359376.0016896283,
+          "wall_ns": 2765038957
+        },
+        "baseline/search/rf/response_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 17047.155705744735,
+          "wall_ns": 65580408
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 36357.25656355602,
+          "wall_ns": 139866366
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1754573.474395633,
+          "wall_ns": 13499688312
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20653821870.0,
+          "wall_ns": 20653821870
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20631827598.0,
+          "wall_ns": 20631827598
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21018045468.0,
+          "wall_ns": 21018045468
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4537963.0,
+          "wall_ns": 4537963
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 6300591028
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4951432324
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9379361412
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "3-timed": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 9998569.565656565,
+          "wall_ns": 989858387
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20758533.0,
+          "wall_ns": 20758533
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1651669.7096438783,
+          "wall_ns": 12707946746
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19815331269.0,
+          "wall_ns": 19815331269
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 19793771226.0,
+          "wall_ns": 19793771226
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20170225172.0,
+          "wall_ns": 20170225172
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4500105.0,
+          "wall_ns": 4500105
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 5843714847
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4770535035
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 9179147991
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "trace-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 95411.61554458019,
+          "wall_ns": 367048485
+        },
+        "baseline/search/checkpoint": {
+          "count": 99,
+          "failed": 0,
+          "mean_wall_ns": 14557172.606060605,
+          "wall_ns": 1441160088
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 20235077.0,
+          "wall_ns": 20235077
+        },
+        "baseline/search/rf/batch": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 2815151.9906420587,
+          "wall_ns": 10829889708
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 41065.77358981024,
+          "wall_ns": 157980031
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 455988.6753314271,
+          "wall_ns": 1754188434
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 23555,
+          "failed": 0,
+          "mean_wall_ns": 53886.85603905752,
+          "wall_ns": 1269304894
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 339094.7819079803,
+          "wall_ns": 1304497626
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 419884.2261502469,
+          "wall_ns": 1615294618
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 140268.8032232909,
+          "wall_ns": 539614086
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10701.465037691707,
+          "wall_ns": 41168536
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 328779.75929295557,
+          "wall_ns": 1264815734
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 326956.6337405771,
+          "wall_ns": 1257802170
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 5085.747335586171,
+          "wall_ns": 19564870
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 531056.3028333767,
+          "wall_ns": 2042973597
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 3424.985183259683,
+          "wall_ns": 13175918
+        },
+        "baseline/search/rf/cascade": {
+          "count": 15388,
+          "failed": 0,
+          "mean_wall_ns": 47168.96633740577,
+          "wall_ns": 725836054
+        },
+        "baseline/search/rf/decode": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 83105.0558877047,
+          "wall_ns": 319705150
+        },
+        "baseline/search/rf/matrices": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 120654.67786032689,
+          "wall_ns": 406002991
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 21897.61604754829,
+          "wall_ns": 73685478
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 19885.879346210997,
+          "wall_ns": 66915984
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 27918.596136701337,
+          "wall_ns": 93946076
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 3365,
+          "failed": 0,
+          "mean_wall_ns": 32437.465378900444,
+          "wall_ns": 109152071
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 24774.306992461658,
+          "wall_ns": 95306759
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 27969.04626982064,
+          "wall_ns": 107596921
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 83723.78372757994,
+          "wall_ns": 322085396
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 10709.494151286717,
+          "wall_ns": 41199424
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 40388.041850792826,
+          "wall_ns": 155372797
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 14306.535482193918,
+          "wall_ns": 55037242
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 162301.50584871328,
+          "wall_ns": 624373893
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 68323.37223810762,
+          "wall_ns": 525680026
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 83158.09981804003,
+          "wall_ns": 639818420
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 171610.9273459839,
+          "wall_ns": 1320374475
+        },
+        "baseline/search/rf/power_response": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 356382.01637639717,
+          "wall_ns": 2742003234
+        },
+        "baseline/search/rf/response_build": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 16183.444242266702,
+          "wall_ns": 62257710
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 3847,
+          "failed": 0,
+          "mean_wall_ns": 35648.4918118014,
+          "wall_ns": 137139748
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 7694,
+          "failed": 0,
+          "mean_wall_ns": 1745713.5218351963,
+          "wall_ns": 13431519837
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21576050250.0,
+          "wall_ns": 21576050250
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21554707159.0,
+          "wall_ns": 21554707159
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 21943767300.0,
+          "wall_ns": 21943767300
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4538860.0,
+          "wall_ns": 4538860
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": false,
+              "run_index": 0,
+              "wall_ns": 6255031335
+            },
+            {
+              "interrupted": false,
+              "run_index": 1,
+              "wall_ns": 4955619082
+            },
+            {
+              "interrupted": true,
+              "run_index": 2,
+              "wall_ns": 10343643273
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 4308640,
+              "lk_computations": 26920,
+              "lk_hits": 73102,
+              "lk_lookups": 100022,
+              "lk_misses": 26920,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    }
+  },
+  "batch_decode_lk_breakdown": {
+    "warm-deep": {
+      "decode_lk": {
+        "count": 12,
+        "failed": 0,
+        "mean_wall_ns": 457406.75,
+        "wall_ns": 5488881
+      },
+      "decode": {
+        "count": 12,
+        "failed": 0,
+        "mean_wall_ns": 37681.833333333336,
+        "wall_ns": 452182
+      },
+      "matrices": {
+        "count": 84,
+        "failed": 0,
+        "mean_wall_ns": 48306.05952380953,
+        "wall_ns": 4057709
+      },
+      "residual_wall_ns": 978990,
+      "residual_mean_ns_per_batch": 81582.5
+    },
+    "1-deep": {
+      "decode_lk": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 441288.80946191837,
+        "wall_ns": 1697638050
+      },
+      "decode": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 39518.293215492595,
+        "wall_ns": 152026874
+      },
+      "matrices": {
+        "count": 23555,
+        "failed": 0,
+        "mean_wall_ns": 52133.08439821694,
+        "wall_ns": 1227994803
+      },
+      "residual_wall_ns": 317616373,
+      "residual_mean_ns_per_batch": 82562.09331946971
+    },
+    "2-deep": {
+      "decode_lk": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 437799.6482973746,
+        "wall_ns": 1684215247
+      },
+      "decode": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 39168.316610345726,
+        "wall_ns": 150680514
+      },
+      "matrices": {
+        "count": 23555,
+        "failed": 0,
+        "mean_wall_ns": 51481.17507960094,
+        "wall_ns": 1212639079
+      },
+      "residual_wall_ns": 320895654,
+      "residual_mean_ns_per_batch": 83414.5188458539
+    },
+    "3-deep": {
+      "decode_lk": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 452330.3020535482,
+        "wall_ns": 1740114672
+      },
+      "decode": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 41250.16090460099,
+        "wall_ns": 158689369
+      },
+      "matrices": {
+        "count": 23555,
+        "failed": 0,
+        "mean_wall_ns": 53083.854850350246,
+        "wall_ns": 1250390201
+      },
+      "residual_wall_ns": 331035102,
+      "residual_mean_ns_per_batch": 86050.19547699507
+    },
+    "trace-deep": {
+      "decode_lk": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 455988.6753314271,
+        "wall_ns": 1754188434
+      },
+      "decode": {
+        "count": 3847,
+        "failed": 0,
+        "mean_wall_ns": 41065.77358981024,
+        "wall_ns": 157980031
+      },
+      "matrices": {
+        "count": 23555,
+        "failed": 0,
+        "mean_wall_ns": 53886.85603905752,
+        "wall_ns": 1269304894
+      },
+      "residual_wall_ns": 326903509,
+      "residual_mean_ns_per_batch": 84976.21757213413
+    }
+  }
+}

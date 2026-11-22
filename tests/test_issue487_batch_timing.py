@@ -104,7 +104,7 @@ class BatchTimingTests(unittest.TestCase):
     def test_batch_decode_failure_is_recorded(self):
         ev = self.model.evaluator(self.grid, cache_mode='lk')
         timer = TimerCollector()
-        with patch.object(model.RFModel, 'decode', side_effect=RuntimeError('decode injected')):
+        with patch.object(coupled_lc.ParameterVectorSchema, 'decode_batch', side_effect=RuntimeError('decode injected')):
             with self.assertRaisesRegex(RuntimeError, 'decode injected'):
                 with search_rf_timing(timer, 'search'):
                     ev.evaluate_batch([self.x, self.x])
