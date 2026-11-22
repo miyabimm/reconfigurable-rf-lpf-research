@@ -1,0 +1,1354 @@
+{
+  "environment": {
+    "head": "94f9d65f4f1e2a36fd2fa400644255463f8d1319",
+    "status": "",
+    "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpuinfo": "AMD Ryzen 7 PRO 4750G with Radeon Graphics",
+    "affinity": 0,
+    "threads": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "order": [
+      "plain,timed,deep",
+      "timed,deep,plain",
+      "deep,plain,timed"
+    ],
+    "count": 312
+  },
+  "rows": [
+    {
+      "name": "warm-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0246135579654947,
+      "cpu_s": 0.963502,
+      "max_rss_kib": 92348,
+      "exit_code": 0,
+      "log": "warm-plain.log",
+      "runner_wall_s": 0.6271734250476584,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "warm-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0706954769557342,
+      "cpu_s": 1.011086,
+      "max_rss_kib": 92544,
+      "exit_code": 0,
+      "log": "warm-timed.log",
+      "runner_wall_s": 0.6753255079966038,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "warm-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0371231370372698,
+      "cpu_s": 0.963085,
+      "max_rss_kib": 92360,
+      "exit_code": 0,
+      "log": "warm-deep.log",
+      "runner_wall_s": 0.6420144909061491,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0695613379357383,
+      "cpu_s": 0.9965569999999999,
+      "max_rss_kib": 92360,
+      "exit_code": 0,
+      "log": "1-plain.log",
+      "runner_wall_s": 0.6738494569435716,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0316137979971245,
+      "cpu_s": 0.968954,
+      "max_rss_kib": 92524,
+      "exit_code": 0,
+      "log": "1-timed.log",
+      "runner_wall_s": 0.6147433479782194,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0694681240711361,
+      "cpu_s": 1.0092189999999999,
+      "max_rss_kib": 92628,
+      "exit_code": 0,
+      "log": "1-deep.log",
+      "runner_wall_s": 0.6676297970116138,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0056976259220392,
+      "cpu_s": 0.9524929999999999,
+      "max_rss_kib": 92104,
+      "exit_code": 0,
+      "log": "2-timed.log",
+      "runner_wall_s": 0.6041745999827981,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0641228220192716,
+      "cpu_s": 1.006689,
+      "max_rss_kib": 92284,
+      "exit_code": 0,
+      "log": "2-deep.log",
+      "runner_wall_s": 0.6613188909832388,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.053040508995764,
+      "cpu_s": 0.9910349999999999,
+      "max_rss_kib": 92088,
+      "exit_code": 0,
+      "log": "2-plain.log",
+      "runner_wall_s": 0.6506927059963346,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0477965340251103,
+      "cpu_s": 0.981034,
+      "max_rss_kib": 92328,
+      "exit_code": 0,
+      "log": "3-deep.log",
+      "runner_wall_s": 0.6407903440995142,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.043938957969658,
+      "cpu_s": 0.9830559999999999,
+      "max_rss_kib": 92284,
+      "exit_code": 0,
+      "log": "3-plain.log",
+      "runner_wall_s": 0.623334150062874,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.1148275770246983,
+      "cpu_s": 1.015339,
+      "max_rss_kib": 92620,
+      "exit_code": 0,
+      "log": "3-timed.log",
+      "runner_wall_s": 0.7121193100465462,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "trace-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": true,
+      "process_wall_s": 1.0232850139727816,
+      "cpu_s": 0.956257,
+      "max_rss_kib": 92452,
+      "exit_code": 0,
+      "log": "trace-plain.log",
+      "runner_wall_s": 0.6134344140300527,
+      "status": "completed",
+      "callbacks": 312,
+      "trace_sha256": "7511cb0ba37b9fa347134a30c142e6dabef4a5c203e21a54a9a380ae9b80f454"
+    },
+    {
+      "name": "trace-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": true,
+      "process_wall_s": 1.0658130459487438,
+      "cpu_s": 1.003657,
+      "max_rss_kib": 92428,
+      "exit_code": 0,
+      "log": "trace-deep.log",
+      "runner_wall_s": 0.6565096910344437,
+      "status": "completed",
+      "callbacks": 312,
+      "trace_sha256": "7511cb0ba37b9fa347134a30c142e6dabef4a5c203e21a54a9a380ae9b80f454"
+    }
+  ],
+  "results_equal": true,
+  "deep_diagnostics": {
+    "1-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 140979.75,
+          "wall_ns": 1691757
+        },
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 12251306.0,
+          "wall_ns": 12251306
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 29450222.0,
+          "wall_ns": 29450222
+        },
+        "baseline/search/rf/batch": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 8148786.0,
+          "wall_ns": 97785432
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3606309.5,
+          "wall_ns": 43275714
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 4292298.833333333,
+          "wall_ns": 51507586
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 84,
+          "failed": 0,
+          "mean_wall_ns": 79839.23809523809,
+          "wall_ns": 6706496
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 838032.6666666666,
+          "wall_ns": 10056392
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 534423.3333333334,
+          "wall_ns": 6413080
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 180479.25,
+          "wall_ns": 2165751
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 15315.833333333334,
+          "wall_ns": 183790
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 548278.1666666666,
+          "wall_ns": 6579338
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 480664.8333333333,
+          "wall_ns": 5767978
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 6102.083333333333,
+          "wall_ns": 73225
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 804140.9166666666,
+          "wall_ns": 9649691
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5125.5,
+          "wall_ns": 61506
+        },
+        "baseline/search/rf/cascade": {
+          "count": 48,
+          "failed": 0,
+          "mean_wall_ns": 90797.70833333333,
+          "wall_ns": 4358290
+        },
+        "baseline/search/rf/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 107895.75,
+          "wall_ns": 1294749
+        },
+        "baseline/search/rf/matrices": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 178182.33333333334,
+          "wall_ns": 2138188
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 32496.833333333332,
+          "wall_ns": 389962
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 25126.166666666668,
+          "wall_ns": 301514
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 41160.333333333336,
+          "wall_ns": 493924
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 57454.583333333336,
+          "wall_ns": 689455
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 31839.083333333332,
+          "wall_ns": 382069
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 35046.0,
+          "wall_ns": 420552
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 122705.66666666667,
+          "wall_ns": 1472468
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 15373.583333333334,
+          "wall_ns": 184483
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 44303.75,
+          "wall_ns": 531645
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 17509.166666666668,
+          "wall_ns": 210110
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 215850.41666666666,
+          "wall_ns": 2590205
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 109533.91666666667,
+          "wall_ns": 2628814
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 158066.29166666666,
+          "wall_ns": 3793591
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 209578.54166666666,
+          "wall_ns": 5029885
+        },
+        "baseline/search/rf/power_response": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 527654.4166666666,
+          "wall_ns": 12663706
+        },
+        "baseline/search/rf/response_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 36217.416666666664,
+          "wall_ns": 434609
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 41483.25,
+          "wall_ns": 497799
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 4584124.25,
+          "wall_ns": 110018982
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 187144826.0,
+          "wall_ns": 187144826
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 155380824.0,
+          "wall_ns": 155380824
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 535076001.0,
+          "wall_ns": 535076001
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4468402.0,
+          "wall_ns": 4468402
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 155048590
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "2-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 117952.25,
+          "wall_ns": 1415427
+        },
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 8227662.0,
+          "wall_ns": 8227662
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 22093601.0,
+          "wall_ns": 22093601
+        },
+        "baseline/search/rf/batch": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 8808760.25,
+          "wall_ns": 105705123
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 4426621.0,
+          "wall_ns": 53119452
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5569315.416666667,
+          "wall_ns": 66831785
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 84,
+          "failed": 0,
+          "mean_wall_ns": 89917.36904761905,
+          "wall_ns": 7553059
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 437760.5,
+          "wall_ns": 5253126
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 493531.5,
+          "wall_ns": 5922378
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 181219.0,
+          "wall_ns": 2174628
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 15623.083333333334,
+          "wall_ns": 187477
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 517279.5,
+          "wall_ns": 6207354
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 499083.6666666667,
+          "wall_ns": 5989004
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 6375.5,
+          "wall_ns": 76506
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 880886.8333333334,
+          "wall_ns": 10570642
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 4662.166666666667,
+          "wall_ns": 55946
+        },
+        "baseline/search/rf/cascade": {
+          "count": 48,
+          "failed": 0,
+          "mean_wall_ns": 59820.3125,
+          "wall_ns": 2871375
+        },
+        "baseline/search/rf/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 121542.58333333333,
+          "wall_ns": 1458511
+        },
+        "baseline/search/rf/matrices": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 218977.75,
+          "wall_ns": 2627733
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 50372.083333333336,
+          "wall_ns": 604465
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 34500.75,
+          "wall_ns": 414009
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 54438.916666666664,
+          "wall_ns": 653267
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 50013.916666666664,
+          "wall_ns": 600167
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 49783.083333333336,
+          "wall_ns": 597397
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 43806.0,
+          "wall_ns": 525672
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 159569.25,
+          "wall_ns": 1914831
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 18549.333333333332,
+          "wall_ns": 222592
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 55840.666666666664,
+          "wall_ns": 670088
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 33874.083333333336,
+          "wall_ns": 406489
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 314992.25,
+          "wall_ns": 3779907
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 101954.5,
+          "wall_ns": 2446908
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 110348.75,
+          "wall_ns": 2648370
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 194469.25,
+          "wall_ns": 4667262
+        },
+        "baseline/search/rf/power_response": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 449276.2083333333,
+          "wall_ns": 10782629
+        },
+        "baseline/search/rf/response_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 24046.833333333332,
+          "wall_ns": 288562
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 49042.583333333336,
+          "wall_ns": 588511
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 4953194.708333333,
+          "wall_ns": 118876673
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 178688403.0,
+          "wall_ns": 178688403
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 155732757.0,
+          "wall_ns": 155732757
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 531183589.0,
+          "wall_ns": 531183589
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4672474.0,
+          "wall_ns": 4672474
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 155452663
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "3-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 105730.83333333333,
+          "wall_ns": 1268770
+        },
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 10661429.0,
+          "wall_ns": 10661429
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 23004987.0,
+          "wall_ns": 23004987
+        },
+        "baseline/search/rf/batch": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 7149077.833333333,
+          "wall_ns": 85788934
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3657082.5833333335,
+          "wall_ns": 43884991
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 4359303.25,
+          "wall_ns": 52311639
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 84,
+          "failed": 0,
+          "mean_wall_ns": 84016.28571428571,
+          "wall_ns": 7057368
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 376767.8333333333,
+          "wall_ns": 4521214
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 441558.3333333333,
+          "wall_ns": 5298700
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 147377.0,
+          "wall_ns": 1768524
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 14816.666666666666,
+          "wall_ns": 177800
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 490890.0,
+          "wall_ns": 5890680
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 367379.5833333333,
+          "wall_ns": 4408555
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5630.75,
+          "wall_ns": 67569
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 672470.25,
+          "wall_ns": 8069643
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5632.333333333333,
+          "wall_ns": 67588
+        },
+        "baseline/search/rf/cascade": {
+          "count": 48,
+          "failed": 0,
+          "mean_wall_ns": 56588.854166666664,
+          "wall_ns": 2716265
+        },
+        "baseline/search/rf/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 93359.66666666667,
+          "wall_ns": 1120316
+        },
+        "baseline/search/rf/matrices": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 159339.91666666666,
+          "wall_ns": 1912079
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 24243.75,
+          "wall_ns": 290925
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 27290.333333333332,
+          "wall_ns": 327484
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 39994.0,
+          "wall_ns": 479928
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 46332.583333333336,
+          "wall_ns": 555991
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 30821.25,
+          "wall_ns": 369855
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 32614.75,
+          "wall_ns": 391377
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 100909.91666666667,
+          "wall_ns": 1210919
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 12831.166666666666,
+          "wall_ns": 153974
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 40932.25,
+          "wall_ns": 491187
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 16789.5,
+          "wall_ns": 201474
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 186581.83333333334,
+          "wall_ns": 2238982
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 85703.91666666667,
+          "wall_ns": 2056894
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 104583.25,
+          "wall_ns": 2509998
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 184000.91666666666,
+          "wall_ns": 4416022
+        },
+        "baseline/search/rf/power_response": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 418695.3333333333,
+          "wall_ns": 10048688
+        },
+        "baseline/search/rf/response_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 21308.333333333332,
+          "wall_ns": 255700
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 42763.333333333336,
+          "wall_ns": 513160
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 3996663.125,
+          "wall_ns": 95919915
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 155804137.0,
+          "wall_ns": 155804137
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 131971210.0,
+          "wall_ns": 131971210
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 504521209.0,
+          "wall_ns": 504521209
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4676261.0,
+          "wall_ns": 4676261
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 131704622
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    },
+    "trace-deep": {
+      "arm": "baseline",
+      "regions": {
+        "baseline/search/batch/mask_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 91066.16666666667,
+          "wall_ns": 1092794
+        },
+        "baseline/search/checkpoint": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 8628869.0,
+          "wall_ns": 8628869
+        },
+        "baseline/search/evaluator_setup": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 22496368.0,
+          "wall_ns": 22496368
+        },
+        "baseline/search/rf/batch": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5916383.916666667,
+          "wall_ns": 70996607
+        },
+        "baseline/search/rf/batch/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3068206.3333333335,
+          "wall_ns": 36818476
+        },
+        "baseline/search/rf/batch/decode_lk": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3540795.1666666665,
+          "wall_ns": 42489542
+        },
+        "baseline/search/rf/batch/matrices": {
+          "count": 84,
+          "failed": 0,
+          "mean_wall_ns": 56043.40476190476,
+          "wall_ns": 4707646
+        },
+        "baseline/search/rf/batch/output": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 343422.75,
+          "wall_ns": 4121073
+        },
+        "baseline/search/rf/batch/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 378949.0,
+          "wall_ns": 4547388
+        },
+        "baseline/search/rf/batch/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 138808.41666666666,
+          "wall_ns": 1665701
+        },
+        "baseline/search/rf/batch/select": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 11858.333333333334,
+          "wall_ns": 142300
+        },
+        "baseline/search/rf/batch/stamp": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 395129.5833333333,
+          "wall_ns": 4741555
+        },
+        "baseline/search/rf/batch/y_to_s": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 311018.5,
+          "wall_ns": 3732222
+        },
+        "baseline/search/rf/cache/lk_lookup": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 5200.0,
+          "wall_ns": 62400
+        },
+        "baseline/search/rf/cache/missing_compute": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 537224.25,
+          "wall_ns": 6446691
+        },
+        "baseline/search/rf/cache/store": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 3354.5833333333335,
+          "wall_ns": 40255
+        },
+        "baseline/search/rf/cascade": {
+          "count": 48,
+          "failed": 0,
+          "mean_wall_ns": 48289.8125,
+          "wall_ns": 2317911
+        },
+        "baseline/search/rf/decode": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 86349.58333333333,
+          "wall_ns": 1036195
+        },
+        "baseline/search/rf/matrices": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 125786.75,
+          "wall_ns": 1509441
+        },
+        "baseline/search/rf/matrices/build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 22420.333333333332,
+          "wall_ns": 269044
+        },
+        "baseline/search/rf/matrices/build_h_incidence": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 20997.0,
+          "wall_ns": 251964
+        },
+        "baseline/search/rf/matrices/inductor_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 32455.25,
+          "wall_ns": 389463
+        },
+        "baseline/search/rf/matrices/spd_eigvalsh": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 33824.5,
+          "wall_ns": 405894
+        },
+        "baseline/search/rf/node/c_stamping": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 24636.083333333332,
+          "wall_ns": 295633
+        },
+        "baseline/search/rf/node/l_expand": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 26583.916666666668,
+          "wall_ns": 319007
+        },
+        "baseline/search/rf/node_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 81344.41666666667,
+          "wall_ns": 976133
+        },
+        "baseline/search/rf/port/reorder": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 10982.666666666666,
+          "wall_ns": 131792
+        },
+        "baseline/search/rf/port/schur_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 38334.666666666664,
+          "wall_ns": 460016
+        },
+        "baseline/search/rf/port/schur_update": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 14511.833333333334,
+          "wall_ns": 174142
+        },
+        "baseline/search/rf/port_admittance": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 157265.91666666666,
+          "wall_ns": 1887191
+        },
+        "baseline/search/rf/power/db_metrics": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 65275.875,
+          "wall_ns": 1566621
+        },
+        "baseline/search/rf/power/wave_build": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 85802.95833333333,
+          "wall_ns": 2059271
+        },
+        "baseline/search/rf/power/wave_solve": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 154939.41666666666,
+          "wall_ns": 3718546
+        },
+        "baseline/search/rf/power_response": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 338454.0416666667,
+          "wall_ns": 8122897
+        },
+        "baseline/search/rf/response_build": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 15162.916666666666,
+          "wall_ns": 181955
+        },
+        "baseline/search/rf/y_to_s_solve": {
+          "count": 12,
+          "failed": 0,
+          "mean_wall_ns": 34345.833333333336,
+          "wall_ns": 412150
+        },
+        "baseline/search/rf_evaluate": {
+          "count": 24,
+          "failed": 0,
+          "mean_wall_ns": 3301879.8333333335,
+          "wall_ns": 79245116
+        },
+        "baseline/search/search": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 133325071.0,
+          "wall_ns": 133325071
+        },
+        "baseline/search/solver": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 110000081.0,
+          "wall_ns": 110000081
+        },
+        "job": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 499618095.0,
+          "wall_ns": 499618095
+        },
+        "terminal/rf_evaluate": {
+          "count": 1,
+          "failed": 0,
+          "mean_wall_ns": 4495187.0,
+          "wall_ns": 4495187
+        }
+      },
+      "seed": 1013,
+      "status": "completed",
+      "steps": {
+        "search": {
+          "local_run_wall_missing": "no end event",
+          "local_runs": [
+            {
+              "interrupted": true,
+              "run_index": 0,
+              "wall_ns": 109729625
+            }
+          ],
+          "rf_cache": {
+            "counters": {
+              "capacity": 16,
+              "computed_samples": 13440,
+              "lk_computations": 96,
+              "lk_hits": 216,
+              "lk_lookups": 312,
+              "lk_misses": 96,
+              "response_hits": 0,
+              "response_lookups": 0,
+              "response_misses": 0
+            },
+            "mode": "lk"
+          }
+        }
+      }
+    }
+  }
+}

@@ -154,7 +154,9 @@ def run(config, starts, output, *, root, spot_checks, search_bounds=None, checkp
     diagnostics = None if timing_path is None else dict(kind='development_timing_v1', status='incomplete',
         plan_sha256=None, source_sha256=None, jobs=[], level=timing_level,
         semantics='Inclusive regions overlap; do not sum. Search RF port_admittance contains node_admittance, '
-                  'which contains matrices; cascade is called twice per forward. RF regions exclude Terminal. '
+                  'which contains matrices; batch/decode_lk includes batch/decode and batch/matrices. '
+                  'Batch decode is timed once per batch; batch matrices only when computed. Batch regions exclude '
+                  'cascade and power_response; those contain power subregions. Cascade is called twice per computed batch or scalar forward. RF regions exclude Terminal. '
                   'Same-run differences include instrumentation overhead. Missing regions/events were not observed. '
                   'Local run wall is absent when no end event was emitted; residual time is not identified.')
     try:

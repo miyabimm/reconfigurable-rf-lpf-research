@@ -1,0 +1,486 @@
+{
+  "environment": {
+    "head": "882872506a50b1888a5436edcdd3ebc6c16e71ce",
+    "status": "?? project/diagnostics/issue487/analyze.py\n?? project/diagnostics/issue487/measurements.json\n?? project/diagnostics/issue487/preflight.json\n?? project/diagnostics/issue487/report.md\n",
+    "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "cpuinfo": "AMD Ryzen 7 PRO 4750G with Radeon Graphics",
+    "affinity": 0,
+    "threads": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "order": [
+      "plain,timed,deep",
+      "timed,deep,plain",
+      "deep,plain,timed"
+    ],
+    "count": 312
+  },
+  "rows": [
+    {
+      "name": "warm-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.4529513190500438,
+      "cpu_s": 1.1425649999999998,
+      "max_rss_kib": 92436,
+      "exit_code": 0,
+      "log": "warm-plain.log",
+      "runner_wall_s": 0.6467586429789662,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "warm-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.053887202986516,
+      "cpu_s": 0.993721,
+      "max_rss_kib": 92360,
+      "exit_code": 0,
+      "log": "warm-timed.log",
+      "runner_wall_s": 0.6431521140038967,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "warm-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0173609509365633,
+      "cpu_s": 0.9521839999999999,
+      "max_rss_kib": 92292,
+      "exit_code": 0,
+      "log": "warm-deep.log",
+      "runner_wall_s": 0.614214222994633,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.1171745490282774,
+      "cpu_s": 1.049064,
+      "max_rss_kib": 92456,
+      "exit_code": 0,
+      "log": "1-plain.log",
+      "runner_wall_s": 0.6737249209545553,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.141743448912166,
+      "cpu_s": 1.0799509999999999,
+      "max_rss_kib": 92216,
+      "exit_code": 0,
+      "log": "1-timed.log",
+      "runner_wall_s": 0.7099014399573207,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "1-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.080117512959987,
+      "cpu_s": 1.015004,
+      "max_rss_kib": 92292,
+      "exit_code": 0,
+      "log": "1-deep.log",
+      "runner_wall_s": 0.6275520280469209,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0231931309681386,
+      "cpu_s": 0.958464,
+      "max_rss_kib": 92156,
+      "exit_code": 0,
+      "log": "2-timed.log",
+      "runner_wall_s": 0.6159609679598361,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0585037620039657,
+      "cpu_s": 0.998948,
+      "max_rss_kib": 92376,
+      "exit_code": 0,
+      "log": "2-deep.log",
+      "runner_wall_s": 0.6096514969831333,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "2-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0319686461007223,
+      "cpu_s": 0.964872,
+      "max_rss_kib": 92464,
+      "exit_code": 0,
+      "log": "2-plain.log",
+      "runner_wall_s": 0.6239626100286841,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0727675870293751,
+      "cpu_s": 1.010248,
+      "max_rss_kib": 92336,
+      "exit_code": 0,
+      "log": "3-deep.log",
+      "runner_wall_s": 0.6147129889577627,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.0871846560621634,
+      "cpu_s": 1.024665,
+      "max_rss_kib": 92572,
+      "exit_code": 0,
+      "log": "3-plain.log",
+      "runner_wall_s": 0.6483060070313513,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "3-timed",
+      "mode": "timed",
+      "nominal_forwards": 312,
+      "trace": false,
+      "process_wall_s": 1.067074881051667,
+      "cpu_s": 1.000434,
+      "max_rss_kib": 92584,
+      "exit_code": 0,
+      "log": "3-timed.log",
+      "runner_wall_s": 0.6166363850934431,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "name": "trace-plain",
+      "mode": "plain",
+      "nominal_forwards": 312,
+      "trace": true,
+      "process_wall_s": 1.0236822880106047,
+      "cpu_s": 0.9586589999999999,
+      "max_rss_kib": 92280,
+      "exit_code": 0,
+      "log": "trace-plain.log",
+      "runner_wall_s": 0.6132133009377867,
+      "status": "completed",
+      "callbacks": 312,
+      "trace_sha256": "7511cb0ba37b9fa347134a30c142e6dabef4a5c203e21a54a9a380ae9b80f454"
+    },
+    {
+      "name": "trace-deep",
+      "mode": "deep",
+      "nominal_forwards": 312,
+      "trace": true,
+      "process_wall_s": 1.0727661940036342,
+      "cpu_s": 1.012691,
+      "max_rss_kib": 92720,
+      "exit_code": 0,
+      "log": "trace-deep.log",
+      "runner_wall_s": 0.6130529689835384,
+      "status": "completed",
+      "callbacks": 312,
+      "trace_sha256": "7511cb0ba37b9fa347134a30c142e6dabef4a5c203e21a54a9a380ae9b80f454"
+    }
+  ],
+  "results_equal": true,
+  "deep_regions": {
+    "baseline/search/batch/mask_build": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 91514.41666666667,
+      "wall_ns": 1098173
+    },
+    "baseline/search/checkpoint": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 11443946.0,
+      "wall_ns": 11443946
+    },
+    "baseline/search/evaluator_setup": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 20260075.0,
+      "wall_ns": 20260075
+    },
+    "baseline/search/rf/batch": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 5644050.166666667,
+      "wall_ns": 67728602
+    },
+    "baseline/search/rf/batch/decode_lk": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 3292850.25,
+      "wall_ns": 39514203
+    },
+    "baseline/search/rf/batch/output": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 320174.25,
+      "wall_ns": 3842091
+    },
+    "baseline/search/rf/batch/schur_solve": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 390021.0,
+      "wall_ns": 4680252
+    },
+    "baseline/search/rf/batch/schur_update": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 133423.0,
+      "wall_ns": 1601076
+    },
+    "baseline/search/rf/batch/select": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 10502.5,
+      "wall_ns": 126030
+    },
+    "baseline/search/rf/batch/stamp": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 384534.5833333333,
+      "wall_ns": 4614415
+    },
+    "baseline/search/rf/batch/y_to_s": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 314994.6666666667,
+      "wall_ns": 3779936
+    },
+    "baseline/search/rf/cache/lk_lookup": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 4152.0,
+      "wall_ns": 49824
+    },
+    "baseline/search/rf/cache/missing_compute": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 504471.3333333333,
+      "wall_ns": 6053656
+    },
+    "baseline/search/rf/cache/store": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 3157.75,
+      "wall_ns": 37893
+    },
+    "baseline/search/rf/cascade": {
+      "count": 48,
+      "failed": 0,
+      "mean_wall_ns": 46847.666666666664,
+      "wall_ns": 2248688
+    },
+    "baseline/search/rf/decode": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 78690.0,
+      "wall_ns": 944280
+    },
+    "baseline/search/rf/matrices": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 109959.83333333333,
+      "wall_ns": 1319518
+    },
+    "baseline/search/rf/matrices/build": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 18299.166666666668,
+      "wall_ns": 219590
+    },
+    "baseline/search/rf/matrices/build_h_incidence": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 18221.583333333332,
+      "wall_ns": 218659
+    },
+    "baseline/search/rf/matrices/inductor_solve": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 29678.5,
+      "wall_ns": 356142
+    },
+    "baseline/search/rf/matrices/spd_eigvalsh": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 28654.583333333332,
+      "wall_ns": 343855
+    },
+    "baseline/search/rf/node/c_stamping": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 23673.75,
+      "wall_ns": 284085
+    },
+    "baseline/search/rf/node/l_expand": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 25283.416666666668,
+      "wall_ns": 303401
+    },
+    "baseline/search/rf/node_admittance": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 80270.75,
+      "wall_ns": 963249
+    },
+    "baseline/search/rf/port/reorder": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 10658.583333333334,
+      "wall_ns": 127903
+    },
+    "baseline/search/rf/port/schur_solve": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 35468.583333333336,
+      "wall_ns": 425623
+    },
+    "baseline/search/rf/port/schur_update": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 13178.416666666666,
+      "wall_ns": 158141
+    },
+    "baseline/search/rf/port_admittance": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 151163.58333333334,
+      "wall_ns": 1813963
+    },
+    "baseline/search/rf/power/db_metrics": {
+      "count": 24,
+      "failed": 0,
+      "mean_wall_ns": 64401.208333333336,
+      "wall_ns": 1545629
+    },
+    "baseline/search/rf/power/wave_build": {
+      "count": 24,
+      "failed": 0,
+      "mean_wall_ns": 82451.08333333333,
+      "wall_ns": 1978826
+    },
+    "baseline/search/rf/power/wave_solve": {
+      "count": 24,
+      "failed": 0,
+      "mean_wall_ns": 160893.70833333334,
+      "wall_ns": 3861449
+    },
+    "baseline/search/rf/power_response": {
+      "count": 24,
+      "failed": 0,
+      "mean_wall_ns": 338401.7083333333,
+      "wall_ns": 8121641
+    },
+    "baseline/search/rf/response_build": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 14945.833333333334,
+      "wall_ns": 179350
+    },
+    "baseline/search/rf/y_to_s_solve": {
+      "count": 12,
+      "failed": 0,
+      "mean_wall_ns": 32810.166666666664,
+      "wall_ns": 393722
+    },
+    "baseline/search/rf_evaluate": {
+      "count": 24,
+      "failed": 0,
+      "mean_wall_ns": 3144862.0416666665,
+      "wall_ns": 75476689
+    },
+    "baseline/search/search": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 127582546.0,
+      "wall_ns": 127582546
+    },
+    "baseline/search/solver": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 106316902.0,
+      "wall_ns": 106316902
+    },
+    "job": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 486823318.0,
+      "wall_ns": 486823318
+    },
+    "terminal/rf_evaluate": {
+      "count": 1,
+      "failed": 0,
+      "mean_wall_ns": 4701382.0,
+      "wall_ns": 4701382
+    }
+  },
+  "deep_cache": {
+    "counters": {
+      "capacity": 16,
+      "computed_samples": 13440,
+      "lk_computations": 96,
+      "lk_hits": 216,
+      "lk_lookups": 312,
+      "lk_misses": 96,
+      "response_hits": 0,
+      "response_lookups": 0,
+      "response_misses": 0
+    },
+    "mode": "lk"
+  }
+}
