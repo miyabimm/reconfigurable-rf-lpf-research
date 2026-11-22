@@ -56,6 +56,42 @@ class BatchDecodeTests(unittest.TestCase):
                     self.assertEqual(ev1.cache_stats, ev2.cache_stats)
                     self.assertEqual(list(ev1._lk_cache), list(ev2._lk_cache))
 
+    def test_dtype_shape_and_extreme_values_replay(self):
+        policy, _, model, _, x = make('RF-T008')
+        g = grid(policy)
+        ev = model.evaluator(g, cache_mode='lk')
+        for invalid in (np.array([x], dtype=complex), np.array([x], dtype=bool),
+                        np.array([x], dtype=str), np.array([x[:-1]]), x):
+            with self.assertRaisesRegex(ValueError, 'Expected real numeric vectors'):
+                ev.evaluate_batch(invalid)
+        for value in (np.finfo(float).max, -np.finfo(float).max):
+            bad = x.copy()
+            bad[model.schema.n_inductors + model.schema.n_fixed] = value
+            batch = model.evaluator(g, cache_mode='lk')
+            scalar = model.evaluator(g, cache_mode='lk')
+            with np.errstate(over='ignore', invalid='ignore'):
+                with self.assertRaises(Exception) as a:
+                    batch.evaluate_batch([x, bad])
+                with self.assertRaises(Exception) as b:
+                    scalar.evaluate(x)
+                    scalar.evaluate(bad)
+            self.assertEqual((type(a.exception), str(a.exception)),
+                             (type(b.exception), str(b.exception)))
+            self.assertEqual(batch.cache_stats, scalar.cache_stats)
+            self.assertEqual(list(batch._lk_cache), list(scalar._lk_cache))
+        # Float32 and integer inputs follow the scalar float64 coercion.
+        for vectors in (np.array([x, x], dtype=np.float32),
+                        np.array([x, x], dtype=np.int64)):
+            try:
+                expected = [model.evaluator(g).evaluate(row) for row in vectors]
+            except ValueError:
+                with self.assertRaises(ValueError):
+                    model.evaluator(g).evaluate_batch(vectors)
+            else:
+                actual = model.evaluator(g).evaluate_batch(vectors)
+                for a, b in zip(actual, expected):
+                    np.testing.assert_allclose(a.s, b.s, rtol=1e-12, atol=1e-12)
+
     def test_ordered_failures_match_scalar_and_cache(self):
         policy, _, model, _, x = make('RF-T008')
         g = grid(policy)
