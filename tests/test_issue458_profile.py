@@ -34,7 +34,7 @@ class Profile458Tests(unittest.TestCase):
         self.cfg = dict(schema_version=1, rf=dict(constraint_id='RF-T010', allow_trial=True),
             definition=self.data, seeds=[23], terminal_points=4,
             arms=[dict(name='demo', steps=[dict(name='coarse', solver='hybrid', objective='signed_margin_db',
-                aggregation='sum', points_per_interval=2, options=dict(max_search_forwards=2))])],
+                aggregation='sum', points_per_interval=2, options=dict(max_search_forwards=2, batch_fd=False))])],
             budget=dict(rf_samples=224, rf_forwards=3, independent_mna_samples=2))
         self.starts = {'23': {'demo': dict(vector=self.x, vector_sha256=vector_sha(self.x))}}
 

@@ -30,7 +30,7 @@ class CommonRunnerTests(unittest.TestCase):
         _, definition, _, bounds, x = make('RF-F003')
         self.box = plain(bounds)
         step = dict(name='coarse', solver='hybrid', objective='signed_margin_db', aggregation='sum',
-                    points_per_interval=2, options=dict(max_search_forwards=2))
+                    points_per_interval=2, options=dict(max_search_forwards=2, batch_fd=False))
         self.cfg = dict(schema_version=1, rf=dict(constraint_id='RF-T009', allow_trial=True),
                         definition=plain(asdict(definition)), seeds=[23, 7], terminal_points=4,
                         arms=[dict(name=arm, steps=[copy.deepcopy(step)]) for arm in ('zeta', 'alpha')],

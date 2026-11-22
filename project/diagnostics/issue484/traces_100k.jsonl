@@ -1,0 +1,3 @@
+{"mode": "A", "callbacks": 100000, "sha256": "cba260f754cf7e0de59c12df552c5f946864f66ecee83c4162ea5e88d759a22b", "prefix_100000_sha256": "cba260f754cf7e0de59c12df552c5f946864f66ecee83c4162ea5e88d759a22b"}
+{"mode": "B", "callbacks": 100022, "sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448", "prefix_100000_sha256": "cba260f754cf7e0de59c12df552c5f946864f66ecee83c4162ea5e88d759a22b"}
+{"mode": "C", "callbacks": 100022, "sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448", "prefix_100000_sha256": "cba260f754cf7e0de59c12df552c5f946864f66ecee83c4162ea5e88d759a22b"}

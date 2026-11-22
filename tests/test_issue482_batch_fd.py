@@ -84,7 +84,7 @@ class RFWorkerBatchTest(unittest.TestCase):
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
         step = config['arms'][0]['steps'][0]
-        step['options'].update(batch_fd=True, max_search_forwards=2)
+        step['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
         # 25 free coordinates: reserve 2 + 24 Search and one Terminal.
         config['budget'] = dict(rf_samples=70*26 + 476, rf_forwards=27, independent_mna_samples=2)
         args = dict(root=root, spot_checks={'terminal': [0, 57]}, search_bounds=None,
@@ -124,7 +124,7 @@ class RFWorkerBatchTest(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, max_search_forwards=2)
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
         compiled = freeze_run(cfg, starts, root=root, spot_checks={'terminal': [0, 111]},
                               search_bounds=None, checkpoint_interval=1000)
         original = RFEvaluator.evaluate
