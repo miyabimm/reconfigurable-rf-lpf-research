@@ -8,6 +8,7 @@ fixed. IL=-10 log10(GT), APL=-10 log10(GA), RL=-20 log10(|Sii|).
 Exact zero gain/reflection gives +inf dB (not a numerical failure or floor).
 """
 from collections import OrderedDict
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 import json
 from time import perf_counter_ns
@@ -292,79 +293,88 @@ class RFEvaluator:
 
     def _compute_batch(self, x, *, mask=None, base_response=None):
         m, g, topology = self.model, self.grid, self.model.topology
-        values = [m.decode(row) for row in x]
-        # Stage LRU mutations so even a late wave/Schur failure cannot cache
-        # matrices belonging to a failed evaluation.
-        cache = self._lk_cache.copy()
-        hits = misses = computations = 0
-        numerators = []
-        for value in values:
-            if self.cache_mode == 'lk':
-                key = np.asarray(value.inductances_nh + value.coupling_k, dtype=np.float64).tobytes()
-                if key in cache:
-                    hits += 1
-                    cache.move_to_end(key)
-                    matrices = cache[key]
+        timing = _deep_timing
+        with timing[0].measure(timing[1] + '/batch/decode_lk') if timing else nullcontext():
+            values = [m.decode(row) for row in x]
+            # Stage LRU mutations so even a late wave/Schur failure cannot cache
+            # matrices belonging to a failed evaluation.
+            cache = self._lk_cache.copy()
+            hits = misses = computations = 0
+            numerators = []
+            for value in values:
+                if self.cache_mode == 'lk':
+                    key = np.asarray(value.inductances_nh + value.coupling_k, dtype=np.float64).tobytes()
+                    if key in cache:
+                        hits += 1
+                        cache.move_to_end(key)
+                        matrices = cache[key]
+                    else:
+                        misses += 1
+                        computations += 1
+                        matrices = topology.matrices(value)
+                        self._put(cache, key, matrices)
                 else:
-                    misses += 1
                     computations += 1
                     matrices = topology.matrices(value)
-                    self._put(cache, key, matrices)
+                numerators.append(matrices[0])
+        with timing[0].measure(timing[1] + '/batch/select') if timing else nullcontext():
+            if mask is None:
+                candidates = np.repeat(np.arange(len(x)), len(g.setting))
+                samples = np.tile(np.arange(len(g.setting)), len(x))
             else:
-                computations += 1
-                matrices = topology.matrices(value)
-            numerators.append(matrices[0])
-        if mask is None:
-            candidates = np.repeat(np.arange(len(x)), len(g.setting))
-            samples = np.tile(np.arange(len(g.setting)), len(x))
-        else:
-            candidates, samples = np.nonzero(mask)
-        # Count attempted selected samples even if a later numerical stage
-        # fails and scalar replay is needed, matching scalar _compute's counter.
-        if mask is not None:
-            self.cache_stats['computed_samples'] += len(samples)
-        omega = 2*np.pi*g.frequency_hz[samples]
-        n = topology.inductor_tree.node_count
-        C = np.asarray([v.capacitors_pf_by_setting for v in values])
-        D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[candidates, g.setting[samples]]
-        Y = np.asarray(numerators)[candidates] / (omega[:, None, None] * 1e-9)
-        Y = Y + omega[:, None, None] * D
-        if not np.all(np.isfinite(Y)):
-            raise ValueError('Non-finite batch nodal admittance')
-        ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
-        middle = tuple(i for i in range(n) if i not in ports)
-        order = np.asarray(ports + middle)
-        Y = Y[..., order[:, None], order]
-        r = Y[..., :2, :2]
+                candidates, samples = np.nonzero(mask)
+            # Count attempted selected samples even if a later numerical stage
+            # fails and scalar replay is needed, matching scalar _compute's counter.
+            if mask is not None:
+                self.cache_stats['computed_samples'] += len(samples)
+        with timing[0].measure(timing[1] + '/batch/stamp') if timing else nullcontext():
+            omega = 2*np.pi*g.frequency_hz[samples]
+            n = topology.inductor_tree.node_count
+            C = np.asarray([v.capacitors_pf_by_setting for v in values])
+            D = (C @ topology._capacitor_stamps_flat).reshape(len(x), 6, n, n)[candidates, g.setting[samples]]
+            Y = np.asarray(numerators)[candidates] / (omega[:, None, None] * 1e-9)
+            Y = Y + omega[:, None, None] * D
+            if not np.all(np.isfinite(Y)):
+                raise ValueError('Non-finite batch nodal admittance')
+            ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
+            middle = tuple(i for i in range(n) if i not in ports)
+            order = np.asarray(ports + middle)
+            Y = Y[..., order[:, None], order]
+            r = Y[..., :2, :2]
         if middle:
-            r = r - Y[..., :2, 2:] @ np.linalg.solve(Y[..., 2:, 2:], Y[..., 2:, :2])
-        if not np.all(np.isfinite(r)):
-            raise ValueError('Non-finite batch port admittance')
-        eye = np.eye(2)
-        core = np.linalg.solve(eye + 50*r, eye - 50*r).reshape(-1, 2, 2)
+            with timing[0].measure(timing[1] + '/batch/schur_solve') if timing else nullcontext():
+                solved = np.linalg.solve(Y[..., 2:, 2:], Y[..., 2:, :2])
+            with timing[0].measure(timing[1] + '/batch/schur_update') if timing else nullcontext():
+                r = r - Y[..., :2, 2:] @ solved
+        with timing[0].measure(timing[1] + '/batch/y_to_s') if timing else nullcontext():
+            if not np.all(np.isfinite(r)):
+                raise ValueError('Non-finite batch port admittance')
+            eye = np.eye(2)
+            core = np.linalg.solve(eye + 50*r, eye - 50*r).reshape(-1, 2, 2)
         data = power_response(_cascade(_cascade(self.pre[samples], core), self.post[samples]),
                               self.source_ohms, self.load_ohms)
-        if mask is None:
-            data = [a.reshape(len(x), len(g.setting), *a.shape[1:]) for a in data]
-        else:
-            names = ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db')
-            assembled = [np.broadcast_to(getattr(base_response, name), (len(x), *getattr(base_response, name).shape)).copy()
-                         for name in names]
-            for dest, src in zip(assembled, data):
-                dest[candidates, samples] = src
-            data = assembled
-        responses = tuple(RFResponse(g, m.policy_id, m.policy_fingerprint,
-            *(_frozen(a[i], np.complex128 if j == 0 else np.float64)
-              for j, a in enumerate(data))) for i in range(len(x)))
-        if self.cache_mode == 'lk':
-            self._lk_cache.clear()
-            self._lk_cache.update(cache)
-            self.cache_stats['lk_lookups'] += len(x)
-            self.cache_stats['lk_hits'] += hits
-            self.cache_stats['lk_misses'] += misses
-        self.cache_stats['lk_computations'] += computations
-        if mask is None:
-            self.cache_stats['computed_samples'] += len(samples)
+        with timing[0].measure(timing[1] + '/batch/output') if timing else nullcontext():
+            if mask is None:
+                data = [a.reshape(len(x), len(g.setting), *a.shape[1:]) for a in data]
+            else:
+                names = ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db')
+                assembled = [np.broadcast_to(getattr(base_response, name), (len(x), *getattr(base_response, name).shape)).copy()
+                             for name in names]
+                for dest, src in zip(assembled, data):
+                    dest[candidates, samples] = src
+                data = assembled
+            responses = tuple(RFResponse(g, m.policy_id, m.policy_fingerprint,
+                *(_frozen(a[i], np.complex128 if j == 0 else np.float64)
+                  for j, a in enumerate(data))) for i in range(len(x)))
+            if self.cache_mode == 'lk':
+                self._lk_cache.clear()
+                self._lk_cache.update(cache)
+                self.cache_stats['lk_lookups'] += len(x)
+                self.cache_stats['lk_hits'] += hits
+                self.cache_stats['lk_misses'] += misses
+            self.cache_stats['lk_computations'] += computations
+            if mask is None:
+                self.cache_stats['computed_samples'] += len(samples)
         return responses
 
     @staticmethod

@@ -1,4 +1,4 @@
-"""Search-only, opt-in inclusive RF function timings for the sequential runner."""
+"""Search-only, opt-in inclusive RF function timings for the development runner."""
 from contextlib import ExitStack, contextmanager
 from functools import wraps
 
@@ -8,7 +8,7 @@ from lpf.rf_core.coupled_lc import CoupledLCTopology
 
 @contextmanager
 def search_rf_timing(timer, stage):
-    """Temporarily wrap existing calls; count only within RFEvaluator.evaluate.
+    """Temporarily wrap existing calls; count only within evaluator entry points.
 
     The development runner executes jobs sequentially. These process-global
     wrappers are not intended for concurrent searches.
@@ -44,7 +44,8 @@ def search_rf_timing(timer, stage):
                 return wrapped
             return decorate
 
-        replace(model.RFEvaluator, 'evaluate', evaluate_wrapper)
+        for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch'):
+            replace(model.RFEvaluator, method, evaluate_wrapper)
         for owner, method, name in (
                 (model.RFModel, 'decode', 'decode'),
                 (CoupledLCTopology, 'port_admittance', 'port_admittance'),

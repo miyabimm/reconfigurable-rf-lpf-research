@@ -3,6 +3,7 @@ from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
+from time import perf_counter_ns
 
 import numpy as np
 
@@ -173,14 +174,22 @@ class DevelopmentWorker:
                 raise ValueError('STOP: Search RF forward budget exhausted')
             try:
                 if partial_fd and base is not None:
-                    schema = self.model.schema
-                    start = schema.n_inductors + schema.n_fixed + schema.n_coupling + schema.n_ic_fixed
-                    mask = np.ones((len(vectors), len(evaluator.grid.setting)), dtype=bool)
-                    for i, vector in enumerate(vectors):
-                        changed = np.flatnonzero(np.asarray(vector) != base[0])
-                        if len(changed) == 1 and schema.n_variable and start <= changed[0] < schema.vector_length:
-                            setting = (changed[0] - start) // schema.n_variable
-                            mask[i] = evaluator.grid.setting == setting
+                    timing = self.timer if self.timing_level == 'deep' else None
+                    if timing: mask_start, failed = perf_counter_ns(), False
+                    try:
+                        schema = self.model.schema
+                        start = schema.n_inductors + schema.n_fixed + schema.n_coupling + schema.n_ic_fixed
+                        mask = np.ones((len(vectors), len(evaluator.grid.setting)), dtype=bool)
+                        for i, vector in enumerate(vectors):
+                            changed = np.flatnonzero(np.asarray(vector) != base[0])
+                            if len(changed) == 1 and schema.n_variable and start <= changed[0] < schema.vector_length:
+                                setting = (changed[0] - start) // schema.n_variable
+                                mask[i] = evaluator.grid.setting == setting
+                    except BaseException:
+                        if timing: failed = True
+                        raise
+                    finally:
+                        if timing: timing.add(f'{stage}/batch/mask_build', perf_counter_ns() - mask_start, failed=failed)
                     responses = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate_partial_batch,
                                            vectors, base[1], mask)
                 else:
