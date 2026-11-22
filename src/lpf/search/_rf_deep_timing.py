@@ -14,6 +14,7 @@ def search_rf_timing(timer, stage):
     wrappers are not intended for concurrent searches.
     """
     active = False
+    batch_active = False
     with ExitStack() as stack:
         def replace(owner, name, wrapper):
             original = getattr(owner, name)
@@ -34,11 +35,26 @@ def search_rf_timing(timer, stage):
                     active = previous
             return wrapped
 
+        def batch_wrapper(original):
+            @wraps(original)
+            def wrapped(*args, **kwargs):
+                nonlocal batch_active
+                if not active:
+                    return original(*args, **kwargs)
+                previous, batch_active = batch_active, True
+                previous_coupled, coupled_lc._deep_timing = coupled_lc._deep_timing, None
+                try:
+                    return timer.call(f'{stage}/rf/batch', original, *args, **kwargs)
+                finally:
+                    coupled_lc._deep_timing = previous_coupled
+                    batch_active = previous
+            return wrapped
+
         def region_wrapper(name):
             def decorate(original):
                 @wraps(original)
                 def wrapped(*args, **kwargs):
-                    if active:
+                    if active and not (batch_active and name in ('decode', 'matrices')):
                         return timer.call(f'{stage}/rf/{name}', original, *args, **kwargs)
                     return original(*args, **kwargs)
                 return wrapped
@@ -46,8 +62,8 @@ def search_rf_timing(timer, stage):
 
         for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch'):
             replace(model.RFEvaluator, method, evaluate_wrapper)
+        replace(model.RFEvaluator, '_compute_batch', batch_wrapper)
         for owner, method, name in (
-                (model.RFEvaluator, '_compute_batch', 'batch'),
                 (model.RFModel, 'decode', 'decode'),
                 (CoupledLCTopology, 'port_admittance', 'port_admittance'),
                 (CoupledLCTopology, 'node_admittance', 'node_admittance'),

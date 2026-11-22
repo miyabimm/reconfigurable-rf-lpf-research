@@ -37,13 +37,35 @@ class BatchTimingTests(unittest.TestCase):
                     self.assertEqual(rows['search/rf/batch']['count'], 1)
                     self.assertEqual(rows['search/rf/cascade']['count'], 2)
                     self.assertEqual(rows['search/rf/power_response']['count'], 1)
-                    self.assertEqual(rows['search/rf/decode']['count'], 2)
+                    self.assertNotIn('search/rf/decode', rows)
+                    self.assertNotIn('search/rf/matrices', rows)
+                    self.assertFalse(any('/rf/matrices/' in key for key in rows))
                 else:
                     # Partial -> batch -> scalar delegation must not multiply counts.
                     self.assertEqual(rows['search/rf/decode']['count'], 2)
                     self.assertFalse(any('/batch/' in key for key in rows))
                 self.assertIsNone(model._deep_timing)
                 self.assertIsNone(coupled_lc._deep_timing)
+
+    def test_plain_batch_uses_no_rf_clock(self):
+        ev = self.model.evaluator(self.grid, cache_mode='lk')
+        base = ev.evaluate(self.x)
+        with patch.object(model, 'perf_counter_ns', side_effect=AssertionError('clock used')):
+            ev.evaluate_partial_batch([self.x], base, np.ones((1, len(self.grid.setting)), bool))
+
+    def test_schur_failure_is_recorded(self):
+        ev = self.model.evaluator(self.grid, cache_mode='lk')
+        ev.evaluate(self.x)  # warm the L/k cache so the first solve is Schur
+        timer = TimerCollector()
+        with self.assertRaisesRegex(RuntimeError, 'schur'):
+            with search_rf_timing(timer, 'search'):
+                with patch.object(np.linalg, 'solve', side_effect=RuntimeError('schur')):
+                    ev.evaluate_batch([self.x])
+        rows = timer.snapshot()
+        self.assertEqual(rows['search/rf/batch/schur_solve']['failed'], 1)
+        self.assertEqual(rows['search/rf/batch']['failed'], 1)
+        self.assertIsNone(model._deep_timing)
+        self.assertIsNone(coupled_lc._deep_timing)
 
     def test_failure_and_restoration(self):
         ev = self.model.evaluator(self.grid, cache_mode='lk')
