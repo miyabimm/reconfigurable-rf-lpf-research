@@ -36,12 +36,12 @@ arms:
         objective: signed_margin_db
         aggregation: sum
         points_per_interval: 2
-        options: {max_search_forwards: 2, restart_sigma: 0.1}
+        options: {max_search_forwards: 2, restart_sigma: 0.1, batch_fd: false} # 小予算で旧逐次方式を明示
 ```
 
 - `source_sha256` はdefinition JSON原byteのSHA、`definition_sha256` はcanonical JSONのSHA。`starts.json` は `{"23":{"demo":{"vector":[…],"vector_sha256":"…"}}}`。全seed×armの完全vectorを明示し、同じseedでも別armへ流用しない。vector SHAは `lpf.search.storage.vector_sha` で計算する。RunはYAML記載のseed順→arm順。
-- Hybridの `restart_sigma` は有限正数で任意（省略時0.1）。`batch_fd: true` はSciPy workersによる数値微分バッチを明示opt-in（既定false）。true時の `max_search_forwards` は評価グループ開始の名目上限で、開始済みバッチは完了する。PlanはSearchに最大 `N + max(自由座標数 - 1, 0)` forwardとそのRF/MNA sampleを予約し、Terminalは別途予約する。グループまたは局所run境界でbestをcheckpointし、実施数はraw/receiptに記録する。false時は従来どおり厳密上限。旧schema 2 preflightは自由座標を凍結しないためtrueを拒否する。
-- 開発Hybridではさらに `partial_fd: true` を指定できる（既定false、`batch_fd: true` 必須）。単独RF基準に対し設定別可変Cを1変数だけ変更した摂動は、その設定だけ再計算する。`off`/`lk` cacheのみ部分化し、`response`/`both`は通常batchに委譲する。各候補のforward・全grid要求sample、予約、Terminalは変わらない。性能と適用範囲の診断は [#484](../project/diagnostics/issue484/README.md)。
+- Hybridの `restart_sigma` は有限正数で任意（省略時0.1）。`batch_fd` はSciPy workersによる数値微分バッチ（既定true）。旧逐次評価は `batch_fd: false` を明示する。true時の `max_search_forwards` は評価グループ開始の名目上限で、開始済みバッチは完了する。PlanはSearchに最大 `N + max(自由座標数 - 1, 0)` forwardとそのRF/MNA sampleを予約し、Terminalは別途予約する。グループまたは局所run境界でbestをcheckpointし、実施数はraw/receiptに記録する。false時は従来どおり厳密上限。旧schema 2 preflightは自由座標を凍結しないためtrueを拒否する。
+- 開発Hybridの `partial_fd` は設定別計算省略（既定は `batch_fd` と同値、通常true）。通常バッチだけを使う場合は `batch_fd: true, partial_fd: false`、逐次の場合は `batch_fd: false` を指定する。`partial_fd: true` は `batch_fd: true` を必要とする。単独RF基準に対し設定別可変Cを1変数だけ変更した摂動は、その設定だけ再計算する。`off`/`lk` cacheのみ部分化し、`response`/`both`は通常batchに委譲する。各候補のforward・全grid要求sample、予約、Terminalは変わらない。性能と適用範囲の診断は [#484](../project/diagnostics/issue484/README.md)。
 - 実効値はPlanの `effective_options` に記録し、step rawの `local_runs` は完了または予算停止した局所探索の回数（再始動回数は `max(0, local_runs - 1)`）。各stepの `stop_points_per_interval` は任意。TerminalはすべてのSearch区間より密にする。SLSQP／SLPの `options` は `max_iterations` と `max_evaluations`。目的式とaggregationは[profile文書](../project/minimax_profile.md)参照。
 - `--search-bounds PATH.json` は全Job共通の完全vector順の閉区間。未指定は物理bounds。clip・修復なし。`--checkpoint-interval-forwards` は正整数（既定1000）。`--spot-checks` はstage→index配列、`terminal` 必須、Searchは `arm/step` を明示した場合のみ、毎forwardに独立照合する。`budget` はRun全体の3費目の上限で、RF前に全Job分の予約成立を検査する。
 - `--rf-cache-mode {off,lk,response,both}` はSearch Evaluator内のL/k・設定別応答LRUを切り替える（既定 `lk`、各容量16）。Terminalは常に非キャッシュ。`--timing-output` 指定時のみ診断JSONの各step `rf_cache` に検索・HIT/MISS・L/k実計算・再計算sample数を記録し、計時regionとは区別する。response/bothでは存在する設定に対する全MISS・部分HIT・全HIT別のforward/sample数も記録する。deepの `rf/cache/*` は検索・MISS抽出・計算・保存・再配置を計測し、`missing_compute` は他のRF演算計時を包含するため合算しない。
