@@ -326,7 +326,10 @@ class RFEvaluator:
                 packed = rhs.transpose(0, 2, 1, 3).reshape(samples, internal_nodes, directions * 2)
                 dX = np.linalg.solve(E, packed).reshape(samples, internal_nodes, directions, 2).transpose(0, 2, 1, 3)
                 dR = dR - dU @ internal[:, None] - U[:, None] @ dX
-            dcore = np.linalg.solve(A[:, None], -50*dR @ (eye + core[:, None]))
+            rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
+            samples, directions = rhs.shape[:2]
+            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
+            dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
             zeros = np.zeros_like(dcore)
             dfirst = _cascade_jacobian(self.pre, zeros, core, dcore)
             dfull = _cascade_jacobian(first, dfirst, self.post, zeros)
@@ -337,8 +340,10 @@ class RFEvaluator:
             v = np.sqrt(50.) * (eye + full)
             i = (eye - full) / np.sqrt(50.)
             a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])
-            ds = np.linalg.solve(a[:, None].swapaxes(-1, -2),
-                (db - data[0][:, None] @ da).swapaxes(-1, -2)).swapaxes(-1, -2)
+            rhs = (db - data[0][:, None] @ da).swapaxes(-1, -2)
+            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
+            ds = np.linalg.solve(a.swapaxes(-1, -2), packed).reshape(
+                samples, 2, directions, 2).transpose(0, 2, 3, 1)
         except np.linalg.LinAlgError as exc:
             raise CircuitNumericalError('sensitivity_solve_failed', 'RF sensitivity solve failed') from exc
         transmission = data[0][:, 1, 0]
