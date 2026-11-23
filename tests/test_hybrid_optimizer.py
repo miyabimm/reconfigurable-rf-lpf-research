@@ -213,6 +213,11 @@ class HybridTests(unittest.TestCase):
                 self.assertEqual(regions['s/objective/prepare']['count'], 3)
                 self.assertTrue(all(row['failed'] == 0 for row in regions.values()))
 
+    def test_plain_hybrid_does_not_read_deep_clock(self):
+        with patch('lpf.optimizers.hybrid.perf_counter_ns', side_effect=AssertionError('deep clock')):
+            result = self.run_hybrid(lambda x: [x[0]], [0.5], [(0, 1)], max_evaluations=3)
+        self.assertEqual(result.evaluations, 3)
+
     def test_deep_batch_exception_and_budget_stop(self):
         from lpf.timing import TimerCollector
 
