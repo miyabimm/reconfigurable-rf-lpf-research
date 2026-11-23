@@ -2,7 +2,9 @@
 import importlib.util
 from pathlib import Path
 import tempfile
+import time
 import unittest
+from unittest.mock import patch
 
 path = Path(__file__).resolve().parents[1]/'project/diagnostics/issue505/compare.py'
 spec = importlib.util.spec_from_file_location('issue505', path)
@@ -33,6 +35,24 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(rows[0]['result']['initial_vector_sha256'], rows[1]['result']['initial_vector_sha256'])
         self.assertEqual(rows[0]['result']['search_bounds_sha256'], rows[1]['result']['search_bounds_sha256'])
         self.assertEqual(rows[0]['result']['plan']['grids'], rows[1]['result']['plan']['grids'])
+
+    def test_batch_observation_not_timestamped_before_batch_finishes(self):
+        from lpf.rf_core.model import RFEvaluator
+        original = RFEvaluator.evaluate_partial_batch
+        calls = []
+        def delayed(evaluator, *args, **kwargs):
+            time.sleep(.05)
+            result = original(evaluator, *args, **kwargs)
+            calls.append(True)
+            return result
+        with tempfile.TemporaryDirectory(prefix='issue505-batch-') as tmp, \
+             patch.object(RFEvaluator, 'evaluate_partial_batch', delayed):
+            row = compare.run('hybrid', 28, Path(tmp)/'run')
+        self.assertTrue(calls)
+        self.assertIsNone(row['error'])
+        # First scalar is followed by a batch: no point can be observed while
+        # the delayed batch computation is still running.
+        self.assertGreaterEqual(row['events'][1]['elapsed_s']-row['events'][0]['elapsed_s'], .05)
 
     def test_stop_categories(self):
         self.assertEqual(compare.classify('converged', 2, 5), 'early_convergence_hold')
