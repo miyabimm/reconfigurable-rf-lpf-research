@@ -1,6 +1,7 @@
 """Selection and wall-censoring contracts for the Issue 505 diagnostic."""
 import importlib.util
 from pathlib import Path
+import tempfile
 import unittest
 
 path = Path(__file__).resolve().parents[1]/'project/diagnostics/issue505/compare.py'
@@ -16,6 +17,22 @@ class ComparisonTests(unittest.TestCase):
         self.assertIsNone(compare.select(events, .9))
         self.assertEqual(compare.select(events, 5)['sequence'], 1)
         self.assertEqual(compare.select(events, 20)['sequence'], 3)
+
+    def test_real_runner_callbacks_and_input_identity(self):
+        with tempfile.TemporaryDirectory(prefix='issue505-test-') as tmp:
+            rows = [compare.run(arm, 28, Path(tmp)/arm) for arm in ('hybrid', 'trf')]
+        for row in rows:
+            self.assertIsNone(row['error'])
+            self.assertTrue(row['events'])
+            self.assertEqual(row['result']['initial_vector_sha256'], row['events'][0]['vector_sha256'])
+            self.assertEqual(len(row['events']), row['result']['steps'][0]['forward_count'])
+            self.assertEqual([e['sequence'] for e in row['events']], list(range(1, len(row['events'])+1)))
+            self.assertEqual(sorted(e['elapsed_s'] for e in row['events']), [e['elapsed_s'] for e in row['events']])
+            self.assertEqual(row['windows']['1']['status'], 'budget_censored')
+            self.assertEqual(row['windows']['1']['terminal']['independent']['status'], 'pass')
+        self.assertEqual(rows[0]['result']['initial_vector_sha256'], rows[1]['result']['initial_vector_sha256'])
+        self.assertEqual(rows[0]['result']['search_bounds_sha256'], rows[1]['result']['search_bounds_sha256'])
+        self.assertEqual(rows[0]['result']['plan']['grids'], rows[1]['result']['plan']['grids'])
 
     def test_stop_categories(self):
         self.assertEqual(compare.classify('converged', 2, 5), 'early_convergence_hold')

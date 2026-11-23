@@ -7,8 +7,12 @@ DevelopmentWorker, optimizer, checkpoint and receipt paths remain unchanged.
 """
 import argparse
 import gzip
+import hashlib
+import io
 import json
 import os
+import platform
+from contextlib import redirect_stdout
 from pathlib import Path
 import sys
 from time import monotonic, process_time
@@ -90,6 +94,7 @@ def run(arm, limit, output, *, observe=True):
             context['cache_stats'] = dict(evaluator.cache_stats)
 
     spots = {'terminal': [0, 111]}
+    load_start = os.getloadavg()
     wall, cpu = monotonic(), process_time()
     error = None
     try:
@@ -114,6 +119,7 @@ def run(arm, limit, output, *, observe=True):
     worker = context.get('worker')
     terminal = {}
     extra = 0
+    mna_before = worker.audit_samples.get('terminal', 0) if worker else 0
     post_wall = monotonic()
     for window in WINDOWS:
         event = select(events, window)
@@ -144,13 +150,21 @@ def run(arm, limit, output, *, observe=True):
         context.setdefault('windows', {})[str(window)] = row
     post_wall = monotonic()-post_wall
     plan = worker.data if worker else None
+    blas = io.StringIO()
+    with redirect_stdout(blas):
+        np.show_config()
     return raw_numbers(dict(arm=arm, limit=limit, observe=observe, error=error, state=state,
         solver_wall_s=context.get('solver_wall_s'), solver_cpu_s=context.get('solver_cpu_s'),
         runner_wall_s=elapsed, runner_cpu_s=cpu_elapsed, post_wall_s=post_wall,
         windows=context.get('windows', {}), events=events, result=result,
         plan_sha256=sha(plan) if plan else None, search_cache_stats=context.get('cache_stats'), additional_terminal_forwards=extra,
-        additional_terminal_requested_samples=extra*476, additional_terminal_mna_samples=extra*2,
-        loadavg=os.getloadavg(), threads={k: os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS')}))
+        additional_terminal_requested_samples=extra*476,
+        additional_terminal_mna_samples=(worker.audit_samples.get('terminal', 0)-mna_before if worker else 0),
+        diagnostic_script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        platform=platform.platform(), host=platform.node(), cpu=platform.processor(),
+        affinity=sorted(os.sched_getaffinity(0)), numpy_blas_config=blas.getvalue(),
+        loadavg_start=load_start, loadavg_end=os.getloadavg(),
+        threads={k: os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS')}))
 
 
 def main():
