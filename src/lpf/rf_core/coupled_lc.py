@@ -325,6 +325,55 @@ class CoupledLCTopology:
             )
         return Y
 
+    def node_admittance_with_jacobian(self, values, schema, omega_rad_s, setting_indices, *, matrices=None, node=None):
+        """Nodal admittance and physical-unit derivatives in schema vector order.
+
+        Constant capacitors have no vector column. Setting-specific columns are
+        exactly zero at samples belonging to the other five settings.
+        """
+        if not isinstance(schema, ParameterVectorSchema):
+            raise TypeError('Expected ParameterVectorSchema')
+        schema.encode(values)
+        if matrices is None:
+            matrices = self.matrices(values)  # preserves forward SPD/error checks
+        Y = self.node_admittance(values, omega_rad_s, setting_indices, matrices=matrices) if node is None else node
+        L = np.asarray(values.inductances_nh)
+        k = np.asarray(values.coupling_k)
+        M = matrices[1]
+        n, p = len(L), schema.vector_length
+        dH = np.zeros((p, n, n), complex)
+        for i in range(n):
+            dH[i, i, i] = 1 / self.inductor_q[i] + 1j
+        k_start = n + schema.n_fixed
+        for j, ((a, b), coeff) in enumerate(zip(self.coupling_pairs, k)):
+            dH[a, a, b] = dH[a, b, a] = 1j * M[a, b] / (2 * L[a])
+            dH[b, a, b] = dH[b, b, a] = 1j * M[a, b] / (2 * L[b])
+            dH[k_start + j, a, b] = dH[k_start + j, b, a] = 1j * np.sqrt(L[a] * L[b])
+        H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
+        B = self.inductor_tree.incidence()
+        try:
+            X = np.linalg.solve(H, B.T)
+            dK = -B @ np.linalg.solve(H, dH @ X)
+        except np.linalg.LinAlgError as exc:
+            raise CircuitNumericalError('sensitivity_inductor_solve_failed', 'Inductor sensitivity solve failed') from exc
+        omega = np.asarray(omega_rad_s)
+        setting = np.asarray(setting_indices)
+        dY = dK[None, :, :, :] / (omega[:, None, None, None] * 1e-9)
+        stamps = self._capacitor_stamps_flat.reshape(schema.capacitor_count, Y.shape[1], Y.shape[2])
+        for j in range(schema.n_fixed):
+            dY[:, n + j] += omega[:, None, None] * stamps[j]
+        ic_start = k_start + schema.n_coupling
+        for j in range(schema.n_ic_fixed):
+            dY[:, ic_start + j] += omega[:, None, None] * stamps[schema.n_fixed + schema.n_variable + j]
+        variable_start = ic_start + schema.n_ic_fixed
+        for s in range(len(CASES)):
+            for j in range(schema.n_variable):
+                dY[:, variable_start + s * schema.n_variable + j] += (
+                    (omega * (setting == s))[:, None, None] * stamps[schema.n_fixed + j])
+        if not np.all(np.isfinite(dY)):
+            raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
+        return Y, dY
+
     def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False, matrices=None):
         """Shared forward Schur reduction; never used by independent MNA."""
         if matrices is None:

@@ -168,6 +168,34 @@ def _cascade(a, b, *, check_power=False):
     return s
 
 
+def _cascade_jacobian(a, da, b, db):
+    """Differentiate the scalar Redheffer product without transmission division."""
+    den = 1 - a[:, 1, 1] * b[:, 0, 0]
+    dd = -(da[:, :, 1, 1] * b[:, None, 0, 0] + a[:, None, 1, 1] * db[:, :, 0, 0])
+
+    def product(*terms):
+        value = np.ones_like(den)
+        for v, _ in terms:
+            value *= v
+        deriv = np.zeros_like(dd)
+        for i, (_, d) in enumerate(terms):
+            other = np.ones_like(den)
+            for j, (v, _) in enumerate(terms):
+                if i != j:
+                    other *= v
+            deriv += d * other[:, None]
+        return deriv / den[:, None] - value[:, None] * dd / den[:, None]**2
+
+    def A(i, j): return a[:, i, j], da[:, :, i, j]
+    def B(i, j): return b[:, i, j], db[:, :, i, j]
+    out = np.empty_like(da)
+    out[:, :, 0, 0] = da[:, :, 0, 0] + product(A(0, 1), B(0, 0), A(1, 0))
+    out[:, :, 0, 1] = product(A(0, 1), B(0, 1))
+    out[:, :, 1, 0] = product(B(1, 0), A(1, 0))
+    out[:, :, 1, 1] = db[:, :, 1, 1] + product(B(1, 0), A(1, 1), B(0, 1))
+    return out
+
+
 @dataclass(frozen=True)
 class RFModel:
     definition: CircuitDefinition
@@ -248,6 +276,77 @@ class RFEvaluator:
         response = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays)
         if timing: timing[0].add(timing[1] + '/response_build', perf_counter_ns() - start)
         return response
+
+    def evaluate_with_il_jacobian(self, x):
+        """Return external-port response and dIL/dx in physical vector units.
+
+        Sensitivities at zero transmission are undefined and fail closed.
+        This independent path does not use the development runner caches.
+        """
+        m, g, topology = self.model, self.grid, self.model.topology
+        values = m.decode(x)
+        omega = 2*np.pi*g.frequency_hz
+        matrices = topology.matrices(values)
+        node = topology.node_admittance(values, omega, g.setting, matrices=matrices)
+        n = topology.inductor_tree.node_count
+        ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
+        middle = tuple(i for i in range(n) if i not in ports)
+        order = np.asarray(ports + middle)
+        Y = node[:, order[:, None], order]
+        R = Y[:, :2, :2]
+        if middle:
+            U, V, E = Y[:, :2, 2:], Y[:, 2:, :2], Y[:, 2:, 2:]
+            try:
+                internal = np.linalg.solve(E, V)
+            except np.linalg.LinAlgError as exc:
+                raise CircuitNumericalError('schur_solve_failed', 'Internal-node Schur solve failed') from exc
+            R = R - U @ internal
+        if not np.all(np.isfinite(R)):
+            raise CircuitNumericalError('schur_nonfinite', 'Non-finite port admittance',
+                sample_index=int(np.flatnonzero(~np.all(np.isfinite(R), axis=(1, 2)))[0]))
+        eye = np.eye(2)
+        A = eye + 50*R
+        try:
+            core = np.linalg.solve(A, eye - 50*R)
+        except np.linalg.LinAlgError as exc:
+            raise CircuitNumericalError('s_singular', 'Singular Y-to-S conversion') from exc
+        first = _cascade(self.pre, core)
+        full = _cascade(first, self.post)
+        data = power_response(full, self.source_ohms, self.load_ohms)
+        # Complete the original forward and its error checks before sensitivity.
+        _, dY = topology.node_admittance_with_jacobian(
+            values, m.schema, omega, g.setting, matrices=matrices, node=node)
+        dY = dY[:, :, order[:, None], order]
+        dR = dY[:, :, :2, :2]
+        try:
+            if middle:
+                dU, dV, dE = dY[:, :, :2, 2:], dY[:, :, 2:, :2], dY[:, :, 2:, 2:]
+                dX = np.linalg.solve(E[:, None], dV - dE @ internal[:, None])
+                dR = dR - dU @ internal[:, None] - U[:, None] @ dX
+            dcore = np.linalg.solve(A[:, None], -50*dR @ (eye + core[:, None]))
+            zeros = np.zeros_like(dcore)
+            dfirst = _cascade_jacobian(self.pre, zeros, core, dcore)
+            dfull = _cascade_jacobian(first, dfirst, self.post, zeros)
+            z = np.asarray([self.source_ohms, self.load_ohms])
+            scale = (2*np.sqrt(z.real))[None, None, :, None]
+            da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale
+            db = (np.sqrt(50.) + z.conj()[None, None, :, None]/np.sqrt(50.)) * dfull / scale
+            v = np.sqrt(50.) * (eye + full)
+            i = (eye - full) / np.sqrt(50.)
+            a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])
+            ds = np.linalg.solve(a[:, None].swapaxes(-1, -2),
+                (db - data[0][:, None] @ da).swapaxes(-1, -2)).swapaxes(-1, -2)
+        except np.linalg.LinAlgError as exc:
+            raise CircuitNumericalError('sensitivity_solve_failed', 'RF sensitivity solve failed') from exc
+        transmission = data[0][:, 1, 0]
+        if np.any(transmission == 0):
+            raise CircuitNumericalError('sensitivity_zero_transmission', 'IL derivative undefined at zero transmission')
+        with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
+            jac = -20/np.log(10) * np.real(ds[:, :, 1, 0] / transmission[:, None])
+        if not np.all(np.isfinite(jac)):
+            raise CircuitNumericalError('sensitivity_nonfinite', 'Non-finite IL sensitivity')
+        arrays = [_frozen(a, np.complex128 if j == 0 else np.float64) for j, a in enumerate(data)]
+        return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)
 
     def evaluate_batch(self, vectors):
         """Evaluate a candidate-major batch on the Search grid.
