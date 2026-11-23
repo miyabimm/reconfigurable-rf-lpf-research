@@ -59,7 +59,22 @@ def validate_solver(step):
             if not valid:
                 raise ValueError('restart_sigma must be finite and positive')
     elif solver == 'trf':
-        fields(options, 'max_evaluations')
+        fields(options, 'max_evaluations' + ''.join(
+            f' {name}' for name in ('ftol', 'x_scale')
+            if isinstance(options, dict) and name in options))
+        if 'ftol' in options and options['ftol'] is not None:
+            ftol = options['ftol']
+            try:
+                valid = type(ftol) in (int, float) and math.isfinite(ftol) and ftol > 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError('ftol must be None or finite and positive')
+        if 'x_scale' in options:
+            scale = options['x_scale']
+            if not ((type(scale) in (int, float) and scale == 1.0) or
+                    (type(scale) is str and scale == 'jac')):
+                raise ValueError('x_scale must be 1.0 or jac')
         if step.get('objective') != 'signed_margin_db':
             raise ValueError('TRF requires signed_margin_db')
     elif solver in ('slsqp', 'slp'):
