@@ -1,5 +1,7 @@
 """Small deterministic local-solver contract tests."""
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
@@ -22,6 +24,32 @@ class LeastSquaresTests(unittest.TestCase):
         self.assertEqual(result.sensitivity_evaluations, result.nfev)
         self.assertEqual(result.computed_samples, len(calls)*2)
         self.assertLess(result.objective, 1e-12)
+
+    def test_rounded_reconstruction_stays_in_physical_box(self):
+        # Even z=1 can round above hi when converting from normalized units.
+        lo, hi = -287746.1380527697, 0.018872042873522694
+        self.assertGreater(lo + (hi - lo), hi)
+        calls = []
+
+        def evaluate(x):
+            calls.append(x.copy())
+            self.assertEqual(x[0], hi)
+            return np.array([x[0] - hi]), np.array([[1.]])
+
+        def run_solver(fun, z0, *, jac, **kwargs):
+            np.testing.assert_array_equal(z0, [1.])
+            z = np.array([1.])
+            residual = fun(z)
+            np.testing.assert_array_equal(jac(z), [[hi - lo]])
+            return SimpleNamespace(x=z, fun=residual, success=True,
+                                   status=1, message='test', nfev=1, njev=1)
+
+        with patch('lpf.optimizers.least_squares.least_squares', side_effect=run_solver):
+            result = least_squares_local(evaluate, [hi], [(lo, hi)])
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(result.initial_evaluated_x[0], hi)
+        self.assertEqual(result.x[0], hi)
+        self.assertEqual(result.objective, 0.)
 
     def test_fixed_and_stopped_and_errors(self):
         calls = []
