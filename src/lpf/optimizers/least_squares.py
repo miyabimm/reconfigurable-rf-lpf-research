@@ -88,7 +88,11 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100,
         z = np.asarray(result.x, dtype=float)
         final_r = np.asarray(result.fun, dtype=float)
         if (z.shape != z0.shape or not np.all(np.isfinite(z)) or np.any(z < 0) or np.any(z > 1) or
-                final_r.ndim != 1 or not final_r.size or not np.all(np.isfinite(final_r))):
+                cached is None or final_r.shape != cached[0].shape or not np.all(np.isfinite(final_r)) or
+                not isinstance(result.success, (bool, np.bool_)) or
+                not isinstance(result.status, (int, np.integer)) or bool(result.success) != (result.status > 0) or
+                not isinstance(result.nfev, (int, np.integer)) or result.nfev < 1 or
+                (result.njev is not None and (not isinstance(result.njev, (int, np.integer)) or result.njev < 0))):
             raise ValueError('Invalid SciPy result')
         x = lo.copy()
         x[free] = np.clip(lo[free] + z * width[free], lo[free], bounds[free, 1])

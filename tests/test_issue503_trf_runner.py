@@ -54,7 +54,7 @@ class TRFTests(unittest.TestCase):
             from types import SimpleNamespace
             a, b = np.array([.2]), np.array([.8])
             ra = fun(a); jac(a); rb = fun(b); jac(b)
-            return SimpleNamespace(x=b, fun=rb, status=0, success=False, message='limit', nfev=2, njev=2)
+            return SimpleNamespace(x=b, fun=rb, status=0, success=False, message='limit', nfev=7, njev=2)
         with patch('lpf.optimizers.least_squares.least_squares', side_effect=fake):
             result = least_squares_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: seen.append((x, f)))
         self.assertEqual(len(seen), 2)
@@ -63,6 +63,7 @@ class TRFTests(unittest.TestCase):
         np.testing.assert_array_equal(selected.x, [.2])
         self.assertEqual(selected.stop_reason, 'evaluation_limit')
         self.assertEqual(selected.evaluations, 2)
+        self.assertEqual(result.nfev, 7)  # Never infer RF calls from SciPy's counter.
         from dataclasses import replace
         self.assertEqual(to_optimizer_result(replace(result, status=-1)).stop_reason, 'solver_failure')
         fixed = least_squares_local(evaluate, [0.], [(0,0)], objective_callback=lambda x, f: seen.append((x, f)))
@@ -72,6 +73,12 @@ class TRFTests(unittest.TestCase):
             least_squares_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: (_ for _ in ()).throw(RuntimeError('observer')))
         with self.assertRaises(ValueError):
             least_squares_local(lambda x: ([float('nan')], [[1]]), [.5], [(0,1)], objective_callback=lambda x, f: self.fail('invalid notification'))
+        def invalid(fun, z0, *, jac, **kwargs):
+            from types import SimpleNamespace
+            fun(z0)
+            return SimpleNamespace(x=z0, fun=[float('nan')], status=1, success=True, message='', nfev=1, njev=1)
+        with patch('lpf.optimizers.least_squares.least_squares', side_effect=invalid), self.assertRaisesRegex(ValueError, 'Invalid SciPy'):
+            least_squares_local(evaluate, [.5], [(0,1)])
 
     def test_run_and_stop(self):
         with tempfile.TemporaryDirectory(prefix='issue503-test-') as tmp:
