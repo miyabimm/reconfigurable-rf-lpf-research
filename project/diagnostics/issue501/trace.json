@@ -1,0 +1,278 @@
+{
+  "base": "58573e2573867dc095e38d8995c29626d9ec32cd",
+  "note": "20 traced calls; root-line intervals include descendants once; tracing overhead not subtracted; not plain timing",
+  "profile_sha256": "d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417",
+  "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+  "rows": [
+    {
+      "line": 280,
+      "source": "def evaluate_with_il_jacobian(self, x):",
+      "mean_ms": 0.0007334500000000001
+    },
+    {
+      "line": 286,
+      "source": "m, g, topology = self.model, self.grid, self.model.topology",
+      "mean_ms": 0.0007319
+    },
+    {
+      "line": 287,
+      "source": "values = m.decode(x)",
+      "mean_ms": 0.13855420000000002
+    },
+    {
+      "line": 288,
+      "source": "omega = 2*np.pi*g.frequency_hz",
+      "mean_ms": 0.003383
+    },
+    {
+      "line": 289,
+      "source": "matrices = topology.matrices(values)",
+      "mean_ms": 0.11752214999999999
+    },
+    {
+      "line": 290,
+      "source": "node = topology.node_admittance(values, omega, g.setting, matrices=matrices)",
+      "mean_ms": 0.091121
+    },
+    {
+      "line": 291,
+      "source": "n = topology.inductor_tree.node_count",
+      "mean_ms": 0.0011301
+    },
+    {
+      "line": 292,
+      "source": "ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)",
+      "mean_ms": 0.0008627000000000001
+    },
+    {
+      "line": 293,
+      "source": "middle = tuple(i for i in range(n) if i not in ports)",
+      "mean_ms": 0.0036104
+    },
+    {
+      "line": 294,
+      "source": "order = np.asarray(ports + middle)",
+      "mean_ms": 0.0018399500000000001
+    },
+    {
+      "line": 295,
+      "source": "Y = node[:, order[:, None], order]",
+      "mean_ms": 0.0063120500000000005
+    },
+    {
+      "line": 296,
+      "source": "R = Y[:, :2, :2]",
+      "mean_ms": 0.00098145
+    },
+    {
+      "line": 297,
+      "source": "if middle:",
+      "mean_ms": 0.000516
+    },
+    {
+      "line": 298,
+      "source": "U, V, E = Y[:, :2, 2:], Y[:, 2:, :2], Y[:, 2:, 2:]",
+      "mean_ms": 0.0013384500000000001
+    },
+    {
+      "line": 299,
+      "source": "try:",
+      "mean_ms": 0.00044039999999999997
+    },
+    {
+      "line": 300,
+      "source": "internal = np.linalg.solve(E, V)",
+      "mean_ms": 0.04127865
+    },
+    {
+      "line": 303,
+      "source": "R = R - U @ internal",
+      "mean_ms": 0.014273899999999999
+    },
+    {
+      "line": 304,
+      "source": "if not np.all(np.isfinite(R)):",
+      "mean_ms": 0.0056462
+    },
+    {
+      "line": 307,
+      "source": "eye = np.eye(2)",
+      "mean_ms": 0.0068871
+    },
+    {
+      "line": 308,
+      "source": "A = eye + 50*R",
+      "mean_ms": 0.00533525
+    },
+    {
+      "line": 309,
+      "source": "try:",
+      "mean_ms": 0.0014377
+    },
+    {
+      "line": 310,
+      "source": "core = np.linalg.solve(A, eye - 50*R)",
+      "mean_ms": 0.03588685
+    },
+    {
+      "line": 313,
+      "source": "first = _cascade(self.pre, core)",
+      "mean_ms": 0.0364005
+    },
+    {
+      "line": 314,
+      "source": "full = _cascade(first, self.post)",
+      "mean_ms": 0.0298909
+    },
+    {
+      "line": 315,
+      "source": "data = power_response(full, self.source_ohms, self.load_ohms)",
+      "mean_ms": 0.168176
+    },
+    {
+      "line": 317,
+      "source": "_, dY = topology.node_admittance_with_jacobian(",
+      "mean_ms": 0.5527539499999999
+    },
+    {
+      "line": 318,
+      "source": "values, m.schema, omega, g.setting, matrices=matrices, node=node)",
+      "mean_ms": 0.0006316000000000001
+    },
+    {
+      "line": 319,
+      "source": "dY = dY[:, :, order[:, None], order]",
+      "mean_ms": 0.06440285
+    },
+    {
+      "line": 320,
+      "source": "dR = dY[:, :, :2, :2]",
+      "mean_ms": 0.0015939
+    },
+    {
+      "line": 321,
+      "source": "try:",
+      "mean_ms": 0.00054305
+    },
+    {
+      "line": 322,
+      "source": "if middle:",
+      "mean_ms": 0.00066685
+    },
+    {
+      "line": 323,
+      "source": "dU, dV, dE = dY[:, :, :2, 2:], dY[:, :, 2:, :2], dY[:, :, 2:, 2:]",
+      "mean_ms": 0.0016676500000000001
+    },
+    {
+      "line": 324,
+      "source": "dX = np.linalg.solve(E[:, None], dV - dE @ internal[:, None])",
+      "mean_ms": 0.94019575
+    },
+    {
+      "line": 325,
+      "source": "dR = dR - dU @ internal[:, None] - U[:, None] @ dX",
+      "mean_ms": 0.4478277
+    },
+    {
+      "line": 326,
+      "source": "dcore = np.linalg.solve(A[:, None], -50*dR @ (eye + core[:, None]))",
+      "mean_ms": 0.62792835
+    },
+    {
+      "line": 327,
+      "source": "zeros = np.zeros_like(dcore)",
+      "mean_ms": 0.015952
+    },
+    {
+      "line": 328,
+      "source": "dfirst = _cascade_jacobian(self.pre, zeros, core, dcore)",
+      "mean_ms": 0.27143385
+    },
+    {
+      "line": 329,
+      "source": "dfull = _cascade_jacobian(first, dfirst, self.post, zeros)",
+      "mean_ms": 0.25646175
+    },
+    {
+      "line": 330,
+      "source": "z = np.asarray([self.source_ohms, self.load_ohms])",
+      "mean_ms": 0.0045081999999999995
+    },
+    {
+      "line": 331,
+      "source": "scale = (2*np.sqrt(z.real))[None, None, :, None]",
+      "mean_ms": 0.00578345
+    },
+    {
+      "line": 332,
+      "source": "da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale",
+      "mean_ms": 0.0676868
+    },
+    {
+      "line": 333,
+      "source": "db = (np.sqrt(50.) + z.conj()[None, None, :, None]/np.sqrt(50.)) * dfull / scale",
+      "mean_ms": 0.06263880000000001
+    },
+    {
+      "line": 334,
+      "source": "v = np.sqrt(50.) * (eye + full)",
+      "mean_ms": 0.0076683
+    },
+    {
+      "line": 335,
+      "source": "i = (eye - full) / np.sqrt(50.)",
+      "mean_ms": 0.005321149999999999
+    },
+    {
+      "line": 336,
+      "source": "a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])",
+      "mean_ms": 0.0106247
+    },
+    {
+      "line": 337,
+      "source": "ds = np.linalg.solve(a[:, None].swapaxes(-1, -2),",
+      "mean_ms": 0.446431
+    },
+    {
+      "line": 338,
+      "source": "(db - data[0][:, None] @ da).swapaxes(-1, -2)).swapaxes(-1, -2)",
+      "mean_ms": 0.180781
+    },
+    {
+      "line": 341,
+      "source": "transmission = data[0][:, 1, 0]",
+      "mean_ms": 0.0012052
+    },
+    {
+      "line": 342,
+      "source": "if np.any(transmission == 0):",
+      "mean_ms": 0.01885415
+    },
+    {
+      "line": 344,
+      "source": "with np.errstate(over='ignore', invalid='ignore', divide='ignore'):",
+      "mean_ms": 0.0053301
+    },
+    {
+      "line": 345,
+      "source": "jac = -20/np.log(10) * np.real(ds[:, :, 1, 0] / transmission[:, None])",
+      "mean_ms": 0.02208865
+    },
+    {
+      "line": 346,
+      "source": "if not np.all(np.isfinite(jac)):",
+      "mean_ms": 0.00849225
+    },
+    {
+      "line": 348,
+      "source": "arrays = [_frozen(a, np.complex128 if j == 0 else np.float64) for j, a in enumerate(data)]",
+      "mean_ms": 0.02543855
+    },
+    {
+      "line": 349,
+      "source": "return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)",
+      "mean_ms": 0.00934525
+    }
+  ]
+}
