@@ -167,6 +167,58 @@ def run(arm, limit, output, *, observe=True):
         threads={k: os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS')}))
 
 
+
+def compact_record(raw):
+    """Preserve the selected vectors and scientific comparisons, not every probe."""
+    result = raw['result']
+    step = result['steps'][0] if result else None
+    windows = {}
+    for seconds, row in raw['windows'].items():
+        selected = row['selected_sequence']
+        saved = dict(status=row['status'], selected_sequence=selected,
+                     terminal_selection=row['terminal_selection'], missing=row['missing'])
+        if selected is not None:
+            e = raw['events'][selected - 1]
+            if (e['sequence'] != selected or e['vector_sha256'] != row['vector_sha256']
+                    or e['elapsed_s'] > float(seconds)):
+                raise ValueError('Observation/window mismatch')
+            t = row['terminal']
+            saved.update(observed_s=e['elapsed_s'], forward_count_at_observation=e['forward_count'],
+                         search_objective_db2=e['objective'], vector_sha256=e['vector_sha256'],
+                         vector=e['vector'],
+                         terminal=dict(J=t.get('J'), finite_grid_pass=t.get('finite_grid_pass'),
+                             max_pass_il_db=t.get('max_pass_il_db'),
+                             min_h2_h3_atten_db=t.get('min_h2_h3_atten_db'),
+                             independent_mna=t.get('independent', {}).get('status'),
+                             external_passivity=t.get('external_passivity'),
+                             power_balance=t.get('power_balance'), error=t.get('error')))
+        windows[seconds] = saved
+    return dict(kind='development_diagnostic_comparison_compact_v1',
+        arm=raw['arm'], limit=raw['limit'], error=raw['error'],
+        seed=result['seed'] if result else None,
+        plan_sha256=raw['plan_sha256'],
+        source_sha256=result['source_sha256'] if result else None,
+        initial_vector_sha256=result['initial_vector_sha256'] if result else None,
+        search_bounds_sha256=result['search_bounds_sha256'] if result else None,
+        status=result['status'] if result else None,
+        stop_reason=step['stop_reason'] if step else None,
+        converged=step['converged'] if step else None,
+        search_forwards=step['forward_count'] if step else None,
+        search_requested_samples=step['requested_samples'] if step else None,
+        search_computed_samples=(step['trf_details']['computed_samples'] if raw['arm'] == 'trf'
+            else raw['search_cache_stats'].get('computed_samples') if raw['search_cache_stats'] else None)
+            if step else None,
+        actual=raw['state']['jobs'][0]['actual'] if raw['state'] else None,
+        trf_diagnostics={key: step['trf_details'][key] for key in
+            ('nfev','njev','status','message','sensitivity_evaluations')} if step and raw['arm']=='trf' else None,
+        solver_wall_s=raw['solver_wall_s'], solver_cpu_s=raw['solver_cpu_s'],
+        runner_wall_s=raw['runner_wall_s'], runner_cpu_s=raw['runner_cpu_s'],
+        post_wall_s=raw['post_wall_s'], windows=windows,
+        threads=raw['threads'], platform=raw['platform'], host=raw['host'],
+        loadavg_start=raw['loadavg_start'], loadavg_end=raw['loadavg_end'],
+        diagnostic_script_sha256=raw['diagnostic_script_sha256'])
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('arm', choices=['hybrid', 'trf'])
@@ -179,7 +231,7 @@ def main():
         p.error('OPENBLAS_NUM_THREADS, OMP_NUM_THREADS and MKL_NUM_THREADS must all be 1')
     if args.record.exists():
         p.error('record must not exist')
-    payload = run(args.arm, args.limit, args.output, observe=not args.control)
+    payload = compact_record(run(args.arm, args.limit, args.output, observe=not args.control))
     serialized = json.dumps(payload, allow_nan=False, separators=(',', ':'))
     if args.record.suffix == '.gz':
         with gzip.open(args.record, 'xt') as f:

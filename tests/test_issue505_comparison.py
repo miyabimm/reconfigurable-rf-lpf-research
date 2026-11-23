@@ -28,6 +28,14 @@ class ComparisonTests(unittest.TestCase):
             self.assertTrue(row['events'])
             self.assertEqual(row['result']['initial_vector_sha256'], row['events'][0]['vector_sha256'])
             self.assertEqual(len(row['events']), row['result']['steps'][0]['forward_count'])
+            compact = compare.compact_record(row)
+            self.assertNotIn('events', compact)
+            self.assertNotIn('result', compact)
+            self.assertNotIn('state', compact)
+            self.assertEqual(compact['initial_vector_sha256'], row['result']['initial_vector_sha256'])
+            window = compact['windows']['1']
+            self.assertEqual(window['vector_sha256'], row['windows']['1']['vector_sha256'])
+            self.assertEqual(len(window['vector']), 25)
             self.assertEqual([e['sequence'] for e in row['events']], list(range(1, len(row['events'])+1)))
             self.assertEqual(sorted(e['elapsed_s'] for e in row['events']), [e['elapsed_s'] for e in row['events']])
             self.assertEqual(row['windows']['1']['status'], 'budget_censored')
@@ -63,58 +71,6 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(compare.classify(None, 2, 5, 'RF error'), 'rf_or_execution_stop')
 
 
-    def test_extract_compact_from_archived_observations_for_storage_migration(self):
-        """Temporary migration: print selected windows, never the full trace."""
-        import gzip
-        import json
-        from lpf.search.storage import vector_sha
-        folder = Path(__file__).resolve().parents[1]/'project/diagnostics/issue505/raw'
-        for run_id in ('h1','t1','t2','h2','h3','t3'):
-            with gzip.open(folder/(run_id+'.json.gz'), 'rt') as f:
-                raw = json.load(f)
-            rr = raw['result']
-            step = rr['steps'][0]
-            windows = {}
-            for label in ('1','5','20'):
-                stored = raw['windows'][label]
-                e = compare.select(raw['events'], int(label))
-                self.assertEqual(stored['selected_sequence'], e['sequence'])
-                self.assertEqual(stored['vector_sha256'], e['vector_sha256'])
-                self.assertEqual(vector_sha(e['vector']), e['vector_sha256'])
-                windows[label] = dict(
-                    status=stored['status'],
-                    selected_sequence=e['sequence'],
-                    observed_s=e['elapsed_s'],
-                    forward_count=e['forward_count'],
-                    search_objective=e['objective'],
-                    vector_sha256=e['vector_sha256'],
-                    vector=e['vector'],
-                    terminal=stored['terminal'])
-            d = dict(
-                run=run_id, arm=raw['arm'], seed=rr['seed'], limit=raw['limit'],
-                plan_sha256=raw['plan_sha256'],
-                source_sha256=rr['source_sha256'],
-                initial_vector_sha256=rr['initial_vector_sha256'],
-                search_bounds_sha256=rr['search_bounds_sha256'],
-                status=rr['status'], stop_reason=step['stop_reason'],
-                converged=step['converged'],
-                solver_wall_s=raw['solver_wall_s'],
-                solver_cpu_s=raw['solver_cpu_s'],
-                runner_wall_s=raw['runner_wall_s'],
-                runner_cpu_s=raw['runner_cpu_s'],
-                loadavg_start=raw['loadavg_start'],
-                loadavg_end=raw['loadavg_end'],
-                forward_count=step['forward_count'],
-                requested_samples=step['requested_samples'],
-                actual=raw['state']['jobs'][0]['actual'],
-                local_runs=step.get('local_runs'),
-                trf_details={
-                    key:step['trf_details'][key] for key in
-                    ('nfev','njev','sensitivity_evaluations','computed_samples',
-                     'status','message','wall_s','cpu_s')
-                } if raw['arm']=='trf' else None,
-                windows=windows)
-            print('ISSUE505_EXTRACT='+json.dumps(d, separators=(',', ':')),flush=True)
 
 if __name__ == '__main__':
     unittest.main()
