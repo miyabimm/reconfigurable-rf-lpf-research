@@ -252,7 +252,14 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 results = residuals_batch(vectors)
             pending = iter(results)
             try:
-                values = [fun(z) for z in zs]
+                if _timing: started, failed = perf_counter_ns(), False
+                try:
+                    values = [fun(z) for z in zs]
+                except BaseException:
+                    if _timing: failed = True
+                    raise
+                finally:
+                    if _timing: _timing[0].add(f'{_timing[1]}/batch/apply', perf_counter_ns() - started, failed=failed)
             finally:
                 pending = None
             if group_callback is not None:
