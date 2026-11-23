@@ -15,7 +15,9 @@ def squared_terms(residuals, weights):
     # Multiplication order matters: zero weight must suppress even huge residuals.
     positive = np.maximum(residuals, 0)
     with np.errstate(over='ignore', invalid='ignore'):
-        return positive * positive if weights is None else weights * positive * positive
+        if weights is None:
+            return np.multiply(positive, positive, out=positive)
+        return weights * positive * positive
 
 
 def aggregate(terms, aggregation):
