@@ -29,13 +29,19 @@ for name, variant, count, trace in schedule:
     script = root/'project/diagnostics/issue491/cache_replay.py' if trace else root/'project/diagnostics/issue487/measure.py'
     args = ['plain', str(output/name)] if trace else ['--child', 'plain', str(count), str(output/name), '0']
     start = time.perf_counter()
-    p = subprocess.run(['taskset', '-c', str(cpu), sys.executable, str(script), *args], cwd=root,
-                       env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    load_before = os.getloadavg()
+    with (output/(name+'.log')).open('w') as log:
+        p = subprocess.Popen(['taskset', '-c', str(cpu), sys.executable, str(script), *args], cwd=root,
+                             env=env, stdout=log, stderr=subprocess.STDOUT)
+        _, status, usage = os.wait4(p.pid, 0)
+        p.returncode = os.waitstatus_to_exitcode(status)
     elapsed = time.perf_counter() - start
-    (output/(name+'.log')).write_text(p.stdout)
-    row = dict(name=name, variant=variant, count=count, trace=trace, process_wall_s=elapsed, exit_code=p.returncode)
+    row = dict(name=name, variant=variant, count=count, trace=trace, process_wall_s=elapsed,
+               process_cpu_s=usage.ru_utime + usage.ru_stime, max_rss_kib=usage.ru_maxrss,
+               voluntary_context_switches=usage.ru_nvcsw, involuntary_context_switches=usage.ru_nivcsw,
+               load_before=load_before, load_after=os.getloadavg(), exit_code=p.returncode)
     if p.returncode == 0:
-        lines = p.stdout.splitlines()
+        lines = (output/(name+'.log')).read_text().splitlines()
         row.update(json.loads(lines[-2] if trace else lines[-1]))
         if trace:
             row['cache'] = json.loads(lines[-1])['search_cache']
