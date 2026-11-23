@@ -28,6 +28,55 @@ class NodalSensitivityTests(unittest.TestCase):
                 evaluator.evaluate_with_il_jacobian(x)
             self.assertEqual(failure.exception.code, 'sensitivity_zero_transmission')
 
+    def test_packed_sensitivity_solves_fail_closed(self):
+        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
+        _, _, model, _, x = make('RF-T008')
+        evaluator = model.evaluator(grid(model.resolved_policy))
+        solve = np.linalg.solve
+        # These are the Schur, Y-to-S and power-wave sensitivity solves,
+        # respectively, with all directions packed into 2*p RHS columns.
+        for failing in (1, 2, 3, 4):
+            calls = []
+            def injected(a, b):
+                if a.ndim == 3 and b.ndim == 3 and b.shape[-1] == 2*len(x):
+                    calls.append(a.shape)
+                    if len(calls) == failing:
+                        raise np.linalg.LinAlgError('injected')
+                    if failing == 4 and len(calls) == 3:  # non-finite wave derivative
+                        result = solve(a, b)
+                        result[...] = np.nan
+                        return result
+                return solve(a, b)
+            with self.subTest(failing=failing), patch('numpy.linalg.solve', side_effect=injected):
+                with self.assertRaises(CircuitNumericalError) as failure:
+                    evaluator.evaluate_with_il_jacobian(x)
+                self.assertEqual(failure.exception.code,
+                    'sensitivity_nonfinite' if failing == 4 else 'sensitivity_solve_failed')
+                self.assertEqual(len(calls), min(failing, 3))
+
+    def test_forward_schur_failure_and_sample_index(self):
+        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
+        _, _, model, _, x = make('RF-T008')
+        evaluator = model.evaluator(grid(model.resolved_policy))
+        solve = np.linalg.solve
+        for mode in ('singular', 'nonfinite'):
+            def injected(a, b):
+                # The first three-dimensional solve is the forward Schur solve.
+                if a.ndim == 3:
+                    if mode == 'singular':
+                        raise np.linalg.LinAlgError('injected')
+                    result = solve(a, b)
+                    result[3] = np.nan
+                    return result
+                return solve(a, b)
+            with self.subTest(mode=mode), patch('numpy.linalg.solve', side_effect=injected):
+                with self.assertRaises(CircuitNumericalError) as failure:
+                    evaluator.evaluate_with_il_jacobian(x)
+                self.assertEqual(failure.exception.code,
+                    'schur_solve_failed' if mode == 'singular' else 'schur_nonfinite')
+                if mode == 'nonfinite':
+                    self.assertEqual(failure.exception.sample_index, 3)
+
     def test_external_response_and_all_columns(self):
         policy, _, model, _, x = make('RF-T008')
         x[10], x[13] = .03, -.04
