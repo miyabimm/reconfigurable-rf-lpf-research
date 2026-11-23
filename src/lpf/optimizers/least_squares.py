@@ -60,7 +60,10 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
             np.any(bounds[:, 1] < bounds[:, 0]) or np.any(x0 < bounds[:, 0]) or
             np.any(x0 > bounds[:, 1]) or type(max_evaluations) is not int or max_evaluations < 1):
         raise ValueError('Expected finite in-box x0, bounds and positive max_evaluations')
-    lo, width = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
+    with np.errstate(over='ignore', invalid='ignore'):
+        lo, width = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
+    if not np.all(np.isfinite(width)):
+        raise ValueError('Non-finite bounds width')
     free = width > 0
     z0 = (x0[free] - lo[free]) / width[free]
     cached_z = cached = None

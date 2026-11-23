@@ -36,7 +36,8 @@ class LeastSquaresTests(unittest.TestCase):
         self.assertEqual(stopped.status, 0)
         with self.assertRaisesRegex(RuntimeError, 'failure'):
             least_squares_local(lambda x: (_ for _ in ()).throw(RuntimeError('failure')), [.5], [(0,1)])
-        for x, bounds in [([2.], [(0,1)]), ([float('nan')], [(0,1)]), ([0.], [(1,0)])]:
+        for x, bounds in [([2.], [(0,1)]), ([float('nan')], [(0,1)]), ([0.], [(1,0)]),
+                          ([0.], [(-1e308, 1e308)])]:
             with self.assertRaises(ValueError): least_squares_local(evaluate, x, bounds)
 
 
