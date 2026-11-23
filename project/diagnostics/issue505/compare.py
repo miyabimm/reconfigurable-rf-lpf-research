@@ -6,6 +6,7 @@ Python starts. Solver wrappers are installed only in this process; the actual
 DevelopmentWorker, optimizer, checkpoint and receipt paths remain unchanged.
 """
 import argparse
+import gzip
 import json
 import os
 from pathlib import Path
@@ -68,6 +69,10 @@ def run(arm, limit, output, *, observe=True):
 
     def solver(original, callback_name, *args, **kwargs):
         callback = kwargs[callback_name]
+        # The worker's residual closure owns the actual evaluator; inspect once,
+        # outside the solver window, rather than wrapping any RF calls.
+        closure = dict(zip(args[0].__code__.co_freevars, (c.cell_contents for c in args[0].__closure__)))
+        evaluator = closure['evaluator']
         start, cpu = monotonic(), process_time()
         context.update(start=start, cpu_start=cpu)
         def record(x, value, *more):
@@ -82,6 +87,7 @@ def run(arm, limit, output, *, observe=True):
         finally:
             context['solver_wall_s'] = monotonic()-start
             context['solver_cpu_s'] = process_time()-cpu
+            context['cache_stats'] = dict(evaluator.cache_stats)
 
     spots = {'terminal': [0, 111]}
     wall, cpu = monotonic(), process_time()
@@ -142,7 +148,7 @@ def run(arm, limit, output, *, observe=True):
         solver_wall_s=context.get('solver_wall_s'), solver_cpu_s=context.get('solver_cpu_s'),
         runner_wall_s=elapsed, runner_cpu_s=cpu_elapsed, post_wall_s=post_wall,
         windows=context.get('windows', {}), events=events, result=result,
-        plan_sha256=sha(plan) if plan else None, additional_terminal_forwards=extra,
+        plan_sha256=sha(plan) if plan else None, search_cache_stats=context.get('cache_stats'), additional_terminal_forwards=extra,
         additional_terminal_requested_samples=extra*476, additional_terminal_mna_samples=extra*2,
         loadavg=os.getloadavg(), threads={k: os.environ.get(k) for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS')}))
 
@@ -161,8 +167,12 @@ def main():
         p.error('record must not exist')
     payload = run(args.arm, args.limit, args.output, observe=not args.control)
     serialized = json.dumps(payload, allow_nan=False, separators=(',', ':'))
-    with args.record.open('x') as f:
-        f.write(serialized + '\n')
+    if args.record.suffix == '.gz':
+        with gzip.open(args.record, 'xt') as f:
+            f.write(serialized + '\n')
+    else:
+        with args.record.open('x') as f:
+            f.write(serialized + '\n')
 
 if __name__ == '__main__':
     main()
