@@ -151,14 +151,21 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         last_x = last_fun = None
         local_nfev = nit = 0
         pending = None
+        candidate = None
 
         def objective(z):
-            nonlocal total, local_nfev, start_fun, last_x, last_fun, best_x, best_fun, residual_size
+            nonlocal total, local_nfev, start_fun, last_x, last_fun, best_x, best_fun, residual_size, candidate
             if _timing: started, failed = perf_counter_ns(), False
             try:
                 if pending is None and total >= max_evaluations:
                     raise _Stop('evaluation_budget_exhausted')
-                x = start_x.copy() if np.array_equal(z, z_start) else physical(z)
+                if pending is None:
+                    x = start_x.copy() if np.array_equal(z, z_start) else physical(z)
+                else:
+                    if candidate is None or not np.array_equal(z, candidate[0]):
+                        raise RuntimeError('batch objective candidate mismatch')
+                    x = candidate[1]
+                    candidate = None
                 total += 1
                 local_nfev += 1
             except BaseException:
@@ -229,7 +236,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 return timed_call(_timing[0], f'{_timing[1]}/objective/{kind}', objective_impl, z)
 
         def batch_map(fun, iterable):
-            nonlocal pending
+            nonlocal pending, candidate
             if total >= max_evaluations:
                 raise _Stop('evaluation_budget_exhausted')
             if _timing:
@@ -246,6 +253,9 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 raise
             finally:
                 if _timing: _timing[0].add(f'{_timing[1]}/batch/vectors', perf_counter_ns() - started, failed=failed)
+            # Keep objective inputs independent of the batch consumer, which may
+            # mutate its inputs even while yielding results lazily.
+            candidates = [(np.array(z, copy=True), x.copy()) for z, x in zip(zs, vectors)]
             if _timing:
                 results = timed_call(_timing[0], f'{_timing[1]}/batch/residuals', residuals_batch, vectors)
             else:
@@ -254,7 +264,12 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             try:
                 if _timing: started, failed = perf_counter_ns(), False
                 try:
-                    values = [fun(z) for z in zs]
+                    values = []
+                    for z, item in zip(zs, candidates):
+                        candidate = item
+                        values.append(fun(z))
+                        if candidate is not None:
+                            raise RuntimeError('batch objective was not called')
                 except BaseException:
                     if _timing: failed = True
                     raise
@@ -262,6 +277,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     if _timing: _timing[0].add(f'{_timing[1]}/batch/apply', perf_counter_ns() - started, failed=failed)
             finally:
                 pending = None
+                candidate = None
             if group_callback is not None:
                 if _timing:
                     timed_call(_timing[0], f'{_timing[1]}/batch/group_callback', group_callback)
