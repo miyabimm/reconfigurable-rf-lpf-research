@@ -1,30 +1,12 @@
-"""Independent, normalized TRF local solver; not connected to the runner."""
+"""Normalized TRF local solver with analytic residual sensitivities."""
 from dataclasses import dataclass
 from time import perf_counter, process_time
 
 import numpy as np
 from scipy.optimize import least_squares
 
-from lpf.minimax_profile import _margin_parameters
 from ._objectives import squared_terms, aggregate
-
-
-def signed_margin_residual(profile, response, il_jacobian):
-    """Unweighted sum residual and physical Jacobian; at kink use zero.
-
-    At m=0 the positive-part residual is nondifferentiable. The zero row is
-    the chosen one-sided convention, not a claim of differentiability.
-    """
-    if (response.policy_id != profile.profile['constraint_id'] or
-            response.policy_fingerprint != profile.fingerprint):
-        raise ValueError('Response profile mismatch')
-    threshold, direction = _margin_parameters(profile, response.grid)
-    jac = np.asarray(il_jacobian, dtype=float)
-    margin = direction * (response.il_db - threshold)
-    if jac.ndim != 2 or jac.shape[0] != len(margin) or not np.all(np.isfinite(jac)) or not np.all(np.isfinite(margin)):
-        raise ValueError('Non-finite or mismatched margin sensitivity')
-    residual = np.sqrt(2.) * np.maximum(margin, 0)
-    return residual, np.sqrt(2.) * direction[:, None] * jac * (margin > 0)[:, None]
+from .result import OptimizerResult
 
 
 @dataclass(frozen=True)
@@ -46,7 +28,7 @@ class LeastSquaresResult:
     cpu_s: float
 
 
-def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100):
+def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None):
     """Run one TRF solve. Callback returns (residual, physical Jacobian).
 
     The one-entry cache shares only exactly equal normalized vectors. Callback
@@ -89,6 +71,8 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
         objective = float(.5 * np.dot(r, r))
         if not np.isfinite(objective):
             raise ValueError('Non-finite objective')
+        if objective_callback is not None:
+            objective_callback(x.copy(), objective)
         if first is None:
             first = x.copy()
         if objective < best:
@@ -101,9 +85,20 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
         result = least_squares(lambda z: calc(z)[0], z0, jac=lambda z: calc(z)[1],
                                bounds=(0., 1.), method='trf', loss='linear',
                                x_scale=1., tr_solver='exact', max_nfev=max_evaluations)
+        z = np.asarray(result.x, dtype=float)
+        final_r = np.asarray(result.fun, dtype=float)
+        if (z.shape != z0.shape or not np.all(np.isfinite(z)) or np.any(z < 0) or np.any(z > 1) or
+                cached is None or final_r.shape != cached[0].shape or not np.all(np.isfinite(final_r)) or
+                not isinstance(result.success, (bool, np.bool_)) or
+                not isinstance(result.status, (int, np.integer)) or bool(result.success) != (result.status > 0) or
+                not isinstance(result.nfev, (int, np.integer)) or result.nfev < 1 or
+                (result.njev is not None and (not isinstance(result.njev, (int, np.integer)) or result.njev < 0))):
+            raise ValueError('Invalid SciPy result')
         x = lo.copy()
-        x[free] = np.clip(lo[free] + result.x * width[free], lo[free], bounds[free, 1])
-        objective = float(.5 * np.dot(result.fun, result.fun))
+        x[free] = np.clip(lo[free] + z * width[free], lo[free], bounds[free, 1])
+        objective = float(.5 * np.dot(final_r, final_r))
+        if not np.isfinite(objective):
+            raise ValueError('Invalid SciPy objective')
         success, status, message = bool(result.success), int(result.status), str(result.message)
         nfev, njev = int(result.nfev), int(result.njev or 0)
     else:
@@ -113,6 +108,15 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
     return LeastSquaresResult(x, objective, best_x, best, first, success, status, message,
                               nfev, njev, evaluations, samples, samples,
                               perf_counter()-wall, process_time()-cpu)
+
+
+def to_optimizer_result(result):
+    """Select the best observed point, not necessarily SciPy's final point."""
+    reason = ('all_variables_fixed' if result.success and result.status == 0 else
+              'converged' if result.success else
+              'evaluation_limit' if result.status == 0 else 'solver_failure')
+    return OptimizerResult(result.best_x.copy(), result.best_objective, result.success,
+                           reason, result.sensitivity_evaluations)
 
 
 def reported_margin_objective(margins):

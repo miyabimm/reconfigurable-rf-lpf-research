@@ -58,12 +58,16 @@ def validate_solver(step):
                 valid = False
             if not valid:
                 raise ValueError('restart_sigma must be finite and positive')
+    elif solver == 'trf':
+        fields(options, 'max_evaluations')
+        if step.get('objective') != 'signed_margin_db':
+            raise ValueError('TRF requires signed_margin_db')
     elif solver in ('slsqp', 'slp'):
         fields(options, 'max_iterations max_evaluations')
         positive(options['max_iterations'])
     else:
         raise ValueError('Unknown solver')
-    if agg not in (('signed_max',) if solver == 'slp' else ('sum', 'max')):
+    if agg not in (('signed_max',) if solver == 'slp' else ('sum',) if solver == 'trf' else ('sum', 'max')):
         raise ValueError('Unknown solver aggregation')
     if solver != 'hybrid':
         positive(options['max_evaluations'])

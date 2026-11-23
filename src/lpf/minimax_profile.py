@@ -148,6 +148,24 @@ def _margin_parameters(profile, grid):
     return threshold[grid.segment], direction[grid.segment]
 
 
+def signed_margin_residual(profile, response, il_jacobian):
+    """Unweighted sum residual and physical Jacobian; at kink use zero.
+
+    At m=0 the positive-part residual is nondifferentiable. The zero row is
+    the chosen one-sided convention, not a claim of differentiability.
+    """
+    if (response.policy_id != profile.profile['constraint_id'] or
+            response.policy_fingerprint != profile.fingerprint):
+        raise ValueError('Response profile mismatch')
+    threshold, direction = _margin_parameters(profile, response.grid)
+    jac = np.asarray(il_jacobian, dtype=float)
+    margin = direction * (response.il_db - threshold)
+    if jac.ndim != 2 or jac.shape[0] != len(margin) or not np.all(np.isfinite(jac)) or not np.all(np.isfinite(margin)):
+        raise ValueError('Non-finite or mismatched margin sensitivity')
+    residual = np.sqrt(2.) * np.maximum(margin, 0)
+    return residual, np.sqrt(2.) * direction[:, None] * jac * (margin > 0)[:, None]
+
+
 def signed_margins(profile, expected_grid, response):
     """Return (J, per-sample margins) on the exact requested, complete grid.
 

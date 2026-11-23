@@ -98,7 +98,7 @@ class NodalSensitivityTests(unittest.TestCase):
         from lpf.search.development_plan import freeze_run
         from lpf.search.plan import grid_from_record
         from lpf.minimax_profile import _margin_parameters
-        from lpf.optimizers.least_squares import signed_margin_residual
+        from lpf.minimax_profile import signed_margin_residual
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
