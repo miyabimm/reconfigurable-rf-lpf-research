@@ -65,7 +65,7 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
     if not np.all(np.isfinite(width)):
         raise ValueError('Non-finite bounds width')
     free = width > 0
-    z0 = (x0[free] - lo[free]) / width[free]
+    z0 = np.clip((x0[free] - lo[free]) / width[free], 0., 1.)
     cached_z = cached = None
     evaluations = samples = 0
     first = best_x = None
@@ -78,7 +78,7 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
             return cached
         cached_z = cached = None
         x = lo.copy()
-        x[free] = lo[free] + z * width[free]
+        x[free] = np.clip(lo[free] + z * width[free], lo[free], bounds[free, 1])
         r, j = evaluate_with_jacobian(x.copy())
         evaluations += 1
         r, j = np.asarray(r, dtype=float), np.asarray(j, dtype=float)
@@ -102,7 +102,7 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100)
                                bounds=(0., 1.), method='trf', loss='linear',
                                x_scale=1., tr_solver='exact', max_nfev=max_evaluations)
         x = lo.copy()
-        x[free] = lo[free] + result.x * width[free]
+        x[free] = np.clip(lo[free] + result.x * width[free], lo[free], bounds[free, 1])
         objective = float(.5 * np.dot(result.fun, result.fun))
         success, status, message = bool(result.success), int(result.status), str(result.message)
         nfev, njev = int(result.nfev), int(result.njev or 0)
