@@ -42,7 +42,7 @@ class LeastSquaresTests(unittest.TestCase):
             residual = fun(z)
             np.testing.assert_array_equal(jac(z), [[hi - lo]])
             return SimpleNamespace(x=z, fun=residual, success=True,
-                                   status=1, message='test', nfev=1, njev=1)
+                                   status=1, message='test', nfev=1, njev=1, optimality=0.)
 
         with patch('lpf.optimizers.least_squares.least_squares', side_effect=run_solver):
             result = least_squares_local(evaluate, [hi], [(lo, hi)])
@@ -59,6 +59,7 @@ class LeastSquaresTests(unittest.TestCase):
         fixed = least_squares_local(evaluate, [0.], [(0,0)])
         self.assertEqual(len(calls), 1)
         self.assertTrue(fixed.success)
+        self.assertIsNone(fixed.optimality)
         stopped = least_squares_local(evaluate, [.5], [(0,1)], max_evaluations=1)
         self.assertFalse(stopped.success)
         self.assertEqual(stopped.status, 0)

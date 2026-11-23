@@ -54,7 +54,7 @@ class TRFTests(unittest.TestCase):
             from types import SimpleNamespace
             a, b = np.array([.2]), np.array([.8])
             ra = fun(a); jac(a); rb = fun(b); jac(b)
-            return SimpleNamespace(x=b, fun=rb, status=0, success=False, message='limit', nfev=7, njev=2)
+            return SimpleNamespace(x=b, fun=rb, status=0, success=False, message='limit', nfev=7, njev=2, optimality=1.)
         with patch('lpf.optimizers.least_squares.least_squares', side_effect=fake):
             result = least_squares_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: seen.append((x, f)))
         self.assertEqual(len(seen), 2)
@@ -124,6 +124,21 @@ class TRFTests(unittest.TestCase):
             self.assertEqual(json.loads((failout/'run.json').read_text())['jobs'][0]['status'], 'unknown')
             self.assertFalse((failout/'job-0001/receipt.json').exists())
             self.assertFalse(json.loads((failout/'job-0001/failure.json').read_text())['retry_allowed'])
+
+    def test_new_options_reach_scipy_and_terminal(self):
+        self.cfg['arms'][0]['steps'][0]['options'].update(ftol=None, x_scale='jac')
+        self.assertEqual(self.freeze()[0].data['config']['arms'][0]['steps'][0]['effective_options'],
+                         {'max_evaluations': 3, 'ftol': None, 'x_scale': 'jac'})
+        with tempfile.TemporaryDirectory(prefix='issue507-run-') as tmp:
+            out = Path(tmp)/'run'
+            runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
+            result = json.loads((out/'job-0001/result.json').read_text())
+            step = result['steps'][0]
+            self.assertIsNotNone(step['trf_details']['optimality'])
+            self.assertEqual(step['solver_options']['x_scale'], 'jac')
+            self.assertIsNone(step['solver_options']['ftol'])
+            self.assertEqual(result['terminal']['candidates'][0]['vector'], step['trf_details']['best_x'])
+            self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
 
     def test_budget_stops_before_extra_rf_and_invalid_counts_stop(self):
         self.cfg['arms'][0]['steps'][0]['options']['max_evaluations'] = 1

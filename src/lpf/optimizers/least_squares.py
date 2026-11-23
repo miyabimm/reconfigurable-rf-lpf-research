@@ -26,9 +26,11 @@ class LeastSquaresResult:
     computed_samples: int
     wall_s: float
     cpu_s: float
+    optimality: float | None
 
 
-def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None):
+def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None,
+                        ftol=1e-8, x_scale=1.0):
     """Run one TRF solve. Callback returns (residual, physical Jacobian).
 
     The one-entry cache shares only exactly equal normalized vectors. Callback
@@ -84,7 +86,7 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100,
     if np.any(free):
         result = least_squares(lambda z: calc(z)[0], z0, jac=lambda z: calc(z)[1],
                                bounds=(0., 1.), method='trf', loss='linear',
-                               x_scale=1., tr_solver='exact', max_nfev=max_evaluations)
+                               ftol=ftol, x_scale=x_scale, tr_solver='exact', max_nfev=max_evaluations)
         z = np.asarray(result.x, dtype=float)
         final_r = np.asarray(result.fun, dtype=float)
         if (z.shape != z0.shape or not np.all(np.isfinite(z)) or np.any(z < 0) or np.any(z > 1) or
@@ -101,13 +103,17 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100,
             raise ValueError('Invalid SciPy objective')
         success, status, message = bool(result.success), int(result.status), str(result.message)
         nfev, njev = int(result.nfev), int(result.njev or 0)
+        optimality = float(result.optimality)
+        if not np.isfinite(optimality) or optimality < 0:
+            raise ValueError('Invalid SciPy optimality')
     else:
         r, _ = calc(z0)
         x, objective = lo.copy(), float(.5 * np.dot(r, r))
         success, status, message, nfev, njev = True, 0, 'All variables fixed; evaluated once', 1, 0
+        optimality = None
     return LeastSquaresResult(x, objective, best_x, best, first, success, status, message,
                               nfev, njev, evaluations, samples, samples,
-                              perf_counter()-wall, process_time()-cpu)
+                              perf_counter()-wall, process_time()-cpu, optimality)
 
 
 def to_optimizer_result(result):
