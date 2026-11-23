@@ -102,5 +102,53 @@ class ComparisonTests(unittest.TestCase):
                 self.assertEqual(row['independent_mna'], 'pass')
                 self.assertFalse(chosen['finite_grid_pass'])
 
+
+    def test_temporary_first_hybrid_local_vs_trf(self):
+        """One-off audit of original #505 measurements; remove after extraction."""
+        import gzip
+        import json
+        import subprocess
+        import gc
+        import numpy as np
+        from lpf.search.storage import vector_sha
+        from lpf.search import _development_runner as runner
+        from lpf.minimax_profile import signed_margins
+        from lpf.search.plan import ROOT, grid_from_record
+        ancestor = 'e7afe33efa954d3c41a0b7502b16e1e5a27c05f5'
+        full = json.loads((ROOT/'project/diagnostics/issue505/summary.json').read_text())
+        refsha = next(iter(full['selected_vectors']))
+        trfsha = full['runs'][1]['windows']['1']['vector_sha256']
+        trf_x = np.asarray(full['selected_vectors'][trfsha])
+        config = json.loads((ROOT/'project/diagnostics/issue470/config.json').read_text())
+        starts = json.loads((ROOT/'project/diagnostics/issue470/starts.json').read_text())
+        config['arms'][0]['steps'][0]['options'].update(max_search_forwards=150000, batch_fd=True, partial_fd=True)
+        config['budget'] = dict(rf_samples=70*150024+476, rf_forwards=150025, independent_mna_samples=2)
+        frozen, _, profile, model, _ = runner.freeze_run(config, starts, root=ROOT, spot_checks={'terminal':[0,111]},
+            search_bounds=None, checkpoint_interval=1000)
+        grid = grid_from_record(frozen.data['grids']['terminal'])
+        evaluator = model.evaluator(grid)
+        for run_id in ('h1', 'h2', 'h3'):
+            raw = subprocess.run(['git','show',f'{ancestor}:project/diagnostics/issue505/raw/{run_id}.json.gz'],
+                                 check=True,stdout=subprocess.PIPE).stdout
+            data = json.loads(gzip.decompress(raw))
+            runs = data['result']['steps'][0]['local_run_details']
+            first = runs[0]
+            x = np.asarray(first['end_x'])
+            _, m = signed_margins(profile,grid,evaluator.evaluate(x))
+            j=float(np.max(m))
+            result={'run':run_id,'local_runs':len(runs),
+                'first_nfev':first['nfev'],'first_nit':first['nit'],
+                'first_success':first['success'],'first_status':first['status'],
+                'first_fun':first['end_fun'],'first_sha':vector_sha(x),
+                'first_terminal_J_db':j,
+                'trf_fun':full['runs'][1]['windows']['1']['search_objective_db2'],
+                'trf_sha':trfsha,'trf_J_db':full['runs'][1]['windows']['1']['terminal_J_db'],
+                'same_vector':np.array_equal(x,trf_x),'max_abs_component_delta':float(np.max(np.abs(x-trf_x))),
+                'euclidean_component_delta':float(np.linalg.norm(x-trf_x)),
+                'other_locals':[{key:run[key] for key in ('success','status','nfev','end_fun')} for run in runs[1:]]}
+            print('FIRST_LOCAL_AUDIT='+json.dumps(result,separators=(',',':')),flush=True)
+            del data,raw,runs
+            gc.collect()
+
 if __name__ == '__main__':
     unittest.main()
