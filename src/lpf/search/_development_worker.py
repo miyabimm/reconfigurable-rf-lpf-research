@@ -8,7 +8,8 @@ from time import perf_counter_ns
 import numpy as np
 
 from lpf import minimax_profile
-from lpf.minimax_profile import signed_margins, _margin_parameters
+from lpf.minimax_profile import signed_margins, signed_margin_residual, _margin_parameters
+from lpf.optimizers.least_squares import least_squares_local, to_optimizer_result
 from lpf.optimizers.hybrid import hybrid_minimize
 from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
@@ -144,8 +145,10 @@ class DevelopmentWorker:
 
     def _search_impl(self, step, x):
         stage = f"{self.arm}/{step['name']}"
-        cache_options = {} if self.rf_cache_mode == 'off' else {'cache_mode': self.rf_cache_mode}
-        if self.timing_steps is not None and self.rf_cache_mode in ('response', 'both'):
+        solver = step['solver']
+        effective_cache = 'off' if solver == 'trf' else self.rf_cache_mode
+        cache_options = {} if effective_cache == 'off' else {'cache_mode': effective_cache}
+        if self.timing_steps is not None and effective_cache in ('response', 'both'):
             cache_options['cache_diagnostics'] = True
         evaluator = timed_call(self.timer, f'{stage}/evaluator_setup', self.model.evaluator, self.grids[stage], **cache_options)
         threshold, direction = _margin_parameters(self.profile, evaluator.grid)
@@ -158,6 +161,19 @@ class DevelopmentWorker:
         best = None
         last_saved_count = 0
         independent = None
+
+        def evaluate_trf(vector):
+            nonlocal independent
+            if self.forward_count >= self.forward_cap:
+                raise ValueError('STOP: Search RF forward budget exhausted')
+            self.forward_count += 1  # Charge before RF Core, including failures.
+            response, jac = timed_call(self.timer, f'{stage}/rf_evaluate',
+                                       evaluator.evaluate_with_il_jacobian, vector)
+            if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
+                    response.policy_fingerprint != self.model.policy_fingerprint):
+                raise ValueError('Response profile/grid mismatch')
+            independent = self._audit(vector, response, stage)
+            return signed_margin_residual(self.profile, response, jac)
 
         def residuals(vector):
             nonlocal independent, base
@@ -264,7 +280,6 @@ class DevelopmentWorker:
                 saved = self.forward_count, digest, objective
                 last_saved_count = self.forward_count
 
-        solver = step['solver']
         local_details = []
         local_walls = []
 
@@ -278,7 +293,7 @@ class DevelopmentWorker:
 
         if self.timing_steps is not None:
             self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event',
-                                                   rf_cache=dict(mode=self.rf_cache_mode, counters=evaluator.cache_stats))
+                                                   rf_cache=dict(mode=effective_cache, counters=evaluator.cache_stats))
         if solver == 'hybrid':
             callbacks = (dict(residuals_batch=residuals_batch, progress_callback=progress,
                               group_callback=group_finished) if batch_fd else dict(objective_callback=observe))
@@ -287,6 +302,14 @@ class DevelopmentWorker:
                              local_run_callback=count_local_run, event_callback=event if self.timer else None,
                              _timing=(self.timer, stage) if self.timer and self.timing_level == 'deep' else None,
                              **{k: v for k, v in opts.items() if k != 'partial_fd'})
+        elif solver == 'trf':
+            trf = timed_call(self.timer, f'{stage}/solver', least_squares_local, evaluate_trf, x, self.bounds,
+                             objective_callback=observe, **opts)
+            samples = self.forward_count * len(evaluator.grid.frequency_hz)
+            if (self.forward_count != trf.sensitivity_evaluations or
+                    trf.requested_samples != samples or trf.computed_samples != samples):
+                raise ValueError('TRF sensitivity accounting mismatch')
+            out = to_optimizer_result(trf)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = timed_call(self.timer, f'{stage}/solver', minimize, residuals, x, self.bounds, constraints=None,
@@ -308,6 +331,9 @@ class DevelopmentWorker:
                       forward_count=self.forward_count, requested_samples=self.forward_count * len(evaluator.grid.frequency_hz),
                       input_vector=plain(x), input_vector_sha256=vector_sha(x),
                       grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
+        if solver == 'trf':
+            record['rf_cache_mode'] = effective_cache
+            record['trf_details'] = raw_numbers(asdict(trf))
         if solver == 'hybrid':
             if sum(run['nfev'] for run in local_details) != self.forward_count:
                 raise ValueError('Hybrid local run forward count mismatch')

@@ -20,6 +20,8 @@ def solver_options(step):
                     restart_sigma=step['options'].get('restart_sigma', 0.1),
                     batch_fd=batch_fd,
                     partial_fd=step['options'].get('partial_fd', batch_fd))
+    if step['solver'] == 'trf':
+        return dict(step['options'])
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
                             tolerance=1e-7, constraint_tolerance=1e-7)}

@@ -16,7 +16,8 @@ import numpy as np
 import scipy
 from lpf.constraint_versions import load_constraint
 from lpf.minimax_profile import signed_margins, _margin_parameters
-from lpf.optimizers.least_squares import least_squares_local, signed_margin_residual, reported_margin_objective
+from lpf.optimizers.least_squares import least_squares_local, reported_margin_objective
+from lpf.minimax_profile import signed_margin_residual
 from lpf.rf_core.independent import evaluate_independent_response
 from lpf.rf_core.model import build_rf_model
 from lpf.search.component_constraints import _validate_values_with_bounds
