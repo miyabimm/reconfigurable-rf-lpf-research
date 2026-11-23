@@ -109,7 +109,11 @@ class DevelopmentWorker:
         self.forward_count += 1  # Charge before entering RF Core, even when it raises.
         # Search callbacks are bounded by the Optimizers. RF Core still checks
         # finite values, full L SPD and numerical failures on each evaluation.
-        response = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector, **({'check_power': True} if terminal else {}))
+        if self.timer and self.timing_level == 'deep' and not terminal:
+            response = timed_call(self.timer, f'{stage}/scalar/rf_evaluate', timed_call,
+                                  self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector)
+        else:
+            response = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector, **({'check_power': True} if terminal else {}))
         if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
                 response.policy_fingerprint != self.model.policy_fingerprint):
             raise ValueError('Response profile/grid mismatch')
@@ -158,12 +162,20 @@ class DevelopmentWorker:
         def residuals(vector):
             nonlocal independent, base
             response, _, independent = self._forward(evaluator, vector, stage)
-            residual = direction * (response.il_db - threshold)
-            if not np.all(np.isfinite(residual)):
-                raise ValueError('Nonfinite signed-margin Search residuals')
-            if partial_fd:
-                base = (np.asarray(vector).copy(), response)
-            return residual
+            timing = self.timer if self.timing_level == 'deep' else None
+            if timing: started, failed = perf_counter_ns(), False
+            try:
+                residual = direction * (response.il_db - threshold)
+                if not np.all(np.isfinite(residual)):
+                    raise ValueError('Nonfinite signed-margin Search residuals')
+                if partial_fd:
+                    base = (np.asarray(vector).copy(), response)
+                return residual
+            except BaseException:
+                if timing: failed = True
+                raise
+            finally:
+                if timing: timing.add(f'{stage}/scalar/post_rf', perf_counter_ns() - started, failed=failed)
 
         def residuals_batch(vectors):
             # The evaluator replays failures internally to preserve the scalar

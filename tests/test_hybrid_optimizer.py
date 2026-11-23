@@ -163,6 +163,101 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(result.objective, 1)
         self.assertFalse(self.runs[0].success)
 
+    def test_deep_boundaries_and_failure_preserve_order(self):
+        from lpf.timing import TimerCollector
+
+        def exercise(deep, failure):
+            timer = TimerCollector()
+            calls = []
+            def scalar(x):
+                calls.append(('scalar', float(x[0])))
+                return [x[0]]
+            def batch(vectors):
+                calls.append(('batch', len(vectors)))
+                def consume():
+                    for x in vectors:
+                        calls.append(('consume', float(x[0])))
+                        yield [x[0]]
+                return consume()
+            def group(*, force=False):
+                calls.append(('group', force))
+                if failure and not force:
+                    raise RuntimeError('checkpoint')
+            def solver(fun, x, **kw):
+                fun(x)
+                kw['options']['workers'](fun, [x + 0.01, x + 0.02])
+                kw['callback'](x)
+                return OptimizeResult(x=x, fun=1.0, success=True, status=0, message='ok', nit=1)
+            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+                try:
+                    result = hybrid_minimize(scalar, [0.5], [(0, 1)], seed=0, max_evaluations=3,
+                                             restart_sigma=0.1, batch_fd=True, residuals_batch=batch,
+                                             group_callback=group, _timing=(timer, 's') if deep else None)
+                    outcome = asdict(result)
+                except RuntimeError as exc:
+                    outcome = str(exc)
+            return outcome, calls, timer.snapshot()
+
+        for failure in (False, True):
+            plain, plain_calls, _ = exercise(False, failure)
+            deep, calls, regions = exercise(True, failure)
+            self.assertEqual((deep, calls), (plain, plain_calls))
+            self.assertEqual(regions['s/objective/scalar']['count'], 1)
+            if failure:  # scalar group callback aborts before batch
+                self.assertEqual(regions['s/objective/state']['failed'], 1)
+                self.assertEqual(regions['s/scipy/minimize']['failed'], 1)
+            else:
+                self.assertEqual(regions['s/objective/batch']['count'], 2)
+                self.assertEqual(regions['s/batch/parent']['count'], 1)
+                self.assertEqual(regions['s/scipy/callback']['count'], 1)
+                self.assertEqual(regions['s/objective/prepare']['count'], 3)
+                self.assertTrue(all(row['failed'] == 0 for row in regions.values()))
+
+    def test_plain_hybrid_does_not_read_deep_clock(self):
+        with patch('lpf.optimizers.hybrid.perf_counter_ns', side_effect=AssertionError('deep clock')):
+            result = self.run_hybrid(lambda x: [x[0]], [0.5], [(0, 1)], max_evaluations=3)
+        self.assertEqual(result.evaluations, 3)
+
+    def test_deep_batch_exception_and_budget_stop(self):
+        from lpf.timing import TimerCollector
+
+        for fail_batch in (False, True):
+            timer = TimerCollector()
+            calls = []
+            def batch(vectors):
+                def consume():
+                    calls.append('consume')
+                    yield RuntimeError('injected') if fail_batch else [1.0]
+                return consume()
+            def solver(fun, x, **kw):
+                fun(x)
+                kw['options']['workers'](fun, [x + 0.01])
+                fun(x)  # budget _Stop after the completed group
+            groups = []
+            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+                if fail_batch:
+                    with self.assertRaisesRegex(RuntimeError, 'injected'):
+                        hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                                        max_evaluations=2, restart_sigma=0.1, batch_fd=True,
+                                        residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
+                                        _timing=(timer, 's'))
+                else:
+                    result = hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                                             max_evaluations=2, restart_sigma=0.1, batch_fd=True,
+                                             residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
+                                             _timing=(timer, 's'))
+                    self.assertEqual((result.evaluations, result.stop_reason), (2, 'evaluation_budget_exhausted'))
+            regions = timer.snapshot()
+            self.assertEqual(calls, ['consume'])
+            self.assertEqual(groups[-1], {'force': True})
+            self.assertEqual(regions['s/scipy/minimize']['failed'], 1)
+            if fail_batch:
+                for name in ('objective/raw_batch', 'objective/batch', 'batch/parent'):
+                    self.assertEqual(regions['s/'+name]['failed'], 1)
+            else:
+                self.assertEqual(regions['s/objective/prepare']['failed'], 1)
+                self.assertEqual(regions['s/objective/scalar']['failed'], 1)
+
     def test_invalid_input(self):
         invalid = [([2], [(0, 1)], {}), ([0], [(1, 0)], {}),
                    ([0], [(0, np.inf)], {}), ([], [], {}),
