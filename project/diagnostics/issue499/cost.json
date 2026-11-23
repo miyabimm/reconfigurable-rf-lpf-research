@@ -1,0 +1,270 @@
+{
+  "warmups_each": 1,
+  "rows": [
+    {
+      "name": "analytic",
+      "wall_s": 0.004735774011351168,
+      "cpu_s": 0.00473672,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0030553690157830715,
+      "cpu_s": 0.0030581910000000156,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0030300809303298593,
+      "cpu_s": 0.0030327330000000097,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004238834953866899,
+      "cpu_s": 0.004241788999999996,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004190893960185349,
+      "cpu_s": 0.004192646000000022,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0030077979899942875,
+      "cpu_s": 0.0030114419999999753,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.00347753893584013,
+      "cpu_s": 0.00348462699999999,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004384804982692003,
+      "cpu_s": 0.0043868650000000176,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.00480854301713407,
+      "cpu_s": 0.004810911000000029,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.002974233007989824,
+      "cpu_s": 0.002977908000000029,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0030009549809619784,
+      "cpu_s": 0.0030051900000000464,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.0042529330821707845,
+      "cpu_s": 0.004255806000000029,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004152882029302418,
+      "cpu_s": 0.00415554600000001,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0029478840297088027,
+      "cpu_s": 0.002949173000000027,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0032729979138821363,
+      "cpu_s": 0.0032785839999999733,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.0047254940727725625,
+      "cpu_s": 0.004728363999999985,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004188308957964182,
+      "cpu_s": 0.004191263000000001,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.0031063960632309318,
+      "cpu_s": 0.0031093770000000243,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "partial",
+      "wall_s": 0.002870915923267603,
+      "cpu_s": 0.0028747519999999804,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 26,
+      "requested_samples": 1820,
+      "computed_samples": 1120
+    },
+    {
+      "name": "analytic",
+      "wall_s": 0.004605715977959335,
+      "cpu_s": 0.004608495999999962,
+      "loadavg": [
+        0.54296875,
+        0.2275390625,
+        0.13330078125
+      ],
+      "rf_forwards": 1,
+      "requested_samples": 70,
+      "computed_samples": 70
+    }
+  ],
+  "python_peak_bytes": {
+    "analytic": 1991248,
+    "partial": 1648974
+  },
+  "note": "RF kernel only; batch/partial finite difference group, not full Hybrid solver; memory separately traced"
+}
