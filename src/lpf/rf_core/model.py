@@ -321,7 +321,10 @@ class RFEvaluator:
         try:
             if middle:
                 dU, dV, dE = dY[:, :, :2, 2:], dY[:, :, 2:, :2], dY[:, :, 2:, 2:]
-                dX = np.linalg.solve(E[:, None], dV - dE @ internal[:, None])
+                rhs = dV - dE @ internal[:, None]  # [samples, directions, internal, 2]
+                samples, directions, internal_nodes, _ = rhs.shape
+                packed = rhs.transpose(0, 2, 1, 3).reshape(samples, internal_nodes, directions * 2)
+                dX = np.linalg.solve(E, packed).reshape(samples, internal_nodes, directions, 2).transpose(0, 2, 1, 3)
                 dR = dR - dU @ internal[:, None] - U[:, None] @ dX
             dcore = np.linalg.solve(A[:, None], -50*dR @ (eye + core[:, None]))
             zeros = np.zeros_like(dcore)
