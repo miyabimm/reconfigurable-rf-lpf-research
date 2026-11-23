@@ -1,0 +1,72 @@
+{
+  "batches_per_measurement": 1000,
+  "warmup_batches_each": 200,
+  "candidate_count": 25,
+  "equal": true,
+  "runs": [
+    {
+      "round": 1,
+      "variant": "old",
+      "seconds": 0.354389771
+    },
+    {
+      "round": 1,
+      "variant": "new",
+      "seconds": 0.290397349
+    },
+    {
+      "round": 2,
+      "variant": "new",
+      "seconds": 0.234188332
+    },
+    {
+      "round": 2,
+      "variant": "old",
+      "seconds": 0.35979009
+    },
+    {
+      "round": 3,
+      "variant": "old",
+      "seconds": 0.356957689
+    },
+    {
+      "round": 3,
+      "variant": "new",
+      "seconds": 0.244429275
+    },
+    {
+      "round": 4,
+      "variant": "new",
+      "seconds": 0.235562662
+    },
+    {
+      "round": 4,
+      "variant": "old",
+      "seconds": 0.359579375
+    },
+    {
+      "round": 5,
+      "variant": "old",
+      "seconds": 0.410706987
+    },
+    {
+      "round": 5,
+      "variant": "new",
+      "seconds": 0.233104583
+    },
+    {
+      "round": 6,
+      "variant": "new",
+      "seconds": 0.234732276
+    },
+    {
+      "round": 6,
+      "variant": "old",
+      "seconds": 0.355321059
+    }
+  ],
+  "median_s": {
+    "old": 0.358268532,
+    "new": 0.235147469
+  }
+}

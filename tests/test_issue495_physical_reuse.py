@@ -12,13 +12,14 @@ from lpf.optimizers.hybrid import hybrid_minimize
 
 class PhysicalReuseTests(unittest.TestCase):
     def test_scipy_workers_candidates_match_scalar_and_are_independent(self):
-        batches, seen = [], []
+        batches, seen, events = [], [], []
 
         def residual(x):
             return [x[0] + 2 * x[1]]
 
         def batch(vectors):
             batches.append([x.copy() for x in vectors])
+            events.append(('batch', [x.copy() for x in vectors]))
             def consume():
                 for x in vectors:
                     value = residual(x)
@@ -29,15 +30,18 @@ class PhysicalReuseTests(unittest.TestCase):
         result = hybrid_minimize(residual, [0.4, 0.7], [(0, 1), (0, 1)],
                                  seed=1, max_evaluations=20, restart_sigma=0.1,
                                  batch_fd=True, residuals_batch=batch,
-                                 objective_callback=lambda x, f: seen.append((x, f)))
+                                 objective_callback=lambda x, f: (seen.append((x, f)), events.append(('objective', x.copy()))))
         self.assertGreaterEqual(len(batches), 2)
         self.assertEqual(result.evaluations, len(seen))
         for x, value in seen:
             self.assertTrue(np.all((0 <= x) & (x <= 1)))
             self.assertEqual(value, residual(x)[0] ** 2)
-        observed = [x.tolist() for x, _ in seen]
-        for vectors in batches:
-            self.assertTrue(all(x.tolist() in observed for x in vectors))
+        for i, (kind, vectors) in enumerate(events):
+            if kind == 'batch':
+                following = events[i + 1:i + 1 + len(vectors)]
+                self.assertEqual([k for k, _ in following], ['objective'] * len(vectors))
+                for expected, (_, actual) in zip(vectors, following):
+                    np.testing.assert_array_equal(actual, expected)
 
     def test_start_continuous_batches_exception_replay_and_budget(self):
         observed, groups = [], []

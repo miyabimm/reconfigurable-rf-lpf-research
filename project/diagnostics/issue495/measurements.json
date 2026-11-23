@@ -1,0 +1,426 @@
+{
+  "environments": {
+    "runs": {
+      "heads": {
+        "A": "c3891f019898b203deee3050f2481c7cbd7655c9",
+        "B": "d12ceafd6adf5eebe18168ab2daf31ea66f19cfe"
+      },
+      "status": {
+        "A": "",
+        "B": ""
+      },
+      "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+      "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "cpu": 0,
+      "cpu_model": "model name\t: AMD Ryzen 7 PRO 4750G with Radeon Graphics",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      }
+    },
+    "repeat": {
+      "heads": {
+        "A": "c3891f019898b203deee3050f2481c7cbd7655c9",
+        "B": "d12ceafd6adf5eebe18168ab2daf31ea66f19cfe"
+      },
+      "status": {
+        "A": "",
+        "B": ""
+      },
+      "python": "3.12.15 (main, Oct  3 2026, 01:03:07) [Clang 22.1.3 ]",
+      "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "cpu": 0,
+      "cpu_model": "model name\t: AMD Ryzen 7 PRO 4750G with Radeon Graphics",
+      "threads": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1"
+      }
+    }
+  },
+  "rows": [
+    {
+      "session": "runs",
+      "name": "warm-A",
+      "variant": "A",
+      "count": 312,
+      "trace": false,
+      "process_wall_s": 2.2367108420003206,
+      "exit_code": 0,
+      "runner_wall_s": 1.168257468030788,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "warm-B",
+      "variant": "B",
+      "count": 312,
+      "trace": false,
+      "process_wall_s": 2.07627694203984,
+      "exit_code": 0,
+      "runner_wall_s": 1.2061869689496234,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "1-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 43.6399135250831,
+      "exit_code": 0,
+      "runner_wall_s": 42.78683728992473,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "1-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 41.491923713940196,
+      "exit_code": 0,
+      "runner_wall_s": 40.61059609998483,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "2-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 41.46075749199372,
+      "exit_code": 0,
+      "runner_wall_s": 40.579487582086585,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "2-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 43.39786583301611,
+      "exit_code": 0,
+      "runner_wall_s": 42.55731119296979,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "3-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 43.44493453705218,
+      "exit_code": 0,
+      "runner_wall_s": 42.58862277795561,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "3-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 43.59450475894846,
+      "exit_code": 0,
+      "runner_wall_s": 42.7104099590797,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "runs",
+      "name": "trace-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": true,
+      "process_wall_s": 44.788385944091715,
+      "exit_code": 0,
+      "runner_wall_s": 43.851885581971146,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "cache": {
+        "lk_lookups": 100022,
+        "lk_hits": 73102,
+        "lk_misses": 26920,
+        "lk_computations": 26920,
+        "response_lookups": 0,
+        "response_hits": 0,
+        "response_misses": 0,
+        "computed_samples": 4308640,
+        "capacity": 16
+      }
+    },
+    {
+      "session": "runs",
+      "name": "trace-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": true,
+      "process_wall_s": 25.260097058024257,
+      "exit_code": 0,
+      "runner_wall_s": 24.490989033016376,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "cache": {
+        "lk_lookups": 100022,
+        "lk_hits": 73102,
+        "lk_misses": 26920,
+        "lk_computations": 26920,
+        "response_lookups": 0,
+        "response_hits": 0,
+        "response_misses": 0,
+        "computed_samples": 4308640,
+        "capacity": 16
+      }
+    },
+    {
+      "session": "repeat",
+      "name": "warm-A",
+      "variant": "A",
+      "count": 312,
+      "trace": false,
+      "process_wall_s": 1.059920250903815,
+      "exit_code": 0,
+      "runner_wall_s": 0.6280659110052511,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "warm-B",
+      "variant": "B",
+      "count": 312,
+      "trace": false,
+      "process_wall_s": 0.991671334952116,
+      "exit_code": 0,
+      "runner_wall_s": 0.5817744709784165,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "1-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 22.096410552971065,
+      "exit_code": 0,
+      "runner_wall_s": 21.59366802102886,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "1-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 20.94156608101912,
+      "exit_code": 0,
+      "runner_wall_s": 20.52601117407903,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "2-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 20.85276078793686,
+      "exit_code": 0,
+      "runner_wall_s": 20.438100571045652,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "2-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 24.06902836402878,
+      "exit_code": 0,
+      "runner_wall_s": 23.6614684429951,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "3-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 21.915644329041243,
+      "exit_code": 0,
+      "runner_wall_s": 21.452561017940752,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "3-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": false,
+      "process_wall_s": 21.0969917710172,
+      "exit_code": 0,
+      "runner_wall_s": 20.675636950996704,
+      "status": "completed",
+      "callbacks": null,
+      "trace_sha256": null
+    },
+    {
+      "session": "repeat",
+      "name": "trace-A",
+      "variant": "A",
+      "count": 100000,
+      "trace": true,
+      "process_wall_s": 22.681541542056948,
+      "exit_code": 0,
+      "runner_wall_s": 22.249130206997506,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "cache": {
+        "lk_lookups": 100022,
+        "lk_hits": 73102,
+        "lk_misses": 26920,
+        "lk_computations": 26920,
+        "response_lookups": 0,
+        "response_hits": 0,
+        "response_misses": 0,
+        "computed_samples": 4308640,
+        "capacity": 16
+      }
+    },
+    {
+      "session": "repeat",
+      "name": "trace-B",
+      "variant": "B",
+      "count": 100000,
+      "trace": true,
+      "process_wall_s": 22.096750456956215,
+      "exit_code": 0,
+      "runner_wall_s": 21.663423861959018,
+      "status": "completed",
+      "callbacks": 100022,
+      "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+      "cache": {
+        "lk_lookups": 100022,
+        "lk_hits": 73102,
+        "lk_misses": 26920,
+        "lk_computations": 26920,
+        "response_lookups": 0,
+        "response_hits": 0,
+        "response_misses": 0,
+        "computed_samples": 4308640,
+        "capacity": 16
+      }
+    }
+  ],
+  "summary": {
+    "repeat": {
+      "A": {
+        "median": 21.59366802102886,
+        "min": 21.452561017940752,
+        "max": 23.6614684429951,
+        "sample_sd": 1.2365935591956168
+      },
+      "B": {
+        "median": 20.52601117407903,
+        "min": 20.438100571045652,
+        "max": 20.675636950996704,
+        "sample_sd": 0.12009696016424982
+      }
+    },
+    "runs": {
+      "A": {
+        "median": 42.58862277795561,
+        "min": 42.55731119296979,
+        "max": 42.78683728992473,
+        "sample_sd": 0.12446662021927293
+      },
+      "B": {
+        "median": 40.61059609998483,
+        "min": 40.579487582086585,
+        "max": 42.7104099590797,
+        "sample_sd": 1.221407395828181
+      }
+    }
+  },
+  "trace_sha256": "becf8d2705f0f2def10d356645dc4aa924401ef98f63c9dc29cff060be0cb448",
+  "cache": {
+    "lk_lookups": 100022,
+    "lk_hits": 73102,
+    "lk_misses": 26920,
+    "lk_computations": 26920,
+    "response_lookups": 0,
+    "response_hits": 0,
+    "response_misses": 0,
+    "computed_samples": 4308640,
+    "capacity": 16
+  },
+  "costs": {
+    "independent_mna_samples_by_stage": {
+      "terminal": 2
+    },
+    "search_forwards": 100022,
+    "search_requested_samples": 7001540,
+    "terminal_forwards": 1,
+    "terminal_requested_samples": 476
+  },
+  "stop": "evaluation_budget_exhausted",
+  "checkpoints": 99,
+  "source_excluded_from_comparison": true,
+  "rf_profile": {
+    "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+    "base_constraint_id": "RF-T008",
+    "base_constraint_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "constraint_id": "RF-T010",
+    "effective_sha256": "d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417",
+    "external_s2p": {
+      "input": {
+        "path": "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
+        "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"
+      },
+      "output": {
+        "path": "rf/parasitics/circuit2_poc_through_0_6ghz.s2p",
+        "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      }
+    }
+  },
+  "plan_sha256": "0e2d62841f286281eb9b2c662382a50238f865193b16eafabf6aa3227ba18d90",
+  "initial_vector_sha256": "6e06d271e0ea54eecb547cfff045a6edda4850bfaa1f9c23bf9f3037ab867131",
+  "grid_sha256": {
+    "baseline/search": "6805740a36f6100d7dec3e7308924242e909255f1ea2d287b7c734c400f98f26",
+    "terminal": "28ee5b630e4842b183a7c36fd610cc32e2509c0044c6a5848ce2fbd147a22e29"
+  },
+  "terminal_finite_spd_passivity_power_mna": true
+}
