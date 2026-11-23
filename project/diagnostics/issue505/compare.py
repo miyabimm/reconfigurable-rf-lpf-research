@@ -19,6 +19,7 @@ import numpy as np
 from lpf.minimax_profile import signed_margins
 from lpf.search import _development_runner as runner, _development_worker as worker_module
 from lpf.search.storage import plain, sha, vector_sha
+from lpf.search.evaluation import raw_numbers
 
 WINDOWS = (1, 5, 20)
 
@@ -137,7 +138,7 @@ def run(arm, limit, output, *, observe=True):
         context.setdefault('windows', {})[str(window)] = row
     post_wall = monotonic()-post_wall
     plan = worker.data if worker else None
-    return plain(dict(arm=arm, limit=limit, observe=observe, error=error, state=state,
+    return raw_numbers(dict(arm=arm, limit=limit, observe=observe, error=error, state=state,
         solver_wall_s=context.get('solver_wall_s'), solver_cpu_s=context.get('solver_cpu_s'),
         runner_wall_s=elapsed, runner_cpu_s=cpu_elapsed, post_wall_s=post_wall,
         windows=context.get('windows', {}), events=events, result=result,
@@ -156,9 +157,12 @@ def main():
     args = p.parse_args()
     if any(os.environ.get(k) != '1' for k in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS')):
         p.error('OPENBLAS_NUM_THREADS, OMP_NUM_THREADS and MKL_NUM_THREADS must all be 1')
+    if args.record.exists():
+        p.error('record must not exist')
+    payload = run(args.arm, args.limit, args.output, observe=not args.control)
+    serialized = json.dumps(payload, allow_nan=False, separators=(',', ':'))
     with args.record.open('x') as f:
-        json.dump(run(args.arm, args.limit, args.output, observe=not args.control), f, allow_nan=False, separators=(',', ':'))
-        f.write('\n')
+        f.write(serialized + '\n')
 
 if __name__ == '__main__':
     main()
