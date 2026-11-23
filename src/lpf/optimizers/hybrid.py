@@ -154,14 +154,28 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
 
         def objective(z):
             nonlocal total, local_nfev, start_fun, last_x, last_fun, best_x, best_fun, residual_size
-            if pending is None and total >= max_evaluations:
-                raise _Stop('evaluation_budget_exhausted')
-            x = start_x.copy() if np.array_equal(z, z_start) else physical(z)
-            total += 1
-            local_nfev += 1
-            raw = residuals(x.copy()) if pending is None else next(pending)
-            if isinstance(raw, BaseException):
-                raise raw
+            if _timing: started, failed = perf_counter_ns(), False
+            try:
+                if pending is None and total >= max_evaluations:
+                    raise _Stop('evaluation_budget_exhausted')
+                x = start_x.copy() if np.array_equal(z, z_start) else physical(z)
+                total += 1
+                local_nfev += 1
+            except BaseException:
+                if _timing: failed = True
+                raise
+            finally:
+                if _timing: _timing[0].add(f'{_timing[1]}/objective/prepare', perf_counter_ns() - started, failed=failed)
+            if _timing: started, failed = perf_counter_ns(), False
+            try:
+                raw = residuals(x.copy()) if pending is None else next(pending)
+                if isinstance(raw, BaseException):
+                    raise raw
+            except BaseException:
+                if _timing: failed = True
+                raise
+            finally:
+                if _timing: _timing[0].add(f'{_timing[1]}/objective/raw', perf_counter_ns() - started, failed=failed)
             if _timing: started, failed = perf_counter_ns(), False
             try:
                 try:
@@ -206,11 +220,20 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 if _timing: _timing[0].add(f'{_timing[1]}/objective/state', perf_counter_ns() - started, failed=failed)
             return value
 
+        if _timing:
+            objective_impl = objective
+            def objective(z):
+                kind = 'scalar' if pending is None else 'batch'
+                return timed_call(_timing[0], f'{_timing[1]}/objective/{kind}', objective_impl, z)
+
         def batch_map(fun, iterable):
             nonlocal pending
             if total >= max_evaluations:
                 raise _Stop('evaluation_budget_exhausted')
-            zs = list(iterable)
+            if _timing:
+                zs = timed_call(_timing[0], f'{_timing[1]}/batch/list', list, iterable)
+            else:
+                zs = list(iterable)
             if not zs:
                 return []
             if _timing: started, failed = perf_counter_ns(), False
@@ -228,12 +251,25 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             finally:
                 pending = None
             if group_callback is not None:
-                group_callback()
+                if _timing:
+                    timed_call(_timing[0], f'{_timing[1]}/batch/group_callback', group_callback)
+                else:
+                    group_callback()
             return values
+
+        if _timing:
+            batch_map_impl = batch_map
+            def batch_map(fun, iterable):
+                return timed_call(_timing[0], f'{_timing[1]}/batch/parent', batch_map_impl, fun, iterable)
 
         def callback(_):
             nonlocal nit
             nit += 1
+
+        if _timing:
+            callback_impl = callback
+            def callback(arg):
+                return timed_call(_timing[0], f'{_timing[1]}/scipy/callback', callback_impl, arg)
 
         timed = event_callback is not None and np.any(free)
         if timed:
@@ -250,9 +286,14 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 options = {'maxiter': maxiter, 'maxfun': max_evaluations}
                 if batch_fd:
                     options['workers'] = batch_map
-                sol = minimize(objective, z_start, method='L-BFGS-B',
-                               bounds=[(0.0, 1.0)] * int(np.sum(free)),
-                               callback=callback, options=options)
+                if _timing:
+                    sol = timed_call(_timing[0], f'{_timing[1]}/scipy/minimize', minimize, objective, z_start,
+                                     method='L-BFGS-B', bounds=[(0.0, 1.0)] * int(np.sum(free)),
+                                     callback=callback, options=options)
+                else:
+                    sol = minimize(objective, z_start, method='L-BFGS-B',
+                                   bounds=[(0.0, 1.0)] * int(np.sum(free)),
+                                   callback=callback, options=options)
                 if (local_nfev == 0 or np.asarray(sol.x).shape != z_start.shape or
                         not np.all(np.isfinite(sol.x)) or not np.isfinite(sol.fun) or
                         np.any(np.asarray(sol.x) < 0) or np.any(np.asarray(sol.x) > 1)):

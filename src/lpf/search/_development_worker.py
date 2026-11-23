@@ -158,12 +158,20 @@ class DevelopmentWorker:
         def residuals(vector):
             nonlocal independent, base
             response, _, independent = self._forward(evaluator, vector, stage)
-            residual = direction * (response.il_db - threshold)
-            if not np.all(np.isfinite(residual)):
-                raise ValueError('Nonfinite signed-margin Search residuals')
-            if partial_fd:
-                base = (np.asarray(vector).copy(), response)
-            return residual
+            timing = self.timer if self.timing_level == 'deep' else None
+            if timing: started, failed = perf_counter_ns(), False
+            try:
+                residual = direction * (response.il_db - threshold)
+                if not np.all(np.isfinite(residual)):
+                    raise ValueError('Nonfinite signed-margin Search residuals')
+                if partial_fd:
+                    base = (np.asarray(vector).copy(), response)
+                return residual
+            except BaseException:
+                if timing: failed = True
+                raise
+            finally:
+                if timing: timing.add(f'{stage}/scalar/post_rf', perf_counter_ns() - started, failed=failed)
 
         def residuals_batch(vectors):
             # The evaluator replays failures internally to preserve the scalar

@@ -163,6 +163,56 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(result.objective, 1)
         self.assertFalse(self.runs[0].success)
 
+    def test_deep_boundaries_and_failure_preserve_order(self):
+        from lpf.timing import TimerCollector
+
+        def exercise(deep, failure):
+            timer = TimerCollector()
+            calls = []
+            def scalar(x):
+                calls.append(('scalar', float(x[0])))
+                return [x[0]]
+            def batch(vectors):
+                calls.append(('batch', len(vectors)))
+                def consume():
+                    for x in vectors:
+                        calls.append(('consume', float(x[0])))
+                        yield [x[0]]
+                return consume()
+            def group(*, force=False):
+                calls.append(('group', force))
+                if failure and not force:
+                    raise RuntimeError('checkpoint')
+            def solver(fun, x, **kw):
+                fun(x)
+                kw['options']['workers'](fun, [x + 0.01, x + 0.02])
+                kw['callback'](x)
+                return OptimizeResult(x=x, fun=1.0, success=True, status=0, message='ok', nit=1)
+            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+                try:
+                    result = hybrid_minimize(scalar, [0.5], [(0, 1)], seed=0, max_evaluations=3,
+                                             restart_sigma=0.1, batch_fd=True, residuals_batch=batch,
+                                             group_callback=group, _timing=(timer, 's') if deep else None)
+                    outcome = asdict(result)
+                except RuntimeError as exc:
+                    outcome = str(exc)
+            return outcome, calls, timer.snapshot()
+
+        for failure in (False, True):
+            plain, plain_calls, _ = exercise(False, failure)
+            deep, calls, regions = exercise(True, failure)
+            self.assertEqual((deep, calls), (plain, plain_calls))
+            self.assertEqual(regions['s/objective/scalar']['count'], 1)
+            if failure:  # scalar group callback aborts before batch
+                self.assertEqual(regions['s/objective/state']['failed'], 1)
+                self.assertEqual(regions['s/scipy/minimize']['failed'], 1)
+            else:
+                self.assertEqual(regions['s/objective/batch']['count'], 2)
+                self.assertEqual(regions['s/batch/parent']['count'], 1)
+                self.assertEqual(regions['s/scipy/callback']['count'], 1)
+                self.assertEqual(regions['s/objective/prepare']['count'], 3)
+                self.assertTrue(all(row['failed'] == 0 for row in regions.values()))
+
     def test_invalid_input(self):
         invalid = [([2], [(0, 1)], {}), ([0], [(1, 0)], {}),
                    ([0], [(0, np.inf)], {}), ([], [], {}),
