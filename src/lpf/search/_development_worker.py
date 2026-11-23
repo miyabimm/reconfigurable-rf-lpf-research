@@ -109,7 +109,11 @@ class DevelopmentWorker:
         self.forward_count += 1  # Charge before entering RF Core, even when it raises.
         # Search callbacks are bounded by the Optimizers. RF Core still checks
         # finite values, full L SPD and numerical failures on each evaluation.
-        response = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector, **({'check_power': True} if terminal else {}))
+        if self.timer and self.timing_level == 'deep' and not terminal:
+            response = timed_call(self.timer, f'{stage}/scalar/rf_evaluate', timed_call,
+                                  self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector)
+        else:
+            response = timed_call(self.timer, f'{stage}/rf_evaluate', evaluator.evaluate, vector, **({'check_power': True} if terminal else {}))
         if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
                 response.policy_fingerprint != self.model.policy_fingerprint):
             raise ValueError('Response profile/grid mismatch')
