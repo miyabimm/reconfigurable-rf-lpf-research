@@ -206,18 +206,29 @@ class DevelopmentWorker:
 
             def consume():
                 nonlocal independent
+                timing = self.timer if self.timing_level == 'deep' else None
                 for vector, response in zip(vectors, responses, strict=True):
-                    self.forward_count += 1
-                    if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
-                            response.policy_fingerprint != self.model.policy_fingerprint):
-                        yield ValueError('Response profile/grid mismatch')
-                        return
-                    independent = self._audit(vector, response, stage)
-                    residual = direction * (response.il_db - threshold)
-                    if not np.all(np.isfinite(residual)):
-                        yield ValueError('Nonfinite signed-margin Search residuals')
-                        return
+                    if timing: started, failed = perf_counter_ns(), False
+                    try:
+                        self.forward_count += 1
+                        if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
+                                response.policy_fingerprint != self.model.policy_fingerprint):
+                            residual = ValueError('Response profile/grid mismatch')
+                        else:
+                            independent = self._audit(vector, response, stage)
+                            residual = direction * (response.il_db - threshold)
+                            if not np.all(np.isfinite(residual)):
+                                residual = ValueError('Nonfinite signed-margin Search residuals')
+                        if timing and isinstance(residual, BaseException): failed = True
+                    except BaseException:
+                        if timing: failed = True
+                        raise
+                    finally:
+                        if timing: timing.add(f'{stage}/batch/consume', perf_counter_ns() - started, failed=failed)
+                    # Never include time suspended in the generator.
                     yield residual
+                    if isinstance(residual, BaseException):
+                        return
             return consume()
 
         def observe(vector, objective):
@@ -262,6 +273,7 @@ class DevelopmentWorker:
             out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
                              aggregation=step['aggregation'], **callbacks,
                              local_run_callback=count_local_run, event_callback=event if self.timer else None,
+                             _timing=(self.timer, stage) if self.timer and self.timing_level == 'deep' else None,
                              **{k: v for k, v in opts.items() if k != 'partial_fd'})
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize

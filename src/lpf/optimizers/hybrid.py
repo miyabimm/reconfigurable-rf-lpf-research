@@ -10,7 +10,9 @@ from typing import Callable
 
 import numpy as np
 from scipy.optimize import minimize
+from time import perf_counter_ns
 
+from lpf.timing import timed_call
 from ._objectives import aggregate, squared_terms, validate_weights
 from .result import OptimizerResult
 
@@ -37,7 +39,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     weights=None, aggregation: str = 'sum', event_callback=None,
                     run_callback=None, objective_callback=None, progress_callback=None,
                     local_run_callback=None, batch_fd=False, residuals_batch=None,
-                    group_callback=None) -> OptimizerResult:
+                    group_callback=None, _timing=None) -> OptimizerResult:
     """Minimize sum or max of weights * maximum(residuals(x), 0)**2.
 
     Bounded L-BFGS-B penalizes positive violations only; negative residuals
@@ -160,31 +162,48 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             raw = residuals(x.copy()) if pending is None else next(pending)
             if isinstance(raw, BaseException):
                 raise raw
+            if _timing: started, failed = perf_counter_ns(), False
             try:
-                r = np.asarray(raw, dtype=float)
-            except (TypeError, ValueError):
-                raise _Stop('invalid_residual') from None
-            if (r.ndim != 1 or not r.size or not np.all(np.isfinite(r)) or
-                    (residual_size is not None and r.size != residual_size) or
-                    (weights is not None and weights.size != r.size)):
-                raise _Stop('invalid_residual')
-            residual_size = r.size
-            terms = squared_terms(r, weights)
-            value = aggregate(terms, aggregation)
-            if not np.isfinite(value):
-                raise _Stop('invalid_residual')
-            if objective_callback is not None:
-                objective_callback(x.copy(), value)
-            if local_nfev == 1:
-                start_fun = value
-            last_x, last_fun = x.copy(), value
-            improved = best_fun is None or value < best_fun
-            if improved:
-                best_x, best_fun = x.copy(), value
-            if progress_callback is not None:
-                progress_callback(x.copy(), value, improved)
-            if pending is None and group_callback is not None:
-                group_callback()
+                try:
+                    r = np.asarray(raw, dtype=float)
+                except (TypeError, ValueError):
+                    raise _Stop('invalid_residual') from None
+                if (r.ndim != 1 or not r.size or not np.all(np.isfinite(r)) or
+                        (residual_size is not None and r.size != residual_size) or
+                        (weights is not None and weights.size != r.size)):
+                    raise _Stop('invalid_residual')
+                residual_size = r.size
+                terms = squared_terms(r, weights)
+                value = aggregate(terms, aggregation)
+                if not np.isfinite(value):
+                    raise _Stop('invalid_residual')
+            except BaseException:
+                if _timing: failed = True
+                raise
+            finally:
+                if _timing: _timing[0].add(f'{_timing[1]}/objective/value', perf_counter_ns() - started, failed=failed)
+            if _timing: started, failed = perf_counter_ns(), False
+            try:
+                if objective_callback is not None:
+                    objective_callback(x.copy(), value)
+                if local_nfev == 1:
+                    start_fun = value
+                last_x, last_fun = x.copy(), value
+                improved = best_fun is None or value < best_fun
+                if improved:
+                    best_x, best_fun = x.copy(), value
+                if progress_callback is not None:
+                    progress_callback(x.copy(), value, improved)
+                if pending is None and group_callback is not None:
+                    if _timing:
+                        timed_call(_timing[0], f'{_timing[1]}/objective/group_callback', group_callback)
+                    else:
+                        group_callback()
+            except BaseException:
+                if _timing: failed = True
+                raise
+            finally:
+                if _timing: _timing[0].add(f'{_timing[1]}/objective/state', perf_counter_ns() - started, failed=failed)
             return value
 
         def batch_map(fun, iterable):
@@ -194,7 +213,14 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             zs = list(iterable)
             if not zs:
                 return []
-            vectors = [start_x.copy() if np.array_equal(z, z_start) else physical(z) for z in zs]
+            if _timing: started, failed = perf_counter_ns(), False
+            try:
+                vectors = [start_x.copy() if np.array_equal(z, z_start) else physical(z) for z in zs]
+            except BaseException:
+                if _timing: failed = True
+                raise
+            finally:
+                if _timing: _timing[0].add(f'{_timing[1]}/batch/vectors', perf_counter_ns() - started, failed=failed)
             results = residuals_batch(vectors)
             pending = iter(results)
             try:
