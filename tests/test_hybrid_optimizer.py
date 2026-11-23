@@ -213,6 +213,46 @@ class HybridTests(unittest.TestCase):
                 self.assertEqual(regions['s/objective/prepare']['count'], 3)
                 self.assertTrue(all(row['failed'] == 0 for row in regions.values()))
 
+    def test_deep_batch_exception_and_budget_stop(self):
+        from lpf.timing import TimerCollector
+
+        for fail_batch in (False, True):
+            timer = TimerCollector()
+            calls = []
+            def batch(vectors):
+                def consume():
+                    calls.append('consume')
+                    yield RuntimeError('injected') if fail_batch else [1.0]
+                return consume()
+            def solver(fun, x, **kw):
+                fun(x)
+                kw['options']['workers'](fun, [x + 0.01])
+                fun(x)  # budget _Stop after the completed group
+            groups = []
+            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+                if fail_batch:
+                    with self.assertRaisesRegex(RuntimeError, 'injected'):
+                        hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                                        max_evaluations=2, restart_sigma=0.1, batch_fd=True,
+                                        residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
+                                        _timing=(timer, 's'))
+                else:
+                    result = hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                                             max_evaluations=2, restart_sigma=0.1, batch_fd=True,
+                                             residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
+                                             _timing=(timer, 's'))
+                    self.assertEqual((result.evaluations, result.stop_reason), (2, 'evaluation_budget_exhausted'))
+            regions = timer.snapshot()
+            self.assertEqual(calls, ['consume'])
+            self.assertEqual(groups[-1], {'force': True})
+            self.assertEqual(regions['s/scipy/minimize']['failed'], 1)
+            if fail_batch:
+                for name in ('objective/raw_batch', 'objective/batch', 'batch/parent'):
+                    self.assertEqual(regions['s/'+name]['failed'], 1)
+            else:
+                self.assertEqual(regions['s/objective/prepare']['failed'], 1)
+                self.assertEqual(regions['s/objective/scalar']['failed'], 1)
+
     def test_invalid_input(self):
         invalid = [([2], [(0, 1)], {}), ([0], [(1, 0)], {}),
                    ([0], [(0, np.inf)], {}), ([], [], {}),

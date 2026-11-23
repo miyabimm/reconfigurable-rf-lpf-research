@@ -175,7 +175,9 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 if _timing: failed = True
                 raise
             finally:
-                if _timing: _timing[0].add(f'{_timing[1]}/objective/raw', perf_counter_ns() - started, failed=failed)
+                if _timing:
+                    kind = 'scalar' if pending is None else 'batch'
+                    _timing[0].add(f'{_timing[1]}/objective/raw_{kind}', perf_counter_ns() - started, failed=failed)
             if _timing: started, failed = perf_counter_ns(), False
             try:
                 try:
