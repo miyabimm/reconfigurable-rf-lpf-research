@@ -303,13 +303,44 @@ class DevelopmentWorker:
                              _timing=(self.timer, stage) if self.timer and self.timing_level == 'deep' else None,
                              **{k: v for k, v in opts.items() if k != 'partial_fd'})
         elif solver == 'trf':
-            trf = timed_call(self.timer, f'{stage}/solver', least_squares_local, evaluate_trf, x, self.bounds,
-                             objective_callback=observe, **opts)
-            samples = self.forward_count * len(evaluator.grid.frequency_hz)
-            if (self.forward_count != trf.sensitivity_evaluations or
-                    trf.requested_samples != samples or trf.computed_samples != samples):
-                raise ValueError('TRF sensitivity accounting mismatch')
-            out = to_optimizer_result(trf)
+            restart = 'restart_sigma' in opts
+            sigma = opts.get('restart_sigma')
+            local_opts = {k: v for k, v in opts.items() if k not in ('restart_sigma', 'max_evaluations')}
+            rng = np.random.default_rng(self.seed) if restart else None
+            bounds = np.asarray(self.bounds, dtype=float)
+            lo, width = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
+            free = width > 0
+            start = np.asarray(x, dtype=float).copy()
+            runs = []
+            best_trf = None
+            while True:
+                before = self.forward_count
+                trf = timed_call(self.timer, f'{stage}/solver', least_squares_local, evaluate_trf, start, self.bounds,
+                                 objective_callback=observe, max_evaluations=opts['max_evaluations'] - before,
+                                 **local_opts)
+                count = self.forward_count - before
+                samples = count * len(evaluator.grid.frequency_hz)
+                if (count != trf.sensitivity_evaluations or count < 1 or
+                        trf.requested_samples != samples or trf.computed_samples != samples):
+                    raise ValueError('TRF sensitivity accounting mismatch')
+                runs.append((start.copy(), trf))
+                if best_trf is None or trf.best_objective < best_trf.best_objective:
+                    best_trf = trf
+                if not restart or not free.any() or not trf.success or self.forward_count >= opts['max_evaluations']:
+                    break
+                z = (trf.x[free] - lo[free]) / width[free]
+                start = lo.copy()
+                start[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, sigma, size=z.size), 0, 1) * width[free],
+                                      lo[free], bounds[free, 1])
+            if restart:
+                reason = ('all_variables_fixed' if not free.any() else
+                          'solver_failure' if not trf.success and trf.status < 0 else
+                          'evaluation_budget_exhausted' if self.forward_count >= opts['max_evaluations'] else
+                          'evaluation_limit')
+                out = OptimizerResult(best_trf.best_x.copy(), best_trf.best_objective,
+                                      reason == 'all_variables_fixed', reason, self.forward_count)
+            else:
+                out = to_optimizer_result(trf)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = timed_call(self.timer, f'{stage}/solver', minimize, residuals, x, self.bounds, constraints=None,
@@ -333,7 +364,20 @@ class DevelopmentWorker:
                       grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
         if solver == 'trf':
             record['rf_cache_mode'] = effective_cache
-            record['trf_details'] = raw_numbers(asdict(trf))
+            if restart:
+                record['local_runs'] = len(runs)
+                record['restart_count'] = len(runs) - 1
+                record['local_run_details'] = [dict(
+                    run_index=i, start_vector_sha256=vector_sha(start),
+                    initial_evaluated_vector_sha256=vector_sha(run.initial_evaluated_x),
+                    final_vector_sha256=vector_sha(run.x), best_vector_sha256=vector_sha(run.best_x),
+                    best_objective=run.best_objective, success=run.success, status=run.status,
+                    message=run.message, optimality=run.optimality, nfev=run.nfev, njev=run.njev,
+                    sensitivity_evaluations=run.sensitivity_evaluations, requested_samples=run.requested_samples,
+                    computed_samples=run.computed_samples, wall_s=run.wall_s, cpu_s=run.cpu_s)
+                    for i, (start, run) in enumerate(runs)]
+            else:
+                record['trf_details'] = raw_numbers(asdict(trf))
         if solver == 'hybrid':
             if sum(run['nfev'] for run in local_details) != self.forward_count:
                 raise ValueError('Hybrid local run forward count mismatch')

@@ -39,7 +39,7 @@ class TRFTests(unittest.TestCase):
         self.assertEqual(plan.data['config']['arms'][0]['steps'][0]['effective_options'], {'max_evaluations': 3})
         step = self.cfg['arms'][0]['steps'][0]
         for update in [dict(aggregation='max'), dict(objective='wrong'),
-                       dict(options={'max_evaluations': 3, 'restart_sigma': .1}),
+                       dict(options={'max_evaluations': 3, 'restart_sigma': 0}),
                        dict(options={'max_evaluations': 3, 'batch_fd': True})] + [
                            dict(options={'max_evaluations': n}) for n in (0, -1, True, 1.5, '3')]:
             original = copy.deepcopy(step)

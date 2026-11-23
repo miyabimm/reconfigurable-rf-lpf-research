@@ -60,8 +60,16 @@ def validate_solver(step):
                 raise ValueError('restart_sigma must be finite and positive')
     elif solver == 'trf':
         fields(options, 'max_evaluations' + ''.join(
-            f' {name}' for name in ('ftol', 'x_scale')
+            f' {name}' for name in ('ftol', 'x_scale', 'restart_sigma')
             if isinstance(options, dict) and name in options))
+        if 'restart_sigma' in options:
+            sigma = options['restart_sigma']
+            try:
+                valid = type(sigma) in (int, float) and math.isfinite(sigma) and sigma > 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError('restart_sigma must be finite and positive')
         if 'ftol' in options and options['ftol'] is not None:
             ftol = options['ftol']
             try:

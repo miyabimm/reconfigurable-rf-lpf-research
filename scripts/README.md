@@ -40,6 +40,7 @@ arms:
 ```
 
 - `source_sha256` はdefinition JSON原byteのSHA、`definition_sha256` はcanonical JSONのSHA。`starts.json` は `{"23":{"demo":{"vector":[…],"vector_sha256":"…"}}}`。全seed×armの完全vectorを明示し、同じseedでも別armへ流用しない。vector SHAは `lpf.search.storage.vector_sha` で計算する。RunはYAML記載のseed順→arm順。
+- TRF の `restart_sigma` は有限正数の任意 opt-in（省略時は従来の単発 run）。指定時は前回局所終点から正規化座標を摂動し、`max_evaluations` を全 run 共通の感度 forward 上限とする。局所成功と全体の予算終了は区別する。
 - Hybridの `restart_sigma` は有限正数で任意（省略時0.1）。`batch_fd` はSciPy workersによる数値微分バッチ（既定true）。旧逐次評価は `batch_fd: false` を明示する。true時の `max_search_forwards` は評価グループ開始の名目上限で、開始済みバッチは完了する。PlanはSearchに最大 `N + max(自由座標数 - 1, 0)` forwardとそのRF/MNA sampleを予約し、Terminalは別途予約する。グループまたは局所run境界でbestをcheckpointし、実施数はraw/receiptに記録する。false時は従来どおり厳密上限。旧schema 2 preflightは自由座標を凍結しないためtrueを拒否する。
 - 開発Hybridの `partial_fd` は設定別計算省略（既定は `batch_fd` と同値、通常true）。通常バッチだけを使う場合は `batch_fd: true, partial_fd: false`、逐次の場合は `batch_fd: false` を指定する。`partial_fd: true` は `batch_fd: true` を必要とする。単独RF基準に対し設定別可変Cを1変数だけ変更した摂動は、その設定だけ再計算する。`off`/`lk` cacheのみ部分化し、`response`/`both`は通常batchに委譲する。各候補のforward・全grid要求sample、予約、Terminalは変わらない。性能と適用範囲の診断は [#484](../project/diagnostics/issue484/README.md)。
 - 実効値はPlanの `effective_options` に記録し、step rawの `local_runs` は完了または予算停止した局所探索の回数（再始動回数は `max(0, local_runs - 1)`）。各stepの `stop_points_per_interval` は任意。TerminalはすべてのSearch区間より密にする。SLSQP／SLPの `options` は `max_iterations` と `max_evaluations`。目的式とaggregationは[profile文書](../project/minimax_profile.md)参照。
