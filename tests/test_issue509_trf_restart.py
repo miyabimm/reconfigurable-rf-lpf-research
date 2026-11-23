@@ -18,6 +18,9 @@ class RestartTests(TRFTests):
     def test_restarts_follow_last_final_not_best(self):
         step = self.cfg['arms'][0]['steps'][0]
         step['options']['restart_sigma'] = .1
+        bounds = self.freeze()[0].data['search_bounds']
+        fixed = self.starts[str(self.cfg['seeds'][0])]['baseline']['vector'][0]
+        bounds[0] = [fixed, fixed]
         calls = []
         def fake(callback, x, bounds, **kwargs):
             calls.append((np.array(x).copy(), kwargs['max_evaluations']))
@@ -28,7 +31,8 @@ class RestartTests(TRFTests):
         with tempfile.TemporaryDirectory(prefix='issue509-test-') as tmp:
             with patch('lpf.search._development_worker.least_squares_local', side_effect=fake):
                 out = Path(tmp)/'run'
-                runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
+                runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1,
+                           search_bounds=bounds)
             result = json.loads((out/'job-0001/result.json').read_text())
         row = result['steps'][0]
         bounds = np.asarray(result['search_bounds'])
@@ -46,6 +50,18 @@ class RestartTests(TRFTests):
         self.assertFalse(row['converged'])
         self.assertEqual(row['solver_result']['objective'], min(r['best_objective'] for r in row['local_run_details']))
         self.assertEqual(result['terminal']['candidates'][0]['vector'], row['solver_result']['x'])
+
+    def test_all_fixed_evaluates_once(self):
+        self.cfg['arms'][0]['steps'][0]['options']['restart_sigma'] = .1
+        vector = self.starts[str(self.cfg['seeds'][0])]['baseline']['vector']
+        with tempfile.TemporaryDirectory(prefix='issue509-fixed-') as tmp:
+            out = Path(tmp)/'run'
+            runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1,
+                       search_bounds=[[v, v] for v in vector])
+            row = json.loads((out/'job-0001/result.json').read_text())['steps'][0]
+        self.assertEqual((row['forward_count'], row['local_runs'], row['restart_count']), (1, 1, 0))
+        self.assertEqual(row['stop_reason'], 'all_variables_fixed')
+        self.assertTrue(row['converged'])
 
     def test_invalid_sigma(self):
         options = self.cfg['arms'][0]['steps'][0]['options']
@@ -67,6 +83,14 @@ class RestartTests(TRFTests):
             self.assertEqual((row['forward_count'], row['local_runs'], row['restart_count']), (3, 3, 2))
             self.assertEqual(row['stop_reason'], 'evaluation_budget_exhausted')
             self.assertFalse(row['converged'])
+            self.cfg['arms'][0]['steps'][0]['options']['max_evaluations'] = 1
+            def failed(callback, x, bounds, **kwargs):
+                return replace(least_squares_local(callback, x, bounds, **kwargs), success=False, status=-1)
+            with patch('lpf.search._development_worker.least_squares_local', side_effect=failed):
+                failed_out = Path(tmp)/'solver-failure'
+                runner.run(self.cfg, self.starts, failed_out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
+            failure_row = json.loads((failed_out/'job-0001/result.json').read_text())['steps'][0]
+            self.assertEqual(failure_row['stop_reason'], 'solver_failure')
             with patch('lpf.search._development_worker.least_squares_local', side_effect=RuntimeError('STOP')) as solver:
                 with self.assertRaisesRegex(RuntimeError, 'STOP'):
                     runner.run(self.cfg, self.starts, Path(tmp)/'failed', root=ROOT, spot_checks=self.spots, checkpoint_interval=1)

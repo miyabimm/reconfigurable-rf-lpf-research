@@ -334,8 +334,9 @@ class DevelopmentWorker:
                                       lo[free], bounds[free, 1])
             if restart:
                 reason = ('all_variables_fixed' if not free.any() else
+                          'solver_failure' if not trf.success and trf.status < 0 else
                           'evaluation_budget_exhausted' if self.forward_count >= opts['max_evaluations'] else
-                          'evaluation_limit' if trf.status == 0 else 'solver_failure')
+                          'evaluation_limit')
                 out = OptimizerResult(best_trf.best_x.copy(), best_trf.best_objective,
                                       reason == 'all_variables_fixed', reason, self.forward_count)
             else:
