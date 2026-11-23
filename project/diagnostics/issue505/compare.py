@@ -215,6 +215,7 @@ def compact_record(raw):
         runner_wall_s=raw['runner_wall_s'], runner_cpu_s=raw['runner_cpu_s'],
         post_wall_s=raw['post_wall_s'], windows=windows,
         threads=raw['threads'], platform=raw['platform'], host=raw['host'],
+        cpu=raw['cpu'], affinity=raw['affinity'], numpy_blas_config=raw['numpy_blas_config'],
         loadavg_start=raw['loadavg_start'], loadavg_end=raw['loadavg_end'],
         diagnostic_script_sha256=raw['diagnostic_script_sha256'])
 

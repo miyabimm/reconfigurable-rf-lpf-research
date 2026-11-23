@@ -72,5 +72,35 @@ class ComparisonTests(unittest.TestCase):
 
 
 
+
+    def test_saved_compact_records_and_vector_identity(self):
+        import csv
+        import json
+        from lpf.search.storage import vector_sha
+        folder = Path(__file__).resolve().parents[1]/'project/diagnostics/issue505'
+        with (folder/'summary.json').open() as stream:
+            summary = json.load(stream)
+        with (folder/'paired.csv').open(newline='') as stream:
+            paired = list(csv.DictReader(stream))
+        self.assertEqual(len(summary['runs']), 6)
+        self.assertEqual(len(paired), 18)
+        self.assertEqual(len(summary['selected_vectors']), 10)
+        self.assertFalse((folder/'raw').exists())
+        self.assertFalse((folder/'controls.tar').exists())
+        for digest, vector in summary['selected_vectors'].items():
+            self.assertEqual(len(vector), 25)
+            self.assertEqual(vector_sha(vector), digest)
+        by_key = {(row['run'], row['window_s']): row for row in paired}
+        self.assertEqual(len(by_key), 18)
+        for run in summary['runs']:
+            for window in ('1', '5', '20'):
+                chosen = run['windows'][window]
+                row = by_key[(run['run'], window)]
+                self.assertEqual(row['vector_sha256'], chosen['vector_sha256'])
+                self.assertEqual(float(row['terminal_J_db']), chosen['terminal_J_db'])
+                self.assertEqual(float(row['search_objective_db2']), chosen['search_objective_db2'])
+                self.assertEqual(row['independent_mna'], 'pass')
+                self.assertFalse(chosen['finite_grid_pass'])
+
 if __name__ == '__main__':
     unittest.main()
