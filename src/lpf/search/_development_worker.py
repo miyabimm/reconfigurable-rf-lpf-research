@@ -304,12 +304,15 @@ class DevelopmentWorker:
                              **{k: v for k, v in opts.items() if k != 'partial_fd'})
         elif solver == 'trf':
             runs = []
+            previous_forward_count = 0
             def on_trf_local_run(start, run):
-                count = self.forward_count - sum(r.sensitivity_evaluations for _, r in runs)
+                nonlocal previous_forward_count
+                count = self.forward_count - previous_forward_count
                 samples = count * len(evaluator.grid.frequency_hz)
                 if (count != run.sensitivity_evaluations or count < 1 or
                         run.requested_samples != samples or run.computed_samples != samples):
                     raise ValueError('TRF sensitivity accounting mismatch')
+                previous_forward_count = self.forward_count
                 runs.append((start, run))
             out = timed_call(self.timer, f'{stage}/solver', trf_minimize, evaluate_with_jacobian, x, self.bounds,
                              seed=self.seed, objective_callback=on_evaluation, local_run_callback=on_trf_local_run, **opts)

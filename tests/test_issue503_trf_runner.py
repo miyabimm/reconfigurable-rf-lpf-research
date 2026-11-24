@@ -99,10 +99,10 @@ class TRFTests(unittest.TestCase):
             self.assertEqual(step['forward_count'], details['sensitivity_evaluations'])
             self.assertEqual(details['computed_samples'], step['forward_count']*70)
             self.assertEqual(details['requested_samples'], details['computed_samples'])
-            self.assertEqual(step['solver_result']['x'], terminal_vector := result['terminal']['candidates'][0]['vector'])
+            self.assertEqual(step['solver_result']['x'], details['best_vector'])
             self.assertEqual(step['solver_result']['objective'], details['best_objective'])
             terminal = result['terminal']['candidates'][0]
-            self.assertEqual(terminal['vector'], terminal_vector)
+            self.assertEqual(terminal['vector'], details['best_vector'])
             self.assertEqual(set(terminal['response']['grid']['setting']), set(range(6)))
             self.assertEqual(set(terminal['response']['grid']['segment']), set(range(28)))
             self.assertEqual(terminal['independent']['status'], 'pass')
@@ -120,7 +120,7 @@ class TRFTests(unittest.TestCase):
             checkpoints = sorted((out/'job-0001/checkpoints').iterdir())
             self.assertGreaterEqual(len(checkpoints), step['forward_count'])
             last = json.loads(checkpoints[-1].read_text())['observation']
-            self.assertEqual(last['vector'], terminal_vector)
+            self.assertEqual(last['vector'], details['best_vector'])
             self.assertEqual(last['objective'], details['best_objective'])
             failout = Path(tmp)/'fail'
             with patch.object(RFEvaluator, 'evaluate_with_il_jacobian', side_effect=ValueError('injected')) as call:
