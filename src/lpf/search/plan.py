@@ -41,9 +41,17 @@ def validate_solver(step):
     solver, agg, options = step['solver'], step['aggregation'], step['options']
     if solver == 'hybrid':
         fields(options, 'max_search_forwards' + ''.join(
-            f' {name}' for name in ('restart_sigma', 'batch_fd', 'partial_fd')
+            f' {name}' for name in ('restart_sigma', 'batch_fd', 'partial_fd', 'ftol')
             if isinstance(options, dict) and name in options))
         positive(options['max_search_forwards'])
+        if 'ftol' in options:
+            ftol = options['ftol']
+            try:
+                valid = type(ftol) in (int, float) and math.isfinite(ftol) and ftol > 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError('ftol must be finite and positive')
         if 'batch_fd' in options and type(options['batch_fd']) is not bool:
             raise ValueError('batch_fd must be boolean')
         if 'partial_fd' in options and type(options['partial_fd']) is not bool:
