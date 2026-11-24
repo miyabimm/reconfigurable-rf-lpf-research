@@ -16,10 +16,13 @@ COSTS = ('rf_samples', 'rf_forwards', 'independent_mna_samples')
 def solver_options(step):
     if step['solver'] == 'hybrid':
         batch_fd = step['options'].get('batch_fd', True)
-        return dict(max_evaluations=step['options']['max_search_forwards'],
-                    restart_sigma=step['options'].get('restart_sigma', 0.1),
-                    batch_fd=batch_fd,
-                    partial_fd=step['options'].get('partial_fd', batch_fd))
+        result = dict(max_evaluations=step['options']['max_search_forwards'],
+                      restart_sigma=step['options'].get('restart_sigma', 0.1),
+                      batch_fd=batch_fd,
+                      partial_fd=step['options'].get('partial_fd', batch_fd))
+        if 'ftol' in step['options']:
+            result['ftol'] = step['options']['ftol']
+        return result
     if step['solver'] == 'trf':
         return dict(step['options'])
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),

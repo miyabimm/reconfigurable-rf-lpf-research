@@ -39,7 +39,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     weights=None, aggregation: str = 'sum', event_callback=None,
                     run_callback=None, objective_callback=None, progress_callback=None,
                     local_run_callback=None, batch_fd=False, residuals_batch=None,
-                    group_callback=None, _timing=None) -> OptimizerResult:
+                    group_callback=None, ftol=None, _timing=None) -> OptimizerResult:
     """Minimize sum or max of weights * maximum(residuals(x), 0)**2.
 
     Bounded L-BFGS-B penalizes positive violations only; negative residuals
@@ -76,6 +76,13 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
     maxiter = max_evaluations
     if not np.isscalar(restart_sigma) or not np.isfinite(restart_sigma) or restart_sigma <= 0:
         raise ValueError('restart_sigma must be finite and positive')
+    if ftol is not None:
+        try:
+            valid_ftol = type(ftol) in (int, float) and np.isfinite(ftol) and ftol > 0
+        except (OverflowError, TypeError):
+            valid_ftol = False
+        if not valid_ftol:
+            raise ValueError('ftol must be None or finite and positive')
     if not callable(residuals):
         raise ValueError('residuals must be callable')
     if type(batch_fd) is not bool or (batch_fd and not callable(residuals_batch)):
@@ -312,6 +319,8 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 reason = 'all_coordinates_fixed'
             else:
                 options = {'maxiter': maxiter, 'maxfun': max_evaluations}
+                if ftol is not None:
+                    options['ftol'] = ftol
                 if batch_fd:
                     options['workers'] = batch_map
                 if _timing:
