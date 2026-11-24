@@ -9,7 +9,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
-from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.optimizers.lbfgsb import lbfgsb_minimize
 
 
 class BatchFDTest(unittest.TestCase):
@@ -23,7 +23,7 @@ class BatchFDTest(unittest.TestCase):
             batches.append([x.copy() for x in xs])
             return [residual(x) for x in xs]
 
-        out = hybrid_minimize(residual, [.8, .7], [(0, 1), (0, 1)], seed=3,
+        out = lbfgsb_minimize(residual, [.8, .7], [(0, 1), (0, 1)], seed=3,
                               max_evaluations=limit, restart_sigma=.1, batch_fd=batch,
                               residuals_batch=residual_batch, aggregation=aggregation,
                               objective_callback=lambda x, f: observations.append((x.copy(), f)),
@@ -41,8 +41,8 @@ class BatchFDTest(unittest.TestCase):
             self.assertEqual(a.evaluations, 90)
             self.assertGreaterEqual(b.evaluations, 90)
             self.assertLessEqual(b.evaluations, 91)
-            self.assertEqual(sum(r.nfev for r in br), b.evaluations)
-            self.assertEqual(sum(r.nfev for r in ar), a.evaluations)
+            self.assertEqual(sum(r.evaluations for r in br), b.evaluations)
+            self.assertEqual(sum(r.evaluations for r in ar), a.evaluations)
 
     def test_partial_remaining_and_fixed(self):
         out, obs, batches, _ = self.run_mode(True, 2)
@@ -50,21 +50,21 @@ class BatchFDTest(unittest.TestCase):
         self.assertEqual(len(obs), 3)
         self.assertEqual(len(batches[0]), 2)
         seen = []
-        out = hybrid_minimize(lambda x: [1.], [.5] * 25, [(0, 1)] * 25, seed=0,
+        out = lbfgsb_minimize(lambda x: [1.], [.5] * 25, [(0, 1)] * 25, seed=0,
                               max_evaluations=11, restart_sigma=.1, batch_fd=True,
                               residuals_batch=lambda xs: (seen.append(len(xs)) or [[1.]] * len(xs)))
         self.assertEqual(seen, [25])
         self.assertEqual(out.evaluations, 26)
-        out = hybrid_minimize(lambda x: [1], [1], [(1, 1)], seed=0,
+        out = lbfgsb_minimize(lambda x: [1], [1], [(1, 1)], seed=0,
                               max_evaluations=1, restart_sigma=.1, batch_fd=True,
                               residuals_batch=lambda xs: self.fail('fixed must not batch'))
         self.assertEqual(out.evaluations, 1)
-        self.assertEqual(out.stop_reason, 'all_coordinates_fixed')
+        self.assertEqual(out.stop_reason, 'all_variables_fixed')
 
     def test_deep_objective_regions_and_callback_failure(self):
         from lpf.timing import TimerCollector
         timer = TimerCollector()
-        out = hybrid_minimize(lambda x: [1.], [.5, .5], [(0, 1)] * 2, seed=0,
+        out = lbfgsb_minimize(lambda x: [1.], [.5, .5], [(0, 1)] * 2, seed=0,
                               max_evaluations=2, restart_sigma=.1, batch_fd=True,
                               residuals_batch=lambda xs: [[1.]] * len(xs), _timing=(timer, 's'))
         regions = timer.snapshot()
@@ -76,13 +76,13 @@ class BatchFDTest(unittest.TestCase):
         def fail(*args):
             raise RuntimeError('checkpoint failed')
         with self.assertRaisesRegex(RuntimeError, 'checkpoint failed'):
-            hybrid_minimize(lambda x: [1.], [.5], [(0, 1)], seed=0,
+            lbfgsb_minimize(lambda x: [1.], [.5], [(0, 1)], seed=0,
                             max_evaluations=2, restart_sigma=.1, group_callback=fail,
                             _timing=(timer, 's'))
         self.assertEqual(timer.snapshot()['s/objective/state']['failed'], 1)
         self.assertEqual(timer.snapshot()['s/objective/group_callback']['failed'], 1)
         timer = TimerCollector()
-        out = hybrid_minimize(lambda x: [float('nan')], [.5], [(0, 1)], seed=0,
+        out = lbfgsb_minimize(lambda x: [float('nan')], [.5], [(0, 1)], seed=0,
                               max_evaluations=2, restart_sigma=.1, _timing=(timer, 's'))
         self.assertEqual(out.stop_reason, 'invalid_residual')
         self.assertEqual(timer.snapshot()['s/objective/value']['failed'], 1)
@@ -93,7 +93,7 @@ class BatchFDTest(unittest.TestCase):
         def batch(xs):
             return iter(([.5], ValueError('injected')))
         with self.assertRaisesRegex(ValueError, 'injected'):
-            hybrid_minimize(lambda x: [1], [.5, .5], [(0, 1)] * 2, seed=0,
+            lbfgsb_minimize(lambda x: [1], [.5, .5], [(0, 1)] * 2, seed=0,
                             max_evaluations=10, restart_sigma=.1, batch_fd=True,
                             residuals_batch=batch,
                             objective_callback=lambda x, f: observed.append((x, f)))
@@ -109,9 +109,12 @@ class RFWorkerBatchTest(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
         step = config['arms'][0]['steps'][0]
-        step['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        step['options'].update(batch_fd=True, partial_fd=False, max_evaluations=2)
         # 25 free coordinates: reserve 2 + 24 Search and one Terminal.
         config['budget'] = dict(rf_samples=70*26 + 476, rf_forwards=27, independent_mna_samples=2)
         args = dict(root=root, spot_checks={'terminal': [0, 57]}, search_bounds=None,
@@ -145,13 +148,16 @@ class RFWorkerBatchTest(unittest.TestCase):
         from unittest.mock import patch
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = cfg['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_evaluations=2)
         clock = [0]
         def tick():
             clock[0] += 1
             return clock[0]
-        original = worker.hybrid_minimize
+        original = worker.lbfgsb_minimize
         def instrument(*args, **kwargs):
             progress = kwargs['progress_callback']
             def pause(*args):
@@ -161,7 +167,7 @@ class RFWorkerBatchTest(unittest.TestCase):
             return original(*args, **kwargs)
         with tempfile.TemporaryDirectory(prefix='issue491-clock-') as tmp, \
              patch.object(worker, 'perf_counter_ns', tick), \
-             patch.object(worker, 'hybrid_minimize', instrument):
+             patch.object(worker, 'lbfgsb_minimize', instrument):
             base = Path(tmp)
             runner.run(cfg, starts, base/'run', root=root, spot_checks={'terminal': [0, 111]},
                        checkpoint_interval=1, timing_output=base/'timing.json', timing_level='deep')
@@ -177,8 +183,11 @@ class RFWorkerBatchTest(unittest.TestCase):
         from lpf.rf_core.model import RFEvaluator
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = cfg['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_evaluations=2)
         original = RFEvaluator.evaluate_batch
         def mismatch(ev, vectors):
             responses = list(original(ev, vectors))
@@ -215,8 +224,11 @@ class RFWorkerBatchTest(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1]
         cfg = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = cfg['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_search_forwards=2)
+        cfg['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=False, max_evaluations=2)
         compiled = freeze_run(cfg, starts, root=root, spot_checks={'terminal': [0, 111]},
                               search_bounds=None, checkpoint_interval=1000)
         original = RFEvaluator.evaluate

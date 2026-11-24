@@ -7,7 +7,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.optimizers.lbfgsb import lbfgsb_minimize
 
 
 class PhysicalReuseTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class PhysicalReuseTests(unittest.TestCase):
                     yield value
             return consume()
 
-        result = hybrid_minimize(residual, [0.4, 0.7], [(0, 1), (0, 1)],
+        result = lbfgsb_minimize(residual, [0.4, 0.7], [(0, 1), (0, 1)],
                                  seed=1, max_evaluations=20, restart_sigma=0.1,
                                  batch_fd=True, residuals_batch=batch,
                                  objective_callback=lambda x, f: (seen.append((x, f)), events.append(('objective', x.copy()))))
@@ -62,8 +62,8 @@ class PhysicalReuseTests(unittest.TestCase):
                 pass
             fun(np.array([0.9]))  # scalar after generator failure
             return OptimizeResult(x=z, fun=1, success=True, status=0, message='ok', nit=0)
-        with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
-            result = hybrid_minimize(lambda x: [x[0]], [0.5], [(0, 1)], seed=1,
+        with patch('lpf.optimizers.lbfgsb.minimize', side_effect=solver):
+            result = lbfgsb_minimize(lambda x: [x[0]], [0.5], [(0, 1)], seed=1,
                                      max_evaluations=6, restart_sigma=0.1,
                                      batch_fd=True, residuals_batch=batch,
                                      objective_callback=lambda x, f: observed.append((x[0], f)),
@@ -82,8 +82,8 @@ class PhysicalReuseTests(unittest.TestCase):
                         workers(lambda v: wrapper(fun, v), [z.copy()])
                     fun(z)
                     return OptimizeResult(x=z, fun=0.25, success=True, status=0, message='ok', nit=0)
-                with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
-                    result = hybrid_minimize(lambda x: [x[0]], [0.5], [(0, 1)], seed=1,
+                with patch('lpf.optimizers.lbfgsb.minimize', side_effect=solver):
+                    result = lbfgsb_minimize(lambda x: [x[0]], [0.5], [(0, 1)], seed=1,
                                              max_evaluations=1, restart_sigma=0.1,
                                              batch_fd=True, residuals_batch=lambda xs: [[1] for x in xs],
                                              objective_callback=lambda x, f: observed.append(x.tolist()))

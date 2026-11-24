@@ -51,10 +51,11 @@ def config_for(arm, limit):
     config = json.loads((ROOT/'project/diagnostics/issue470/config.json').read_text())
     step = config['arms'][0]['steps'][0]
     if arm == 'hybrid':
-        step['options'] = dict(max_search_forwards=limit, batch_fd=True, partial_fd=True, restart_sigma=.1)
+        step['solver'] = 'lbfgsb'
+        step['options'] = dict(max_evaluations=limit, batch_fd=True, partial_fd=True, restart_sigma=.1)
         cap = limit + 24
     else:
-        step.update(solver='trf', options={'max_evaluations': limit})
+        step.update(solver='trf', options={'max_evaluations': limit, 'restart_sigma': None, 'ftol': 1e-8})
         cap = limit
     config['budget'] = dict(rf_samples=70*cap+476, rf_forwards=cap+1, independent_mna_samples=2)
     return config
@@ -65,7 +66,7 @@ def run(arm, limit, output, *, observe=True):
     config = config_for(arm, limit)
     events, context = [], {}
     original_search = worker_module.DevelopmentWorker._search_impl
-    original_h, original_t = worker_module.hybrid_minimize, worker_module.least_squares_local
+    original_h, original_t = worker_module.lbfgsb_minimize, worker_module.trf_minimize
 
     def search(self, step, x):
         context['worker'] = self
@@ -99,8 +100,8 @@ def run(arm, limit, output, *, observe=True):
     error = None
     try:
         with patch.object(worker_module.DevelopmentWorker, '_search_impl', search), \
-             patch.object(worker_module, 'hybrid_minimize', lambda *a, **k: solver(original_h, 'progress_callback', *a, **k)), \
-             patch.object(worker_module, 'least_squares_local', lambda *a, **k: solver(original_t, 'objective_callback', *a, **k)):
+             patch.object(worker_module, 'lbfgsb_minimize', lambda *a, **k: solver(original_h, 'progress_callback', *a, **k)), \
+             patch.object(worker_module, 'trf_minimize', lambda *a, **k: solver(original_t, 'objective_callback', *a, **k)):
             state = runner.run(config, starts, output, root=ROOT, spot_checks=spots,
                                checkpoint_interval=1000, rf_cache_mode='lk')
     except Exception as exc:
@@ -205,12 +206,12 @@ def compact_record(raw):
         converged=step['converged'] if step else None,
         search_forwards=step['forward_count'] if step else None,
         search_requested_samples=step['requested_samples'] if step else None,
-        search_computed_samples=(step['trf_details']['computed_samples'] if raw['arm'] == 'trf'
+        search_computed_samples=(sum(run['computed_samples'] for run in step['local_run_details']) if raw['arm'] == 'trf'
             else raw['search_cache_stats'].get('computed_samples') if raw['search_cache_stats'] else None)
             if step else None,
         actual=raw['state']['jobs'][0]['actual'] if raw['state'] else None,
-        trf_diagnostics={key: step['trf_details'][key] for key in
-            ('nfev','njev','status','message','sensitivity_evaluations')} if step and raw['arm']=='trf' else None,
+        trf_diagnostics={key: step['local_run_details'][0][key] for key in
+            ('scipy_nfev','scipy_njev','status','message','sensitivity_evaluations')} if step and raw['arm']=='trf' else None,
         solver_wall_s=raw['solver_wall_s'], solver_cpu_s=raw['solver_cpu_s'],
         runner_wall_s=raw['runner_wall_s'], runner_cpu_s=raw['runner_cpu_s'],
         post_wall_s=raw['post_wall_s'], windows=windows,

@@ -62,7 +62,7 @@ class TimingTests(unittest.TestCase):
                 self.assertFalse(any('/rf/' in name for name in job['regions']))
                 self.assertFalse(any(name.startswith('terminal/rf/') for name in regions))
                 self.assertEqual(len(step['local_run_details']), step['local_runs'])
-                self.assertEqual(sum(r['nfev'] for r in step['local_run_details']), step['forward_count'])
+                self.assertEqual(sum(r['evaluations'] for r in step['local_run_details']), step['forward_count'])
                 self.assertEqual(job['regions']['demo/coarse/rf_evaluate']['count'], step['forward_count'])
                 self.assertEqual(job['regions']['terminal/rf_evaluate']['count'], 1)
                 self.assertEqual(job['regions']['job']['count'], 1)
@@ -108,7 +108,7 @@ class TimingTests(unittest.TestCase):
                 # Fresh output, then a scientific STOP; a diagnostic write failure must not mask it.
                 argv[argv.index('--output') + 1] = str(base/'stopped')
                 argv += ['--timing-level', 'deep']
-                with patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('injected')):
+                with patch('lpf.search._development_worker.lbfgsb_minimize', side_effect=ValueError('injected')):
                     self.assertEqual(cli.main(argv), 2)
             without_output = argv[:argv.index('--timing-output')] + ['--timing-level', 'deep']
             with self.assertRaises(SystemExit) as invalid:
@@ -168,7 +168,7 @@ class TimingTests(unittest.TestCase):
     def test_stop_diagnostic(self):
         with tempfile.TemporaryDirectory(prefix='issue468-stop-') as tmp:
             base = Path(tmp)
-            with patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('injected')):
+            with patch('lpf.search._development_worker.lbfgsb_minimize', side_effect=ValueError('injected')):
                 with self.assertRaisesRegex(ValueError, 'injected'):
                     runner.run(self.cfg, self.starts, base/'run', root=ROOT, spot_checks={'terminal': [0, 57]},
                                timing_output=base/'timing.json')

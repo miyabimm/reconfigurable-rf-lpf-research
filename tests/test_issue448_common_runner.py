@@ -29,8 +29,8 @@ class CommonRunnerTests(unittest.TestCase):
         self.out = Path(tmp.name)/'run'
         _, definition, _, bounds, x = make('RF-F003')
         self.box = plain(bounds)
-        step = dict(name='coarse', solver='hybrid', objective='signed_margin_db', aggregation='sum',
-                    points_per_interval=2, options=dict(max_search_forwards=2, batch_fd=False))
+        step = dict(name='coarse', solver='lbfgsb', objective='signed_margin_db', aggregation='sum',
+                    points_per_interval=2, options=dict(max_evaluations=2, batch_fd=False))
         self.cfg = dict(schema_version=1, rf=dict(constraint_id='RF-T009', allow_trial=True),
                         definition=plain(asdict(definition)), seeds=[23, 7], terminal_points=4,
                         arms=[dict(name=arm, steps=[copy.deepcopy(step)]) for arm in ('zeta', 'alpha')],
@@ -194,10 +194,10 @@ class CommonRunnerTests(unittest.TestCase):
         evaluate = RFEvaluator.evaluate
         from dataclasses import replace
         cases = [
-            ('solver', patch('lpf.search._development_worker.hybrid_minimize', side_effect=ValueError('Solver STOP')), 'Solver STOP'),
+            ('solver', patch('lpf.search._development_worker.lbfgsb_minimize', side_effect=ValueError('Solver STOP')), 'Solver STOP'),
             ('terminal', patch.object(RFEvaluator, 'evaluate', terminal_failure), 'Terminal power STOP'),
             ('audit', patch('lpf.rf_core.independent.evaluate_independent_response', side_effect=ValueError('MNA STOP')), 'MNA STOP'),
-            ('cap', patch('lpf.search._development_worker.hybrid_minimize', side_effect=overrun), 'forward budget exhausted'),
+            ('cap', patch('lpf.search._development_worker.lbfgsb_minimize', side_effect=overrun), 'forward budget exhausted'),
             ('source', patch('lpf.search._development_worker.source_identity', side_effect=[source, {}]), 'Source/environment'),
             ('rf', patch('lpf.minimax_profile.load_minimax_profile', side_effect=[profile, replace(profile, fingerprint='changed')]), 'RF profile/base'),
             ('raw-write', patch.object(runner, '_save_checkpoint', side_effect=fail_raw), 'raw storage unavailable'),

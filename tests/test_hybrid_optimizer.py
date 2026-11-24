@@ -8,7 +8,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.optimizers.lbfgsb import lbfgsb_minimize
 
 
 class HybridTests(unittest.TestCase):
@@ -17,18 +17,15 @@ class HybridTests(unittest.TestCase):
         options.update(kwargs)
         self.runs = []
         options['local_run_callback'] = self.runs.append
-        return hybrid_minimize(residuals, x0, bounds, **options)
+        return lbfgsb_minimize(residuals, x0, bounds, **options)
 
     def test_aggregation_values_and_default_compatibility(self):
         residual = lambda x: [2, -3, 4]
-        for weights, expected_sum, expected_max in (
-                (None, 20, 16), ([1, 1, 1], 20, 16), ([2, 3, 0.5], 16, 8)):
-            for mode, expected in (('sum', expected_sum), ('max', expected_max)):
-                with self.subTest(weights=weights, mode=mode):
-                    result = self.run_hybrid(residual, [0], [(0, 0)],
-                                             weights=weights, aggregation=mode)
-                    self.assertEqual(result.objective, expected)
-                    self.assertEqual(self.runs[0].start_fun, expected)
+        for mode, expected in (('sum', 20), ('max', 16)):
+            with self.subTest(mode=mode):
+                result = self.run_hybrid(residual, [0], [(0, 0)], aggregation=mode)
+                self.assertEqual(result.objective, expected)
+                self.assertEqual(self.runs[0].start_fun, expected)
         default = self.run_hybrid(residual, [0.2], [(0, 1)])
         explicit = self.run_hybrid(residual, [0.2], [(0, 1)], aggregation='sum')
         self.assertEqual(asdict(default), asdict(explicit))
@@ -52,7 +49,7 @@ class HybridTests(unittest.TestCase):
             value = objective(x)
             return OptimizeResult(x=x, fun=value, success=False, status=2,
                                   message='line search failed', nit=1)
-        with patch('lpf.optimizers.hybrid.minimize', side_effect=failed_solver):
+        with patch('lpf.optimizers.lbfgsb.minimize', side_effect=failed_solver):
             result = self.run_hybrid(lambda x: [x[0], 2 * (1 - x[0])],
                                      [0.1], [(0, 1)], aggregation='max')
         self.assertAlmostEqual(result.x[0], 2 / 3)
@@ -80,13 +77,12 @@ class HybridTests(unittest.TestCase):
         b = self.run_hybrid(lambda x: [x[0], x[0] - 1], [0.2], [(0, 1)], **options)
         self.assertEqual(asdict(a), asdict(b))
 
-    def test_weighted_unimodal_and_fixed_coordinates(self):
+    def test_unimodal_and_fixed_coordinates(self):
         seen = []
         def residual(x):
             seen.append(x.copy())
             return [x[0] - 0.3, x[1] - 2, 2 * (x[0] - 0.3)]
-        result = self.run_hybrid(residual, [0.9, 2], [(0, 1), (2, 2)],
-                                 weights=[1, 1, 2])
+        result = self.run_hybrid(residual, [0.9, 2], [(0, 1), (2, 2)])
         self.assertTrue(self.runs[0].success)
         self.assertFalse(result.converged)  # local success does not end budget-only restarts
         self.assertEqual(result.stop_reason, 'evaluation_budget_exhausted')
@@ -96,11 +92,6 @@ class HybridTests(unittest.TestCase):
         self.assertTrue(all(0 <= x[0] <= 1 and x[1] == 2 for x in seen))
         self.assertEqual(result.evaluations, len(seen))
 
-    def test_weights_change_the_solution(self):
-        residual = lambda x: [x[0], 1 - x[0]]
-        result = self.run_hybrid(residual, [0.8], [(0, 1)], weights=[3, 1])
-        self.assertAlmostEqual(result.x[0], 0.25, places=5)
-        self.assertAlmostEqual(result.objective, 0.75, places=8)
 
     def test_multimodal_uphill_restarts_and_determinism(self):
         seen = []
@@ -128,7 +119,7 @@ class HybridTests(unittest.TestCase):
         self.assertEqual(result.stop_reason, 'evaluation_budget_exhausted')
         self.assertFalse(self.runs[0].success)
         self.assertIsNone(self.runs[0].status)
-        self.assertEqual(self.runs[0].nfev, 2)
+        self.assertEqual(self.runs[0].evaluations, 2)
         self.assertIsNotNone(result.x)
         self.assertIsNotNone(self.runs[0].end_x)
 
@@ -142,7 +133,7 @@ class HybridTests(unittest.TestCase):
 
     def test_fixed_box_and_invalid_residuals(self):
         result = self.run_hybrid(lambda x: [x[0] - 1], [2], [(2, 2)])
-        self.assertEqual(result.stop_reason, 'all_coordinates_fixed')
+        self.assertEqual(result.stop_reason, 'all_variables_fixed')
         self.assertTrue(result.converged)
         self.assertEqual(result.evaluations, 1)
         self.assertTrue(self.runs[0].success)
@@ -188,9 +179,9 @@ class HybridTests(unittest.TestCase):
                 kw['options']['workers'](fun, [x + 0.01, x + 0.02])
                 kw['callback'](x)
                 return OptimizeResult(x=x, fun=1.0, success=True, status=0, message='ok', nit=1)
-            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+            with patch('lpf.optimizers.lbfgsb.minimize', side_effect=solver):
                 try:
-                    result = hybrid_minimize(scalar, [0.5], [(0, 1)], seed=0, max_evaluations=3,
+                    result = lbfgsb_minimize(scalar, [0.5], [(0, 1)], seed=0, max_evaluations=3,
                                              restart_sigma=0.1, batch_fd=True, residuals_batch=batch,
                                              group_callback=group, _timing=(timer, 's') if deep else None)
                     outcome = asdict(result)
@@ -214,7 +205,7 @@ class HybridTests(unittest.TestCase):
                 self.assertTrue(all(row['failed'] == 0 for row in regions.values()))
 
     def test_plain_hybrid_does_not_read_deep_clock(self):
-        with patch('lpf.optimizers.hybrid.perf_counter_ns', side_effect=AssertionError('deep clock')):
+        with patch('lpf.optimizers.lbfgsb.perf_counter_ns', side_effect=AssertionError('deep clock')):
             result = self.run_hybrid(lambda x: [x[0]], [0.5], [(0, 1)], max_evaluations=3)
         self.assertEqual(result.evaluations, 3)
 
@@ -234,15 +225,15 @@ class HybridTests(unittest.TestCase):
                 kw['options']['workers'](fun, [x + 0.01])
                 fun(x)  # budget _Stop after the completed group
             groups = []
-            with patch('lpf.optimizers.hybrid.minimize', side_effect=solver):
+            with patch('lpf.optimizers.lbfgsb.minimize', side_effect=solver):
                 if fail_batch:
                     with self.assertRaisesRegex(RuntimeError, 'injected'):
-                        hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                        lbfgsb_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
                                         max_evaluations=2, restart_sigma=0.1, batch_fd=True,
                                         residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
                                         _timing=(timer, 's'))
                 else:
-                    result = hybrid_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
+                    result = lbfgsb_minimize(lambda x: [1.0], [0.5], [(0, 1)], seed=0,
                                              max_evaluations=2, restart_sigma=0.1, batch_fd=True,
                                              residuals_batch=batch, group_callback=lambda **kw: groups.append(kw),
                                              _timing=(timer, 's'))
@@ -263,15 +254,11 @@ class HybridTests(unittest.TestCase):
                    ([0], [(0, np.inf)], {}), ([], [], {}),
                    ([0], [(0, 1)], {'max_evaluations': 0}),
                    ([0], [(0, 1)], {'restart_sigma': 0}),
-                   ([0], [(0, 1)], {'weights': [-1]}),
                    ([0], [(0, 1)], {'aggregation': 'mean'}),
                    ([0], [(0, 1)], {'aggregation': None})]
         for x0, bounds, options in invalid:
             with self.subTest(x0=x0, bounds=bounds, options=options), self.assertRaises(ValueError):
                 self.run_hybrid(lambda x: [1], x0, bounds, **options)
-        mismatch = self.run_hybrid(lambda x: [1, 2], [0], [(0, 1)], weights=[1])
-        self.assertEqual(mismatch.stop_reason, 'invalid_residual')
-        self.assertIsNone(mismatch.objective)
 
 
 if __name__ == '__main__':

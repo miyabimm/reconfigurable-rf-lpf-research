@@ -39,11 +39,11 @@ def positive(value):
 
 def validate_solver(step):
     solver, agg, options = step['solver'], step['aggregation'], step['options']
-    if solver == 'hybrid':
-        fields(options, 'max_search_forwards' + ''.join(
+    if solver == 'lbfgsb':
+        fields(options, 'max_evaluations' + ''.join(
             f' {name}' for name in ('restart_sigma', 'batch_fd', 'partial_fd', 'ftol')
             if isinstance(options, dict) and name in options))
-        positive(options['max_search_forwards'])
+        positive(options['max_evaluations'])
         if 'ftol' in options:
             ftol = options['ftol']
             try:
@@ -70,14 +70,14 @@ def validate_solver(step):
         fields(options, 'max_evaluations' + ''.join(
             f' {name}' for name in ('ftol', 'x_scale', 'restart_sigma')
             if isinstance(options, dict) and name in options))
-        if 'restart_sigma' in options:
+        if 'restart_sigma' in options and options['restart_sigma'] is not None:
             sigma = options['restart_sigma']
             try:
                 valid = type(sigma) in (int, float) and math.isfinite(sigma) and sigma > 0
             except OverflowError:
                 valid = False
             if not valid:
-                raise ValueError('restart_sigma must be finite and positive')
+                raise ValueError('restart_sigma must be None or finite and positive')
         if 'ftol' in options and options['ftol'] is not None:
             ftol = options['ftol']
             try:
@@ -100,7 +100,7 @@ def validate_solver(step):
         raise ValueError('Unknown solver')
     if agg not in (('signed_max',) if solver == 'slp' else ('sum',) if solver == 'trf' else ('sum', 'max')):
         raise ValueError('Unknown solver aggregation')
-    if solver != 'hybrid':
+    if solver != 'lbfgsb':
         positive(options['max_evaluations'])
 
 

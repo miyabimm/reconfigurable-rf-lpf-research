@@ -33,7 +33,7 @@ def fixture_plan():
     # This fixture tests RF evaluation, not replay of the historical solver Plan.
     # Keep the saved input immutable and build a new test Plan in memory.
     config = yaml.safe_load((ROOT/'project/diagnostics/issue377/baseline.yaml').read_text())
-    config['arms'][0]['steps'][0]['options'] = {'max_search_forwards': 100}
+    config['arms'][0]['steps'][0]['options'] = {'max_evaluations': 100}
     frozen = freeze(config, ROOT)
     return Plan(canonical(frozen), sha(frozen))
 

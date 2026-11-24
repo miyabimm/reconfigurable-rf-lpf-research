@@ -5,12 +5,11 @@ from time import perf_counter, process_time
 import numpy as np
 from scipy.optimize import least_squares
 
-from ._objectives import squared_terms, aggregate
 from .result import OptimizerResult
 
 
 @dataclass(frozen=True)
-class LeastSquaresResult:
+class _LocalResult:
     x: np.ndarray
     objective: float
     best_x: np.ndarray
@@ -19,8 +18,8 @@ class LeastSquaresResult:
     success: bool
     status: int
     message: str
-    nfev: int
-    njev: int
+    scipy_nfev: int
+    scipy_njev: int
     sensitivity_evaluations: int
     requested_samples: int
     computed_samples: int
@@ -29,8 +28,8 @@ class LeastSquaresResult:
     optimality: float | None
 
 
-def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None,
-                        ftol=1e-8, x_scale=1.0):
+def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None,
+               ftol=1e-6, x_scale=1.0):
     """Run one TRF solve. Callback returns (residual, physical Jacobian).
 
     The one-entry cache shares only exactly equal normalized vectors. Callback
@@ -111,20 +110,49 @@ def least_squares_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100,
         x, objective = lo.copy(), float(.5 * np.dot(r, r))
         success, status, message, nfev, njev = True, 0, 'All variables fixed; evaluated once', 1, 0
         optimality = None
-    return LeastSquaresResult(x, objective, best_x, best, first, success, status, message,
+    return _LocalResult(x, objective, best_x, best, first, success, status, message,
                               nfev, njev, evaluations, samples, samples,
                               perf_counter()-wall, process_time()-cpu, optimality)
 
 
-def to_optimizer_result(result):
-    """Select the best observed point, not necessarily SciPy's final point."""
-    reason = ('all_variables_fixed' if result.success and result.status == 0 else
-              'converged' if result.success else
-              'evaluation_limit' if result.status == 0 else 'solver_failure')
-    return OptimizerResult(result.best_x.copy(), result.best_objective, result.success,
-                           reason, result.sensitivity_evaluations)
-
-
-def reported_margin_objective(margins):
-    """Recompute legacy sum separately; sqrt(2) may round differently."""
-    return aggregate(squared_terms(np.asarray(margins), None), 'sum')
+def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
+                 restart_sigma, ftol, x_scale, objective_callback=None, local_run_callback=None):
+    """Run TRF local solves, selecting the best observation across restarts."""
+    if type(seed) is not int or seed < 0 or type(max_evaluations) is not int or max_evaluations < 1:
+        raise ValueError('Expected nonnegative seed and positive evaluation budget')
+    if restart_sigma is not None and (type(restart_sigma) not in (int, float) or
+                                      not np.isfinite(restart_sigma) or restart_sigma <= 0):
+        raise ValueError('restart_sigma must be None or finite and positive')
+    rng = np.random.default_rng(seed) if restart_sigma is not None else None
+    box = np.asarray(bounds, dtype=float)
+    # _trf_local validates the full input before this geometry is used.
+    start = np.asarray(x0, dtype=float).copy()
+    total = 0
+    best = None
+    while True:
+        run = _trf_local(evaluate_with_jacobian, start, box, max_evaluations=max_evaluations - total,
+                         objective_callback=objective_callback, ftol=ftol, x_scale=x_scale)
+        total += run.sensitivity_evaluations
+        if local_run_callback is not None:
+            local_run_callback(start.copy(), run)
+        if best is None or run.best_objective < best.best_objective:
+            best = run
+        lo, width = box[:, 0], box[:, 1] - box[:, 0]
+        free = width > 0
+        if restart_sigma is None or not free.any() or not run.success or total >= max_evaluations:
+            break
+        z = (run.x[free] - lo[free]) / width[free]
+        start = lo.copy()
+        start[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, restart_sigma, size=z.size), 0, 1) * width[free],
+                              lo[free], box[free, 1])
+    if not free.any():
+        reason, converged = 'all_variables_fixed', True
+    elif restart_sigma is None:
+        reason = ('converged' if run.success else 'solver_failure' if run.status < 0 else
+                  'evaluation_budget_exhausted' if total >= max_evaluations else 'evaluation_limit')
+        converged = run.success
+    else:
+        reason = ('solver_failure' if not run.success and run.status < 0 else
+                  'evaluation_budget_exhausted' if total >= max_evaluations else 'evaluation_limit')
+        converged = False
+    return OptimizerResult(best.best_x.copy(), best.best_objective, converged, reason, total)

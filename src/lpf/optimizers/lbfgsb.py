@@ -13,7 +13,7 @@ from scipy.optimize import minimize
 from time import perf_counter_ns
 
 from lpf.timing import timed_call
-from ._objectives import aggregate, squared_terms, validate_weights
+from ._objectives import aggregate, squared_terms
 from .result import OptimizerResult
 
 
@@ -27,20 +27,22 @@ class LocalRun:
     status: int | None  # None means the solver was interrupted, not a SciPy status
     message: str
     nit: int
-    nfev: int  # actual residual calls, including finite differences and invalid calls
+    evaluations: int  # actual residual calls, including finite differences and invalid calls
+    scipy_nfev: int | None = None
+    scipy_njev: int | None = None
 
 
 class _Stop(Exception):
     pass
 
 
-def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
+def lbfgsb_minimize(residuals: Callable, x0, bounds, *, seed: int,
                     max_evaluations: int, restart_sigma: float,
-                    weights=None, aggregation: str = 'sum', event_callback=None,
-                    run_callback=None, objective_callback=None, progress_callback=None,
+                    aggregation: str = 'sum', event_callback=None,
+                    objective_callback=None, progress_callback=None,
                     local_run_callback=None, batch_fd=False, residuals_batch=None,
                     group_callback=None, ftol=None, _timing=None) -> OptimizerResult:
-    """Minimize sum or max of weights * maximum(residuals(x), 0)**2.
+    """Minimize sum or max of maximum(residuals(x), 0)**2.
 
     Bounded L-BFGS-B penalizes positive violations only; negative residuals
     contribute zero. 'max' is not the maximum signed error. The 'max' objective is
@@ -57,8 +59,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
     including finite-difference probes, independently of solver convergence.
     Invalid residuals (empty, nonfinite, changing length, overflow) stop the
     entire search and preserve prior valid observations. Other exceptions from
-    the caller propagate. Weights must be finite, nonnegative and match the
-    residual length. Out-of-bounds x0 is rejected, never projected.
+    the caller propagate. Out-of-bounds x0 is rejected, never projected.
     All-fixed boxes require one evaluation and no SciPy call or restarts. The
     overall result is converged only for this all-fixed case: with free
     coordinates, successful local runs restart until the evaluation budget is
@@ -89,8 +90,6 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         raise ValueError('batch_fd requires a callable residuals_batch')
     if group_callback is not None and not callable(group_callback):
         raise ValueError('group_callback must be callable')
-    if run_callback is not None and not callable(run_callback):
-        raise ValueError('run_callback must be callable')
     if objective_callback is not None and not callable(objective_callback):
         raise ValueError('objective_callback must be callable')
     if progress_callback is not None and not callable(progress_callback):
@@ -110,8 +109,6 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
         raise ValueError('bounds must be ordered with finite widths')
     if np.any(x0 < lo) or np.any(x0 > hi):
         raise ValueError('x0 outside bounds')
-    weights = validate_weights(weights)
-
     free = width > 0
     rng = np.random.default_rng(seed)
     best_x = best_fun = None
@@ -152,8 +149,6 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                       cpu_s=restart_cpu_s + (cpu_end - cpu_start)))
         else:
             start_x = x0.copy() if run_index == 0 else physical(z_start)
-        if run_callback is not None:
-            run_callback(run_index)
         start_fun = None
         last_x = last_fun = None
         local_nfev = nit = 0
@@ -199,11 +194,10 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 except (TypeError, ValueError):
                     raise _Stop('invalid_residual') from None
                 if (r.ndim != 1 or not r.size or not np.all(np.isfinite(r)) or
-                        (residual_size is not None and r.size != residual_size) or
-                        (weights is not None and weights.size != r.size)):
+                        (residual_size is not None and r.size != residual_size)):
                     raise _Stop('invalid_residual')
                 residual_size = r.size
-                terms = squared_terms(r, weights)
+                terms = squared_terms(r, None)
                 value = aggregate(terms, aggregation)
                 if not np.isfinite(value):
                     raise _Stop('invalid_residual')
@@ -316,7 +310,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 value = objective(z_start)
                 run = LocalRun(start_x.tolist(), start_fun, start_x.tolist(), value,
                                True, 0, 'all coordinates fixed', 0, local_nfev)
-                reason = 'all_coordinates_fixed'
+                reason = 'all_variables_fixed'
             else:
                 options = {'maxiter': maxiter, 'maxfun': max_evaluations}
                 if ftol is not None:
@@ -338,7 +332,9 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
                 end_x = start_x if np.array_equal(sol.x, z_start) else physical(sol.x)
                 run = LocalRun(start_x.tolist(), start_fun, end_x.tolist(),
                                float(sol.fun), bool(sol.success), int(sol.status),
-                               str(sol.message), int(sol.nit), local_nfev)
+                               str(sol.message), int(sol.nit), local_nfev,
+                               int(sol.nfev) if getattr(sol, 'nfev', None) is not None else None,
+                               int(sol.njev) if getattr(sol, 'njev', None) is not None else None)
         except _Stop as exc:
             if batch_fd and group_callback is not None:
                 group_callback(force=True)
@@ -361,7 +357,7 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             emit(dict(event='local_run_end', seed=seed, run_index=run_index,
                       monotonic_s=wall_end, process_cpu_s=cpu_end,
                       wall_s=wall_end-wall_start, cpu_s=cpu_end-cpu_start,
-                      nfev=run.nfev, nit=run.nit, success=run.success,
+                      nfev=run.evaluations, nit=run.nit, success=run.success,
                       status=run.status, message=run.message, interrupted=run.status is None))
         if local_run_callback is not None:
             local_run_callback(run)
@@ -379,5 +375,5 @@ def hybrid_minimize(residuals: Callable, x0, bounds, *, seed: int,
             restart_cpu_s = time.process_time() - cpu_start
 
     selected = None if best_x is None else best_x.tolist()
-    converged = reason == 'all_coordinates_fixed' and run is not None and run.success
+    converged = reason == 'all_variables_fixed' and run is not None and run.success
     return OptimizerResult(selected, best_fun, bool(converged), reason, total)

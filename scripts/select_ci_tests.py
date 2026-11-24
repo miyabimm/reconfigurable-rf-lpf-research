@@ -82,7 +82,7 @@ def path_classes(path):
         return {'RF'}
     if path in {'src/lpf/rf_core/model.py', 'src/lpf/rf_core/independent.py'}:
         return {'RF'}
-    if path in {f'src/lpf/optimizers/{name}.py' for name in ('_objectives', 'hybrid', 'pipeline', 'slp', 'slsqp')}:
+    if path in {f'src/lpf/optimizers/{name}.py' for name in ('_objectives', 'lbfgsb', 'trf', 'pipeline', 'slp', 'slsqp')}:
         return {'OPT'}
     if path.startswith('.github/') or path in {'scripts/select_ci_tests.py', 'scripts/classify_storage_ci.py'}:
         return {'CI', 'FULL'}

@@ -169,7 +169,7 @@ class MinimaxTests(unittest.TestCase):
         import yaml
         from lpf.search.storage import plain, vector_sha
         policy, definition, _, _, x = make('RF-F003')
-        for solver in ('slsqp', 'slp', 'hybrid'):
+        for solver in ('slsqp', 'slp', 'lbfgsb'):
             with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-profile-') as tmp:
                 cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
                 cfg.pop('selection')
@@ -177,8 +177,8 @@ class MinimaxTests(unittest.TestCase):
                            definition=plain(asdict(definition)), anytime_samples=[])
                 step = cfg['arms'][0]['steps'][0]
                 step.update(solver=solver, aggregation='signed_max' if solver == 'slp' else 'sum',
-                            objective='signed_margin_db', options=(dict(max_search_forwards=2, batch_fd=False)
-                            if solver == 'hybrid' else dict(max_iterations=1, max_evaluations=2)))
+                            objective='signed_margin_db', options=(dict(max_evaluations=2, batch_fd=False)
+                            if solver == 'lbfgsb' else dict(max_iterations=1, max_evaluations=2)))
                 compiled = compile_fixture(cfg, x, checkpoint_interval=1)
                 plan = compiled[0]
                 worker = fixture_worker(compiled, Path(tmp)/'checkpoints')
@@ -234,8 +234,8 @@ class MinimaxTests(unittest.TestCase):
         cfg.pop('selection')
         cfg.update(rf=dict(constraint_id='RF-T009', allow_trial=True),
                    definition=plain(asdict(definition)), anytime_samples=[])
-        cfg['arms'][0]['steps'][0].update(solver='hybrid', aggregation='sum',
-            objective='signed_margin_db', options=dict(max_search_forwards=2, batch_fd=False))
+        cfg['arms'][0]['steps'][0].update(solver='lbfgsb', aggregation='sum',
+            objective='signed_margin_db', options=dict(max_evaluations=2, batch_fd=False))
         compiled = compile_fixture(cfg, x)
         with tempfile.TemporaryDirectory(prefix='issue447-worker-') as tmp:
             evaluate = RFEvaluator.evaluate
@@ -271,7 +271,7 @@ class MinimaxTests(unittest.TestCase):
         import yaml
         from lpf.search.storage import plain, vector_sha
         policy, definition, _, _, x = make('RF-F003')
-        for solver in ('slsqp', 'slp', 'hybrid'):
+        for solver in ('slsqp', 'slp', 'lbfgsb'):
             with self.subTest(solver=solver), tempfile.TemporaryDirectory(prefix='issue446-cap-') as tmp:
                 cfg = yaml.safe_load((ROOT/'project/fixtures/issue313_preflight.yaml').read_text())
                 cfg.pop('selection')
@@ -279,14 +279,14 @@ class MinimaxTests(unittest.TestCase):
                            definition=plain(asdict(definition)), anytime_samples=[])
                 cfg['arms'][0]['steps'][0].update(solver=solver,
                     aggregation='signed_max' if solver == 'slp' else 'sum', objective='signed_margin_db',
-                    options=dict(max_search_forwards=2, batch_fd=False) if solver == 'hybrid' else
+                    options=dict(max_evaluations=2, batch_fd=False) if solver == 'lbfgsb' else
                             dict(max_iterations=1, max_evaluations=2))
                 worker = fixture_worker(compile_fixture(cfg, x, checkpoint_interval=1), Path(tmp)/'checkpoints')
                 def overrunning(callback, start, bounds, **kw):
                     for _ in range(3):
                         residual = callback(x)
                         value = float(np.max(residual) if solver == 'slp' else np.maximum(residual, 0) @ np.maximum(residual, 0))
-                        if solver == 'hybrid':
+                        if solver == 'lbfgsb':
                             kw['objective_callback'](x, value)
                         else:
                             kw['objective_callback'](x, value)

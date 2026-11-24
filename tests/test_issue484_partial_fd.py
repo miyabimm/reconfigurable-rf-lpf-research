@@ -110,7 +110,7 @@ class PartialBatchTest(unittest.TestCase):
 
     def test_options(self):
         from lpf.search.development_plan import solver_options
-        step = dict(solver='hybrid', aggregation='sum', options=dict(max_search_forwards=2))
+        step = dict(solver='lbfgsb', aggregation='sum', options=dict(max_evaluations=2))
         validate_solver(step)
         self.assertEqual((solver_options(step)['batch_fd'], solver_options(step)['partial_fd']), (True, True))
         step['options']['partial_fd'] = True
@@ -134,6 +134,9 @@ class PartialBatchTest(unittest.TestCase):
         from lpf.search.development_plan import freeze_run
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
         options = config['arms'][0]['steps'][0]['options']
         args = dict(root=root, spot_checks={'terminal': [0, 111]},
@@ -146,7 +149,7 @@ class PartialBatchTest(unittest.TestCase):
         step = plan['config']['arms'][0]['steps'][0]
         self.assertEqual((step['effective_options']['batch_fd'], step['effective_options']['partial_fd']),
                          (True, True))
-        self.assertEqual(step['batch_forward_cap'], 1024)
+        self.assertEqual(step['forward_cap'], 1024)
         self.assertEqual(plan['jobs'][0]['reservation']['rf_forwards'], 1025)
         # Explicit opt-out keeps the historical scalar reservation.
         options['batch_fd'] = False
@@ -154,14 +157,17 @@ class PartialBatchTest(unittest.TestCase):
         scalar = freeze_run(config, starts, **args)[0].data
         scalar_opts = scalar['config']['arms'][0]['steps'][0]['effective_options']
         self.assertEqual((scalar_opts['batch_fd'], scalar_opts['partial_fd']), (False, False))
-        self.assertNotIn('batch_forward_cap', scalar['config']['arms'][0]['steps'][0])
+        self.assertEqual(scalar['config']['arms'][0]['steps'][0]['forward_cap'], 1000)
 
     def test_real_runner_probes_and_receipt(self):
         from lpf.search import _development_runner as runner
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=True, max_search_forwards=2)
+        config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=True, max_evaluations=2)
         config['budget'] = dict(rf_samples=70*26 + 476, rf_forwards=27, independent_mna_samples=2)
         args = dict(root=root, spot_checks={'terminal': [0, 57]}, search_bounds=None, checkpoint_interval=1)
         seen = []
@@ -190,8 +196,11 @@ class PartialBatchTest(unittest.TestCase):
         from lpf.search.source import source_identity
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=True, max_search_forwards=2)
+        config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=True, max_evaluations=2)
         compiled = freeze_run(config, starts, root=root, spot_checks={'terminal': [0, 111]},
                               search_bounds=None, checkpoint_interval=1000)
         original = RFEvaluator.evaluate
@@ -218,14 +227,17 @@ class PartialBatchTest(unittest.TestCase):
         from lpf.search import _development_runner as runner, _development_worker as worker_module
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
         config['budget'] = dict(rf_samples=70*104+476, rf_forwards=105, independent_mna_samples=2)
         args = dict(root=root, spot_checks={'terminal': [0, 57]}, search_bounds=None, checkpoint_interval=1)
-        original = worker_module.hybrid_minimize
+        original = worker_module.lbfgsb_minimize
         traces, results, checkpoints = [], [], []
         with tempfile.TemporaryDirectory(prefix='issue484-path-') as tmp:
             for partial in (False, True):
-                config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=partial, max_search_forwards=80)
+                config['arms'][0]['steps'][0]['options'].update(batch_fd=True, partial_fd=partial, max_evaluations=80)
                 seen = []
                 def capture(*a, **kw):
                     progress = kw['progress_callback']
@@ -235,7 +247,7 @@ class PartialBatchTest(unittest.TestCase):
                     kw['progress_callback'] = observe
                     return original(*a, **kw)
                 output = Path(tmp)/str(partial)
-                with patch.object(worker_module, 'hybrid_minimize', capture):
+                with patch.object(worker_module, 'lbfgsb_minimize', capture):
                     runner.run(config, starts, output, rf_cache_mode='lk', **args)
                 traces.append(seen)
                 results.append(json.loads((output/'job-0001/result.json').read_text()))
