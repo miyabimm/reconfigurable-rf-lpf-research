@@ -1,4 +1,5 @@
 """Hybrid ftol is opt-in and reaches L-BFGS-B through the existing runner."""
+import csv
 import json
 from pathlib import Path
 import sys
@@ -75,6 +76,29 @@ class HybridFtolTests(unittest.TestCase):
             result = json.loads((out/'job-0001/result.json').read_text())
             self.assertEqual(result['steps'][0]['solver_options']['ftol'], 1e-7)
             self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
+
+    def test_saved_comparison_evidence(self):
+        from lpf.search.storage import vector_sha
+        folder = ROOT/'project/diagnostics/issue513'
+        summary = json.loads((folder/'summary.json').read_text())
+        with (folder/'paired.csv').open(newline='') as f:
+            paired = list(csv.DictReader(f))
+        jobs = [j for r in summary['runs'] for j in r['jobs']]
+        by = {(j['seed'], j['arm']): j for j in jobs}
+        self.assertEqual(summary['state'], 'completed')
+        self.assertEqual(len(by), 60)
+        self.assertEqual(len(paired), 20)
+        for row in paired:
+            seed = int(row['seed'])
+            for arm in ('H0', 'H1', 'T'):
+                job = by[seed, arm]
+                self.assertEqual(vector_sha(job['initial_vector']), row['initial_sha'])
+                self.assertEqual(vector_sha(job['final_vector']), row[f'{arm}_final_sha'])
+                self.assertEqual(float(row[f'{arm}_J']), job['J'])
+                self.assertEqual(job['independent']['status'], 'pass')
+            for left, right in (('H1', 'H0'), ('T', 'H1'), ('T', 'H0')):
+                self.assertAlmostEqual(float(row[f'{left}_minus_{right}_J']),
+                                       by[seed, left]['J']-by[seed, right]['J'])
 
 
 if __name__ == '__main__':

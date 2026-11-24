@@ -64,7 +64,22 @@ def inspect(preflight, index, path, timing_path):
         assert len(result['steps']) == 1
         step = result['steps'][0]
         assert step['solver'] == ('trf' if job['arm'] == 'T' else 'hybrid')
-        assert step['local_runs'] == len(step['local_run_details']) == step['restart_count']+1
+        arm = next(a for a in plan['config']['arms'] if a['name'] == job['arm'])
+        assert step['solver_options'] == arm['steps'][0]['effective_options']
+        assert step['solver_result']['x'] == c['vector']
+        assert step['solver_result']['evaluations'] == step['forward_count']
+        checkpoints = sorted((load(p) for p in (d/'checkpoints').iterdir()), key=lambda x: x['sequence'])
+        assert checkpoints
+        for cp in checkpoints:
+            assert cp['plan_sha256'] == run['plan_sha256'] and cp['source_sha256'] == run['source_sha256']
+            assert cp['seed'] == job['seed'] and cp['arm'] == job['arm']
+            assert vector_sha(cp['observation']['vector']) == cp['observation']['vector_sha256']
+        last = checkpoints[-1]['observation']
+        assert last['vector'] == c['vector'] and last['objective'] == step['solver_result']['objective']
+        assert step['local_runs'] == len(step['local_run_details'])
+        restart_count = step['local_runs'] - 1
+        assert restart_count >= 0
+        if step['solver'] == 'trf': assert step['restart_count'] == restart_count
         assert step['forward_count'] <= (5000 if job['arm'] == 'T' else preflight['N']+24)
         assert sum(r['sensitivity_evaluations' if job['arm'] == 'T' else 'nfev'] for r in step['local_run_details']) == step['forward_count']
         assert step['requested_samples'] == 70*step['forward_count']
@@ -79,7 +94,7 @@ def inspect(preflight, index, path, timing_path):
         rows.append(dict(seed=job['seed'], arm=job['arm'], J=margin, finite_grid_pass=c['performance_feasible'],
             worst_il=worst, min_h2=h2, min_h3=h3, search_objective=step['solver_result']['objective'],
             search_forwards=step['forward_count'], actual=actual, released=job['released'],
-            local_runs=step['local_runs'], restart_count=step['restart_count'], local_run_details=step['local_run_details'],
+            local_runs=step['local_runs'], restart_count=restart_count, local_run_details=step['local_run_details'],
             local_timing=tj['steps'], stop_reason=step['stop_reason'], converged=step['converged'],
             job_wall_s=tj['regions']['job']['wall_ns']/1e9, job_cpu_s=None,
             initial_vector=result['initial_vector'], initial_sha=result['initial_vector_sha256'],
