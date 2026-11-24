@@ -12,11 +12,14 @@ import os
 from pathlib import Path
 import sys
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'src'))
 from lpf.minimax_profile import load_minimax_profile
 from lpf.search.development_plan import freeze_run
 from lpf.search.proposals import definition_from_data
+from lpf.search.plan import Loader
 from lpf.search.starts import generate_for_definition
 from lpf.search.storage import sha
 
@@ -58,7 +61,10 @@ def main(out):
             config['arms'].append({'name': name, 'steps': [step]})
         starts = {str(s): {name: {k: records[s][k] for k in ('vector', 'vector_sha256')}
                            for name in order} for s in config['seeds']}
-        plan, _, _, _, bounds = freeze_run(config, starts, root=ROOT, spot_checks={'terminal': [0, 111]},
+        config_text = yaml.safe_dump(config, sort_keys=False)
+        parsed = yaml.load(config_text, Loader=Loader)
+        assert parsed == config and all(type(a['steps'][0]['options']['ftol']) is float for a in parsed['arms'])
+        plan, _, _, _, bounds = freeze_run(parsed, starts, root=ROOT, spot_checks={'terminal': [0, 111]},
                                             search_bounds=None, checkpoint_interval=1000)
         data = plan.data
         assert len(bounds) == 25 and all(lo < hi for lo, hi in bounds)
@@ -79,13 +85,13 @@ def main(out):
         assert data['rf_profile']['effective_sha256'] == profile.fingerprint
         plans.append({'plan_sha256': plan.sha256, 'order': order, 'seeds': config['seeds'],
                       'budget': EXPECTED, 'plan': data})
-        inputs.append((config, starts))
+        inputs.append((config_text, starts))
     # No output at all until all starts and all four frozen plans have passed.
     out.mkdir()
-    for i, (config, starts) in enumerate(inputs, 1):
-        write(out/f'config-{i}.json', config)
+    for i, (config_text, starts) in enumerate(inputs, 1):
+        (out/f'config-{i}.yaml').write_text(config_text)
         write(out/f'starts-{i}.json', starts)
-        plans[i-1]['config_raw_sha256'] = hashlib.sha256((out/f'config-{i}.json').read_bytes()).hexdigest()
+        plans[i-1]['config_raw_sha256'] = hashlib.sha256((out/f'config-{i}.yaml').read_bytes()).hexdigest()
         plans[i-1]['starts_raw_sha256'] = hashlib.sha256((out/f'starts-{i}.json').read_bytes()).hexdigest()
     write(out/'preflight.json', {'issue': 511, 'rf_forwards': 0, 'records': records, 'runs': plans})
     print(json.dumps({'status': 'PASS', 'rf_forwards': 0, 'starts_matched': len(records),
