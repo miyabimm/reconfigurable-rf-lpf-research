@@ -148,7 +148,7 @@ def _margin_parameters(profile, grid):
     return threshold[grid.segment], direction[grid.segment]
 
 
-def signed_margin_residual(profile, response, il_jacobian):
+def least_squares_residual_and_jacobian(profile, response, il_jacobian):
     """Unweighted sum residual and physical Jacobian; at kink use zero.
 
     At m=0 the positive-part residual is nondifferentiable. The zero row is

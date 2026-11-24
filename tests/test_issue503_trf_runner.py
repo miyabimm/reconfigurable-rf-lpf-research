@@ -11,7 +11,7 @@ from unittest.mock import patch
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from lpf.optimizers.least_squares import least_squares_local, to_optimizer_result
+from lpf.optimizers.trf import _trf_local, trf_minimize
 from lpf.rf_core.model import RFEvaluator
 from lpf.search import _development_runner as runner
 from lpf.search.plan import ROOT
@@ -23,7 +23,7 @@ class TRFTests(unittest.TestCase):
         self.cfg = json.loads((ROOT/'project/diagnostics/issue470/config.json').read_text())
         self.starts = json.loads((ROOT/'project/diagnostics/issue470/starts.json').read_text())
         step = self.cfg['arms'][0]['steps'][0]
-        step.update(solver='trf', aggregation='sum', options={'max_evaluations': 3})
+        step.update(solver='trf', aggregation='sum', options={'max_evaluations': 3, 'restart_sigma': None})
         self.cfg['budget'] = dict(rf_samples=70*3+476, rf_forwards=4, independent_mna_samples=5)
         self.spots = {'baseline/search': [0], 'terminal': [0, 111]}
 
@@ -36,8 +36,14 @@ class TRFTests(unittest.TestCase):
         self.assertEqual(plan.sha256, self.freeze()[0].sha256)
         self.assertEqual(plan.sha256, sha(plan.data))
         self.assertEqual(plan.data['jobs'][0]['reservation'], self.cfg['budget'])
-        self.assertEqual(plan.data['config']['arms'][0]['steps'][0]['effective_options'], {'max_evaluations': 3})
+        self.assertEqual(plan.data['config']['arms'][0]['steps'][0]['effective_options'], {'max_evaluations': 3, 'restart_sigma': None, 'ftol': 1e-6, 'x_scale': 1.0})
         step = self.cfg['arms'][0]['steps'][0]
+        del step['options']['restart_sigma']
+        default_step = self.freeze()[0].data['config']['arms'][0]['steps'][0]
+        self.assertEqual(default_step['effective_options'],
+                         {'max_evaluations': 3, 'restart_sigma': .1, 'ftol': 1e-6, 'x_scale': 1.0})
+        self.assertEqual(default_step['forward_cap'], 3)
+        step['options']['restart_sigma'] = None
         for update in [dict(aggregation='max'), dict(objective='wrong'),
                        dict(options={'max_evaluations': 3, 'restart_sigma': 0}),
                        dict(options={'max_evaluations': 3, 'batch_fd': True})] + [
@@ -55,30 +61,30 @@ class TRFTests(unittest.TestCase):
             a, b = np.array([.2]), np.array([.8])
             ra = fun(a); jac(a); rb = fun(b); jac(b)
             return SimpleNamespace(x=b, fun=rb, status=0, success=False, message='limit', nfev=7, njev=2, optimality=1.)
-        with patch('lpf.optimizers.least_squares.least_squares', side_effect=fake):
-            result = least_squares_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: seen.append((x, f)))
+        runs = []
+        options = dict(seed=1, max_evaluations=10, restart_sigma=None, ftol=1e-6, x_scale=1.0)
+        with patch('lpf.optimizers.trf.least_squares', side_effect=fake):
+            selected = trf_minimize(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: seen.append((x, f)),
+                                    local_run_callback=lambda start, run: runs.append(run), **options)
         self.assertEqual(len(seen), 2)
-        self.assertEqual(result.best_objective, seen[0][1])
-        selected = to_optimizer_result(result)
+        self.assertEqual(runs[0].best_objective, seen[0][1])
         np.testing.assert_array_equal(selected.x, [.2])
         self.assertEqual(selected.stop_reason, 'evaluation_limit')
         self.assertEqual(selected.evaluations, 2)
-        self.assertEqual(result.nfev, 7)  # Never infer RF calls from SciPy's counter.
-        from dataclasses import replace
-        self.assertEqual(to_optimizer_result(replace(result, status=-1)).stop_reason, 'solver_failure')
-        fixed = least_squares_local(evaluate, [0.], [(0,0)], objective_callback=lambda x, f: seen.append((x, f)))
-        self.assertEqual(to_optimizer_result(fixed).stop_reason, 'all_variables_fixed')
-        self.assertTrue(fixed.success)
+        self.assertEqual(runs[0].scipy_nfev, 7)  # Never infer RF calls from SciPy's counter.
+        fixed = trf_minimize(evaluate, [0.], [(0,0)], **options)
+        self.assertEqual(fixed.stop_reason, 'all_variables_fixed')
+        self.assertTrue(fixed.converged)
         with self.assertRaisesRegex(RuntimeError, 'observer'):
-            least_squares_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: (_ for _ in ()).throw(RuntimeError('observer')))
+            _trf_local(evaluate, [.5], [(0,1)], objective_callback=lambda x, f: (_ for _ in ()).throw(RuntimeError('observer')))
         with self.assertRaises(ValueError):
-            least_squares_local(lambda x: ([float('nan')], [[1]]), [.5], [(0,1)], objective_callback=lambda x, f: self.fail('invalid notification'))
+            _trf_local(lambda x: ([float('nan')], [[1]]), [.5], [(0,1)], objective_callback=lambda x, f: self.fail('invalid notification'))
         def invalid(fun, z0, *, jac, **kwargs):
             from types import SimpleNamespace
             fun(z0)
             return SimpleNamespace(x=z0, fun=[float('nan')], status=1, success=True, message='', nfev=1, njev=1)
-        with patch('lpf.optimizers.least_squares.least_squares', side_effect=invalid), self.assertRaisesRegex(ValueError, 'Invalid SciPy'):
-            least_squares_local(evaluate, [.5], [(0,1)])
+        with patch('lpf.optimizers.trf.least_squares', side_effect=invalid), self.assertRaisesRegex(ValueError, 'Invalid SciPy'):
+            _trf_local(evaluate, [.5], [(0,1)])
 
     def test_run_and_stop(self):
         with tempfile.TemporaryDirectory(prefix='issue503-test-') as tmp:
@@ -88,15 +94,15 @@ class TRFTests(unittest.TestCase):
             row = state['jobs'][0]
             self.assertEqual(row['status'], 'completed')
             result = json.loads((out/'job-0001/result.json').read_text())
-            step = result['steps'][0]; details = step['trf_details']
+            step = result['steps'][0]; details = step['local_run_details'][0]
             self.assertEqual(step['rf_cache_mode'], 'off')
             self.assertEqual(step['forward_count'], details['sensitivity_evaluations'])
             self.assertEqual(details['computed_samples'], step['forward_count']*70)
             self.assertEqual(details['requested_samples'], details['computed_samples'])
-            self.assertEqual(step['solver_result']['x'], details['best_x'])
+            self.assertEqual(step['solver_result']['x'], details['best_vector'])
             self.assertEqual(step['solver_result']['objective'], details['best_objective'])
             terminal = result['terminal']['candidates'][0]
-            self.assertEqual(terminal['vector'], details['best_x'])
+            self.assertEqual(terminal['vector'], details['best_vector'])
             self.assertEqual(set(terminal['response']['grid']['setting']), set(range(6)))
             self.assertEqual(set(terminal['response']['grid']['segment']), set(range(28)))
             self.assertEqual(terminal['independent']['status'], 'pass')
@@ -114,7 +120,7 @@ class TRFTests(unittest.TestCase):
             checkpoints = sorted((out/'job-0001/checkpoints').iterdir())
             self.assertGreaterEqual(len(checkpoints), step['forward_count'])
             last = json.loads(checkpoints[-1].read_text())['observation']
-            self.assertEqual(last['vector'], details['best_x'])
+            self.assertEqual(last['vector'], details['best_vector'])
             self.assertEqual(last['objective'], details['best_objective'])
             failout = Path(tmp)/'fail'
             with patch.object(RFEvaluator, 'evaluate_with_il_jacobian', side_effect=ValueError('injected')) as call:
@@ -128,16 +134,16 @@ class TRFTests(unittest.TestCase):
     def test_new_options_reach_scipy_and_terminal(self):
         self.cfg['arms'][0]['steps'][0]['options'].update(ftol=None, x_scale='jac')
         self.assertEqual(self.freeze()[0].data['config']['arms'][0]['steps'][0]['effective_options'],
-                         {'max_evaluations': 3, 'ftol': None, 'x_scale': 'jac'})
+                         {'max_evaluations': 3, 'restart_sigma': None, 'ftol': None, 'x_scale': 'jac'})
         with tempfile.TemporaryDirectory(prefix='issue507-run-') as tmp:
             out = Path(tmp)/'run'
             runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
             result = json.loads((out/'job-0001/result.json').read_text())
             step = result['steps'][0]
-            self.assertIsNotNone(step['trf_details']['optimality'])
+            self.assertIsNotNone(step['local_run_details'][0]['optimality'])
             self.assertEqual(step['solver_options']['x_scale'], 'jac')
             self.assertIsNone(step['solver_options']['ftol'])
-            self.assertEqual(result['terminal']['candidates'][0]['vector'], step['trf_details']['best_x'])
+            self.assertEqual(result['terminal']['candidates'][0]['vector'], step['solver_result']['x'])
             self.assertEqual(result['terminal']['candidates'][0]['independent']['status'], 'pass')
 
     def test_budget_stops_before_extra_rf_and_invalid_counts_stop(self):
@@ -151,7 +157,7 @@ class TRFTests(unittest.TestCase):
             def count(evaluator, vector):
                 calls.append(vector)
                 return actual(evaluator, vector)
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=overrun), \
+            with patch('lpf.search._development_worker.trf_minimize', side_effect=overrun), \
                  patch.object(RFEvaluator, 'evaluate_with_il_jacobian', count):
                 out = Path(tmp)/'overrun'
                 with self.assertRaisesRegex(ValueError, 'budget exhausted'):
@@ -160,8 +166,8 @@ class TRFTests(unittest.TestCase):
             self.assertEqual(json.loads((out/'run.json').read_text())['jobs'][0]['status'], 'unknown')
             from dataclasses import replace
             def wrong_counts(*args, **kwargs):
-                return replace(least_squares_local(*args, **kwargs), computed_samples=0)
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=wrong_counts):
+                return replace(_trf_local(*args, **kwargs), computed_samples=0)
+            with patch('lpf.optimizers.trf._trf_local', side_effect=wrong_counts):
                 out = Path(tmp)/'badcounts'
                 with self.assertRaisesRegex(ValueError, 'accounting mismatch'):
                     runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)

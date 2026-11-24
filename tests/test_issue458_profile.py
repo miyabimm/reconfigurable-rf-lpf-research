@@ -33,8 +33,8 @@ class Profile458Tests(unittest.TestCase):
         self.assertEqual(vector_sha(self.x), '4131fa4e677afd364c8e448325d2971f05214284047c349bf2f794585668313c')
         self.cfg = dict(schema_version=1, rf=dict(constraint_id='RF-T010', allow_trial=True),
             definition=self.data, seeds=[23], terminal_points=4,
-            arms=[dict(name='demo', steps=[dict(name='coarse', solver='hybrid', objective='signed_margin_db',
-                aggregation='sum', points_per_interval=2, options=dict(max_search_forwards=2, batch_fd=False))])],
+            arms=[dict(name='demo', steps=[dict(name='coarse', solver='lbfgsb', objective='signed_margin_db',
+                aggregation='sum', points_per_interval=2, options=dict(max_evaluations=2, batch_fd=False))])],
             budget=dict(rf_samples=224, rf_forwards=3, independent_mna_samples=2))
         self.starts = {'23': {'demo': dict(vector=self.x, vector_sha256=vector_sha(self.x))}}
 
@@ -127,7 +127,7 @@ class Profile458Tests(unittest.TestCase):
             self.assertEqual(set(terminal['response']['grid']['segment']), set(range(28)))
             self.assertEqual(plan['config']['arms'][0]['steps'][0]['effective_objective'],
                              'sum_squared_positive_violation_db2_unit_weights')
-            self.assertIn('squared positive violations', result['solver_objective']['slsqp_hybrid'])
+            self.assertIn('squared positive violations', result['solver_objective']['slsqp_lbfgsb'])
             step = result['steps'][0]
             profile = load_minimax_profile('RF-T010', allow_trial=True)
             model = profile.build_model(definition_from_data(self.data))
@@ -153,24 +153,24 @@ class Profile458Tests(unittest.TestCase):
             print('T010 smoke reservation', row['reservation'], 'actual', row['actual'])
 
     def test_hybrid_local_run_callback_counts_each_invocation(self):
-        from lpf.optimizers.hybrid import hybrid_minimize
+        from lpf.optimizers.lbfgsb import lbfgsb_minimize
 
         def multiple_runs(*args, **kwargs):
-            from lpf.optimizers.hybrid import LocalRun
+            from lpf.optimizers.lbfgsb import LocalRun
             callback = kwargs['local_run_callback']
             callback(LocalRun([], None, None, None, False, None, 'interrupted', 0, 0))
             callback(LocalRun([], None, None, None, False, None, 'interrupted', 0, 0))
-            return hybrid_minimize(*args, **kwargs)
+            return lbfgsb_minimize(*args, **kwargs)
 
         with tempfile.TemporaryDirectory(prefix='issue461-callback-') as tmp, \
-             patch('lpf.search._development_worker.hybrid_minimize', side_effect=multiple_runs):
+             patch('lpf.search._development_worker.lbfgsb_minimize', side_effect=multiple_runs):
             out = Path(tmp)/'run'
             runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks={'terminal': [0, 57]},
                        search_bounds=None, checkpoint_interval=1)
             result = json.loads((out/'job-0001/result.json').read_text())
             step = result['steps'][0]
             self.assertEqual(step['local_runs'], 3)
-            self.assertEqual(sum(r['nfev'] for r in step['local_run_details']), step['forward_count'])
+            self.assertEqual(sum(r['evaluations'] for r in step['local_run_details']), step['forward_count'])
             self.assertIsNone(step['local_run_details'][0]['status'])
             self.assertFalse(step['local_run_details'][0]['success'])
 

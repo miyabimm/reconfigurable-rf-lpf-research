@@ -10,7 +10,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.search.plan import validate_solver
-from lpf.optimizers.least_squares import least_squares_local
+from lpf.optimizers.trf import _trf_local
 
 
 class OptionsTests(unittest.TestCase):
@@ -37,16 +37,16 @@ class OptionsTests(unittest.TestCase):
         results = []
         for options in ({}, {'ftol': 1e-8, 'x_scale': 1.0},
                         {'ftol': None, 'x_scale': 'jac'}):
-            with patch('lpf.optimizers.least_squares.least_squares', wraps=least_squares) as call:
-                result = least_squares_local(evaluate, [.5, .5, 3], [(0, 1), (0, 1), (3, 3)], **options)
-                self.assertEqual(call.call_args.kwargs['ftol'], options.get('ftol', 1e-8))
+            with patch('lpf.optimizers.trf.least_squares', wraps=least_squares) as call:
+                result = _trf_local(evaluate, [.5, .5, 3], [(0, 1), (0, 1), (3, 3)], **options)
+                self.assertEqual(call.call_args.kwargs['ftol'], options.get('ftol', 1e-6))
                 self.assertEqual(call.call_args.kwargs['x_scale'], options.get('x_scale', 1.0))
             self.assertTrue(result.success)
             self.assertGreaterEqual(result.optimality, 0)
             results.append(result)
         np.testing.assert_array_equal(results[0].x, results[1].x)
         self.assertEqual(results[0].objective, results[1].objective)
-        self.assertEqual(results[0].nfev, results[1].nfev)
+        self.assertEqual(results[0].scipy_nfev, results[1].scipy_nfev)
         self.assertEqual(results[0].status, results[1].status)
 
     def test_saved_diagnostic_evidence(self):

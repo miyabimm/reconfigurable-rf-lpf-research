@@ -98,11 +98,14 @@ class NodalSensitivityTests(unittest.TestCase):
         from lpf.search.development_plan import freeze_run
         from lpf.search.plan import grid_from_record
         from lpf.minimax_profile import _margin_parameters
-        from lpf.minimax_profile import signed_margin_residual
+        from lpf.minimax_profile import least_squares_residual_and_jacobian
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root/'project/diagnostics/issue470/config.json').read_text())
+        step = config['arms'][0]['steps'][0]
+        step['solver'] = 'lbfgsb'
+        step['options']['max_evaluations'] = step['options'].pop('max_search_forwards')
         starts = json.loads((root/'project/diagnostics/issue470/starts.json').read_text())
-        config['arms'][0]['steps'][0]['options'].update(max_search_forwards=100000, batch_fd=True, partial_fd=True)
+        config['arms'][0]['steps'][0]['options'].update(max_evaluations=100000, batch_fd=True, partial_fd=True)
         config['budget'] = dict(rf_samples=70*(100000+24)+476, rf_forwards=100025, independent_mna_samples=2)
         plan, _, profile, model, _ = freeze_run(config, starts, root=root,
             spot_checks={'terminal': [0,111]}, search_bounds=None, checkpoint_interval=1000)
@@ -117,7 +120,7 @@ class NodalSensitivityTests(unittest.TestCase):
             original = evaluator.evaluate(x)
             for name in ('s', 'il_db', 'apl_db', 'in_rl_db', 'out_rl_db'):
                 np.testing.assert_allclose(getattr(response, name), getattr(original, name), rtol=1e-12, atol=1e-12)
-            residual, rjac = signed_margin_residual(profile, response, jac)
+            residual, rjac = least_squares_residual_and_jacobian(profile, response, jac)
             margin = direction * (response.il_db-threshold)
             self.assertGreater(np.min(np.abs(margin)), 1e-5)
             for h in (1e-6, 3e-6):

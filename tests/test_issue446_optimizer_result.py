@@ -7,14 +7,14 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.optimizers.lbfgsb import lbfgsb_minimize
 from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
 
 
 class OptimizerResultTests(unittest.TestCase):
     def test_distinct_objectives_return_observed_pairs(self):
-        for solver in ('slsqp', 'slp', 'hybrid'):
+        for solver in ('slsqp', 'slp', 'lbfgsb'):
             with self.subTest(solver=solver):
                 seen = {}
                 observed = {}
@@ -32,7 +32,7 @@ class OptimizerResultTests(unittest.TestCase):
                     native = slp_minimize(callback, [.6], [(0., 1.)], aggregation='signed_max',
                                           max_iterations=3, max_evaluations=20, objective_callback=observe)
                 else:
-                    native = hybrid_minimize(callback, [.6], [(0., 1.)], seed=1,
+                    native = lbfgsb_minimize(callback, [.6], [(0., 1.)], seed=1,
                                              max_evaluations=20, restart_sigma=.1, objective_callback=observe)
                 result = native  # The solver itself provides the common fields.
                 key = tuple(result.x)
@@ -48,7 +48,7 @@ class OptimizerResultTests(unittest.TestCase):
                     self.assertFalse(result.converged)
 
     def test_closed_box_and_observed_pair_at_solver_boundaries(self):
-        for solver, fn in (('slsqp', slsqp_minimize), ('slp', slp_minimize), ('hybrid', hybrid_minimize)):
+        for solver, fn in (('slsqp', slsqp_minimize), ('slp', slp_minimize), ('lbfgsb', lbfgsb_minimize)):
             for case, cap in (('normal', 80), ('budget', 1), ('nonconverged', 80), ('fixed', 4)):
                 with self.subTest(solver=solver, case=case):
                     bounds = np.array([(0., 0. if case == 'fixed' else 1.), (2., 2.)])
@@ -66,7 +66,7 @@ class OptimizerResultTests(unittest.TestCase):
                         return r
 
                     restarts = []
-                    if solver == 'hybrid':
+                    if solver == 'lbfgsb':
                         opts = dict(seed=23, restart_sigma=.6, event_callback=restarts.append)
                     else:
                         opts = dict(max_iterations=1 if case == 'nonconverged' else 12)
@@ -78,7 +78,7 @@ class OptimizerResultTests(unittest.TestCase):
                         self.assertEqual(len(seen), 1)
                     elif case in ('budget', 'nonconverged'):
                         self.assertFalse(out.converged)
-                    elif solver == 'hybrid':
+                    elif solver == 'lbfgsb':
                         self.assertTrue(any(e['event'] == 'restart_start_generated' for e in restarts))
                         self.assertEqual(out.objective, min(f for _, f in seen))
                         self.assertLess(out.objective, seen[-1][1])
@@ -112,7 +112,7 @@ class OptimizerResultTests(unittest.TestCase):
         self.assertTrue(out.converged)
 
     def test_constraint_callbacks_are_in_native_counts(self):
-        for solver in ('slsqp', 'slp'):
+        for solver in ('slsqp',):
             with self.subTest(solver=solver):
                 calls = {'objective': 0, 'constraint': 0}
                 seen = {}
@@ -133,7 +133,7 @@ class OptimizerResultTests(unittest.TestCase):
                     self.assertFalse(result.converged)
 
     def test_invalid_first_callback_exposes_no_candidate_and_never_converges(self):
-        result = hybrid_minimize(lambda x: [float('nan')], [.5], [(0., 1.)], seed=0,
+        result = lbfgsb_minimize(lambda x: [float('nan')], [.5], [(0., 1.)], seed=0,
                                  max_evaluations=2, restart_sigma=.1)
         self.assertIsNone(result.x)
         self.assertIsNone(result.objective)

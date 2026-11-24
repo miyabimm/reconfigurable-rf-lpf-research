@@ -14,9 +14,9 @@ COSTS = ('rf_samples', 'rf_forwards', 'independent_mna_samples')
 
 
 def solver_options(step):
-    if step['solver'] == 'hybrid':
+    if step['solver'] == 'lbfgsb':
         batch_fd = step['options'].get('batch_fd', True)
-        result = dict(max_evaluations=step['options']['max_search_forwards'],
+        result = dict(max_evaluations=step['options']['max_evaluations'],
                       restart_sigma=step['options'].get('restart_sigma', 0.1),
                       batch_fd=batch_fd,
                       partial_fd=step['options'].get('partial_fd', batch_fd))
@@ -24,10 +24,13 @@ def solver_options(step):
             result['ftol'] = step['options']['ftol']
         return result
     if step['solver'] == 'trf':
-        return dict(step['options'])
+        return dict(restart_sigma=step['options'].get('restart_sigma', 0.1),
+                    ftol=step['options'].get('ftol', 1e-6),
+                    x_scale=step['options'].get('x_scale', 1.0),
+                    max_evaluations=step['options']['max_evaluations'])
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
-                            tolerance=1e-7, constraint_tolerance=1e-7)}
+                            tolerance=1e-7)}
     return {**defaults[step['solver']], **step['options']}
 
 
@@ -117,7 +120,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
             if step['effective_options'].get('batch_fd', False):
                 free = sum(lo < hi for lo, hi in bounds)
                 limit += max(0, free - 1)
-                step['batch_forward_cap'] = limit
+            step['forward_cap'] = limit
             samples += n * limit
             forwards += limit
             mna += k * limit

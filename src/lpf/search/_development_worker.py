@@ -8,9 +8,9 @@ from time import perf_counter_ns
 import numpy as np
 
 from lpf import minimax_profile
-from lpf.minimax_profile import signed_margins, signed_margin_residual, _margin_parameters
-from lpf.optimizers.least_squares import least_squares_local, to_optimizer_result
-from lpf.optimizers.hybrid import hybrid_minimize
+from lpf.minimax_profile import signed_margins, least_squares_residual_and_jacobian, _margin_parameters
+from lpf.optimizers.trf import trf_minimize
+from lpf.optimizers.lbfgsb import lbfgsb_minimize
 from lpf.optimizers.result import OptimizerResult
 from lpf.optimizers.slp import slp_minimize
 from lpf.optimizers.slsqp import slsqp_minimize
@@ -156,13 +156,13 @@ class DevelopmentWorker:
         batch_fd = opts.get('batch_fd', False)
         partial_fd = opts.get('partial_fd', False)
         base = None
-        self.forward_count, self.forward_cap = 0, step.get('batch_forward_cap', opts['max_evaluations'])
+        self.forward_count, self.forward_cap = 0, step['forward_cap']
         saved = None
         best = None
         last_saved_count = 0
         independent = None
 
-        def evaluate_trf(vector):
+        def evaluate_with_jacobian(vector):
             nonlocal independent
             if self.forward_count >= self.forward_cap:
                 raise ValueError('STOP: Search RF forward budget exhausted')
@@ -173,9 +173,9 @@ class DevelopmentWorker:
                     response.policy_fingerprint != self.model.policy_fingerprint):
                 raise ValueError('Response profile/grid mismatch')
             independent = self._audit(vector, response, stage)
-            return signed_margin_residual(self.profile, response, jac)
+            return least_squares_residual_and_jacobian(self.profile, response, jac)
 
-        def residuals(vector):
+        def evaluate_residuals(vector):
             nonlocal independent, base
             response, _, independent = self._forward(evaluator, vector, stage)
             timing = self.timer if self.timing_level == 'deep' else None
@@ -193,7 +193,7 @@ class DevelopmentWorker:
             finally:
                 if timing: timing.add(f'{stage}/scalar/post_rf', perf_counter_ns() - started, failed=failed)
 
-        def residuals_batch(vectors):
+        def evaluate_residuals_batch(vectors):
             # The evaluator replays failures internally to preserve the scalar
             # exception. On failure replay again lazily so preceding observations
             # are delivered to SciPy before the first failing candidate.
@@ -226,7 +226,7 @@ class DevelopmentWorker:
                 def replay():
                     for vector in vectors:
                         try:
-                            yield residuals(vector)
+                            yield evaluate_residuals(vector)
                         except Exception as exc:
                             yield exc
                             return
@@ -259,7 +259,7 @@ class DevelopmentWorker:
                         return
             return consume()
 
-        def observe(vector, objective):
+        def on_evaluation(vector, objective):
             nonlocal saved
             if self.forward_count % self.checkpoint_interval == 0:
                 digest = vector_sha(vector)
@@ -283,7 +283,7 @@ class DevelopmentWorker:
         local_details = []
         local_walls = []
 
-        def count_local_run(run):
+        def on_local_run(run):
             local_details.append(asdict(run))
 
         def event(event):
@@ -294,63 +294,38 @@ class DevelopmentWorker:
         if self.timing_steps is not None:
             self.timing_steps[step['name']] = dict(local_runs=local_walls, local_run_wall_missing='no end event',
                                                    rf_cache=dict(mode=effective_cache, counters=evaluator.cache_stats))
-        if solver == 'hybrid':
-            callbacks = (dict(residuals_batch=residuals_batch, progress_callback=progress,
-                              group_callback=group_finished) if batch_fd else dict(objective_callback=observe))
-            out = timed_call(self.timer, f'{stage}/solver', hybrid_minimize, residuals, x, self.bounds, seed=self.seed,
+        if solver == 'lbfgsb':
+            callbacks = (dict(residuals_batch=evaluate_residuals_batch, progress_callback=progress,
+                              group_callback=group_finished) if batch_fd else dict(objective_callback=on_evaluation))
+            out = timed_call(self.timer, f'{stage}/solver', lbfgsb_minimize, evaluate_residuals, x, self.bounds, seed=self.seed,
                              aggregation=step['aggregation'], **callbacks,
-                             local_run_callback=count_local_run, event_callback=event if self.timer else None,
+                             local_run_callback=on_local_run, event_callback=event if self.timer else None,
                              _timing=(self.timer, stage) if self.timer and self.timing_level == 'deep' else None,
                              **{k: v for k, v in opts.items() if k != 'partial_fd'})
         elif solver == 'trf':
-            restart = 'restart_sigma' in opts
-            sigma = opts.get('restart_sigma')
-            local_opts = {k: v for k, v in opts.items() if k not in ('restart_sigma', 'max_evaluations')}
-            rng = np.random.default_rng(self.seed) if restart else None
-            bounds = np.asarray(self.bounds, dtype=float)
-            lo, width = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
-            free = width > 0
-            start = np.asarray(x, dtype=float).copy()
             runs = []
-            best_trf = None
-            while True:
-                before = self.forward_count
-                trf = timed_call(self.timer, f'{stage}/solver', least_squares_local, evaluate_trf, start, self.bounds,
-                                 objective_callback=observe, max_evaluations=opts['max_evaluations'] - before,
-                                 **local_opts)
-                count = self.forward_count - before
+            previous_forward_count = 0
+            def on_trf_local_run(start, run):
+                nonlocal previous_forward_count
+                count = self.forward_count - previous_forward_count
                 samples = count * len(evaluator.grid.frequency_hz)
-                if (count != trf.sensitivity_evaluations or count < 1 or
-                        trf.requested_samples != samples or trf.computed_samples != samples):
+                if (count != run.sensitivity_evaluations or count < 1 or
+                        run.requested_samples != samples or run.computed_samples != samples):
                     raise ValueError('TRF sensitivity accounting mismatch')
-                runs.append((start.copy(), trf))
-                if best_trf is None or trf.best_objective < best_trf.best_objective:
-                    best_trf = trf
-                if not restart or not free.any() or not trf.success or self.forward_count >= opts['max_evaluations']:
-                    break
-                z = (trf.x[free] - lo[free]) / width[free]
-                start = lo.copy()
-                start[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, sigma, size=z.size), 0, 1) * width[free],
-                                      lo[free], bounds[free, 1])
-            if restart:
-                reason = ('all_variables_fixed' if not free.any() else
-                          'solver_failure' if not trf.success and trf.status < 0 else
-                          'evaluation_budget_exhausted' if self.forward_count >= opts['max_evaluations'] else
-                          'evaluation_limit')
-                out = OptimizerResult(best_trf.best_x.copy(), best_trf.best_objective,
-                                      reason == 'all_variables_fixed', reason, self.forward_count)
-            else:
-                out = to_optimizer_result(trf)
+                previous_forward_count = self.forward_count
+                runs.append((start, run))
+            out = timed_call(self.timer, f'{stage}/solver', trf_minimize, evaluate_with_jacobian, x, self.bounds,
+                             seed=self.seed, objective_callback=on_evaluation, local_run_callback=on_trf_local_run, **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
-            out = timed_call(self.timer, f'{stage}/solver', minimize, residuals, x, self.bounds, constraints=None,
-                             aggregation=step['aggregation'], objective_callback=observe, **opts)
+            out = timed_call(self.timer, f'{stage}/solver', minimize, evaluate_residuals, x, self.bounds,
+                             aggregation=step['aggregation'], objective_callback=on_evaluation, **opts)
         if (not isinstance(out, OptimizerResult) or out.x is None or out.objective is None or
                 not np.isfinite(out.objective) or type(out.evaluations) is not int or
                 not 1 <= out.evaluations <= self.forward_cap or type(out.converged) is not bool or
                 not isinstance(out.stop_reason, str) or not out.stop_reason or out.stop_reason.startswith('invalid_') or
                 (out.converged and out.stop_reason in ('evaluation_limit', 'evaluation_budget_exhausted')) or
-                not 1 <= self.forward_count <= self.forward_cap):
+                not 1 <= self.forward_count <= self.forward_cap or out.evaluations != self.forward_count):
             raise ValueError('Invalid or missing Optimizer result; no replacement or retry')
         _check_vector_box(out.x, self.bounds)
         self._physical(out.x)
@@ -364,23 +339,22 @@ class DevelopmentWorker:
                       grid_sha256=self.data['grids'][stage]['sha256'], independent=independent)
         if solver == 'trf':
             record['rf_cache_mode'] = effective_cache
-            if restart:
-                record['local_runs'] = len(runs)
-                record['restart_count'] = len(runs) - 1
-                record['local_run_details'] = [dict(
-                    run_index=i, start_vector_sha256=vector_sha(start),
-                    initial_evaluated_vector_sha256=vector_sha(run.initial_evaluated_x),
-                    final_vector_sha256=vector_sha(run.x), best_vector_sha256=vector_sha(run.best_x),
-                    best_objective=run.best_objective, success=run.success, status=run.status,
-                    message=run.message, optimality=run.optimality, nfev=run.nfev, njev=run.njev,
-                    sensitivity_evaluations=run.sensitivity_evaluations, requested_samples=run.requested_samples,
-                    computed_samples=run.computed_samples, wall_s=run.wall_s, cpu_s=run.cpu_s)
-                    for i, (start, run) in enumerate(runs)]
-            else:
-                record['trf_details'] = raw_numbers(asdict(trf))
-        if solver == 'hybrid':
-            if sum(run['nfev'] for run in local_details) != self.forward_count:
-                raise ValueError('Hybrid local run forward count mismatch')
+            record['local_runs'] = len(runs)
+            record['restart_count'] = len(runs) - 1
+            record['local_run_details'] = [dict(
+                run_index=i, start_vector=plain(start), start_vector_sha256=vector_sha(start),
+                initial_evaluated_vector=plain(run.initial_evaluated_x),
+                initial_evaluated_vector_sha256=vector_sha(run.initial_evaluated_x),
+                final_vector=plain(run.x), final_objective=run.objective, final_vector_sha256=vector_sha(run.x),
+                best_vector=plain(run.best_x), best_vector_sha256=vector_sha(run.best_x),
+                best_objective=run.best_objective, success=run.success, status=run.status,
+                message=run.message, optimality=run.optimality, scipy_nfev=run.scipy_nfev, scipy_njev=run.scipy_njev,
+                sensitivity_evaluations=run.sensitivity_evaluations, requested_samples=run.requested_samples,
+                computed_samples=run.computed_samples, wall_s=run.wall_s, cpu_s=run.cpu_s)
+                for i, (start, run) in enumerate(runs)]
+        if solver == 'lbfgsb':
+            if sum(run['evaluations'] for run in local_details) != self.forward_count:
+                raise ValueError('L-BFGS-B local run forward count mismatch')
             record['local_runs'] = len(local_details)
             record['local_run_details'] = local_details
         return record, out.x
@@ -413,7 +387,8 @@ class DevelopmentWorker:
             search_bounds=plain(self.bounds), search_bounds_sha256=sha(self.bounds), rf_profile=self.data['rf_profile'],
             performance_profile=self.profile.profile, terminal_grid_sha256=self.data['grids']['terminal']['sha256'],
             solver_objective=dict(residual='signed_margin_db', slp='signed max [dB]',
-                                  slsqp_hybrid='configured sum or max of squared positive violations max(0, e)^2 [dB^2]', weights='unit'),
+                                  slsqp_lbfgsb='configured sum or max of squared positive violations max(0, e)^2 [dB^2]',
+                                  trf='sum of squared positive violations max(0, e)^2 [dB^2]', weights='unit'),
             costs=dict(search_forwards=search_forwards, search_requested_samples=sum(s['requested_samples'] for s in steps),
                        terminal_forwards=1, terminal_requested_samples=len(evaluator.grid.frequency_hz),
                        independent_mna_samples_by_stage=self.audit_samples),

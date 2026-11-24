@@ -9,7 +9,7 @@ from unittest.mock import patch
 import numpy as np
 
 from test_issue503_trf_runner import TRFTests
-from lpf.optimizers.least_squares import least_squares_local
+from lpf.optimizers.trf import _trf_local
 from lpf.search import _development_runner as runner
 from lpf.search.plan import ROOT
 
@@ -24,12 +24,12 @@ class RestartTests(TRFTests):
         calls = []
         def fake(callback, x, bounds, **kwargs):
             calls.append((np.array(x).copy(), kwargs['max_evaluations']))
-            result = least_squares_local(callback, x, bounds, **{**kwargs, 'max_evaluations': 1})
+            result = _trf_local(callback, x, bounds, **{**kwargs, 'max_evaluations': 1})
             # First local endpoint is deliberately distinct from its observed best.
             final = np.array(bounds, dtype=float)[:, 1] if len(calls) == 1 else result.x
             return replace(result, x=final, success=len(calls) == 1, status=1 if len(calls) == 1 else 0)
         with tempfile.TemporaryDirectory(prefix='issue509-test-') as tmp:
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=fake):
+            with patch('lpf.optimizers.trf._trf_local', side_effect=fake):
                 out = Path(tmp)/'run'
                 runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1,
                            search_bounds=bounds)
@@ -73,10 +73,10 @@ class RestartTests(TRFTests):
     def test_budget_exhaustion_and_fail_closed(self):
         self.cfg['arms'][0]['steps'][0]['options']['restart_sigma'] = .1
         def single(callback, x, bounds, **kwargs):
-            result = least_squares_local(callback, x, bounds, **{**kwargs, 'max_evaluations': 1})
+            result = _trf_local(callback, x, bounds, **{**kwargs, 'max_evaluations': 1})
             return replace(result, success=True, status=1)
         with tempfile.TemporaryDirectory(prefix='issue509-budget-') as tmp:
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=single):
+            with patch('lpf.optimizers.trf._trf_local', side_effect=single):
                 out = Path(tmp)/'run'
                 runner.run(self.cfg, self.starts, out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
             row = json.loads((out/'job-0001/result.json').read_text())['steps'][0]
@@ -85,13 +85,13 @@ class RestartTests(TRFTests):
             self.assertFalse(row['converged'])
             self.cfg['arms'][0]['steps'][0]['options']['max_evaluations'] = 1
             def failed(callback, x, bounds, **kwargs):
-                return replace(least_squares_local(callback, x, bounds, **kwargs), success=False, status=-1)
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=failed):
+                return replace(_trf_local(callback, x, bounds, **kwargs), success=False, status=-1)
+            with patch('lpf.optimizers.trf._trf_local', side_effect=failed):
                 failed_out = Path(tmp)/'solver-failure'
                 runner.run(self.cfg, self.starts, failed_out, root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
             failure_row = json.loads((failed_out/'job-0001/result.json').read_text())['steps'][0]
             self.assertEqual(failure_row['stop_reason'], 'solver_failure')
-            with patch('lpf.search._development_worker.least_squares_local', side_effect=RuntimeError('STOP')) as solver:
+            with patch('lpf.optimizers.trf._trf_local', side_effect=RuntimeError('STOP')) as solver:
                 with self.assertRaisesRegex(RuntimeError, 'STOP'):
                     runner.run(self.cfg, self.starts, Path(tmp)/'failed', root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
                 self.assertEqual(solver.call_count, 1)

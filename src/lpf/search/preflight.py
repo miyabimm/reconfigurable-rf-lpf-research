@@ -172,8 +172,16 @@ def _freeze_with_profile(d, root):
             if not isinstance(sname, str) or not sname.isidentifier() or sname in stage_names:
                 raise ValueError('Unique identifier step names required')
             stage_names.add(sname)
-            validate_solver(step)
-            if step['solver'] == 'hybrid' and step['options'].get('batch_fd', False):
+            # Schema 2 preflight remains readable for historical audit inputs;
+            # this translation is confined to validation, never the active Runner.
+            validation_step = step
+            if step['solver'] == 'hybrid':
+                options = dict(step['options'])
+                if 'max_search_forwards' in options:
+                    options['max_evaluations'] = options.pop('max_search_forwards')
+                validation_step = {**step, 'solver': 'lbfgsb', 'options': options}
+            validate_solver(validation_step)
+            if validation_step['solver'] == 'lbfgsb' and step['options'].get('batch_fd', False):
                 raise ValueError('batch_fd requires a development Plan with frozen search bounds')
             positive(step['max_requested_samples'])
             one = grid(f'{name}/{sname}', step['points_per_interval'],
@@ -182,7 +190,7 @@ def _freeze_with_profile(d, root):
                 if validation['terminal_points'] <= max(step['points_per_interval'],
                         step.get('stop_points_per_interval', step['points_per_interval'])):
                     raise ValueError('RF-T009 Terminal must be denser than every Search interval')
-                limit = step['options']['max_search_forwards' if step['solver'] == 'hybrid' else 'max_evaluations']
+                limit = validation_step['options']['max_evaluations']
                 if limit * one > step['max_requested_samples']:
                     raise ValueError('STOP: Search forward cap exceeds reserved samples')
             check_next_batch(one, step_remaining=step['max_requested_samples'],
@@ -191,8 +199,7 @@ def _freeze_with_profile(d, root):
                              job_reserved=0, trial_reserved=0)
             stages[sname] = dict(one_forward_samples=one,
                                  upper_reservation=step['max_requested_samples'],
-                                 solver_max_evaluations=step['options'][
-                                     'max_search_forwards' if step['solver'] == 'hybrid' else 'max_evaluations'],
+                                 solver_max_evaluations=validation_step['options']['max_evaluations'],
                                  status='not_run')
         terminal = (selection['top_k'] if selection is not None else 1)*terminal_one
         anytime = len(milestones)*anytime_one
