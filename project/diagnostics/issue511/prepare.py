@@ -24,7 +24,7 @@ from lpf.search.starts import generate_for_definition
 from lpf.search.storage import sha
 
 FTOL = {'A': 1e-8, 'B': 1e-7, 'C': 1e-6, 'D': 1e-5}
-EXPECTED = {'rf_samples': 140009520, 'rf_forwards': 2000020, 'independent_mna_samples': 40}
+EXPECTED = {'rf_samples': 7009520, 'rf_forwards': 100020, 'independent_mna_samples': 40}
 
 def write(path, obj):
     path.write_text(json.dumps(obj, indent=2, allow_nan=False) + '\n')
@@ -56,7 +56,7 @@ def main(out):
         order = list(FTOL)[run_index:] + list(FTOL)[:run_index]
         for name in order:
             step = copy.deepcopy(base['arms'][0]['steps'][0])
-            step.update(solver='trf', options={'max_evaluations': 100000, 'restart_sigma': .1,
+            step.update(solver='trf', options={'max_evaluations': 5000, 'restart_sigma': .1,
                                                'ftol': FTOL[name], 'x_scale': 1.0})
             config['arms'].append({'name': name, 'steps': [step]})
         starts = {str(s): {name: {k: records[s][k] for k in ('vector', 'vector_sha256')}
@@ -79,7 +79,7 @@ def main(out):
                                ('output', 'b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da')):
             item = rf['external_s2p'][side]
             assert item['sha256'] == hashlib.sha256((ROOT/item['path']).read_bytes()).hexdigest() == expected
-        assert all(j['reservation'] == {'rf_samples': 7000476, 'rf_forwards': 100001,
+        assert all(j['reservation'] == {'rf_samples': 350476, 'rf_forwards': 5001,
                                         'independent_mna_samples': 2} for j in data['jobs'])
         assert {k: sum(j['reservation'][k] for j in data['jobs']) for k in EXPECTED} == EXPECTED
         assert data['rf_profile']['effective_sha256'] == profile.fingerprint

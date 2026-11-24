@@ -71,7 +71,7 @@ def inspect(preflight, index, path, timing_path):
         step = result['steps'][0]
         assert len(result['steps']) == 1 and step['solver'] == 'trf'
         assert step['local_runs'] == len(step['local_run_details']) == step['restart_count'] + 1
-        assert sum(r['sensitivity_evaluations'] for r in step['local_run_details']) == step['forward_count'] <= 100000
+        assert sum(r['sensitivity_evaluations'] for r in step['local_run_details']) == step['forward_count'] <= 5000
         assert step['requested_samples'] == 70*step['forward_count']
         costs = result['costs']
         assert costs['search_forwards'] == step['forward_count'] and costs['terminal_forwards'] == 1
