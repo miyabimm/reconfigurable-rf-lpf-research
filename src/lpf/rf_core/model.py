@@ -313,26 +313,21 @@ class RFEvaluator:
             values, m.schema, omega, g.setting, matrices=matrices, node=node)
         dY = dY[:, :, order[:, None], order]
         dR = dY[:, :, :2, :2]
-        try:
-            if middle:
-                T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
-                dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
-            rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
-            samples, directions = rhs.shape[:2]
-            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
-            dfirst = _cascade_jacobian(self.pre, None, core, dcore)
-            dfull = _cascade_jacobian(first, dfirst, self.post, None)
-            z = np.asarray([self.source_ohms, self.load_ohms])
-            scale = 2*np.sqrt(z.real)
-            beta = (np.sqrt(50.) - z/np.sqrt(50.))/scale
-            delta = (np.sqrt(50.) + z.conj()/np.sqrt(50.))/scale
-            S = data[0]
-            P = np.diag(delta) - S*beta[None, None, :]
-            Q = np.diag(delta) - beta[None, :, None]*S
-            ds = P[:, None] @ dfull @ Q[:, None]
-        except np.linalg.LinAlgError as exc:
-            raise CircuitNumericalError('sensitivity_solve_failed', 'RF sensitivity solve failed') from exc
+        if middle:
+            T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
+            dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
+        Q = eye + core[:, None]
+        dcore = -25 * (Q @ dR @ Q)
+        dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+        dfull = _cascade_jacobian(first, dfirst, self.post, None)
+        z = np.asarray([self.source_ohms, self.load_ohms])
+        scale = 2*np.sqrt(z.real)
+        beta = (np.sqrt(50.) - z/np.sqrt(50.))/scale
+        delta = (np.sqrt(50.) + z.conj()/np.sqrt(50.))/scale
+        S = data[0]
+        P = np.diag(delta) - S*beta[None, None, :]
+        Q = np.diag(delta) - beta[None, :, None]*S
+        ds = P[:, None] @ dfull @ Q[:, None]
         transmission = data[0][:, 1, 0]
         if np.any(transmission == 0):
             raise CircuitNumericalError('sensitivity_zero_transmission', 'IL derivative undefined at zero transmission')
