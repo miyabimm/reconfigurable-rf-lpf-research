@@ -169,30 +169,25 @@ def _cascade(a, b, *, check_power=False):
 
 
 def _cascade_jacobian(a, da, b, db):
-    """Differentiate the scalar Redheffer product without transmission division."""
-    den = 1 - a[:, 1, 1] * b[:, 0, 0]
-    dd = -(da[:, :, 1, 1] * b[:, None, 0, 0] + a[:, None, 1, 1] * db[:, :, 0, 0])
-
-    def product(*terms):
-        value = np.ones_like(den)
-        for v, _ in terms:
-            value *= v
-        deriv = np.zeros_like(dd)
-        for i, (_, d) in enumerate(terms):
-            other = np.ones_like(den)
-            for j, (v, _) in enumerate(terms):
-                if i != j:
-                    other *= v
-            deriv += d * other[:, None]
-        return deriv / den[:, None] - value[:, None] * dd / den[:, None]**2
-
-    def A(i, j): return a[:, i, j], da[:, :, i, j]
-    def B(i, j): return b[:, i, j], db[:, :, i, j]
-    out = np.empty_like(da)
-    out[:, :, 0, 0] = da[:, :, 0, 0] + product(A(0, 1), B(0, 0), A(1, 0))
-    out[:, :, 0, 1] = product(A(0, 1), B(0, 1))
-    out[:, :, 1, 0] = product(B(1, 0), A(1, 0))
-    out[:, :, 1, 1] = db[:, :, 1, 1] + product(B(1, 0), A(1, 1), B(0, 1))
+    """Differentiate a cascade with one fixed side, without transmission division."""
+    q = 1 / (1 - a[:, 1, 1] * b[:, 0, 0])
+    q2 = q*q
+    a12, a21, a22 = a[:, 0, 1], a[:, 1, 0], a[:, 1, 1]
+    b11, b12, b21 = b[:, 0, 0], b[:, 0, 1], b[:, 1, 0]
+    if da is None:
+        d11, d12, d21, d22 = (db[:, :, i, j] for i, j in ((0, 0), (0, 1), (1, 0), (1, 1)))
+        out = np.empty_like(db)
+        out[:, :, 0, 0] = (a12*a21*q2)[:, None]*d11
+        out[:, :, 0, 1] = a12[:, None]*(q[:, None]*d12 + (b12*a22*q2)[:, None]*d11)
+        out[:, :, 1, 0] = a21[:, None]*(q[:, None]*d21 + (b21*a22*q2)[:, None]*d11)
+        out[:, :, 1, 1] = d22 + (a22*q)[:, None]*(d21*b12[:, None] + b21[:, None]*d12) + (a22*a22*b21*b12*q2)[:, None]*d11
+    else:
+        d11, d12, d21, d22 = (da[:, :, i, j] for i, j in ((0, 0), (0, 1), (1, 0), (1, 1)))
+        out = np.empty_like(da)
+        out[:, :, 0, 0] = d11 + (b11*q)[:, None]*(d12*a21[:, None] + a12[:, None]*d21) + (b11*b11*a12*a21*q2)[:, None]*d22
+        out[:, :, 0, 1] = b12[:, None]*(q[:, None]*d12 + (a12*b11*q2)[:, None]*d22)
+        out[:, :, 1, 0] = b21[:, None]*(q[:, None]*d21 + (a21*b11*q2)[:, None]*d22)
+        out[:, :, 1, 1] = (b21*b12*q2)[:, None]*d22
     return out
 
 
@@ -320,19 +315,14 @@ class RFEvaluator:
         dR = dY[:, :, :2, :2]
         try:
             if middle:
-                dU, dV, dE = dY[:, :, :2, 2:], dY[:, :, 2:, :2], dY[:, :, 2:, 2:]
-                rhs = dV - dE @ internal[:, None]  # [samples, directions, internal, 2]
-                samples, directions, internal_nodes, _ = rhs.shape
-                packed = rhs.transpose(0, 2, 1, 3).reshape(samples, internal_nodes, directions * 2)
-                dX = np.linalg.solve(E, packed).reshape(samples, internal_nodes, directions, 2).transpose(0, 2, 1, 3)
-                dR = dR - dU @ internal[:, None] - U[:, None] @ dX
+                T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
+                dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
             rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
             samples, directions = rhs.shape[:2]
             packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
             dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
-            zeros = np.zeros_like(dcore)
-            dfirst = _cascade_jacobian(self.pre, zeros, core, dcore)
-            dfull = _cascade_jacobian(first, dfirst, self.post, zeros)
+            dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+            dfull = _cascade_jacobian(first, dfirst, self.post, None)
             z = np.asarray([self.source_ohms, self.load_ohms])
             scale = (2*np.sqrt(z.real))[None, None, :, None]
             da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale
