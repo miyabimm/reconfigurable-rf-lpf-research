@@ -131,6 +131,47 @@ class TRFTests(unittest.TestCase):
             self.assertFalse((failout/'job-0001/receipt.json').exists())
             self.assertFalse(json.loads((failout/'job-0001/failure.json').read_text())['retry_allowed'])
 
+    def test_deep_trf_instrumentation_preserves_results(self):
+        from lpf.rf_core import model, coupled_lc
+        with tempfile.TemporaryDirectory(prefix='issue517-test-') as tmp:
+            base = Path(tmp)
+            kwargs = dict(root=ROOT, spot_checks=self.spots, checkpoint_interval=1)
+            plain = runner.run(self.cfg, self.starts, base/'plain', **kwargs)
+            deep = runner.run(self.cfg, self.starts, base/'deep', timing_output=base/'timing.json',
+                              timing_level='deep', **kwargs)
+            self.assertEqual(plain['jobs'][0]['actual'], deep['jobs'][0]['actual'])
+            results = [json.loads((base/name/'job-0001/result.json').read_text()) for name in ('plain', 'deep')]
+            for result in results:
+                for run in result['steps'][0]['local_run_details']:
+                    run.pop('wall_s'); run.pop('cpu_s')
+            self.assertEqual(*results)
+            checkpoints = [sorted((base/name/'job-0001/checkpoints').iterdir()) for name in ('plain', 'deep')]
+            self.assertEqual([p.read_bytes() for p in checkpoints[0]], [p.read_bytes() for p in checkpoints[1]])
+            regions = json.loads((base/'timing.json').read_text())['jobs'][0]['regions']
+            for name in ('rf/node_jacobian', 'rf/cascade_jacobian', 'rf/decode', 'jacobian_residual'):
+                self.assertGreater(regions['baseline/search/'+name]['count'], 0)
+            self.assertIsNone(model._deep_timing)
+            self.assertIsNone(coupled_lc._deep_timing)
+
+    def test_deep_trf_failure_restores_hooks(self):
+        from lpf.rf_core import model, coupled_lc
+        from lpf.search._rf_deep_timing import search_rf_timing
+        from lpf.search import _development_worker as worker
+        from lpf.timing import TimerCollector
+        original_residual = worker.least_squares_residual_and_jacobian
+        original = RFEvaluator.evaluate_with_il_jacobian
+        timer = TimerCollector()
+        with self.assertRaisesRegex(RuntimeError, 'injected'), search_rf_timing(timer, 'search'):
+            with patch.object(model, '_cascade_jacobian', side_effect=RuntimeError('injected')):
+                plan, _, _, rf_model, _ = self.freeze()
+                from lpf.search.plan import grid_from_record
+                evaluator = rf_model.evaluator(grid_from_record(plan.data['grids']['baseline/search']))
+                evaluator.evaluate_with_il_jacobian(self.starts['1013']['baseline']['vector'])
+        self.assertIs(RFEvaluator.evaluate_with_il_jacobian, original)
+        self.assertIs(worker.least_squares_residual_and_jacobian, original_residual)
+        self.assertIsNone(model._deep_timing)
+        self.assertIsNone(coupled_lc._deep_timing)
+
     def test_new_options_reach_scipy_and_terminal(self):
         self.cfg['arms'][0]['steps'][0]['options'].update(ftol=None, x_scale='jac')
         self.assertEqual(self.freeze()[0].data['config']['arms'][0]['steps'][0]['effective_options'],
