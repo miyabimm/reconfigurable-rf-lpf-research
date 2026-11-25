@@ -33,9 +33,9 @@ class NodalSensitivityTests(unittest.TestCase):
         _, _, model, _, x = make('RF-T008')
         evaluator = model.evaluator(grid(model.resolved_policy))
         solve = np.linalg.solve
-        # Y-to-S and power-wave sensitivity solves, with all directions packed
-        # into 2*p RHS columns. The Schur sensitivity solve no longer exists.
-        for failing, behavior in ((1, 'raise'), (2, 'raise'), (1, 'nan'), (2, 'nan')):
+        # Only the Y-to-S sensitivity solve remains packed; wave sensitivity
+        # now uses a matrix product after the unchanged forward checks.
+        for failing, behavior in ((1, 'raise'), (1, 'nan')):
             calls = []
             def injected(a, b):
                 if a.ndim == 3 and b.ndim == 3 and b.shape[-1] == 2*len(x):
@@ -52,7 +52,7 @@ class NodalSensitivityTests(unittest.TestCase):
                     evaluator.evaluate_with_il_jacobian(x)
                 self.assertEqual(failure.exception.code,
                     'sensitivity_nonfinite' if behavior == 'nan' else 'sensitivity_solve_failed')
-                self.assertEqual(len(calls), failing if behavior == 'raise' else 2)
+                self.assertEqual(len(calls), 1)
 
     def test_forward_schur_failure_and_sample_index(self):
         from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
