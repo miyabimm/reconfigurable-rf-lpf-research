@@ -13,6 +13,8 @@ def search_rf_timing(timer, stage):
     The development runner executes jobs sequentially. These process-global
     wrappers are not intended for concurrent searches.
     """
+    # Import lazily: the worker imports this module, but exists by context entry.
+    from . import _development_worker as worker
     active = False
     batch_active = False
     with ExitStack() as stack:
@@ -71,16 +73,25 @@ def search_rf_timing(timer, stage):
                 return original(*args, **kwargs)
             return wrapped
 
+        def residual_wrapper(original):
+            @wraps(original)
+            def wrapped(*args, **kwargs):
+                return timer.call(f'{stage}/jacobian_residual', original, *args, **kwargs)
+            return wrapped
+
+        replace(worker, 'least_squares_residual_and_jacobian', residual_wrapper)
         replace(CoupledLCTopology, '_matrices_lk', batch_matrices_wrapper)
-        for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch'):
+        for method in ('evaluate', 'evaluate_batch', 'evaluate_partial_batch', 'evaluate_with_il_jacobian'):
             replace(model.RFEvaluator, method, evaluate_wrapper)
         replace(model.RFEvaluator, '_compute_batch', batch_wrapper)
         for owner, method, name in (
                 (model.RFModel, 'decode', 'decode'),
                 (CoupledLCTopology, 'port_admittance', 'port_admittance'),
                 (CoupledLCTopology, 'node_admittance', 'node_admittance'),
+                (CoupledLCTopology, 'node_admittance_with_jacobian', 'node_jacobian'),
                 (CoupledLCTopology, 'matrices', 'matrices'),
                 (model, '_cascade', 'cascade'),
+                (model, '_cascade_jacobian', 'cascade_jacobian'),
                 (model, 'power_response', 'power_response')):
             replace(owner, method, region_wrapper(name))
         yield
