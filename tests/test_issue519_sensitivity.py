@@ -63,6 +63,29 @@ class Issue519SensitivityTests(unittest.TestCase):
                     expected = (rf._cascade(a+h*d[:, j], b)-rf._cascade(a-h*d[:, j], b))/(2*h)
                 np.testing.assert_allclose(actual[:, j], expected, rtol=1e-7, atol=1e-9, err_msg=side)
 
+    def test_forward_cascade_failure_precedes_sensitivity(self):
+        with patch.object(rf, '_cascade', side_effect=CircuitNumericalError('cascade_singular', 'injected')), \
+             patch.object(CoupledLCTopology, 'node_admittance_with_jacobian') as sensitivity:
+            with self.assertRaises(CircuitNumericalError) as failure:
+                self.ev.evaluate_with_il_jacobian(self.x)
+            self.assertEqual(failure.exception.code, 'cascade_singular')
+            sensitivity.assert_not_called()
+
+    def test_extreme_forward_finite_cascade_derivative_overflow(self):
+        for eps in (1e-16, 1e-100, 1e-160, 1e-200, 1e-300):
+            for zero in (False, True):
+                a = np.ones((1, 2, 2), complex); b = np.ones((1, 2, 2), complex)
+                b[0, 0, 0] = 1+1j*eps
+                if zero:
+                    a[0, 0, 1] = 0
+                d = np.ones((1, 1, 2, 2), complex)
+                with self.subTest(eps=eps, zero=zero), np.errstate(all='ignore'):
+                    self.assertTrue(np.isfinite(rf._cascade(a, b)).all())
+                    for da, db in ((None, d), (d, None)):
+                        finite = np.isfinite(rf._cascade_jacobian(a, da, b, db))
+                        # These masks matched the historical formula in regression20.
+                        np.testing.assert_array_equal(finite, np.full_like(finite, eps >= 1e-100))
+
     def test_nonfinite_and_overflow_sensitivity_fail_closed(self):
         original = CoupledLCTopology.node_admittance_with_jacobian
         for value in (np.nan, np.inf, 1e308):

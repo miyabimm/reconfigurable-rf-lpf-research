@@ -2,9 +2,9 @@
 
 ## 判断のための要約
 
-**3 seed時点の全候補不採用判断は暫定へ変更する。採用判断は独立レビュー待ちであり、本番srcは変更していない。** 20 seedでは同一5000 forwardのSearch J対応勝/負はA 12/8、B 7/13、AB 12/8、時間近似ではA 12/8、B 8/12、AB 14/6だった（小さい方を勝ち、同数なし）。各中央値・平均は大きな外れ値に影響され、対応勝数も品質分布を十分に要約しない。いずれも非収束の有限探索20点であり、一般的な優劣や統計的有意性は主張しない。過去のseed 1010でのAの大きな悪化と他seedの改善も維持されている。
+**20 seed診断後、ユーザーがA+B採用を決定し、本番反映した。変更後の独立レビュー待ち。** 本番経路の検証は [production_report.md](production_report.md)。以下は診断時点の記録である。20 seedでは同一5000 forwardのSearch J対応勝/負はA 12/8、B 7/13、AB 12/8、時間近似ではA 12/8、B 8/12、AB 14/6だった（小さい方を勝ち、同数なし）。各中央値・平均は大きな外れ値に影響され、対応勝数も品質分布を十分に要約しない。いずれも非収束の有限探索20点であり、一般的な優劣や統計的有意性は主張しない。過去のseed 1010でのAの大きな悪化と他seedの改善も維持されている。
 
-前回3 seed固定点比較・個別値・rawは[従前報告](report.md)と[results.json](results.json)に保持。今回の全run結果、全指標の中央値・平均・最良/最悪・四分位、各対応差分・勝負同、全checkpoint SHA、入力SHA、実費用およびobserver軌跡は[results20.json](results20.json)。Search Jは70点の正の違反の二乗和、Terminal Jは476点の同じ二乗違反和であり、Terminal最大符号付き違反[dB]とは別。両gridの点数と構成が違うのでJの大きさを直接比較しない。
+再現コマンド中の `compare20.py`・`observer20.py`・`regression20.py` は本番AB反映前のコードに依存するため、固定commit `b87d4c1ea3a10a1d50be6f8754902521a6979506` のcheckoutで実行する。現HEADで旧baselineを自動再構成しない。前回3 seed固定点比較・個別値・rawは[従前報告](report.md)と[results.json](results.json)に保持。今回の全run結果、全指標の中央値・平均・最良/最悪・四分位、各対応差分・勝負同、全checkpoint SHA、入力SHA、実費用およびobserver軌跡は[results20.json](results20.json)。Search Jは70点の正の違反の二乗和、Terminal Jは476点の同じ二乗違反和であり、Terminal最大符号付き違反[dB]とは別。両gridの点数と構成が違うのでJの大きさを直接比較しない。
 
 ## 条件、事前校正、再現
 
