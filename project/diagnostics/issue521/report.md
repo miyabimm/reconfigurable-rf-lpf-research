@@ -1,6 +1,33 @@
 # #521 C/D 固定入力診断 — 採用保留、実装未完了
 
-## 結論
+## 独立レビュー後の追加検証
+
+Issue #521の `74a4c7a` 独立レビューを受け、C単独・D2の深追いはせず、D1/CD1を現行の固定基準インピーダンスで優先検証した。mainは引き続き `7957fd60e685b6afb2f62fcdc1551ab8bdbfc43d`。**新たに現行と同じZでも合成波動層で旧非有限をD1が隠す例が見つかった**。IssueのSTOP差に関する採用保留条件に従い、本番には未反映。実回路到達可能性は未検証であり、現実の回路runでSTOPが変化すると主張しない。
+
+### 固定ZでのSTOP差
+
+`fixed_z_stop.py` / `fixed_z_stop.json` はseed 521で作った、固有値 `I-fullᴴ full` が約 `[0.635, 0.992]` の受動・非相反 `full` と有限の合成 `dfull`、Z=`[50, 60-40j]` を用いる。`power_response(..., check_power=True)` はPASS、外部S21 ≈`-0.46530-0.06441j` と非ゼロ。方向成分を `1e307` 倍した場合、旧packed wave感度のIL Jacは `nan`（既存 `sensitivity_nonfinite` の条件）、D1/D2では約 `+1.6304e308`（有限、同STOPを起こさない）。0.5×/0.8×では両式有限、0.9×〜1.1×では旧非有限・新有限、1.15×では両者非有限。入力・結果と各scaleはJSON参照。これは元の`1e-200 Ω`事例とは異なり**基準Zを変えていない**が、`dfull` は合成で極大であり、現行の回路・部品範囲からの到達可能性は示していない。製品回路や物理実装への主張には使わない。
+
+### 固定9点の追加FD・異常回帰
+
+`real_z_validation.py` はbase/D1/CD1の同じ9 vectorを対象に、全25列の正規化ILと複素S11/S21/S22の独立差分、設定外C方向の複素感度厳密ゼロを比較。境界では2次片側を使い、指定の2刻み `1e-6` / `3e-6` に加え `1e-7` / `3e-7` を切り分け用に実行（追加刻みを指定2刻みの代わりにはしない）。IL toleranceは要求どおり `rtol=1e-4, atol=1e-5`、複素Sは `rtol=1e-4, atol=1e-7`。全成分の最大絶対・許容差換算差と**全失敗**は `real_z_validation.json`。
+
+- 必須2刻みについて、複素Sは全9点・全列で許容差内。ILは`1e-6`全点許容差内、`3e-6`では3 vector・計12サンプル不一致。base/D1/CD1すべて同じ位置で不一致、追加の小さい刻みでは該当IL不一致なし。数値差分の刻み依存と整合するが、要求刻みが全点PASSとは言わない。
+- 追加の小刻みでは1020-5000に複素S21で2件、S22で103件の許容差超過があり、base/D1/CD1で同じ位置。丸めの影響と整合するが、原因を断定しない。`1e-6` / `3e-6` の上記結果とは区別。
+- `test_issue521_candidate_validation.py` で各候補に既存#499の残存5回帰（2刻み・境界FD含む）と#519の6回帰を実行しPASS、candidate適用中のdeep hook復元も確認。#499の旧2 packed solve注入テストは除き、D1に残るY→S packed solveのraise/NaN、CD1ではpacked solve不在、両候補のinductor感度solve raise/NaNを別途注入しPASS。これらは限定的な故障注入であり全異常契約の証明ではない。
+- 成功した追加FD本実行は1836 forward / 128520 samples（baseline算出・候補感度含む）。bring-up 2回は途中で停止（1回目は必須FD不一致をassert、2回目は境界点で負C）、消費forwardの完全な数は未集計。候補Runner・新EXPは0。これらの失敗を隠していない。
+- 追加検証後、通常CI相当 `CI_EVENT=workflow_dispatch CI_FULL=true ... scripts/select_ci_tests.py` と保存監査は終了0。ログ `/tmp/issue521-review-ci.log`、監査出力 `/tmp/issue521-review-audit.json` は残存。追加checkout・worktreeは作成していない。
+
+```sh
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+uv run --frozen python project/diagnostics/issue521/fixed_z_stop.py /tmp/issue521-fixed-z-new.json
+uv run --frozen python project/diagnostics/issue521/real_z_validation.py /tmp/issue521-real-z-new.json
+uv run --frozen python -m unittest discover -s tests -p 'test_issue521_candidate_validation.py' -v
+```
+
+`real_z_validation.py` は失敗ケースも記録するため、正常終了だけをFD全PASSと解釈しない。固定vector専用生成関数のみを使い通常探索Runnerは呼ばない。
+
+## 初回診断の結論
 
 本番 `src/` は変更していない。**D1/D2は有限の合成入力で既存IL感度STOPと異なる例があり採用保留**。旧式も同例で高精度参照から大きく外れるため、新式のみの問題や実回路での発生を断定しない。C単独は固定vector速度の短縮が明確でなかった。Issueの「固定kernelと実Runnerに明確な短縮がない候補は深追いしない」「STOP差は報告し採用保留」に従い、探索品質runには進んでいない。Dの到達可能性・扱いと追加の数値対策の範囲は独立レビューが必要。**DoDは未達**。RF条件・目的関数・forward・科学的意味の変更や正式EXPはない。
 
