@@ -1,0 +1,42 @@
+{
+  "note": "intrusive observer, not plain timing",
+  "runs": [
+    {
+      "seed": 1001,
+      "count": 5000,
+      "vector_sequence_sha256": "ad0fc08fa37aeaa13c7409eec96bd3279857abede68a610a8da1247fbc1bbc72",
+      "historical_sha256": "ad0fc08fa37aeaa13c7409eec96bd3279857abede68a610a8da1247fbc1bbc72",
+      "actual": {
+        "rf_samples": 350476,
+        "rf_forwards": 5001,
+        "independent_mna_samples": 2
+      },
+      "plan_sha256": "ce490c4be046ef0e14509edc12032cd6a8da6f77183f5fe834dfff11b1a46948"
+    },
+    {
+      "seed": 1010,
+      "count": 5000,
+      "vector_sequence_sha256": "daccff2d15a01ca6444d695f3c2a504a8bfa27276a00a1665c4a5d0f0763afe0",
+      "historical_sha256": "daccff2d15a01ca6444d695f3c2a504a8bfa27276a00a1665c4a5d0f0763afe0",
+      "actual": {
+        "rf_samples": 350476,
+        "rf_forwards": 5001,
+        "independent_mna_samples": 2
+      },
+      "plan_sha256": "70c15aef708b2681dc91aeb90fa91ada7dd294c4bb0694ce97d2e6d32c91531a"
+    },
+    {
+      "seed": 1020,
+      "count": 5000,
+      "vector_sequence_sha256": "582c5b41935f7ef23cdbfb557c90e7ac09ed6d5ccaf4dd2bf2b587e049d8814f",
+      "historical_sha256": "582c5b41935f7ef23cdbfb557c90e7ac09ed6d5ccaf4dd2bf2b587e049d8814f",
+      "actual": {
+        "rf_samples": 350476,
+        "rf_forwards": 5001,
+        "independent_mna_samples": 2
+      },
+      "plan_sha256": "93bb6df6bdedb65851e92706bfc45905d52442823371e8adfcf0c35c93bb27e6"
+    }
+  ],
+  "status": "PASS"
+}
