@@ -401,7 +401,11 @@ class CoupledLCTopology:
         return Y, dY
 
     def port_admittance_jacobian(self, values, schema, omega_rad_s, setting_indices, T, *, matrices):
-        """Project physical sensitivities directly onto ports in schema order."""
+        """Project physical sensitivities onto ports in compact schema order.
+
+        Shared directions precede only the variable-C directions of each sample's
+        setting. Constant capacitors have no sensitivity direction.
+        """
         timing = _deep_timing
         if timing: start = perf_counter_ns()
         if not isinstance(schema, ParameterVectorSchema):
@@ -436,29 +440,31 @@ class CoupledLCTopology:
             if timing: timing[0].add(timing[1] + '/port_jacobian/inductor_solve', perf_counter_ns() - start, failed=failed)
         if timing: start = perf_counter_ns()
         omega = np.asarray(omega_rad_s)
-        setting = np.asarray(setting_indices)
         with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
             scale = omega * 1e-9
+            # Detect overflow in the removed nodal expansion without allocating it.
+            # Its real and imaginary components are scaled independently.
+            nodal_peak = max(np.max(np.abs(dK.real)), np.max(np.abs(dK.imag))) / np.min(scale, initial=np.inf)
             dRL = (T.swapaxes(-1, -2)[:, None] @ dK[None] @ T[:, None]) / scale[:, None, None, None]
             count = schema.n_fixed + schema.n_variable + schema.n_ic_fixed
+            cap_scale = omega[:, None] * self._cap_coefficient[None, :count]
             u = self._cap_incidence[:count] @ T
-            dRC = (omega[:, None] * self._cap_coefficient[None, :count])[:, :, None, None] * (u[:, :, :, None] * u[:, :, None, :])
+            dRC = cap_scale[:, :, None, None] * (u[:, :, :, None] * u[:, :, None, :])
         if timing: timing[0].add(timing[1] + '/port_jacobian/projection', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
-        dR = np.zeros((len(omega), schema.vector_length, 2, 2), complex)
         ks = n + schema.n_fixed
         ic = ks + schema.n_coupling
         shared = ic + schema.n_ic_fixed
+        dR = np.zeros((len(omega), shared + schema.n_variable, 2, 2), complex)
         dR[:, :n] = dRL[:, :n]
         dR[:, ks:ic] = dRL[:, n:]
         dR[:, n:ks] = dRC[:, :schema.n_fixed]
         c_ic = schema.n_fixed + schema.n_variable
         dR[:, ic:shared] = dRC[:, c_ic:count]
-        for s in range(len(CASES)):
-            dR[:, shared+s*schema.n_variable:shared+(s+1)*schema.n_variable] = dRC[:, schema.n_fixed:c_ic] * (setting == s)[:, None, None, None]
+        dR[:, shared:] = dRC[:, schema.n_fixed:c_ic]
         if timing: timing[0].add(timing[1] + '/port_jacobian/assemble', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
-        if not (np.all(np.isfinite(dH)) and np.all(np.isfinite(dK)) and np.all(np.isfinite(scale)) and np.all(scale != 0) and np.all(np.isfinite(dRC)) and np.all(np.isfinite(dR))):
+        if not (np.all(np.isfinite(dH)) and np.all(np.isfinite(dK)) and np.all(np.isfinite(scale)) and np.all(scale != 0) and np.isfinite(nodal_peak) and np.all(np.isfinite(cap_scale)) and np.all(np.isfinite(dRC)) and np.all(np.isfinite(dR))):
             if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
         if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start)

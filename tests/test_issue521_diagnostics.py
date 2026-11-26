@@ -65,9 +65,13 @@ class Issue521DiagnosticTests(unittest.TestCase):
         self.assertEqual(len(captures), 1)
         full, dfull = captures[0]
         z = np.asarray([ev.source_ohms, ev.load_ohms])
-        ds = wave_derivative(full, response.s, z, dfull, 'D1')
-        np.testing.assert_allclose(jac, -20/np.log(10)*np.real(ds[:, :, 1, 0]/response.s[:, None, 1, 0]), rtol=1e-12, atol=1e-12)
+        compact = wave_derivative(full, response.s, z, dfull, 'D1')
         start = len(x)-6*model.schema.n_variable
+        ds = np.zeros((len(ev.grid.setting), len(x), 2, 2), complex)
+        ds[:, :start] = compact[:, :start]
+        cols = start + ev.grid.setting[:, None]*model.schema.n_variable + np.arange(model.schema.n_variable)
+        ds[np.arange(len(ev.grid.setting))[:, None], cols] = compact[:, start:]
+        np.testing.assert_allclose(jac, -20/np.log(10)*np.real(ds[:, :, 1, 0]/response.s[:, None, 1, 0]), rtol=1e-12, atol=1e-12)
         for s in range(6):
             columns = slice(start+s*model.schema.n_variable, start+(s+1)*model.schema.n_variable)
             np.testing.assert_array_equal(ds[ev.grid.setting != s, columns], 0)

@@ -384,6 +384,15 @@ class RFEvaluator:
             raise CircuitNumericalError('sensitivity_nonfinite', 'Non-finite IL sensitivity')
         if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
+        schema = m.schema
+        shared = schema.n_inductors + schema.n_fixed + schema.n_coupling + schema.n_ic_fixed
+        full_jac = np.zeros((len(omega), schema.vector_length), dtype=float)
+        full_jac[:, :shared] = jac[:, :shared]
+        cols = shared + g.setting[:, None] * schema.n_variable + np.arange(schema.n_variable)[None, :]
+        full_jac[np.arange(len(omega))[:, None], cols] = jac[:, shared:]
+        jac = full_jac
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/restore', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64) for j, a in enumerate(data)]
         response, jac = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)
         if timing: timing[0].add(timing[1] + '/jac_sensitivity/freeze', perf_counter_ns() - start)

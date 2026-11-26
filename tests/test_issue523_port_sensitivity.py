@@ -19,7 +19,10 @@ class PortSensitivityTests(unittest.TestCase):
         _, dy = top.node_admittance_with_jacobian(values, schema, omega, setting, matrices=matrices)
         expected = T.swapaxes(-1, -2)[:, None] @ dy @ T[:, None]
         actual = top.port_admittance_jacobian(values, schema, omega, setting, T, matrices=matrices)
-        np.testing.assert_allclose(actual, expected, rtol=2e-12, atol=1e-13)
+        shared = schema.vector_length - 6 * schema.n_variable
+        cols = shared + setting[:, None]*schema.n_variable + np.arange(schema.n_variable)
+        compact = np.concatenate((expected[:, :shared], expected[np.arange(len(omega))[:, None], cols]), axis=1)
+        np.testing.assert_allclose(actual, compact, rtol=2e-12, atol=1e-13)
 
 
 if __name__ == '__main__':
