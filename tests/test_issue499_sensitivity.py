@@ -28,31 +28,18 @@ class NodalSensitivityTests(unittest.TestCase):
                 evaluator.evaluate_with_il_jacobian(x)
             self.assertEqual(failure.exception.code, 'sensitivity_zero_transmission')
 
-    def test_packed_sensitivity_solves_fail_closed(self):
-        from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
+    def test_no_packed_sensitivity_solves(self):
         _, _, model, _, x = make('RF-T008')
         evaluator = model.evaluator(grid(model.resolved_policy))
         solve = np.linalg.solve
-        # Y-to-S and power-wave sensitivity solves, with all directions packed
-        # into 2*p RHS columns. The Schur sensitivity solve no longer exists.
-        for failing, behavior in ((1, 'raise'), (2, 'raise'), (1, 'nan'), (2, 'nan')):
-            calls = []
-            def injected(a, b):
-                if a.ndim == 3 and b.ndim == 3 and b.shape[-1] == 2*len(x):
-                    calls.append(a.shape)
-                    if len(calls) == failing:
-                        if behavior == 'raise':
-                            raise np.linalg.LinAlgError('injected')
-                        result = solve(a, b)
-                        result[...] = np.nan
-                        return result
-                return solve(a, b)
-            with self.subTest(failing=failing, behavior=behavior), patch('numpy.linalg.solve', side_effect=injected):
-                with self.assertRaises(CircuitNumericalError) as failure:
-                    evaluator.evaluate_with_il_jacobian(x)
-                self.assertEqual(failure.exception.code,
-                    'sensitivity_nonfinite' if behavior == 'nan' else 'sensitivity_solve_failed')
-                self.assertEqual(len(calls), failing if behavior == 'raise' else 2)
+        calls = []
+        def observed(a, b):
+            if a.ndim == 3 and b.ndim == 3 and b.shape[-1] == 2*len(x):
+                calls.append(a.shape)
+            return solve(a, b)
+        with patch('numpy.linalg.solve', side_effect=observed):
+            evaluator.evaluate_with_il_jacobian(x)
+        self.assertEqual(calls, [])
 
     def test_forward_schur_failure_and_sample_index(self):
         from lpf.rf_core.numerical_diagnostics import CircuitNumericalError

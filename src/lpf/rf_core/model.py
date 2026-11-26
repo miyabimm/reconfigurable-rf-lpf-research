@@ -337,44 +337,27 @@ class RFEvaluator:
         dY = dY[:, :, order[:, None], order]
         dR = dY[:, :, :2, :2]
         if timing: timing[0].add(timing[1] + '/jac_sensitivity/reorder', perf_counter_ns() - start)
-        region = None
-        try:
-            if timing: start = perf_counter_ns()
-            if middle:
-                T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
-                dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
-            if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
-            if timing: start, region = perf_counter_ns(), '/jac_sensitivity/y_to_s'
-            rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
-            samples, directions = rhs.shape[:2]
-            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
-            if timing:
-                timing[0].add(timing[1] + region, perf_counter_ns() - start)
-                region = None
-            dfirst = _cascade_jacobian(self.pre, None, core, dcore)
-            dfull = _cascade_jacobian(first, dfirst, self.post, None)
-            if timing: start, region = perf_counter_ns(), '/jac_sensitivity/wave'
-            z = np.asarray([self.source_ohms, self.load_ohms])
-            scale = (2*np.sqrt(z.real))[None, None, :, None]
-            da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale
-            db = (np.sqrt(50.) + z.conj()[None, None, :, None]/np.sqrt(50.)) * dfull / scale
-            v = np.sqrt(50.) * (eye + full)
-            i = (eye - full) / np.sqrt(50.)
-            a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])
-            rhs = (db - data[0][:, None] @ da).swapaxes(-1, -2)
-            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            ds = np.linalg.solve(a.swapaxes(-1, -2), packed).reshape(
-                samples, 2, directions, 2).transpose(0, 2, 3, 1)
-            if timing:
-                timing[0].add(timing[1] + region, perf_counter_ns() - start)
-                region = None
-        except np.linalg.LinAlgError as exc:
-            if timing and region: timing[0].add(timing[1] + region, perf_counter_ns() - start, failed=True)
-            raise CircuitNumericalError('sensitivity_solve_failed', 'RF sensitivity solve failed') from exc
-        except BaseException:
-            if timing and region: timing[0].add(timing[1] + region, perf_counter_ns() - start, failed=True)
-            raise
+        if timing: start = perf_counter_ns()
+        if middle:
+            T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
+            dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        Q = eye + core[:, None]
+        dcore = -25 * (Q @ dR @ Q)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/y_to_s', perf_counter_ns() - start)
+        dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+        dfull = _cascade_jacobian(first, dfirst, self.post, None)
+        if timing: start = perf_counter_ns()
+        z = np.asarray([self.source_ohms, self.load_ohms])
+        scale = 2*np.sqrt(z.real)
+        beta = (np.sqrt(50.) - z/np.sqrt(50.))/scale
+        delta = (np.sqrt(50.) + z.conj()/np.sqrt(50.))/scale
+        S = data[0]
+        P = np.diag(delta) - S*beta[None, None, :]
+        Q = np.diag(delta) - beta[None, :, None]*S
+        ds = P[:, None] @ dfull @ Q[:, None]
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/wave', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
         transmission = data[0][:, 1, 0]
         if np.any(transmission == 0):
