@@ -10,7 +10,7 @@ import subprocess
 import time
 
 CHECKOUTS = {'base': ('/tmp/issue523-base', '79f9edfd63aa1af07a2b355e38a957e57f742f54'),
-             'I2': ('/tmp/issue523-i2', '82920f7a4ae635242908c16b4e11b29b27d5edf3')}
+             'I2': ('/tmp/issue523-i2deep', '41537084ca6cbe966efb35958df9dea7a504328f')}
 THREADS = ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')
 
 

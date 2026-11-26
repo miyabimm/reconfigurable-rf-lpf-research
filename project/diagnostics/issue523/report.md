@@ -4,7 +4,7 @@
 
 **2026-11-26追加決定：ユーザーは既存20 seedの品質結果を受容しI2採用を決定した。** Draft PRは未マージ、deep更新およびI3固定vector診断の独立レビュー待ち。同一5000 forwardの20 seedでTerminal品質は12改善・8悪化、うち数seedの悪化は非常に大きい。非収束有限探索の観測であり、統計的優劣・同等性・全帯域適合・物理実現性の証明ではない。
 
-本PRの本番候補は I2（直接投影＋設定方向圧縮）。I1 は比較用commitのみ。I3 は I2 の固定vector短縮が十分大きく、かつ品質の採否が未確定のため未着手。旧 `node_admittance_with_jacobian` は本番TRFから外したが、`tests/test_issue499_sensitivity.py` の独立 nodal FD 契約が現役のため保持。旧診断スクリプトにも利用がある。
+本PRの本番候補は I2（直接投影＋設定方向圧縮）。I1 は比較用commitのみ。I3 は前報時点では未着手、その後の固定vector診断は `addendum.md` を参照。旧 `node_admittance_with_jacobian` は本番TRFから外したが、`tests/test_issue499_sensitivity.py` の独立 nodal FD 契約が現役のため保持。旧診断スクリプトにも利用がある。
 
 ## 固定条件と再現
 
