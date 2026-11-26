@@ -155,7 +155,8 @@ class TRFTests(unittest.TestCase):
                          'rf/jac_sensitivity/wave', 'rf/jac_sensitivity/wave/prepare', 'rf/jac_sensitivity/il',
                          'rf/jac_forward/cascade_first', 'rf/jac_forward/cascade_second',
                          'rf/jac_sensitivity/cascade_first', 'rf/jac_sensitivity/cascade_second',
-                         'rf/port_jacobian/dh', 'rf/port_jacobian/inductor_solve', 'rf/port_jacobian/projection',
+                         'rf/port_jacobian/dh', 'rf/port_jacobian/hb', 'rf/port_jacobian/inductor_solve',
+                         'rf/port_jacobian/l_projection', 'rf/port_jacobian/c_projection',
                          'rf/jac_sensitivity/restore',
                          'trf/local', 'trf/least_squares', 'trf/calc', 'trf/calc/worker',
                          'trf/calc/cache_check', 'worker_jac/budget', 'worker_jac/identity_audit'):

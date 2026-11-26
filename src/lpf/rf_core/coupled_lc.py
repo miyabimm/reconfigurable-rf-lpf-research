@@ -424,10 +424,12 @@ class CoupledLCTopology:
             dH[b, a, b] = dH[b, b, a] = 1j * M[a, b] / (2 * L[b])
             dH[n + j, a, b] = dH[n + j, b, a] = 1j * np.sqrt(L[a] * L[b])
         if timing: timing[0].add(timing[1] + '/port_jacobian/dh', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
+        B = self.inductor_tree.incidence()
+        if timing: timing[0].add(timing[1] + '/port_jacobian/hb', perf_counter_ns() - start)
         if timing: start, failed = perf_counter_ns(), False
         try:
-            H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
-            B = self.inductor_tree.incidence()
             X = np.linalg.solve(H, B.T)
             dK = -B @ np.linalg.solve(H, dH @ X)
         except np.linalg.LinAlgError as exc:
@@ -446,11 +448,14 @@ class CoupledLCTopology:
             # Its real and imaginary components are scaled independently.
             nodal_peak = max(np.max(np.abs(dK.real)), np.max(np.abs(dK.imag))) / np.min(scale, initial=np.inf)
             dRL = (T.swapaxes(-1, -2)[:, None] @ dK[None] @ T[:, None]) / scale[:, None, None, None]
+        if timing: timing[0].add(timing[1] + '/port_jacobian/l_projection', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
             count = schema.n_fixed + schema.n_variable + schema.n_ic_fixed
             cap_scale = omega[:, None] * self._cap_coefficient[None, :count]
             u = self._cap_incidence[:count] @ T
             dRC = cap_scale[:, :, None, None] * (u[:, :, :, None] * u[:, :, None, :])
-        if timing: timing[0].add(timing[1] + '/port_jacobian/projection', perf_counter_ns() - start)
+        if timing: timing[0].add(timing[1] + '/port_jacobian/c_projection', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
         ks = n + schema.n_fixed
         ic = ks + schema.n_coupling

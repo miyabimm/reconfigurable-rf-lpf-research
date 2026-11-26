@@ -2,7 +2,7 @@
 
 ## 結論
 
-**高速化は再現したが、採用・マージは保留。** 同一5000 forwardの20 seedで、候補のTerminal品質は12改善・8悪化、うち数seedの悪化は非常に大きい。丸め差を実装不良と断定できない一方、品質を満たすとも判断できず、独立レビューが必要。これは非収束有限探索の観測であり、統計的優劣・全帯域適合・物理実現性の証明ではない。
+**2026-11-26追加決定：ユーザーは既存20 seedの品質結果を受容しI2採用を決定した。** Draft PRは未マージ、deep更新およびI3固定vector診断の独立レビュー待ち。同一5000 forwardの20 seedでTerminal品質は12改善・8悪化、うち数seedの悪化は非常に大きい。非収束有限探索の観測であり、統計的優劣・同等性・全帯域適合・物理実現性の証明ではない。
 
 本PRの本番候補は I2（直接投影＋設定方向圧縮）。I1 は比較用commitのみ。I3 は I2 の固定vector短縮が十分大きく、かつ品質の採否が未確定のため未着手。旧 `node_admittance_with_jacobian` は本番TRFから外したが、`tests/test_issue499_sensitivity.py` の独立 nodal FD 契約が現役のため保持。旧診断スクリプトにも利用がある。
 
@@ -23,7 +23,7 @@ uv run --frozen python project/diagnostics/issue523/numerics.py /tmp/NEW-numeric
 uv run --frozen python project/diagnostics/issue521/collect_cli.py /tmp/NEW-runs /tmp/NEW-compact.json
 ```
 
-`runner_compare.py` のworktreeパスとcommitは明示固定。20 seedは `--cycles 1 --plain-only --seeds $(seq 1001 1020)`。**実施した20 seedではスケジュールの反転処理により、意図に反し全seedでbaseが先、I2が後だった。** 上記再現コードはその欠陥を修正済み。20 seedの速度比較に順序バイアスが残るが、3 seed交互3反復でも高速化を観測。探索品質の再測定・採否判断ではこの制約に注意。結果は全件保持し選別していない。
+`runner_compare.py` のworktreeパスとcommitは明示固定。20 seedは `--cycles 1 --plain-only --seeds $(seq 1001 1020)`。**実施した20 seedではスケジュールの反転処理により、意図に反し全seedでbaseが先、I2が後だった。** 上記再現コードはその欠陥を修正済み。20 seedの速度比較に順序バイアスが残る。3 seedの旧測定も、各level内は全組base先行であり、版順は均衡していなかった。固定vectorのprocess順は交互。探索品質と速度の解釈ではこの制約に注意。結果は全件保持し選別していない。
 
 ## 固定vector：base → I1 → I2
 
@@ -37,7 +37,7 @@ STOP: forward完了を優先、SPD・Schur・inductor感度solve・非有限・z
 
 ## 通常CLI性能（3 seed、各3反復）
 
-base/I2のplain/deepを各warmup後、順序を交互に回転・反転。9 job中央値（process wall、起動等を含む）：base plain **16.902 s**／I2 **11.166 s**、base deep **17.778 s**／I2 **11.982 s**。plain user中央値 16.620→10.860 s、system 0.178→0.189 s、minor fault範囲 21966–22393→21830–21871、major fault 0。RSSは `getrusage(RUSAGE_CHILDREN).ru_maxrss` の累積最大で個別peakではなく、全jobで最大91828 KiB。詳細・各jobのCPU・faultは `results.json`。同一版のplain/deepで最終vector・CP・実消費は全組一致。
+base/I2のplain/deepを各warmup後に実施したが、**旧スケジュールは各levelで全seed・全反復ともbase先行だった**。9 job中央値（process wall、起動等を含む）：base plain **16.902 s**／I2 **11.166 s**、base deep **17.778 s**／I2 **11.982 s**。plain user中央値 16.620→10.860 s、system 0.178→0.189 s、minor fault範囲 21966–22393→21830–21871、major fault 0。RSSは `getrusage(RUSAGE_CHILDREN).ru_maxrss` の累積最大で個別peakではなく、全jobで最大91828 KiB。詳細・各jobのCPU・faultは `results.json`。同一版のplain/deepで最終vector・CP・実消費は全組一致。
 
 9 deep jobの中央値、RF evaluator親内の非重複区間：旧node Jacobian＋reorder＋Schurは約 **5.240 s**、新lift＋port Jacobianは約 **1.656 s**。Y→S感度は1.725→1.061 s、感度cascade 2区間合計0.932→0.745 s、wave 1.914→1.211 s、IL 0.232→0.158 s、restore 0→0.097 s。`rf_evaluate` 親13.474→8.054 s、上記以外の各forward/組立等を分離した残りotherは約0.303→0.250 s。各区間中央値の和は親中央値と厳密には一致せず、親子を加算しない。portのinductor/C投影は同一projection計時区間で、個別内訳は未取得。deepは計測負荷を含みplainの差と混同しない。
 
@@ -59,4 +59,4 @@ Terminal J対応勝敗12改善/8悪化。特にseed1004は5.298→14801.773、�
 
 - 3 seed plain/deep：warmup4＋計測36 job、200040 RF forward／14019040 samples／MNA80点。20 seed：warmup2＋計測40 job、210042 forward／14719992 samples／MNA84点。全82 job exit 4（予算停止）、正式EXP 0。固定vectorは9 process×9点×（warmup1＋plain30＋deep1）＝2592 evaluator呼出、181440 samples。単体テストは別。初回に旧入力 `/tmp/issue521-cli-data/inputs-5000` を使用してftol文字列でCLI exit 2、forward 0；新規入力生成し全測定を実施。
 - `results.json` は各jobの入力・source/Plan・出力SHA、CP、実消費と品質を記録。巨大raw・checkpointは `/tmp/issue523-runner-v2/`、`/tmp/issue523-quality/`、失敗は `/tmp/issue523-runner/`、生成入力 `/tmp/issue523-inputs/`、固定vector raw `/tmp/issue523-fixed/` に残す。これらを研究証拠として無断削除しない。
-- 採否保留の理由：20 seedの顕著な両方向差、極端入力STOP同値未証明、inductor/C個別deep内訳なし。I3・同一時間近似は未実施。PRはDraftのまま独立レビューを求め、現時点でDoD完了・科学的受理は主張しない。有限格子であり、SRF・Q(f)・EM・公差・実測や連続周波数適合は未検証。
+- 上記は当時の記録。ユーザーの追加決定では20 seedの追加実行・同一時間近似は不要、I3は固定vector診断のみ。極端入力STOP同値、deep細分化とI3に関する追加結果は補足報告を参照。PRはDraftのまま独立レビュー待ち。有限格子であり、SRF・Q(f)・EM・公差・実測や連続周波数適合は未検証。

@@ -54,16 +54,18 @@ def main():
               'python': str(args.python), 'manifest_sha256': digest(args.inputs/'manifest.json'),
               'threads': {k: os.environ[k] for k in THREADS}, 'runs': [], 'cycles': args.cycles}
     save(args.out/'summary.json', result)
-    arms = (('base', 'plain'), ('I2', 'plain'))
-    if not args.plain_only:
-        arms += (('base', 'deep'), ('I2', 'deep'))
+    levels = ('plain',) if args.plain_only else ('plain', 'deep')
+    arms = tuple((mode, level) for level in levels for mode in ('base', 'I2'))
     schedule = [('warmup', 0, args.seeds[0], *arm) for arm in arms]
     for cycle in range(args.cycles):
         for i, seed in enumerate(args.seeds):
-            offset = (cycle+i) % len(arms)
-            order = arms[offset:]+arms[:offset]
-            if len(arms) > 2 and (cycle+i) % 2: order = tuple(reversed(order))
-            schedule.extend(('measure', cycle, seed, *arm) for arm in order)
+            # Each level alternates its own version order, including per seed
+            # when cycles is even. Also alternate which level is run first.
+            level_order = levels if (cycle+i) % 2 == 0 else levels[::-1]
+            for level in level_order:
+                reverse = (cycle+i+(level == 'deep')) % 2
+                modes = ('I2', 'base') if reverse else ('base', 'I2')
+                schedule.extend(('measure', cycle, seed, mode, level) for mode in modes)
     for phase, cycle, seed, mode, level in schedule:
         inputs = manifest['seeds'][str(seed)]
         config, starts = args.inputs/f'{seed}-config.json', args.inputs/f'{seed}-starts.json'
@@ -85,6 +87,7 @@ def main():
                   'minor_faults': end.ru_minflt-usage.ru_minflt, 'major_faults': end.ru_majflt-usage.ru_majflt,
                   'children_peak_rss_kib_so_far': end.ru_maxrss,
                   'output': str(output), 'timing': str(timing) if level == 'deep' else None,
+                  'timing_sha256': digest(timing) if timing.exists() else None,
                   'env_before': env_before, 'env_after': env_after}
         result['runs'].append(record); save(args.out/'summary.json', result)
         print(name, proc.returncode, 'wall', round(wall, 3), 'cpu', round(record['cpu_s'], 3), flush=True)
