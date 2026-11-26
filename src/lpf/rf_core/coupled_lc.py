@@ -431,7 +431,6 @@ class CoupledLCTopology:
         if timing: start, failed = perf_counter_ns(), False
         try:
             X = np.linalg.solve(H, B.T)
-            dK = -B @ np.linalg.solve(H, dH @ X)
         except np.linalg.LinAlgError as exc:
             if timing: failed = True
             raise CircuitNumericalError('sensitivity_inductor_solve_failed', 'Inductor sensitivity solve failed') from exc
@@ -444,10 +443,8 @@ class CoupledLCTopology:
         omega = np.asarray(omega_rad_s)
         with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
             scale = omega * 1e-9
-            # Detect overflow in the removed nodal expansion without allocating it.
-            # Its real and imaginary components are scaled independently.
-            nodal_peak = max(np.max(np.abs(dK.real)), np.max(np.abs(dK.imag))) / np.min(scale, initial=np.inf)
-            dRL = (T.swapaxes(-1, -2)[:, None] @ dK[None] @ T[:, None]) / scale[:, None, None, None]
+            W = X @ T
+            dRL = -(W.swapaxes(-1, -2)[:, None] @ dH[None] @ W[:, None]) / scale[:, None, None, None]
         if timing: timing[0].add(timing[1] + '/port_jacobian/l_projection', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
         with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
@@ -469,7 +466,7 @@ class CoupledLCTopology:
         dR[:, shared:] = dRC[:, schema.n_fixed:c_ic]
         if timing: timing[0].add(timing[1] + '/port_jacobian/assemble', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
-        if not (np.all(np.isfinite(dH)) and np.all(np.isfinite(dK)) and np.all(np.isfinite(scale)) and np.all(scale != 0) and np.isfinite(nodal_peak) and np.all(np.isfinite(cap_scale)) and np.all(np.isfinite(dRC)) and np.all(np.isfinite(dR))):
+        if not (np.all(np.isfinite(dH)) and np.all(np.isfinite(X)) and np.all(np.isfinite(W)) and np.all(np.isfinite(scale)) and np.all(scale != 0) and np.all(np.isfinite(dRL)) and np.all(np.isfinite(cap_scale)) and np.all(np.isfinite(dRC)) and np.all(np.isfinite(dR))):
             if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
         if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start)

@@ -9,6 +9,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'project/diagnostics/issue521'))
 from numerics import core_derivative, wave_derivative
 from lpf.rf_core.model import power_response
+from lpf.rf_core.coupled_lc import CoupledLCTopology
 from lpf.rf_core import model as rf
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 from test_issue307_constraints import make
@@ -88,10 +89,19 @@ class Issue521DiagnosticTests(unittest.TestCase):
         _, _, model, _, x = make('RF-T008')
         ev = model.evaluator(grid(model.resolved_policy))
         solve = np.linalg.solve
+        original = CoupledLCTopology.port_admittance_jacobian
         for behavior in ('raise', 'nan'):
             calls = []
+            active = False
+            def marked(top, *args, **kwargs):
+                nonlocal active
+                active = True
+                try:
+                    return original(top, *args, **kwargs)
+                finally:
+                    active = False
             def injected(a, b):
-                if a.ndim == 2 and b.ndim == 3:
+                if active and a.ndim == 2 and b.ndim == 2:
                     calls.append(1)
                     if behavior == 'raise':
                         raise np.linalg.LinAlgError('injected inductor sensitivity')
@@ -99,7 +109,9 @@ class Issue521DiagnosticTests(unittest.TestCase):
                     result[...] = np.nan
                     return result
                 return solve(a, b)
-            with self.subTest(behavior=behavior), patch('numpy.linalg.solve', side_effect=injected):
+            with self.subTest(behavior=behavior), \
+                 patch.object(CoupledLCTopology, 'port_admittance_jacobian', marked), \
+                 patch('numpy.linalg.solve', side_effect=injected):
                 with self.assertRaises(CircuitNumericalError) as error:
                     ev.evaluate_with_il_jacobian(x)
                 self.assertEqual(error.exception.code, 'sensitivity_inductor_solve_failed'
