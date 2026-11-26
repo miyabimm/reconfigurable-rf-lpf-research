@@ -2,11 +2,11 @@
 
 ## 推奨と区別
 
-**採否は独立レビュー待ち。本PRの本番 `model.py` はbaselineへ戻し、mainにも反映しない。** 20 seedで同一forward・同一時間近似とも高速化を観測したが、一部seedでTerminal品質が大幅に悪化し、他seedでは大幅改善した。20 seed・各1回の非収束探索から統計的同等性・系統的悪化・改善は断定できない。Issueの「顕著な悪化がある場合や採否が不明なら本番反映を留保」に従う。固定候補commitは下記に残り、実装diff・回帰は再検証可能。オーナー承認の「旧中間overflow再現不要」は有効だが、数値・速度・品質・採用判断は別である。
+**採否は独立レビュー待ち、mainには反映しない。** この記録時点のPR `3d41361` は本番 `model.py` をbaselineへ戻していた。その後の追加指示によりPR上にC+D1候補を再適用してdeep原因調査を行った。現状とその採否留保は [`deep_report.md`](deep_report.md) を参照。20 seedで同一forward・同一時間近似とも高速化を観測したが、一部seedでTerminal品質が大幅に悪化し、他seedでは大幅改善した。20 seed・各1回の非収束探索から統計的同等性・系統的悪化・改善は断定できない。固定候補commitは下記に残り、実装diff・回帰は再検証可能。オーナー承認の「旧中間overflow再現不要」は有効だが、数値・速度・品質・採用判断は別である。
 
 ## 固定入力・実装・検証
 
-- baseline main `7957fd60e685b6afb2f62fcdc1551ab8bdbfc43d`、D1固定commit `729e12453c882bf23b91cf8d79c02cb0f31b4392`、CD1固定commit `4d3def8f636f14938097f22965315fc22d6ab7ca`。候補commitには実model式と適合するテスト変更がある。本PRではこれらを後続commitでrevertし、比較用経路を本番に残さない。
+- baseline main `7957fd60e685b6afb2f62fcdc1551ab8bdbfc43d`、D1固定commit `729e12453c882bf23b91cf8d79c02cb0f31b4392`、CD1固定commit `4d3def8f636f14938097f22965315fc22d6ab7ca`。候補commitには実model式と適合するテスト変更がある。当時のPRでは後続commitでrevertしていたが、その後の追加指示による再適用は `deep_report.md` を参照。
 - trial RF-T010 effective SHA `d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417`、base RF-T008、4L2C/25変数、6設定28別区間、Search 70・Terminal 476、TRF exact、ftol `1e-6`、x_scale `1`、restart_sigma `.1`、checkpoint1000、独立MNA `[0,111]`。bands/S2P/profile/bounds/gridは `cli_results.json` のPlan識別子を参照。20 seedのstartsは#513のSHAと照合。固定forwardは5000、同一時間近似は**両候補6800**。
 - D1/CD1の実コードと元の診断候補は9固定vectorの全forward S/IL/APL/両RLとIL Jacが**bit一致**：`production_equivalence.json`。変更後の実コードで#499感度6、#519感度6、#521診断6をD1/CD1それぞれ実行しPASS、CD1は#503 TRF/deep 7もPASS。複素S11/S21/S22の全列FD・設定外C厳密ゼロ、inductor感度solve異常を確認。各候補が削除したpacked solveについてのみ人工注入を整理。旧forward、zero transmission、非有限Jacと既存前段検査は維持。正式な9点FDで旧新共通のIL 12件と小刻みS超過は `report.md` のまま、許容差を緩めていない。
 - レビュー承認により、旧式の不要な中間overflowや消えたsolveの人工故障は再現しない。固定Z合成反例の高精度参照・旧STOPとの差、極小Zの別の桁落ちは `report.md` に残す。汎用Zの保証・新fallbackはない。
