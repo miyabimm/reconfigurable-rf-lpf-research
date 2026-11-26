@@ -193,6 +193,8 @@ class CoupledLCTopology:
     capacitor_edges: tuple[tuple[int, int], ...]
     capacitor_q: tuple[float, ...]
     _capacitor_stamps_flat: np.ndarray = field(init=False, repr=False, compare=False)
+    _cap_incidence: np.ndarray = field(init=False, repr=False, compare=False)
+    _cap_coefficient: np.ndarray = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if not isinstance(self.inductor_tree, InductorTree):
@@ -216,7 +218,10 @@ class CoupledLCTopology:
         object.__setattr__(self, "inductor_q", lq)
         object.__setattr__(self, "capacitor_q", cq)
         # Each branch retains its own Q, including parallel and ground branches.
-        stamps = (1e-12 / (1 / np.asarray(cq) - 1j))[:, None, None] * (
+        coefficient = 1e-12 / (1 / np.asarray(cq) - 1j)
+        object.__setattr__(self, '_cap_incidence', np.frombuffer(cap_incidence.tobytes(), dtype=cap_incidence.dtype).reshape(cap_incidence.shape))
+        object.__setattr__(self, '_cap_coefficient', np.frombuffer(coefficient.tobytes(), dtype=complex))
+        stamps = coefficient[:, None, None] * (
             cap_incidence[:, :, None] * cap_incidence[:, None, :]
         )
         flat = np.frombuffer(stamps.tobytes(), dtype=complex).reshape(
@@ -394,6 +399,78 @@ class CoupledLCTopology:
             raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
         if timing: timing[0].add(timing[1] + '/node_jacobian/finite', perf_counter_ns() - start)
         return Y, dY
+
+    def port_admittance_jacobian(self, values, schema, omega_rad_s, setting_indices, T, *, matrices):
+        """Project physical sensitivities onto ports in compact schema order.
+
+        Shared directions precede only the variable-C directions of each sample's
+        setting. Constant capacitors have no sensitivity direction.
+        """
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
+        if not isinstance(schema, ParameterVectorSchema):
+            raise TypeError('Expected ParameterVectorSchema')
+        schema.encode(values)
+        if timing: timing[0].add(timing[1] + '/port_jacobian/schema', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        L, k = np.asarray(values.inductances_nh), np.asarray(values.coupling_k)
+        M = matrices[1]
+        n = len(L)
+        dH = np.zeros((n + schema.n_coupling, n, n), complex)
+        for i in range(n):
+            dH[i, i, i] = 1 / self.inductor_q[i] + 1j
+        for j, ((a, b), coeff) in enumerate(zip(self.coupling_pairs, k)):
+            dH[a, a, b] = dH[a, b, a] = 1j * M[a, b] / (2 * L[a])
+            dH[b, a, b] = dH[b, b, a] = 1j * M[a, b] / (2 * L[b])
+            dH[n + j, a, b] = dH[n + j, b, a] = 1j * np.sqrt(L[a] * L[b])
+        if timing: timing[0].add(timing[1] + '/port_jacobian/dh', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
+        B = self.inductor_tree.incidence()
+        if timing: timing[0].add(timing[1] + '/port_jacobian/hb', perf_counter_ns() - start)
+        if timing: start, failed = perf_counter_ns(), False
+        try:
+            X = np.linalg.solve(H, B.T)
+        except np.linalg.LinAlgError as exc:
+            if timing: failed = True
+            raise CircuitNumericalError('sensitivity_inductor_solve_failed', 'Inductor sensitivity solve failed') from exc
+        except BaseException:
+            if timing: failed = True
+            raise
+        finally:
+            if timing: timing[0].add(timing[1] + '/port_jacobian/inductor_solve', perf_counter_ns() - start, failed=failed)
+        if timing: start = perf_counter_ns()
+        omega = np.asarray(omega_rad_s)
+        with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
+            scale = omega * 1e-9
+            W = X @ T
+            dRL = -(W.swapaxes(-1, -2)[:, None] @ dH[None] @ W[:, None]) / scale[:, None, None, None]
+        if timing: timing[0].add(timing[1] + '/port_jacobian/l_projection', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
+            count = schema.n_fixed + schema.n_variable + schema.n_ic_fixed
+            cap_scale = omega[:, None] * self._cap_coefficient[None, :count]
+            u = self._cap_incidence[:count] @ T
+            dRC = cap_scale[:, :, None, None] * (u[:, :, :, None] * u[:, :, None, :])
+        if timing: timing[0].add(timing[1] + '/port_jacobian/c_projection', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        ks = n + schema.n_fixed
+        ic = ks + schema.n_coupling
+        shared = ic + schema.n_ic_fixed
+        dR = np.zeros((len(omega), shared + schema.n_variable, 2, 2), complex)
+        dR[:, :n] = dRL[:, :n]
+        dR[:, ks:ic] = dRL[:, n:]
+        dR[:, n:ks] = dRC[:, :schema.n_fixed]
+        c_ic = schema.n_fixed + schema.n_variable
+        dR[:, ic:shared] = dRC[:, c_ic:count]
+        dR[:, shared:] = dRC[:, schema.n_fixed:c_ic]
+        if timing: timing[0].add(timing[1] + '/port_jacobian/assemble', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        if not (np.all(np.isfinite(dH)) and np.all(np.isfinite(X)) and np.all(np.isfinite(W)) and np.all(np.isfinite(scale)) and np.all(scale != 0) and np.all(np.isfinite(dRL)) and np.all(np.isfinite(cap_scale)) and np.all(np.isfinite(dRC)) and np.all(np.isfinite(dR))):
+            if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start, failed=True)
+            raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
+        if timing: timing[0].add(timing[1] + '/port_jacobian/finite', perf_counter_ns() - start)
+        return dR
 
     def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False, matrices=None):
         """Shared forward Schur reduction; never used by independent MNA."""

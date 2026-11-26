@@ -88,7 +88,7 @@ def search_rf_timing(timer, stage):
                 (model.RFModel, 'decode', 'decode'),
                 (CoupledLCTopology, 'port_admittance', 'port_admittance'),
                 (CoupledLCTopology, 'node_admittance', 'node_admittance'),
-                (CoupledLCTopology, 'node_admittance_with_jacobian', 'node_jacobian'),
+                (CoupledLCTopology, 'port_admittance_jacobian', 'port_jacobian'),
                 (CoupledLCTopology, 'matrices', 'matrices'),
                 (model, '_cascade', 'cascade'),
                 (model, '_cascade_jacobian', 'cascade_jacobian'),

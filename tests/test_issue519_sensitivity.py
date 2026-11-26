@@ -27,9 +27,10 @@ class Issue519SensitivityTests(unittest.TestCase):
                 return top.matrices(values)
             def node_admittance(self, *args, **kwargs):
                 return top.node_admittance(*args, **kwargs)[:, :2, :2]
-            def node_admittance_with_jacobian(self, values, schema, omega, settings, *, matrices=None, node=None):
-                y, dy = top.node_admittance_with_jacobian(values, schema, omega, settings, matrices=matrices)
-                return y[:, :2, :2], dy[:, :, :2, :2]
+            def port_admittance_jacobian(self, values, schema, omega, settings, T, *, matrices):
+                lift = np.zeros((len(omega), top.inductor_tree.node_count, 2), complex)
+                lift[:, :2] = T
+                return top.port_admittance_jacobian(values, schema, omega, settings, lift, matrices=matrices)
         ev = replace(self.model, topology=Projected()).evaluator(self.ev.grid)
         omega = 2*np.pi*ev.grid.frequency_hz
         def forward(x):
@@ -65,7 +66,7 @@ class Issue519SensitivityTests(unittest.TestCase):
 
     def test_forward_cascade_failure_precedes_sensitivity(self):
         with patch.object(rf, '_cascade', side_effect=CircuitNumericalError('cascade_singular', 'injected')), \
-             patch.object(CoupledLCTopology, 'node_admittance_with_jacobian') as sensitivity:
+             patch.object(CoupledLCTopology, 'port_admittance_jacobian') as sensitivity:
             with self.assertRaises(CircuitNumericalError) as failure:
                 self.ev.evaluate_with_il_jacobian(self.x)
             self.assertEqual(failure.exception.code, 'cascade_singular')
@@ -87,13 +88,13 @@ class Issue519SensitivityTests(unittest.TestCase):
                         np.testing.assert_array_equal(finite, np.full_like(finite, eps >= 1e-100))
 
     def test_nonfinite_and_overflow_sensitivity_fail_closed(self):
-        original = CoupledLCTopology.node_admittance_with_jacobian
+        original = CoupledLCTopology.port_admittance_jacobian
         for value in (np.nan, np.inf, 1e308):
             def injected(top, *args, **kwargs):
-                y, dy = original(top, *args, **kwargs)
+                dy = original(top, *args, **kwargs)
                 dy = dy.copy(); dy[:, 0, :, :] = value
-                return y, dy
-            with self.subTest(value=value), patch.object(CoupledLCTopology, 'node_admittance_with_jacobian', injected):
+                return dy
+            with self.subTest(value=value), patch.object(CoupledLCTopology, 'port_admittance_jacobian', injected):
                 with warnings.catch_warnings(), self.assertRaises(CircuitNumericalError) as failure:
                     warnings.simplefilter('ignore', RuntimeWarning)
                     self.ev.evaluate_with_il_jacobian(self.x)

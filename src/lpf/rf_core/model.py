@@ -335,17 +335,13 @@ class RFEvaluator:
         if timing: timing[0].add(timing[1] + '/jac_forward/cascade_second', perf_counter_ns() - start)
         data = power_response(full, self.source_ohms, self.load_ohms)
         # Complete the original forward and its error checks before sensitivity.
-        _, dY = topology.node_admittance_with_jacobian(
-            values, m.schema, omega, g.setting, matrices=matrices, node=node)
         if timing: start = perf_counter_ns()
-        dY = dY[:, :, order[:, None], order]
-        dR = dY[:, :, :2, :2]
-        if timing: timing[0].add(timing[1] + '/jac_sensitivity/reorder', perf_counter_ns() - start)
-        if timing: start = perf_counter_ns()
+        T = np.empty((len(omega), n, 2), dtype=complex)
+        T[:, order[:2], :] = eye
         if middle:
-            T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
-            dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
-        if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
+            T[:, order[2:], :] = -internal
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/lift', perf_counter_ns() - start)
+        dR = topology.port_admittance_jacobian(values, m.schema, omega, g.setting, T, matrices=matrices)
         if timing: start = substart = perf_counter_ns()
         Q = eye + core[:, None]
         if timing:
@@ -387,6 +383,15 @@ class RFEvaluator:
             if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_nonfinite', 'Non-finite IL sensitivity')
         if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        schema = m.schema
+        shared = schema.n_inductors + schema.n_fixed + schema.n_coupling + schema.n_ic_fixed
+        full_jac = np.zeros((len(omega), schema.vector_length), dtype=float)
+        full_jac[:, :shared] = jac[:, :shared]
+        cols = shared + g.setting[:, None] * schema.n_variable + np.arange(schema.n_variable)[None, :]
+        full_jac[np.arange(len(omega))[:, None], cols] = jac[:, shared:]
+        jac = full_jac
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/restore', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64) for j, a in enumerate(data)]
         response, jac = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)
