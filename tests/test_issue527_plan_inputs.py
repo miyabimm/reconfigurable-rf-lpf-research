@@ -12,6 +12,7 @@ from unittest.mock import patch
 import numpy as np
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from lpf.minimax_profile import load_minimax_profile
 from lpf.search.component_constraints import physical_bounds
 from lpf.search.development_plan import freeze_run
