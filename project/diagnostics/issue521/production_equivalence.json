@@ -1,0 +1,162 @@
+{
+  "baseline": "7957fd60e685b6afb2f62fcdc1551ab8bdbfc43d",
+  "commits": {
+    "D1": "729e12453c882bf23b91cf8d79c02cb0f31b4392",
+    "CD1": "4d3def8f636f14938097f22965315fc22d6ab7ca"
+  },
+  "rows": [
+    {
+      "seed": 1001,
+      "vector": "initial",
+      "vector_sha256": "49f9f53b0220f4e81332fbe94cebe2482e436b1a313aaabbae696a6b015761e5",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1001,
+      "vector": "1001-3000",
+      "vector_sha256": "78e8976ce943a517fd08dec5642858e5eec37ce8a9d9effbf6168fbcf6053c59",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1001,
+      "vector": "1001-5000",
+      "vector_sha256": "ce57123bb6e42b65d2d15911a0cd920be28e3fdbd771169803130cf179add6e3",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1010,
+      "vector": "initial",
+      "vector_sha256": "4fbac994feffe2853888061ab52424fd193fe3090c0de43aa13db8a5de5c5df0",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1010,
+      "vector": "1010-3000",
+      "vector_sha256": "2f6922d29b69a3c7910ba621d35b85e8017f80a510ae12444df4ec4025b9a424",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1010,
+      "vector": "1010-5000",
+      "vector_sha256": "0745efd7bd87e64ef6b32dc04e13bb00ebae2a56098c0b4b7e0d67fbfcffe8d9",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1020,
+      "vector": "initial",
+      "vector_sha256": "efcfae8723207707bd9e19bcc7c5f367750161845b51755b4d7ed8658b488a0b",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1020,
+      "vector": "1020-3000",
+      "vector_sha256": "be2ed0bfd23463196ecef521a6e6fe74c9d9f2ee82ab092796145f2ce1f2bbb8",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    },
+    {
+      "seed": 1020,
+      "vector": "1020-5000",
+      "vector_sha256": "e12eeab1cf4ec0de7a0b1607285160577f47d4eda7e712dbca17166293e2c8e0",
+      "variants": {
+        "D1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74",
+          "production_source_sha256": "af17352c26ae73275070fe231221db5e649052804c63236fc483655d37b4fa74"
+        },
+        "CD1": {
+          "bitwise_equal": true,
+          "diagnostic_source_sha256": "ba8f279b8b98ad54ac42806b351d49a548cc37f44b2b54744d04027c47ae89fc",
+          "production_source_sha256": "d2344c76f990c3ec7865f6f598e134ac2244e793c60e88dbf28f07ce8f5a6279"
+        }
+      }
+    }
+  ]
+}

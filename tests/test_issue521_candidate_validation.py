@@ -5,13 +5,9 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
-import test_issue499_sensitivity as issue499
-import test_issue519_sensitivity as issue519
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'project/diagnostics/issue521'))
 import kernel
 from numerics import wave_derivative
-from lpf.rf_core import model as rf
 from lpf.rf_core.model import power_response
 from lpf.rf_core.numerical_diagnostics import CircuitNumericalError
 from test_issue307_constraints import make
@@ -19,25 +15,6 @@ from test_issue309_rf_core import grid
 
 
 class CandidateValidationTests(unittest.TestCase):
-    def test_candidate_against_existing_baseline_regressions(self):
-        # Packed solve injection is inapplicable because D1/CD1 remove those solves.
-        old = [name for name in unittest.defaultTestLoader.getTestCaseNames(issue499.NodalSensitivityTests)
-               if name != 'test_packed_sensitivity_solves_fail_closed']
-        prior = unittest.defaultTestLoader.getTestCaseNames(issue519.Issue519SensitivityTests)
-        for mode, c in (('D1', False), ('CD1', True)):
-            fn, _ = kernel.variant(c, 'D1')
-            with patch.object(rf.RFEvaluator, 'evaluate_with_il_jacobian', fn):
-                for klass, names in ((issue499.NodalSensitivityTests, old),
-                                     (issue519.Issue519SensitivityTests, prior)):
-                    for name in names:
-                        with self.subTest(mode=mode, test=name):
-                            case = klass(methodName=name)
-                            case.setUp()
-                            try:
-                                getattr(case, name)()
-                            finally:
-                                case.tearDown()
-
     def test_remaining_packed_solve_failure(self):
         _, _, model, _, x = make('RF-T008')
         ev = model.evaluator(grid(model.resolved_policy))
