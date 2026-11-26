@@ -327,8 +327,12 @@ class RFEvaluator:
             raise
         finally:
             if timing: timing[0].add(timing[1] + '/jac_forward/y_to_s_solve', perf_counter_ns() - start, failed=failed)
+        if timing: start = perf_counter_ns()
         first = _cascade(self.pre, core)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_first', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         full = _cascade(first, self.post)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_second', perf_counter_ns() - start)
         data = power_response(full, self.source_ohms, self.load_ohms)
         # Complete the original forward and its error checks before sensitivity.
         _, dY = topology.node_admittance_with_jacobian(
@@ -342,13 +346,22 @@ class RFEvaluator:
             T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
             dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
         if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
-        if timing: start = perf_counter_ns()
+        if timing: start = substart = perf_counter_ns()
         Q = eye + core[:, None]
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s/prepare', perf_counter_ns() - substart)
+            substart = perf_counter_ns()
         dcore = -25 * (Q @ dR @ Q)
-        if timing: timing[0].add(timing[1] + '/jac_sensitivity/y_to_s', perf_counter_ns() - start)
-        dfirst = _cascade_jacobian(self.pre, None, core, dcore)
-        dfull = _cascade_jacobian(first, dfirst, self.post, None)
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s/product', perf_counter_ns() - substart)
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
+        dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_first', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        dfull = _cascade_jacobian(first, dfirst, self.post, None)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_second', perf_counter_ns() - start)
+        if timing: start = substart = perf_counter_ns()
         z = np.asarray([self.source_ohms, self.load_ohms])
         scale = 2*np.sqrt(z.real)
         beta = (np.sqrt(50.) - z/np.sqrt(50.))/scale
@@ -356,8 +369,13 @@ class RFEvaluator:
         S = data[0]
         P = np.diag(delta) - S*beta[None, None, :]
         Q = np.diag(delta) - beta[None, :, None]*S
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/wave/prepare', perf_counter_ns() - substart)
+            substart = perf_counter_ns()
         ds = P[:, None] @ dfull @ Q[:, None]
-        if timing: timing[0].add(timing[1] + '/jac_sensitivity/wave', perf_counter_ns() - start)
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/wave/product', perf_counter_ns() - substart)
+            timing[0].add(timing[1] + '/jac_sensitivity/wave', perf_counter_ns() - start)
         if timing: start = perf_counter_ns()
         transmission = data[0][:, 1, 0]
         if np.any(transmission == 0):
