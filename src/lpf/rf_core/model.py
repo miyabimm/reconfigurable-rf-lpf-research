@@ -327,8 +327,12 @@ class RFEvaluator:
             raise
         finally:
             if timing: timing[0].add(timing[1] + '/jac_forward/y_to_s_solve', perf_counter_ns() - start, failed=failed)
+        if timing: start = perf_counter_ns()
         first = _cascade(self.pre, core)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_first', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         full = _cascade(first, self.post)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_second', perf_counter_ns() - start)
         data = power_response(full, self.source_ohms, self.load_ohms)
         # Complete the original forward and its error checks before sensitivity.
         _, dY = topology.node_admittance_with_jacobian(
@@ -344,17 +348,29 @@ class RFEvaluator:
                 T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
                 dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
             if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
-            if timing: start, region = perf_counter_ns(), '/jac_sensitivity/y_to_s'
+            if timing: start = substart = perf_counter_ns(); region = '/jac_sensitivity/y_to_s'
             rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
             samples, directions = rhs.shape[:2]
             packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
             if timing:
+                timing[0].add(timing[1] + region + '/prepare', perf_counter_ns() - substart)
+                substart = perf_counter_ns()
+            solved = np.linalg.solve(A, packed)
+            if timing:
+                timing[0].add(timing[1] + region + '/solve', perf_counter_ns() - substart)
+                substart = perf_counter_ns()
+            dcore = solved.reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
+            if timing:
+                timing[0].add(timing[1] + region + '/reshape', perf_counter_ns() - substart)
                 timing[0].add(timing[1] + region, perf_counter_ns() - start)
                 region = None
+            if timing: start = perf_counter_ns()
             dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+            if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_first', perf_counter_ns() - start)
+            if timing: start = perf_counter_ns()
             dfull = _cascade_jacobian(first, dfirst, self.post, None)
-            if timing: start, region = perf_counter_ns(), '/jac_sensitivity/wave'
+            if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_second', perf_counter_ns() - start)
+            if timing: start = substart = perf_counter_ns(); region = '/jac_sensitivity/wave'
             z = np.asarray([self.source_ohms, self.load_ohms])
             scale = (2*np.sqrt(z.real))[None, None, :, None]
             da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale
@@ -364,9 +380,16 @@ class RFEvaluator:
             a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])
             rhs = (db - data[0][:, None] @ da).swapaxes(-1, -2)
             packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            ds = np.linalg.solve(a.swapaxes(-1, -2), packed).reshape(
-                samples, 2, directions, 2).transpose(0, 2, 3, 1)
             if timing:
+                timing[0].add(timing[1] + region + '/prepare', perf_counter_ns() - substart)
+                substart = perf_counter_ns()
+            solved = np.linalg.solve(a.swapaxes(-1, -2), packed)
+            if timing:
+                timing[0].add(timing[1] + region + '/solve', perf_counter_ns() - substart)
+                substart = perf_counter_ns()
+            ds = solved.reshape(samples, 2, directions, 2).transpose(0, 2, 3, 1)
+            if timing:
+                timing[0].add(timing[1] + region + '/reshape', perf_counter_ns() - substart)
                 timing[0].add(timing[1] + region, perf_counter_ns() - start)
                 region = None
         except np.linalg.LinAlgError as exc:

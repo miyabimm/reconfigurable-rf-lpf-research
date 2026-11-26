@@ -151,7 +151,10 @@ class TRFTests(unittest.TestCase):
             for name in ('rf/node_jacobian', 'rf/cascade_jacobian', 'rf/decode', 'jacobian_residual',
                          'rf/jac_forward/reorder', 'rf/jac_forward/schur_solve',
                          'rf/jac_forward/y_to_s_solve', 'rf/jac_sensitivity/schur',
-                         'rf/jac_sensitivity/y_to_s', 'rf/jac_sensitivity/wave', 'rf/jac_sensitivity/il',
+                         'rf/jac_sensitivity/y_to_s', 'rf/jac_sensitivity/y_to_s/prepare',
+                         'rf/jac_sensitivity/wave', 'rf/jac_sensitivity/wave/prepare', 'rf/jac_sensitivity/il',
+                         'rf/jac_forward/cascade_first', 'rf/jac_forward/cascade_second',
+                         'rf/jac_sensitivity/cascade_first', 'rf/jac_sensitivity/cascade_second',
                          'rf/node_jacobian/dh', 'rf/node_jacobian/inductor_solve', 'rf/node_jacobian/c_stamps',
                          'trf/local', 'trf/least_squares', 'trf/calc', 'trf/calc/worker',
                          'trf/calc/cache_check', 'worker_jac/budget', 'worker_jac/identity_audit'):
