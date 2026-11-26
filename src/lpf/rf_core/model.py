@@ -279,72 +279,119 @@ class RFEvaluator:
         This independent path does not use the development runner caches.
         """
         m, g, topology = self.model, self.grid, self.model.topology
+        timing = _deep_timing
         values = m.decode(x)
         omega = 2*np.pi*g.frequency_hz
         matrices = topology.matrices(values)
         node = topology.node_admittance(values, omega, g.setting, matrices=matrices)
+        if timing: start = perf_counter_ns()
         n = topology.inductor_tree.node_count
         ports = (topology.inductor_tree.source_node, topology.inductor_tree.load_node)
         middle = tuple(i for i in range(n) if i not in ports)
         order = np.asarray(ports + middle)
         Y = node[:, order[:, None], order]
         R = Y[:, :2, :2]
+        if timing: timing[0].add(timing[1] + '/jac_forward/reorder', perf_counter_ns() - start)
         if middle:
             U, V, E = Y[:, :2, 2:], Y[:, 2:, :2], Y[:, 2:, 2:]
+            if timing: start, failed = perf_counter_ns(), False
             try:
                 internal = np.linalg.solve(E, V)
             except np.linalg.LinAlgError as exc:
+                if timing: failed = True
                 raise CircuitNumericalError('schur_solve_failed', 'Internal-node Schur solve failed') from exc
+            except BaseException:
+                if timing: failed = True
+                raise
+            finally:
+                if timing: timing[0].add(timing[1] + '/jac_forward/schur_solve', perf_counter_ns() - start, failed=failed)
+            if timing: start = perf_counter_ns()
             R = R - U @ internal
+            if timing: timing[0].add(timing[1] + '/jac_forward/schur_update', perf_counter_ns() - start)
         if not np.all(np.isfinite(R)):
             raise CircuitNumericalError('schur_nonfinite', 'Non-finite port admittance',
                 sample_index=int(np.flatnonzero(~np.all(np.isfinite(R), axis=(1, 2)))[0]))
+        if timing: start = perf_counter_ns()
         eye = np.eye(2)
         A = eye + 50*R
+        rhs_forward = eye - 50*R
+        if timing: timing[0].add(timing[1] + '/jac_forward/y_to_s_build', perf_counter_ns() - start)
+        if timing: start, failed = perf_counter_ns(), False
         try:
-            core = np.linalg.solve(A, eye - 50*R)
+            core = np.linalg.solve(A, rhs_forward)
         except np.linalg.LinAlgError as exc:
+            if timing: failed = True
             raise CircuitNumericalError('s_singular', 'Singular Y-to-S conversion') from exc
+        except BaseException:
+            if timing: failed = True
+            raise
+        finally:
+            if timing: timing[0].add(timing[1] + '/jac_forward/y_to_s_solve', perf_counter_ns() - start, failed=failed)
+        if timing: start = perf_counter_ns()
         first = _cascade(self.pre, core)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_first', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         full = _cascade(first, self.post)
+        if timing: timing[0].add(timing[1] + '/jac_forward/cascade_second', perf_counter_ns() - start)
         data = power_response(full, self.source_ohms, self.load_ohms)
         # Complete the original forward and its error checks before sensitivity.
         _, dY = topology.node_admittance_with_jacobian(
             values, m.schema, omega, g.setting, matrices=matrices, node=node)
+        if timing: start = perf_counter_ns()
         dY = dY[:, :, order[:, None], order]
         dR = dY[:, :, :2, :2]
-        try:
-            if middle:
-                T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
-                dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
-            rhs = -50*dR @ (eye + core[:, None])  # [samples, directions, 2, 2]
-            samples, directions = rhs.shape[:2]
-            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            dcore = np.linalg.solve(A, packed).reshape(samples, 2, directions, 2).transpose(0, 2, 1, 3)
-            dfirst = _cascade_jacobian(self.pre, None, core, dcore)
-            dfull = _cascade_jacobian(first, dfirst, self.post, None)
-            z = np.asarray([self.source_ohms, self.load_ohms])
-            scale = (2*np.sqrt(z.real))[None, None, :, None]
-            da = (np.sqrt(50.) - z[None, None, :, None]/np.sqrt(50.)) * dfull / scale
-            db = (np.sqrt(50.) + z.conj()[None, None, :, None]/np.sqrt(50.)) * dfull / scale
-            v = np.sqrt(50.) * (eye + full)
-            i = (eye - full) / np.sqrt(50.)
-            a = (v + z[None, :, None]*i) / (2*np.sqrt(z.real)[None, :, None])
-            rhs = (db - data[0][:, None] @ da).swapaxes(-1, -2)
-            packed = rhs.transpose(0, 2, 1, 3).reshape(samples, 2, directions * 2)
-            ds = np.linalg.solve(a.swapaxes(-1, -2), packed).reshape(
-                samples, 2, directions, 2).transpose(0, 2, 3, 1)
-        except np.linalg.LinAlgError as exc:
-            raise CircuitNumericalError('sensitivity_solve_failed', 'RF sensitivity solve failed') from exc
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/reorder', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        if middle:
+            T = np.concatenate((np.broadcast_to(eye, (Y.shape[0], 2, 2)), -internal), axis=1)
+            dR = T.swapaxes(-1, -2)[:, None] @ dY @ T[:, None]
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/schur', perf_counter_ns() - start)
+        if timing: start = substart = perf_counter_ns()
+        Q = eye + core[:, None]
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s/prepare', perf_counter_ns() - substart)
+            substart = perf_counter_ns()
+        dcore = -25 * (Q @ dR @ Q)
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s/product', perf_counter_ns() - substart)
+            timing[0].add(timing[1] + '/jac_sensitivity/y_to_s', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        dfirst = _cascade_jacobian(self.pre, None, core, dcore)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_first', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
+        dfull = _cascade_jacobian(first, dfirst, self.post, None)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/cascade_second', perf_counter_ns() - start)
+        if timing: start = substart = perf_counter_ns()
+        z = np.asarray([self.source_ohms, self.load_ohms])
+        scale = 2*np.sqrt(z.real)
+        beta = (np.sqrt(50.) - z/np.sqrt(50.))/scale
+        delta = (np.sqrt(50.) + z.conj()/np.sqrt(50.))/scale
+        S = data[0]
+        P = np.diag(delta) - S*beta[None, None, :]
+        Q = np.diag(delta) - beta[None, :, None]*S
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/wave/prepare', perf_counter_ns() - substart)
+            substart = perf_counter_ns()
+        ds = P[:, None] @ dfull @ Q[:, None]
+        if timing:
+            timing[0].add(timing[1] + '/jac_sensitivity/wave/product', perf_counter_ns() - substart)
+            timing[0].add(timing[1] + '/jac_sensitivity/wave', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         transmission = data[0][:, 1, 0]
         if np.any(transmission == 0):
+            if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_zero_transmission', 'IL derivative undefined at zero transmission')
         with np.errstate(over='ignore', invalid='ignore', divide='ignore'):
             jac = -20/np.log(10) * np.real(ds[:, :, 1, 0] / transmission[:, None])
         if not np.all(np.isfinite(jac)):
+            if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_nonfinite', 'Non-finite IL sensitivity')
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/il', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         arrays = [_frozen(a, np.complex128 if j == 0 else np.float64) for j, a in enumerate(data)]
-        return RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)
+        response, jac = RFResponse(g, m.policy_id, m.policy_fingerprint, *arrays), _frozen(jac, np.float64)
+        if timing: timing[0].add(timing[1] + '/jac_sensitivity/freeze', perf_counter_ns() - start)
+        return response, jac
 
     def evaluate_batch(self, vectors):
         """Evaluate a candidate-major batch on the Search grid.

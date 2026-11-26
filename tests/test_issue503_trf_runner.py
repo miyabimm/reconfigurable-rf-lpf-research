@@ -148,10 +148,31 @@ class TRFTests(unittest.TestCase):
             checkpoints = [sorted((base/name/'job-0001/checkpoints').iterdir()) for name in ('plain', 'deep')]
             self.assertEqual([p.read_bytes() for p in checkpoints[0]], [p.read_bytes() for p in checkpoints[1]])
             regions = json.loads((base/'timing.json').read_text())['jobs'][0]['regions']
-            for name in ('rf/node_jacobian', 'rf/cascade_jacobian', 'rf/decode', 'jacobian_residual'):
+            for name in ('rf/node_jacobian', 'rf/cascade_jacobian', 'rf/decode', 'jacobian_residual',
+                         'rf/jac_forward/reorder', 'rf/jac_forward/schur_solve',
+                         'rf/jac_forward/y_to_s_solve', 'rf/jac_sensitivity/schur',
+                         'rf/jac_sensitivity/y_to_s', 'rf/jac_sensitivity/y_to_s/prepare',
+                         'rf/jac_sensitivity/wave', 'rf/jac_sensitivity/wave/prepare', 'rf/jac_sensitivity/il',
+                         'rf/jac_forward/cascade_first', 'rf/jac_forward/cascade_second',
+                         'rf/jac_sensitivity/cascade_first', 'rf/jac_sensitivity/cascade_second',
+                         'rf/node_jacobian/dh', 'rf/node_jacobian/inductor_solve', 'rf/node_jacobian/c_stamps',
+                         'trf/local', 'trf/least_squares', 'trf/calc', 'trf/calc/worker',
+                         'trf/calc/cache_check', 'worker_jac/budget', 'worker_jac/identity_audit'):
                 self.assertGreater(regions['baseline/search/'+name]['count'], 0)
             self.assertIsNone(model._deep_timing)
             self.assertIsNone(coupled_lc._deep_timing)
+
+    def test_plain_does_not_call_new_deep_clocks(self):
+        from lpf.rf_core import model, coupled_lc
+        from lpf.optimizers import trf
+        with patch.object(model, 'perf_counter_ns', side_effect=AssertionError('model deep clock')), \
+             patch.object(coupled_lc, 'perf_counter_ns', side_effect=AssertionError('node deep clock')), \
+             patch.object(trf, 'perf_counter_ns', side_effect=AssertionError('TRF deep clock')):
+            plan, _, _, rf_model, _ = self.freeze()
+            from lpf.search.plan import grid_from_record
+            ev = rf_model.evaluator(grid_from_record(plan.data['grids']['baseline/search']))
+            ev.evaluate_with_il_jacobian(self.starts['1013']['baseline']['vector'])
+            _trf_local(lambda x: (np.array([x[0]-.2]), np.array([[1.]])), [.5], [(0, 1)], max_evaluations=2)
 
     def test_deep_trf_failure_restores_hooks(self):
         from lpf.rf_core import model, coupled_lc

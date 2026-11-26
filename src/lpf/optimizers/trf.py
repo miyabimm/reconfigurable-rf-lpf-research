@@ -1,11 +1,12 @@
 """Normalized TRF local solver with analytic residual sensitivities."""
 from dataclasses import dataclass
-from time import perf_counter, process_time
+from time import perf_counter, perf_counter_ns, process_time
 
 import numpy as np
 from scipy.optimize import least_squares
 
 from .result import OptimizerResult
+from lpf.timing import timed_call
 
 
 @dataclass(frozen=True)
@@ -29,7 +30,7 @@ class _LocalResult:
 
 
 def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objective_callback=None,
-               ftol=1e-6, x_scale=1.0):
+               ftol=1e-6, x_scale=1.0, _timing=None):
     """Run one TRF solve. Callback returns (residual, physical Jacobian).
 
     The one-entry cache shares only exactly equal normalized vectors. Callback
@@ -57,12 +58,22 @@ def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objectiv
 
     def calc(z):
         nonlocal cached_z, cached, evaluations, samples, first, best_x, best
-        if cached_z is not None and np.array_equal(z, cached_z):
+        if _timing: started = perf_counter_ns()
+        hit = cached_z is not None and np.array_equal(z, cached_z)
+        if _timing: _timing[0].add(_timing[1] + '/trf/calc/cache_check', perf_counter_ns() - started)
+        if hit:
+            if _timing: _timing[0].add(_timing[1] + '/trf/calc/cache_hit', 0)
             return cached
+        if _timing: started = perf_counter_ns()
         cached_z = cached = None
         x = lo.copy()
         x[free] = np.clip(lo[free] + z * width[free], lo[free], bounds[free, 1])
-        r, j = evaluate_with_jacobian(x.copy())
+        if _timing: _timing[0].add(_timing[1] + '/trf/calc/coordinates', perf_counter_ns() - started)
+        if _timing:
+            r, j = _timing[0].call(_timing[1] + '/trf/calc/worker', evaluate_with_jacobian, x.copy())
+        else:
+            r, j = evaluate_with_jacobian(x.copy())
+        if _timing: started = perf_counter_ns()
         evaluations += 1
         r, j = np.asarray(r, dtype=float), np.asarray(j, dtype=float)
         if (r.ndim != 1 or not r.size or j.shape != (len(r), len(x0)) or
@@ -72,6 +83,8 @@ def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objectiv
         objective = float(.5 * np.dot(r, r))
         if not np.isfinite(objective):
             raise ValueError('Non-finite objective')
+        if _timing: _timing[0].add(_timing[1] + '/trf/calc/validate_objective', perf_counter_ns() - started)
+        if _timing: started = perf_counter_ns()
         if objective_callback is not None:
             objective_callback(x.copy(), objective)
         if first is None:
@@ -80,12 +93,19 @@ def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objectiv
             best, best_x = objective, x.copy()
         cached_z = np.array(z, copy=True)
         cached = (r.copy(), j[:, free] * width[free])
+        if _timing: _timing[0].add(_timing[1] + '/trf/calc/observe_cache', perf_counter_ns() - started)
         return cached
 
+    if _timing:
+        calc_impl = calc
+        def calc(z):
+            return _timing[0].call(_timing[1] + '/trf/calc', calc_impl, z)
+
     if np.any(free):
-        result = least_squares(lambda z: calc(z)[0], z0, jac=lambda z: calc(z)[1],
-                               bounds=(0., 1.), method='trf', loss='linear',
-                               ftol=ftol, x_scale=x_scale, tr_solver='exact', max_nfev=max_evaluations)
+        result = timed_call(_timing[0] if _timing else None, _timing[1] + '/trf/least_squares' if _timing else '',
+                            least_squares, lambda z: calc(z)[0], z0, jac=lambda z: calc(z)[1],
+                            bounds=(0., 1.), method='trf', loss='linear',
+                            ftol=ftol, x_scale=x_scale, tr_solver='exact', max_nfev=max_evaluations)
         z = np.asarray(result.x, dtype=float)
         final_r = np.asarray(result.fun, dtype=float)
         if (z.shape != z0.shape or not np.all(np.isfinite(z)) or np.any(z < 0) or np.any(z > 1) or
@@ -116,7 +136,7 @@ def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objectiv
 
 
 def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
-                 restart_sigma, ftol, x_scale, objective_callback=None, local_run_callback=None):
+                 restart_sigma, ftol, x_scale, objective_callback=None, local_run_callback=None, _timing=None):
     """Run TRF local solves, selecting the best observation across restarts."""
     if type(seed) is not int or seed < 0 or type(max_evaluations) is not int or max_evaluations < 1:
         raise ValueError('Expected nonnegative seed and positive evaluation budget')
@@ -130,8 +150,10 @@ def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
     total = 0
     best = None
     while True:
-        run = _trf_local(evaluate_with_jacobian, start, box, max_evaluations=max_evaluations - total,
-                         objective_callback=objective_callback, ftol=ftol, x_scale=x_scale)
+        run = timed_call(_timing[0] if _timing else None, _timing[1] + '/trf/local' if _timing else '',
+                         _trf_local, evaluate_with_jacobian, start, box, max_evaluations=max_evaluations - total,
+                         objective_callback=objective_callback, ftol=ftol, x_scale=x_scale,
+                         **({'_timing': _timing} if _timing else {}))
         total += run.sensitivity_evaluations
         if local_run_callback is not None:
             local_run_callback(start.copy(), run)

@@ -331,12 +331,16 @@ class CoupledLCTopology:
         Constant capacitors have no vector column. Setting-specific columns are
         exactly zero at samples belonging to the other five settings.
         """
+        timing = _deep_timing
+        if timing: start = perf_counter_ns()
         if not isinstance(schema, ParameterVectorSchema):
             raise TypeError('Expected ParameterVectorSchema')
         schema.encode(values)
+        if timing: timing[0].add(timing[1] + '/node_jacobian/schema', perf_counter_ns() - start)
         if matrices is None:
             matrices = self.matrices(values)  # preserves forward SPD/error checks
         Y = self.node_admittance(values, omega_rad_s, setting_indices, matrices=matrices) if node is None else node
+        if timing: start = perf_counter_ns()
         L = np.asarray(values.inductances_nh)
         k = np.asarray(values.coupling_k)
         M = matrices[1]
@@ -349,16 +353,29 @@ class CoupledLCTopology:
             dH[a, a, b] = dH[a, b, a] = 1j * M[a, b] / (2 * L[a])
             dH[b, a, b] = dH[b, b, a] = 1j * M[a, b] / (2 * L[b])
             dH[k_start + j, a, b] = dH[k_start + j, b, a] = 1j * np.sqrt(L[a] * L[b])
+        if timing: timing[0].add(timing[1] + '/node_jacobian/dh', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         H = np.diag(L / np.asarray(self.inductor_q)) + 1j * M
         B = self.inductor_tree.incidence()
+        if timing: timing[0].add(timing[1] + '/node_jacobian/hb', perf_counter_ns() - start)
+        if timing: start, failed = perf_counter_ns(), False
         try:
             X = np.linalg.solve(H, B.T)
             dK = -B @ np.linalg.solve(H, dH @ X)
         except np.linalg.LinAlgError as exc:
+            if timing: failed = True
             raise CircuitNumericalError('sensitivity_inductor_solve_failed', 'Inductor sensitivity solve failed') from exc
+        except BaseException:
+            if timing: failed = True
+            raise
+        finally:
+            if timing: timing[0].add(timing[1] + '/node_jacobian/inductor_solve', perf_counter_ns() - start, failed=failed)
+        if timing: start = perf_counter_ns()
         omega = np.asarray(omega_rad_s)
         setting = np.asarray(setting_indices)
         dY = dK[None, :, :, :] / (omega[:, None, None, None] * 1e-9)
+        if timing: timing[0].add(timing[1] + '/node_jacobian/expand', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         stamps = self._capacitor_stamps_flat.reshape(schema.capacitor_count, Y.shape[1], Y.shape[2])
         for j in range(schema.n_fixed):
             dY[:, n + j] += omega[:, None, None] * stamps[j]
@@ -370,8 +387,12 @@ class CoupledLCTopology:
             for j in range(schema.n_variable):
                 dY[:, variable_start + s * schema.n_variable + j] += (
                     (omega * (setting == s))[:, None, None] * stamps[schema.n_fixed + j])
+        if timing: timing[0].add(timing[1] + '/node_jacobian/c_stamps', perf_counter_ns() - start)
+        if timing: start = perf_counter_ns()
         if not np.all(np.isfinite(dY)):
+            if timing: timing[0].add(timing[1] + '/node_jacobian/finite', perf_counter_ns() - start, failed=True)
             raise CircuitNumericalError('sensitivity_node_nonfinite', 'Non-finite nodal sensitivity')
+        if timing: timing[0].add(timing[1] + '/node_jacobian/finite', perf_counter_ns() - start)
         return Y, dY
 
     def port_admittance(self, values, omega_rad_s, setting_indices, *, check_power=False, matrices=None):

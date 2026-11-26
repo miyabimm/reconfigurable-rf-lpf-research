@@ -164,15 +164,20 @@ class DevelopmentWorker:
 
         def evaluate_with_jacobian(vector):
             nonlocal independent
+            timing = self.timer if self.timing_level == 'deep' else None
+            if timing: started = perf_counter_ns()
             if self.forward_count >= self.forward_cap:
                 raise ValueError('STOP: Search RF forward budget exhausted')
             self.forward_count += 1  # Charge before RF Core, including failures.
+            if timing: timing.add(f'{stage}/worker_jac/budget', perf_counter_ns() - started)
             response, jac = timed_call(self.timer, f'{stage}/rf_evaluate',
                                        evaluator.evaluate_with_il_jacobian, vector)
+            if timing: started = perf_counter_ns()
             if (response.grid is not evaluator.grid or response.policy_id != self.model.policy_id or
                     response.policy_fingerprint != self.model.policy_fingerprint):
                 raise ValueError('Response profile/grid mismatch')
             independent = self._audit(vector, response, stage)
+            if timing: timing.add(f'{stage}/worker_jac/identity_audit', perf_counter_ns() - started)
             return least_squares_residual_and_jacobian(self.profile, response, jac)
 
         def evaluate_residuals(vector):
@@ -315,7 +320,8 @@ class DevelopmentWorker:
                 previous_forward_count = self.forward_count
                 runs.append((start, run))
             out = timed_call(self.timer, f'{stage}/solver', trf_minimize, evaluate_with_jacobian, x, self.bounds,
-                             seed=self.seed, objective_callback=on_evaluation, local_run_callback=on_trf_local_run, **opts)
+                             seed=self.seed, objective_callback=on_evaluation, local_run_callback=on_trf_local_run,
+                             **({'_timing': (self.timer, stage)} if self.timer and self.timing_level == 'deep' else {}), **opts)
         else:
             minimize = slsqp_minimize if solver == 'slsqp' else slp_minimize
             out = timed_call(self.timer, f'{stage}/solver', minimize, evaluate_residuals, x, self.bounds,
