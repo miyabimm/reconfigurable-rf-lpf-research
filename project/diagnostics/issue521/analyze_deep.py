@@ -124,7 +124,26 @@ def main(root, output, version='2'):
     result = {'comparison_metadata': {k: v for k, v in compare.items() if k != 'runs'},
               'runs': runs, 'traces': traces, 'allocator': allocator, 'controlled_deep': controlled,
               'replay': replay, 'method': 'other = inclusive parent minus listed non-overlapping direct children; negative retained'}
-    Path(output).write_text(json.dumps(result, indent=2, allow_nan=False)+'\n')
+    write_compact(output, result)
+
+
+def write_compact(path, data):
+    """Keep each audit record on one line without losing structured data."""
+    def encode(value):
+        return json.dumps(value, separators=(',', ':'), allow_nan=False)
+    lines = ['{']
+    for n, (key, value) in enumerate(data.items()):
+        prefix = '  ' + encode(key) + ': '
+        suffix = ',' if n + 1 < len(data) else ''
+        if isinstance(value, list):
+            lines.append(prefix + '[')
+            lines.extend('    ' + encode(item) + (',' if i + 1 < len(value) else '')
+                         for i, item in enumerate(value))
+            lines.append('  ]' + suffix)
+        else:
+            lines.append(prefix + encode(value) + suffix)
+    lines.append('}')
+    Path(path).write_text('\n'.join(lines)+'\n')
 
 
 if __name__ == '__main__':
