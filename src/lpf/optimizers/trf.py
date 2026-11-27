@@ -163,7 +163,7 @@ def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
         free = width > 0
         if restart_sigma is None or not free.any() or not run.success or total >= max_evaluations:
             break
-        z = (run.x[free] - lo[free]) / width[free]
+        z = (best.best_x[free] - lo[free]) / width[free]
         start = lo.copy()
         start[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, restart_sigma, size=z.size), 0, 1) * width[free],
                               lo[free], box[free, 1])
