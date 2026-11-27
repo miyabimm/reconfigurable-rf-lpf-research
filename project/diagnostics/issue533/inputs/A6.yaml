@@ -1,0 +1,36 @@
+schema_version: 1
+rf:
+  constraint_id: RF-T010
+  allow_trial: true
+definition:
+  path: project/diagnostics/issue361/definition.json
+  source_sha256: e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6
+  definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+seeds:
+- 2015
+- 2008
+- 2037
+- 2031
+- 2001
+- 2038
+- 2025
+- 2009
+terminal_points: 17
+budget:
+  rf_samples: 5603808
+  rf_forwards: 80008
+  independent_mna_samples: 16
+arms:
+- name: baseline
+  steps:
+  - name: search
+    solver: trf
+    objective: signed_margin_db
+    aggregation: sum
+    points_per_interval: 2
+    stop_points_per_interval: 3
+    options:
+      max_evaluations: 10000
+      ftol: 1.0e-08
+      x_scale: jac
+      restart_sigma: null

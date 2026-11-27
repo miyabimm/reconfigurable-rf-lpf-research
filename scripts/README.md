@@ -29,6 +29,10 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 生成先は未存在を指定。`settings.yaml`、`config.yaml`、`starts.json`、`bounds.json` と `manifest.json` を一緒に保存する。manifestは各入力の原byte SHA、Job別Sobol seed、spot/checkpoint指定、preflight Plan SHAとbounds SHAを記録する。実行時は同じspotとcheckpoint間隔（省略時1000）を指定する。Planは入力と実行コード等が同じ場合に照合できる。生成時は既存の単点scrambled Sobolを使用し、各seedの先頭armはそのseedを使用、追加armは全config seedを避けて0から順に未使用の非負整数をseed順・arm順に割り当てる。各Jobを別々に生成し、不正startは修復・再抽選せずSTOPする。これはsingle-arm従来方式を維持する入力割当であり、比較条件のpaired startを暗黙に意味しない。Plan凍結はgrid・予算・start等のpreflightのみであり、実行許可やRF性能検証ではない。
 
+### 推奨solver設定
+
+[develop_solver_settings.yaml](develop_solver_settings.yaml) はPlan作成用の参照設定。一次・二次探索は `exploration`、良好な候補の単発精密化は `refinement` を使用する。選択したmappingの `solver` / `objective` / `aggregation` / `options` を実験configのstepへ明示的に転記し、`options.max_evaluations`、格子、seed、予算を実験ごとに追加する。設定ファイル自体はRunnerへの入力ではなく、現行の `generate_develop_inputs.py` も自動読み込みしない。設定名をRunnerへ渡さず、具体値を含むconfigと凍結Planを保存する。二次以降のstartsは前段階の選抜vectorとSHAから生成し、Sobolの再生成はしない。段階別の目安と適用限界は [profile文書](../project/minimax_profile.md#段階別探索の現行推奨方針2026-11-28-jst) を参照。
+
 ### Runner直接指定
 
 ```bash
