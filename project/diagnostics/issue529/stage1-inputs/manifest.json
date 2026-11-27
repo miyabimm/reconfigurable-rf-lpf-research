@@ -1,0 +1,139 @@
+{
+  "files_sha256": {
+    "config.yaml": "064a5ee59216c6d2a74bbe0b38ce585a10f127405beaa9beed8f73fcc78dfff7",
+    "settings.yaml": "5d783750a748124fa7795f6d2999c8eeab0c9bec6579b047bd5032b43dd970ba",
+    "starts.json": "61a90ea63e7bbcf125bdee5d143cd397866c5a32d5f1bbd2157df7eac8465c44",
+    "bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51"
+  },
+  "sobol_seeds": {
+    "2001": {
+      "baseline": 2001
+    },
+    "2002": {
+      "baseline": 2002
+    },
+    "2003": {
+      "baseline": 2003
+    },
+    "2004": {
+      "baseline": 2004
+    },
+    "2005": {
+      "baseline": 2005
+    },
+    "2006": {
+      "baseline": 2006
+    },
+    "2007": {
+      "baseline": 2007
+    },
+    "2008": {
+      "baseline": 2008
+    },
+    "2009": {
+      "baseline": 2009
+    },
+    "2010": {
+      "baseline": 2010
+    },
+    "2011": {
+      "baseline": 2011
+    },
+    "2012": {
+      "baseline": 2012
+    },
+    "2013": {
+      "baseline": 2013
+    },
+    "2014": {
+      "baseline": 2014
+    },
+    "2015": {
+      "baseline": 2015
+    },
+    "2016": {
+      "baseline": 2016
+    },
+    "2017": {
+      "baseline": 2017
+    },
+    "2018": {
+      "baseline": 2018
+    },
+    "2019": {
+      "baseline": 2019
+    },
+    "2020": {
+      "baseline": 2020
+    },
+    "2021": {
+      "baseline": 2021
+    },
+    "2022": {
+      "baseline": 2022
+    },
+    "2023": {
+      "baseline": 2023
+    },
+    "2024": {
+      "baseline": 2024
+    },
+    "2025": {
+      "baseline": 2025
+    },
+    "2026": {
+      "baseline": 2026
+    },
+    "2027": {
+      "baseline": 2027
+    },
+    "2028": {
+      "baseline": 2028
+    },
+    "2029": {
+      "baseline": 2029
+    },
+    "2030": {
+      "baseline": 2030
+    },
+    "2031": {
+      "baseline": 2031
+    },
+    "2032": {
+      "baseline": 2032
+    },
+    "2033": {
+      "baseline": 2033
+    },
+    "2034": {
+      "baseline": 2034
+    },
+    "2035": {
+      "baseline": 2035
+    },
+    "2036": {
+      "baseline": 2036
+    },
+    "2037": {
+      "baseline": 2037
+    },
+    "2038": {
+      "baseline": 2038
+    },
+    "2039": {
+      "baseline": 2039
+    },
+    "2040": {
+      "baseline": 2040
+    }
+  },
+  "spot_checks": {
+    "terminal": [
+      0,
+      111
+    ]
+  },
+  "checkpoint_interval_forwards": 1000,
+  "plan_sha256": "0ccc19fd8fc1c10025f6cb77edf0de1fed22c5ee8d3215e9f788576c099cb761",
+  "search_bounds_sha256": "4a72989fbbc1db6ba73719dae9c85f7dc82e18d4e91402d316c60cba7e64525e"
+}
