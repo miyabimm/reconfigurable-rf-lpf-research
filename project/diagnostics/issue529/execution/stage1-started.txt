@@ -1,0 +1,6 @@
+authorization=user explicitly approved retry and /home/user/src temporary directory
+started_utc=2026-11-27T10:22:55Z
+source_head=58387ae6699480aeec28d2b8095c623d47ea932b
+source_sha256=f97c8b3de5a9bc90a5db00f4ca04a82e8e89ee5313579732732c023beb1080fb
+TMPDIR=/home/user/src/issue529-persistent-raw
+command=uv run --frozen python scripts/run_rf_search.py develop --config project/diagnostics/issue529/stage1-inputs/config.yaml --starts project/diagnostics/issue529/stage1-inputs/starts.json --search-bounds project/diagnostics/issue529/stage1-inputs/bounds.json --spot-checks {"terminal":[0,111]} --checkpoint-interval-forwards 1000 --output /home/user/src/issue529-persistent-raw/stage1

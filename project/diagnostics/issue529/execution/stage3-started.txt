@@ -1,0 +1,7 @@
+started_utc=2026-11-27T11:02:50Z
+source_head=58387ae6699480aeec28d2b8095c623d47ea932b
+source_sha256=f97c8b3de5a9bc90a5db00f4ca04a82e8e89ee5313579732732c023beb1080fb
+TMPDIR=/home/user/src/issue529-persistent-raw
+inputs=/home/user/src/reconfigurable-rf-lpf-research/project/diagnostics/issue529/stage3-inputs
+spot_checks={"terminal":[0,500,1000,1001,1501,2001,2002,2502,3002,3003,3503,4003,4004,4504,5004,5005,5505,6005,6006,6506,7006,7007,7507,8007,8008,8508,9008,9009,9509,10009,10010,10510,11010,11011,11511,12011,12012,12512,13012,13013,13513,14013,14014,14514,15014,15015,15515,16015,16016,16516,17016,17017,17517,18017,18018,18518,19018,19019,19519,20019,20020,20520,21020,21021,21521,22021,22022,22522,23022,23023,23523,24023,24024,24524,25024,25025,25525,26025,26026,26526,27026,27027,27527,28027]}
+command=uv run --frozen python scripts/run_rf_search.py develop --config /home/user/src/reconfigurable-rf-lpf-research/project/diagnostics/issue529/stage3-inputs/config.yaml --starts /home/user/src/reconfigurable-rf-lpf-research/project/diagnostics/issue529/stage3-inputs/starts.json --search-bounds /home/user/src/reconfigurable-rf-lpf-research/project/diagnostics/issue529/stage3-inputs/bounds.json --spot-checks (above) --checkpoint-interval-forwards 1000 --output /home/user/src/issue529-persistent-raw/stage3

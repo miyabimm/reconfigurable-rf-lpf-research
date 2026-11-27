@@ -1,0 +1,3 @@
+started_utc=2026-11-27T10:13:21Z
+source_head=58387ae6699480aeec28d2b8095c623d47ea932b
+command=uv run --frozen python scripts/run_rf_search.py develop --config project/diagnostics/issue529/stage1-inputs/config.yaml --starts project/diagnostics/issue529/stage1-inputs/starts.json --search-bounds project/diagnostics/issue529/stage1-inputs/bounds.json --spot-checks {"terminal":[0,111]} --checkpoint-interval-forwards 1000 --output project/diagnostics/issue529/raw-stage1

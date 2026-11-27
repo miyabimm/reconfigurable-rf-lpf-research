@@ -1,0 +1,68 @@
+schema_version: 1
+rf:
+  constraint_id: RF-T010
+  allow_trial: true
+definition:
+  path: project/diagnostics/issue361/definition.json
+  source_sha256: e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6
+  definition_sha256: bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068
+seeds:
+- 2001
+- 2002
+- 2003
+- 2004
+- 2005
+- 2006
+- 2007
+- 2008
+- 2009
+- 2010
+- 2011
+- 2012
+- 2013
+- 2014
+- 2015
+- 2016
+- 2017
+- 2018
+- 2019
+- 2020
+- 2021
+- 2022
+- 2023
+- 2024
+- 2025
+- 2026
+- 2027
+- 2028
+- 2029
+- 2030
+- 2031
+- 2032
+- 2033
+- 2034
+- 2035
+- 2036
+- 2037
+- 2038
+- 2039
+- 2040
+terminal_points: 17
+budget:
+  rf_samples: 14019040
+  rf_forwards: 200040
+  independent_mna_samples: 80
+arms:
+- name: baseline
+  steps:
+  - name: search
+    solver: trf
+    objective: signed_margin_db
+    aggregation: sum
+    points_per_interval: 2
+    stop_points_per_interval: 3
+    options:
+      max_evaluations: 5000
+      ftol: 1.0e-06
+      x_scale: 1.0
+      restart_sigma: 0.1
