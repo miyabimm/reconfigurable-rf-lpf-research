@@ -1,0 +1,86 @@
+{
+  "source_commit": "0f7b1097217f913cfbaaf77b4fb1c0ddbad88bd3",
+  "source_sha256": {
+    "compact-results.json": "03d3bd3866672bece0178776abc5c00bea3262def82df28301e06c4d14d48fb6",
+    "stage2-inputs/config.yaml": "79865abbb08dafe46733d3dde8eae8ff2ffa6b0dc52697d0da843f6b06eb3880",
+    "stage2-inputs/bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51",
+    "reference-compact.json": "f707f86eb2623a3a5120d29066912e11f11edd4d5c4f5d6b377651733fdfc351"
+  },
+  "files_sha256": {
+    "A1.yaml": "50b1e1e908f90324bdb17792b0cdebe054bf5803b794a6775c761cd82fbfa6c9",
+    "A2.yaml": "ebbab5b14fda4e8297d579195d77480ea70c4dec214e4540cfc7541f05fe5683",
+    "A3.yaml": "dd1d7d21283edb4b442e1a713a54b256e800ceefde26426a2376de11950268e4",
+    "A4.yaml": "0f477e21e0a60c5982ba67695e27aa20779e0f41561643d56282d705cdffb1d6",
+    "A5.yaml": "ca43ee920778dcb91e244f08eb6c8f6f3e890e81ef56e3243bd725a560023b7a",
+    "A6.yaml": "af3c0e750be3e71c5a0623691586f7855a92c7604e381cd82d568fb4b4068dee",
+    "A7.yaml": "759ad8f3115a58110a0256fde37e2afb3efff31faa66bdc37491bbd4c2d66675",
+    "A8.yaml": "4003adc658375faa54488cc04e8968bc75282cce5e409ab95260a49ed7f0e0da",
+    "bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51",
+    "starts.json": "a2e96a624738e1ae6c5c3c26e7bd501ee06000932cf08037d3c388feb8cb54a8"
+  },
+  "selected": [
+    {
+      "seed": 2015,
+      "job_id": "job-0004",
+      "vector_sha256": "120a33699a9aeb4f20f1fefb0010461a48f0e3e878406fc5a663b072e5e11b38",
+      "search_J_db2": 0.024656497942865067,
+      "terminal_max_margin_db": 0.08267949684368292
+    },
+    {
+      "seed": 2008,
+      "job_id": "job-0001",
+      "vector_sha256": "5c5c459ed6c4ce96e42a51573a7b09d6bbf68bb456f4320d24ded5c3840b5767",
+      "search_J_db2": 0.027072441072724208,
+      "terminal_max_margin_db": 0.08676682964031468
+    },
+    {
+      "seed": 2037,
+      "job_id": "job-0008",
+      "vector_sha256": "7eeaf9352b3e9ea65381e8b96b8d5b3573abb3f47424879c58155abe79837de8",
+      "search_J_db2": 0.031624465719732174,
+      "terminal_max_margin_db": 0.09135508954083349
+    },
+    {
+      "seed": 2031,
+      "job_id": "job-0003",
+      "vector_sha256": "ea7236d9e42b991d8758a8cde456233d8029e3aad0ee44a8e9a69fca4c251a1c",
+      "search_J_db2": 0.027220464746126712,
+      "terminal_max_margin_db": 0.09189742762733255
+    },
+    {
+      "seed": 2001,
+      "job_id": "job-0007",
+      "vector_sha256": "b1bd4dea332e0b3ffa92622fffaf7f0b284efb55be75ab1d89de5fe864803773",
+      "search_J_db2": 0.038436174223434066,
+      "terminal_max_margin_db": 0.09578773690505549
+    },
+    {
+      "seed": 2038,
+      "job_id": "job-0006",
+      "vector_sha256": "4bafb54c801a5b7b5cedd6712c271efac339171af758c836cdaaf78bb6e9ee1c",
+      "search_J_db2": 0.03054400726241826,
+      "terminal_max_margin_db": 0.09844697553261517
+    },
+    {
+      "seed": 2025,
+      "job_id": "job-0005",
+      "vector_sha256": "4a393e195c4d8b8800401871827264268f49146c0940ad3e64398bc2dbeeb250",
+      "search_J_db2": 0.04446340370689729,
+      "terminal_max_margin_db": 0.10064959369296944
+    },
+    {
+      "seed": 2009,
+      "job_id": "job-0002",
+      "vector_sha256": "8b3a6d21d094581c3b3c2fcc16e8db3e0bc0327bb419dc6800ba2c8961b11b9a",
+      "search_J_db2": 0.13665834038254487,
+      "terminal_max_margin_db": 0.17330096262341177
+    }
+  ],
+  "spot_checks": {
+    "terminal": [
+      0,
+      111
+    ]
+  },
+  "checkpoint_interval_forwards": 1000
+}
