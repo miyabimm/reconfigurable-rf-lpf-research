@@ -22,6 +22,28 @@ RF-T009 は正式 RF-F003 とは独立した **明示opt-in試験条件**。sche
 
 [共通CLIと実効Plan](../scripts/README.md#rf-profile-開発run)は登録済みschema 1 profileを明示opt-inで受け付ける。Planの各Search stepに `solver` と `objective: signed_margin_db` を明示し、Terminal各区間は全Search stepより密にする。標準例はTRF／`sum`、比較経路としてSLSQP・SLP・L-BFGS-Bも指定できる。重みは1：SLP `signed_max` は `max(e)` [dB]、SLSQP／L-BFGS-Bの `sum` または `max` は正の違反量 `max(0,e)²` の和または最大 [dB²]、TRFはその和。負の残差は寄与せず、全Search点で違反がなければ目的値0のplateauとなる。異なる目的値を比較せず、旧方式の同名モードともソースSHAを区別する。再始動ありのTRF／L-BFGS-Bは局所収束と全体の予算終了を区別する。有限値でないSearch残差はSTOPし、床値を導入しない。
 
+### 段階別探索の現行推奨方針（2026-11-28 JST）
+
+研究上の推奨値は [scripts/develop_solver_settings.yaml](../scripts/develop_solver_settings.yaml) に集約する。これはPlan作成時の参照用であり、RunnerやOptimizerの内部既定値を変更しない。一次・二次の現行設定は同一なので `exploration` を共用し、局所精密化は `refinement` とする。将来二次の設定を変更する場合にのみ分離する。予算・seed・格子は実験ごとに明示する。
+
+RF-T010・4L2Cでの観測（#529, #531, #533）に基づく暫定的な最小3段階構成：
+
+| 工程 | 初期値・候補数 | Search forward上限/候補 | Search / Terminal点数 | 設定 |
+|---|---|---:|---|---|
+| 一次探索 | 独立scrambled Sobol 20 seed | 5,000 | 70 / 476 | exploration |
+| 二次探索 | 一次上位4 seedの最終vector | 20,000（短縮）または60,000（標準） | 70 / 476 | exploration |
+| 最終精密探索 | 二次最良1 seedの最終vector | 1,000 | 196 / 28,028 | refinement（高密度への適用は未検証） |
+
+一次・二次のMNAはTerminal [0,111]、最終は各28区間の始点・中央・終点84点を目安とする。短縮/標準のSearch上限は181,000/341,000。これらは計画値であり、全工程をこの組合せで実証したものではない。70点の独立精密化は必須工程とせず、必要な場合のみ別途計画する（#533では最大10,000 forwardで有効性を観測）。高密度の予算と設定の妥当性は今後検証する。
+
+候補は同一Terminal格子で最大signed margin、正違反二乗和、seed番号の昇順に選抜する。物理・RF検証済みで保存完了した候補（予算終了の数値未収束を含む）を対象とし、異常STOPや検証不合格は対象にしない。後続段階へは完全vector、vector SHA、元seed、同一definition/RF profile/boundsを引き継ぐ。別の凍結Planで新規予算を設定し、SciPy内部状態と乱数状態は継承しない。各段階の原結果は上書きしない。一次の初期値に既存最良候補を使わない。
+
+- #529：独立40→8→1探索で既存最良に近いRF性能。20→4→1と短縮予算は保存軌跡に基づく提案で、同一フローの実証は未了。
+- #531：直前局所終了vectorを基準とするbounds幅0.1の正規乱数restartを維持。累積最良基準は不採用（20,000 forward比較）。全探索中の累積最良vectorを返す契約は維持。
+- #533：二次終点8候補の単発局所runでftol=1e-8、x_scale=jacが有力。7候補のIL幅は約0.018→0.0014 dB。さらに厳しいftolでは7件が同じxtol終了点。全64件の有限格子RF適合は未達。restartを組み合わせた二次探索全体の効果は未検証。
+- 次の改良検討は二次探索のftol/x_scale（restartは現行を維持）、予算・選抜数、70点精密化の必要性と高密度精密化の条件。推奨値の変更は実験結果とユーザー判断に基づく。
+
+
 Searchの上限は各stepのOptimizer callback予算と実RF forwardを別々に記録し、実forwardも同じ数で事前に制限する。Optimizerは同じSearch callbackで評価した `(x, objective)` を返し、Workerは間隔ごと・各step末尾の観測をcheckpointに記録する。Workerによる全観測照合や独自スコアの再計算・順位付けはしない。SearchはOptimizerが生成する有限な閉bounds内の点（SLSQPはSciPyのbounds処理に依存）を通常のRF Coreで評価し、SPD・非有限・線形代数異常を検査する。初期vector・各step最終x・Terminalではboxと全物理を検査し、詳細な受動性と節点→port縮約・S2Pカスケード・外部波の電力収支はTerminal全格子で確認する。独立な枝電流MNAと枝別電力収支の照合は指定spotのみ（Searchは明示指定時のみ）で実施し、独立sample数を別計上する。source/environment・RF profile/base/bands/S2PはJob入口とTerminal後に照合する。実行中の一時的な変更が照合前に復元された場合は検出を保証しない。Terminalは完全vector・全S・IL・APL・両RL・各点のsigned margin・物理検査・独立MNA spotの生証拠を記録する。親 `run.json` が事前の全額予約を記録し、`receipt.json` と全rawの原byte照合後にだけ完了・精算する。未収束は科学状態として保持し、保存に成功したJobなら逐次実行を続ける。失敗時は全額unknownのまま停止し再試行・resumeしない。承認済みformalまたはtrialを物理ベースに使い、旧schema 2条件の直接入力は拒否する。正式EXP接続は未実装・未承認。
 
 要求格子は28行それぞれの正しい設定・両端点を含み、各行の区間内に限定する。応答の格子とprofile ID/SHA、外部パワー波 S21 と IL の整合、および外部S行列の受動性を確認する。正確な伝送ゼロの +∞ dB はフロアせず扱う。profile自体は目的関数を指定しない。共通性能判定の `J=max(e)` はTerminalで使う値であり、Optimizerの目的関数は別途明示する。通過域 `e=IL−上限`、阻止域 `e=下限−減衰`。`J<=0` は**与えた有限格子上の性能閾値**のみを意味する。物理値域、全L行列SPD、接続、受動性・電力保存、独立枝電流MNAなどの検証は別途必須であり、この関数では実施しない。連続帯域、EM、SRF、Q(f)、公差、実測の保証ではない。

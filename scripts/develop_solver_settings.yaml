@@ -1,0 +1,19 @@
+# Plan input generation only; not a Runner config or automatic preset loader.
+# Primary/secondary exploration: current policy. Refinement: #533 (70-point evidence).
+exploration:
+  solver: trf
+  objective: signed_margin_db
+  aggregation: sum
+  options:
+    ftol: 1.0e-6
+    x_scale: 1.0
+    restart_sigma: 0.1
+
+refinement:
+  solver: trf
+  objective: signed_margin_db
+  aggregation: sum
+  options:
+    ftol: 1.0e-8
+    x_scale: jac
+    restart_sigma: null
