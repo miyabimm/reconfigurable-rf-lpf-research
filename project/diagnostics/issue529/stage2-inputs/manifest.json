@@ -1,0 +1,59 @@
+{
+  "files_sha256": {
+    "config.yaml": "79865abbb08dafe46733d3dde8eae8ff2ffa6b0dc52697d0da843f6b06eb3880",
+    "starts.json": "52450061d44e5a964334faff82cf61e8edcfffd5a3a8aea738e09761768341ba",
+    "bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51"
+  },
+  "plan_sha256": "4ecd9e9ce038ec9a861f9dc1d496bf014a5a064fb05529689004ea3550e6bc2e",
+  "search_bounds_sha256": "4a72989fbbc1db6ba73719dae9c85f7dc82e18d4e91402d316c60cba7e64525e",
+  "spot_checks": {
+    "terminal": [
+      0,
+      111
+    ]
+  },
+  "checkpoint_interval_forwards": 1000,
+  "selected_from_stage": 1,
+  "selected": [
+    {
+      "seed": 2008,
+      "vector_sha256": "c446fea6f9a0bbf0855ae8dec024302ac4b99e292a8bc3aebfac96332f0e8605",
+      "job_id": "job-0008"
+    },
+    {
+      "seed": 2009,
+      "vector_sha256": "e48be403f5359c41f37678e844dd24cf1b9ed1fbc494ae21610dc34c5d74b2a5",
+      "job_id": "job-0009"
+    },
+    {
+      "seed": 2031,
+      "vector_sha256": "75611b46bc282c35cb71989eb17e2345e8575af7149ef382315a8ad5a3164868",
+      "job_id": "job-0031"
+    },
+    {
+      "seed": 2015,
+      "vector_sha256": "2cdeeb4fa28c2a866f42a9f397260dae901218ca53da58490eba9fd62faf555c",
+      "job_id": "job-0015"
+    },
+    {
+      "seed": 2025,
+      "vector_sha256": "ac67d325dc44e558b332ef1bf3a757c491ad1bbce188a6108db5cb004201b62f",
+      "job_id": "job-0025"
+    },
+    {
+      "seed": 2038,
+      "vector_sha256": "129c7e56e418d2b6c162c5e3e6225e2599886e63d2939bf83345e6de35f05ca5",
+      "job_id": "job-0038"
+    },
+    {
+      "seed": 2001,
+      "vector_sha256": "ee87cf5696142b27251384e1a43740d6d996170194227224c750967e2f7cee2b",
+      "job_id": "job-0001"
+    },
+    {
+      "seed": 2037,
+      "vector_sha256": "89c1a5995f1593ed715f08cfeda3c8a79957dd41950a7b820ed994f33878aa47",
+      "job_id": "job-0037"
+    }
+  ]
+}
