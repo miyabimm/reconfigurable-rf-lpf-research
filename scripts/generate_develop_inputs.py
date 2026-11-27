@@ -115,7 +115,7 @@ def main(argv=None):
                         plan_sha256=plan.sha256, search_bounds_sha256=plan.data['search_bounds_sha256'])
         args.output.mkdir(parents=True, exist_ok=False)
         for name, text in files.items():
-            (args.output / name).write_text(text, encoding='utf-8')
+            (args.output / name).write_bytes(text.encode('utf-8'))
         (args.output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
         print(f'PASS: input preflight (no RF forwards): {args.output}')
         return 0
