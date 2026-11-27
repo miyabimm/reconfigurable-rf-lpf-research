@@ -1,0 +1,64 @@
+{
+  "source_commit": "0f7b1097217f913cfbaaf77b4fb1c0ddbad88bd3",
+  "source_sha256": {
+    "compact-results.json": "03d3bd3866672bece0178776abc5c00bea3262def82df28301e06c4d14d48fb6",
+    "stage2-inputs/starts.json": "52450061d44e5a964334faff82cf61e8edcfffd5a3a8aea738e09761768341ba",
+    "stage2-inputs/config.yaml": "79865abbb08dafe46733d3dde8eae8ff2ffa6b0dc52697d0da843f6b06eb3880",
+    "stage2-inputs/bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51",
+    "reference-compact.json": "f707f86eb2623a3a5120d29066912e11f11edd4d5c4f5d6b377651733fdfc351"
+  },
+  "files_sha256": {
+    "config.yaml": "6144c15c1373b8a245c83c2edc74a2639fefea338cf5d9efccc0aa2d2633122f",
+    "starts.json": "52450061d44e5a964334faff82cf61e8edcfffd5a3a8aea738e09761768341ba",
+    "bounds.json": "15e018bb244babc031cb5759fd687042791a0b71e7bba9561361d45a159ecf51"
+  },
+  "selected": [
+    {
+      "seed": 2008,
+      "job_id": "job-0008",
+      "vector_sha256": "c446fea6f9a0bbf0855ae8dec024302ac4b99e292a8bc3aebfac96332f0e8605"
+    },
+    {
+      "seed": 2009,
+      "job_id": "job-0009",
+      "vector_sha256": "e48be403f5359c41f37678e844dd24cf1b9ed1fbc494ae21610dc34c5d74b2a5"
+    },
+    {
+      "seed": 2031,
+      "job_id": "job-0031",
+      "vector_sha256": "75611b46bc282c35cb71989eb17e2345e8575af7149ef382315a8ad5a3164868"
+    },
+    {
+      "seed": 2015,
+      "job_id": "job-0015",
+      "vector_sha256": "2cdeeb4fa28c2a866f42a9f397260dae901218ca53da58490eba9fd62faf555c"
+    },
+    {
+      "seed": 2025,
+      "job_id": "job-0025",
+      "vector_sha256": "ac67d325dc44e558b332ef1bf3a757c491ad1bbce188a6108db5cb004201b62f"
+    },
+    {
+      "seed": 2038,
+      "job_id": "job-0038",
+      "vector_sha256": "129c7e56e418d2b6c162c5e3e6225e2599886e63d2939bf83345e6de35f05ca5"
+    },
+    {
+      "seed": 2001,
+      "job_id": "job-0001",
+      "vector_sha256": "ee87cf5696142b27251384e1a43740d6d996170194227224c750967e2f7cee2b"
+    },
+    {
+      "seed": 2037,
+      "job_id": "job-0037",
+      "vector_sha256": "89c1a5995f1593ed715f08cfeda3c8a79957dd41950a7b820ed994f33878aa47"
+    }
+  ],
+  "spot_checks": {
+    "terminal": [
+      0,
+      111
+    ]
+  },
+  "checkpoint_interval_forwards": 1000
+}
