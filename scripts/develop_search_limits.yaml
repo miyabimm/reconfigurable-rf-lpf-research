@@ -1,0 +1,4 @@
+# Input generation only; units are pF. Use search_limits: {} for physical bounds.
+search_limits:
+  GJM01:
+    max: 10.0

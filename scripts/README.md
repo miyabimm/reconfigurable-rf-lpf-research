@@ -13,6 +13,24 @@
 
 ## RF profile 開発Run
 
+### 標準Plan入力の生成
+
+有効な既存develop config（以下 `plan.yaml`。定義参照・全seed/arm・solver・grid・予算を含む）から、RF forwardなしで一組を生成する。標準設定は [`develop_search_limits.yaml`](develop_search_limits.yaml) の `search_limits.GJM01.max: 10.0` pF。固定GJM01の上限だけを物理上限との小さい方にし、Lを含む他の全座標・下限は物理範囲のまま。全物理範囲を使う場合は設定ファイルのコピーを `search_limits: {}` とし、将来の上限変更もその値だけを編集する。設定は入力生成専用でありRunner configには追加しない。
+
+```bash
+uv run --frozen python scripts/generate_develop_inputs.py \
+  --config plan.yaml --settings scripts/develop_search_limits.yaml \
+  --spot-checks '{"terminal":[0]}' --output /tmp/new-plan-inputs
+uv run --frozen python scripts/run_rf_search.py develop \
+  --config /tmp/new-plan-inputs/config.yaml --starts /tmp/new-plan-inputs/starts.json \
+  --search-bounds /tmp/new-plan-inputs/bounds.json \
+  --output /tmp/new-run --spot-checks '{"terminal":[0]}'
+```
+
+生成先は未存在を指定。`settings.yaml`、`config.yaml`、`starts.json`、`bounds.json` と `manifest.json` を一緒に保存する。manifestは各入力の原byte SHA、Job別Sobol seed、spot/checkpoint指定、preflight Plan SHAとbounds SHAを記録する。実行時は同じspotとcheckpoint間隔（省略時1000）を指定する。Planは入力と実行コード等が同じ場合に照合できる。生成時は既存の単点scrambled Sobolを使用し、各seedの先頭armはそのseedを使用、追加armは全config seedを避けて0から順に未使用の非負整数をseed順・arm順に割り当てる。各Jobを別々に生成し、不正startは修復・再抽選せずSTOPする。これはsingle-arm従来方式を維持する入力割当であり、比較条件のpaired startを暗黙に意味しない。Plan凍結はgrid・予算・start等のpreflightのみであり、実行許可やRF性能検証ではない。
+
+### Runner直接指定
+
 ```bash
 uv run --frozen python scripts/run_rf_search.py develop \
   --config plan.yaml --starts starts.json \
