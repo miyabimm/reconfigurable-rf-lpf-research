@@ -67,6 +67,8 @@ def audit(variant):
             assert run['run_index']==i
             for field in ('start_vector','best_vector','final_vector','initial_evaluated_vector'):
                 assert vector_sha(run[field])==run[field+'_sha256']
+            if i == 0:
+                assert run['start_vector'] == start['vector']
             if i:
                 center = np.array(details[i-1]['final_vector'])
                 z=(center[free]-lo[free])/width[free]; expected=lo.copy()
@@ -79,6 +81,7 @@ def audit(variant):
         cp=[]
         for path in sorted((job/'checkpoints').iterdir()):
             item=load(path); obs=item['observation']; assert vector_sha(obs['vector'])==obs['vector_sha256']
+            assert item['plan_sha256']==state['plan_sha256'] and item['source_sha256']==state['source_sha256']
             cp.append({'forward_count':item['forward_count'],'objective':obs['objective'],'sha256':digest(path)})
         # Checkpoints are individual observations; local best is known only by local-run end.
         hits={}
@@ -107,6 +110,7 @@ def main():
             obs=[(x['forward_count'],x['local_best']) for x in b['local_observations']]+[(x['forward_count'],x['objective']) for x in b['checkpoints']]
             b['observed_best_by_forward']={str(n):min((j for f,j in obs if f<=n),default=None) for n in (5000,10000,15000,20000)}
     report={'conditions':results,'paired_deltas':pairs,'stats':stats,'notes':['Finite 476-point terminal grid, external ports; no continuous-frequency or physical-realization guarantee.', 'Selected starts only; no generalization to broad search or other budgets.', 'Checkpoint objectives are instantaneous observations, not cumulative best; local best at run end gives an upper bound for threshold crossing.', 'Terminal positive-violation sum of squares and Search objective use their respective recorded definitions; compare like-for-like only.']}
-    path=OUT/'results.json'; assert not path.exists(); path.write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
+    path=Path(sys.argv[3]) if len(sys.argv)>3 else OUT/'results.json'
+    assert not path.exists(); path.write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
     print('PASS: 32 jobs, receipt bytes, RF validations, budgets, and every seeded restart; results.json')
 if __name__=='__main__': main()
