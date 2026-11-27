@@ -1,4 +1,4 @@
-"""Opt-in TRF restart accounting and cumulative-best perturbation."""
+"""Opt-in TRF restart accounting and previous-terminal perturbation."""
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -9,13 +9,13 @@ from unittest.mock import patch
 import numpy as np
 
 from test_issue503_trf_runner import TRFTests
-from lpf.optimizers.trf import _LocalResult, _trf_local, trf_minimize
+from lpf.optimizers.trf import _trf_local
 from lpf.search import _development_runner as runner
 from lpf.search.plan import ROOT
 
 
 class RestartTests(TRFTests):
-    def test_restarts_follow_best_not_last_final(self):
+    def test_restarts_follow_last_final_not_best(self):
         step = self.cfg['arms'][0]['steps'][0]
         step['options']['restart_sigma'] = .1
         bounds = self.freeze()[0].data['search_bounds']
@@ -39,9 +39,7 @@ class RestartTests(TRFTests):
         lo, width = bounds[:, 0], bounds[:, 1]-bounds[:, 0]
         free = width > 0
         expected = lo.copy()
-        best = np.asarray(row['local_run_details'][0]['best_vector'])
-        z = (best[free] - lo[free]) / width[free]
-        expected[free] = np.clip(lo[free] + np.clip(z + np.random.default_rng(result['seed']).normal(0, .1, free.sum()), 0, 1)*width[free], lo[free], bounds[free, 1])
+        expected[free] = np.clip(lo[free] + np.clip(1 + np.random.default_rng(result['seed']).normal(0, .1, free.sum()), 0, 1)*width[free], lo[free], bounds[free, 1])
         np.testing.assert_array_equal(calls[1][0], expected)
         self.assertEqual([x[1] for x in calls], [3, 2])
         self.assertEqual(row['local_runs'], 2)
@@ -52,35 +50,6 @@ class RestartTests(TRFTests):
         self.assertFalse(row['converged'])
         self.assertEqual(row['solver_result']['objective'], min(r['best_objective'] for r in row['local_run_details']))
         self.assertEqual(result['terminal']['candidates'][0]['vector'], row['solver_result']['x'])
-
-    def test_cumulative_best_survives_worse_and_tied_runs_then_updates(self):
-        bounds = np.array([[0., 10.], [2., 2.], [-4., 4.]])
-        bests = [([2., 2., -2.], 3.), ([8., 2., 3.], 4.),
-                 ([9., 2., 1.], 3.), ([7., 2., 2.], 1.), ([1., 2., 0.], 5.)]
-        starts, budgets = [], []
-        def fake(callback, x, box, **kwargs):
-            i = len(starts)
-            starts.append(x.copy())
-            budgets.append(kwargs['max_evaluations'])
-            best_x, objective = bests[i]
-            return _LocalResult(np.array([10., 2., 4.]), 10., np.array(best_x), objective,
-                                x.copy(), True, 1, 'ok', 1, 1, 1, 1, 1, 0., 0., 0.)
-        with patch('lpf.optimizers.trf._trf_local', side_effect=fake):
-            result = trf_minimize(None, np.array([5., 2., 0.]), bounds, seed=42,
-                                  max_evaluations=5, restart_sigma=.1, ftol=1e-6, x_scale=1.)
-        rng = np.random.default_rng(42)
-        free = np.array([True, False, True])
-        lo, width = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
-        for i, center in enumerate((bests[0][0], bests[0][0], bests[0][0], bests[3][0]), 1):
-            expected = lo.copy()
-            z = (np.array(center)[free] - lo[free]) / width[free]
-            expected[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, .1, 2), 0, 1) * width[free],
-                                     lo[free], bounds[free, 1])
-            np.testing.assert_array_equal(starts[i], expected)
-        self.assertEqual(budgets, [5, 4, 3, 2, 1])
-        np.testing.assert_array_equal(result.x, bests[3][0])
-        self.assertEqual(result.objective, 1.)
-        self.assertEqual(result.stop_reason, 'evaluation_budget_exhausted')
 
     def test_all_fixed_evaluates_once(self):
         self.cfg['arms'][0]['steps'][0]['options']['restart_sigma'] = .1

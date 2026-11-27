@@ -58,7 +58,7 @@ arms:
 ```
 
 - `source_sha256` はdefinition JSON原byteのSHA、`definition_sha256` はcanonical JSONのSHA。`starts.json` は `{"23":{"demo":{"vector":[…],"vector_sha256":"…"}}}`。全seed×armの完全vectorを明示し、同じseedでも別armへ流用しない。vector SHAは `lpf.search.storage.vector_sha` で計算する。RunはYAML記載のseed順→arm順。
-- TRF の `restart_sigma` は省略時0.1、明示 `null` で単発。当該TRF呼出内の累積最良評価点から正規化座標を摂動し、`max_evaluations` を全 run 共通の感度 forward 上限とする。`ftol` 省略時1e-6、`x_scale` 省略時1.0。局所成功と全体の予算終了は区別する。
+- TRF の `restart_sigma` は省略時0.1、明示 `null` で単発。前回局所終点から正規化座標を摂動し、`max_evaluations` を全 run 共通の感度 forward 上限とする。`ftol` 省略時1e-6、`x_scale` 省略時1.0。局所成功と全体の予算終了は区別する。
 - L-BFGS-Bの `ftol` は有限正数で任意。指定時はL-BFGS-Bの `ftol` として渡し、省略時はSciPy既定を使う。TRFのftolと収束条件は同等ではない。
 - L-BFGS-Bの `restart_sigma` は有限正数で任意（省略時0.1）。`batch_fd` はSciPy workersによる数値微分バッチ（既定true）。旧逐次評価は `batch_fd: false` を明示する。true時の `max_evaluations` は評価グループ開始の名目上限で、開始済みバッチは完了する。PlanはSearchに最大 `N + max(自由座標数 - 1, 0)` forwardとそのRF/MNA sampleを予約し、Terminalは別途予約する。グループまたは局所run境界でbestをcheckpointし、実施数はraw/receiptに記録する。false時は従来どおり厳密上限。旧schema 2 preflightは自由座標を凍結しないためtrueを拒否する。
 - 開発L-BFGS-Bの `partial_fd` は設定別計算省略（既定は `batch_fd` と同値、通常true）。通常バッチだけを使う場合は `batch_fd: true, partial_fd: false`、逐次の場合は `batch_fd: false` を指定する。`partial_fd: true` は `batch_fd: true` を必要とする。単独RF基準に対し設定別可変Cを1変数だけ変更した摂動は、その設定だけ再計算する。`off`/`lk` cacheのみ部分化し、`response`/`both`は通常batchに委譲する。各候補のforward・全grid要求sample、予約、Terminalは変わらない。性能と適用範囲の診断は [#484](../project/diagnostics/issue484/README.md)。
