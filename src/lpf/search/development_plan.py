@@ -24,10 +24,14 @@ def solver_options(step):
             result['ftol'] = step['options']['ftol']
         return result
     if step['solver'] == 'trf':
-        return dict(restart_sigma=step['options'].get('restart_sigma', 0.1),
-                    ftol=step['options'].get('ftol', 1e-6),
-                    x_scale=step['options'].get('x_scale', 1.0),
-                    max_evaluations=step['options']['max_evaluations'])
+        result = dict(restart_sigma=step['options'].get('restart_sigma', 0.1),
+                      ftol=step['options'].get('ftol', 1e-6),
+                      x_scale=step['options'].get('x_scale', 1.0),
+                      max_evaluations=step['options']['max_evaluations'])
+        for name in ('restart_center', 'target_objective'):
+            if name in step['options']:
+                result[name] = step['options'][name]
+        return result
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
                             tolerance=1e-7)}

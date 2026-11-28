@@ -68,8 +68,18 @@ def validate_solver(step):
                 raise ValueError('restart_sigma must be finite and positive')
     elif solver == 'trf':
         fields(options, 'max_evaluations' + ''.join(
-            f' {name}' for name in ('ftol', 'x_scale', 'restart_sigma')
+            f' {name}' for name in ('ftol', 'x_scale', 'restart_sigma', 'restart_center', 'target_objective')
             if isinstance(options, dict) and name in options))
+        if 'restart_center' in options and options['restart_center'] not in ('last', 'best'):
+            raise ValueError('restart_center must be last or best')
+        if 'target_objective' in options and options['target_objective'] is not None:
+            target = options['target_objective']
+            try:
+                valid = type(target) in (int, float) and math.isfinite(target) and target >= 0
+            except OverflowError:
+                valid = False
+            if not valid:
+                raise ValueError('target_objective must be None or finite and nonnegative')
         if 'restart_sigma' in options and options['restart_sigma'] is not None:
             sigma = options['restart_sigma']
             try:
