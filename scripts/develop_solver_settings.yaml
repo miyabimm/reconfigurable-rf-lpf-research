@@ -1,5 +1,6 @@
 # Plan input generation only; not a Runner config or automatic preset loader.
-# Primary/secondary exploration: current policy. Refinement: #533 (70-point evidence).
+# Exploration: adopted from #531/#535. Exploitation: provisional, #539 comparison pending.
+# Refinement: #533 (70-point evidence); high-density application pending.
 exploration:
   solver: trf
   objective: signed_margin_db
@@ -8,6 +9,17 @@ exploration:
     ftol: 1.0e-6
     x_scale: 1.0
     restart_sigma: 0.1
+    restart_center: last
+
+exploitation:
+  solver: trf
+  objective: signed_margin_db
+  aggregation: sum
+  options:
+    ftol: 1.0e-6
+    x_scale: 1.0
+    restart_sigma: 0.1
+    restart_center: best
 
 refinement:
   solver: trf

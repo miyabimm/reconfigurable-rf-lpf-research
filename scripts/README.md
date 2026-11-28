@@ -31,7 +31,7 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 ### 推奨solver設定
 
-[develop_solver_settings.yaml](develop_solver_settings.yaml) はPlan作成用の参照設定。一次・二次探索は `exploration`、良好な候補の単発精密化は `refinement` を使用する。選択したmappingの `solver` / `objective` / `aggregation` / `options` を実験configのstepへ明示的に転記し、`options.max_evaluations`、格子、seed、予算を実験ごとに追加する。設定ファイル自体はRunnerへの入力ではなく、現行の `generate_develop_inputs.py` も自動読み込みしない。設定名をRunnerへ渡さず、具体値を含むconfigと凍結Planを保存する。二次以降のstartsは前段階の選抜vectorとSHAから生成し、Sobolの再生成はしない。段階別の目安と適用限界は [profile文書](../project/minimax_profile.md#段階別探索の現行推奨方針2026-11-28-jst) を参照。
+[develop_solver_settings.yaml](develop_solver_settings.yaml) はPlan作成用の参照設定。一次・二次探索は `exploration`、良好領域内の三次探索は暫定 `exploitation`、単発精密化は `refinement` を使用する。三次の有効性と高密度精密化の設定は未検証（#539）。選択したmappingの `solver` / `objective` / `aggregation` / `options` を実験configのstepへ明示的に転記し、`options.max_evaluations`、格子、seed、予算を実験ごとに追加する。設定ファイル自体はRunnerへの入力ではなく、現行の `generate_develop_inputs.py` も自動読み込みしない。設定名をRunnerへ渡さず、具体値を含むconfigと凍結Planを保存する。二次以降のstartsは前段階の選抜vectorとSHAから生成し、Sobolの再生成はしない。段階別の目安と適用限界は [profile文書](../project/minimax_profile.md#段階別探索の現行推奨方針2026-11-28-jst) を参照。
 
 ### 4段階 develop-staged
 
