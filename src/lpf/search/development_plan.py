@@ -24,14 +24,34 @@ def solver_options(step):
             result['ftol'] = step['options']['ftol']
         return result
     if step['solver'] == 'trf':
-        return dict(restart_sigma=step['options'].get('restart_sigma', 0.1),
-                    ftol=step['options'].get('ftol', 1e-6),
-                    x_scale=step['options'].get('x_scale', 1.0),
-                    max_evaluations=step['options']['max_evaluations'])
+        result = dict(restart_sigma=step['options'].get('restart_sigma', 0.1),
+                      ftol=step['options'].get('ftol', 1e-6),
+                      x_scale=step['options'].get('x_scale', 1.0),
+                      max_evaluations=step['options']['max_evaluations'])
+        for name in ('restart_center', 'target_objective'):
+            if name in step['options']:
+                result[name] = step['options'][name]
+        return result
     defaults = {'slsqp': dict(tolerance=1e-9, constraint_tolerance=1e-7),
                 'slp': dict(initial_step=.25, min_step=1e-8, fd_step=1e-6,
                             tolerance=1e-7)}
     return {**defaults[step['solver']], **step['options']}
+
+
+def resolve_definition(ref, root):
+    """Load the same SHA-verified definition for preflight and actual Plans."""
+    if isinstance(ref, dict) and 'inductor_tree' in ref:
+        definition = definition_from_data(ref)
+    else:
+        fields(ref, 'path source_sha256 definition_sha256')
+        path = (root / ref['path']).resolve()
+        if not path.is_relative_to(root):
+            raise ValueError('Definition must be repository-local')
+        blob = path.read_bytes()
+        if hashlib.sha256(blob).hexdigest() != ref['source_sha256'] or sha(json.loads(blob)) != ref['definition_sha256']:
+            raise ValueError('Definition source SHA mismatch')
+        definition = definition_from_data(json.loads(blob))
+    return definition
 
 
 def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_interval):
@@ -45,18 +65,7 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
     if type(d['schema_version']) is not int or d['schema_version'] != 1:
         raise ValueError('Expected development schema_version 1')
     positive(checkpoint_interval)
-    ref = d['definition']
-    if isinstance(ref, dict) and 'inductor_tree' in ref:
-        definition = definition_from_data(ref)
-    else:
-        fields(ref, 'path source_sha256 definition_sha256')
-        path = (root / ref['path']).resolve()
-        if not path.is_relative_to(root):
-            raise ValueError('Definition must be repository-local')
-        blob = path.read_bytes()
-        if hashlib.sha256(blob).hexdigest() != ref['source_sha256'] or sha(json.loads(blob)) != ref['definition_sha256']:
-            raise ValueError('Definition source SHA mismatch')
-        definition = definition_from_data(json.loads(blob))
+    definition = resolve_definition(d['definition'], root)
     profile = load_minimax_profile(d['rf']['constraint_id'], root=root, allow_trial=True)
     policy = json.loads(profile.base_json)
     model = profile.build_model(definition)

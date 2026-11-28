@@ -24,11 +24,11 @@ def _unique(pairs):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('develop',))
+    parser.add_argument('command', choices=('develop', 'develop-staged'))
     parser.add_argument('--config', required=True, type=Path)
-    parser.add_argument('--starts', required=True, type=Path, help='JSON seed→arm→{vector, vector_sha256}')
+    parser.add_argument('--starts', type=Path, help='JSON seed→arm→{vector, vector_sha256} (develop only)')
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--spot-checks', required=True, help='JSON stage→sample-index list')
+    parser.add_argument('--spot-checks', help='JSON stage→sample-index list (develop only)')
     parser.add_argument('--search-bounds', type=Path, help='One complete vector-order JSON box for all Jobs')
     parser.add_argument('--checkpoint-interval-forwards', type=int, default=1000)
     parser.add_argument('--timing-output', type=Path, help='Fresh non-Git JSON file for opt-in inclusive timing')
@@ -38,8 +38,20 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.timing_level is not None and args.timing_output is None:
         parser.error('--timing-level requires --timing-output')
+    if args.command == 'develop' and (args.starts is None or args.spot_checks is None):
+        parser.error('develop requires --starts and --spot-checks')
+    if args.command == 'develop-staged' and (args.starts is not None or args.spot_checks is not None or
+            args.search_bounds is not None or args.timing_output is not None or args.timing_level is not None or
+            args.checkpoint_interval_forwards != 1000):
+        parser.error('develop-staged specifies starts, spots, bounds and checkpoint in config; timing is unavailable')
     try:
         config = yaml.load(args.config.read_text(), Loader=Loader)
+        if args.command == 'develop-staged':
+            from lpf.search._staged_runner import run as run_staged
+            state = run_staged(config, args.output, root=ROOT, rf_cache_mode=args.rf_cache_mode)
+            print(canonical(dict(status=state['status'], reproducible=state['reproducible'],
+                                 output=str(args.output.resolve()), rf_compliance_certified=False)))
+            return 0 if state['reproducible'] else 4
         starts = json.loads(args.starts.read_text(), object_pairs_hook=_unique)
         spots = json.loads(args.spot_checks, object_pairs_hook=_unique)
         bounds = json.loads(args.search_bounds.read_text()) if args.search_bounds else None

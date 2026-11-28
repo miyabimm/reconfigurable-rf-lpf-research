@@ -136,13 +136,24 @@ def _trf_local(evaluate_with_jacobian, x0, bounds, max_evaluations=100, objectiv
 
 
 def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
-                 restart_sigma, ftol, x_scale, objective_callback=None, local_run_callback=None, _timing=None):
+                 restart_sigma, ftol, x_scale, objective_callback=None, local_run_callback=None, _timing=None,
+                 restart_center='last', target_objective=None):
     """Run TRF local solves, selecting the best observation across restarts."""
     if type(seed) is not int or seed < 0 or type(max_evaluations) is not int or max_evaluations < 1:
         raise ValueError('Expected nonnegative seed and positive evaluation budget')
     if restart_sigma is not None and (type(restart_sigma) not in (int, float) or
                                       not np.isfinite(restart_sigma) or restart_sigma <= 0):
         raise ValueError('restart_sigma must be None or finite and positive')
+    if restart_center not in ('last', 'best'):
+        raise ValueError('restart_center must be last or best')
+    if target_objective is not None:
+        try:
+            valid = (type(target_objective) in (int, float) and np.isfinite(target_objective)
+                     and target_objective >= 0)
+        except (OverflowError, TypeError):
+            valid = False
+        if not valid:
+            raise ValueError('target_objective must be None or finite and nonnegative')
     rng = np.random.default_rng(seed) if restart_sigma is not None else None
     box = np.asarray(bounds, dtype=float)
     # _trf_local validates the full input before this geometry is used.
@@ -161,13 +172,19 @@ def trf_minimize(evaluate_with_jacobian, x0, bounds, *, seed, max_evaluations,
             best = run
         lo, width = box[:, 0], box[:, 1] - box[:, 0]
         free = width > 0
-        if restart_sigma is None or not free.any() or not run.success or total >= max_evaluations:
+        target_reached = (target_objective is not None and run.status >= 0
+                          and best.best_objective <= target_objective)
+        if target_reached or restart_sigma is None or not free.any() or not run.success or total >= max_evaluations:
             break
-        z = (run.x[free] - lo[free]) / width[free]
+        center = best.best_x if restart_center == 'best' else run.x
+        z = (center[free] - lo[free]) / width[free]
         start = lo.copy()
         start[free] = np.clip(lo[free] + np.clip(z + rng.normal(0, restart_sigma, size=z.size), 0, 1) * width[free],
                               lo[free], box[free, 1])
-    if not free.any():
+    if target_reached:
+        reason = 'target_reached'
+        converged = bool(run.success) if restart_sigma is None or not free.any() else False
+    elif not free.any():
         reason, converged = 'all_variables_fixed', True
     elif restart_sigma is None:
         reason = ('converged' if run.success else 'solver_failure' if run.status < 0 else

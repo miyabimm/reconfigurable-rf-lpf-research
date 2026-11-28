@@ -1,0 +1,187 @@
+{
+  "final": {
+    "comparisons": [
+      {
+        "matches": false,
+        "seed": 2002,
+        "vector_distance_max": 0.0,
+        "vector_distance_rms": 0.0
+      },
+      {
+        "matches": false,
+        "seed": 2001,
+        "vector_distance_max": 0.9999628916382282,
+        "vector_distance_rms": 0.45058559317687835
+      }
+    ],
+    "converged": false,
+    "finite_grid_only": true,
+    "matching_seeds": [],
+    "reference_seed": 2002,
+    "reproducible": false,
+    "required_seeds": 2,
+    "rf_compliance_certified": false
+  },
+  "note": "Finite-grid development smoke only; no formal RF certification.",
+  "phases": {
+    "discovery": [
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 6,
+          "rf_samples": 826
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "bd0a8880a633449191c472c0d4e31725a176b6c0e966b0bc52532b11e8e67fdd",
+        "receipt_sha256": "c2f9066f7ee0facf7fe80b8e6b7d96b547d1217bcde1f81b9de3d5d8b7544260",
+        "seed": 2001,
+        "stop_reason": "target_reached",
+        "vector_sha256": "f7bb6e8a2e6319252cb0cc9b63c899dd3cfedb9ab0539b19b0252e092b42452c"
+      },
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 6,
+          "rf_samples": 826
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "9bda8c645e72d9995b50bf69d1e31afd87b3ca5791042725560a9c32f9326ecd",
+        "receipt_sha256": "8efc486451df5f808950cb1efe04516bcce734df86010a71993d007c3320a9d9",
+        "seed": 2002,
+        "stop_reason": "target_reached",
+        "vector_sha256": "21e7f6237221e5cc2610706546af2eb3f774973de9d93daaf602334c7579a3b5"
+      }
+    ],
+    "exploitation": [
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 6,
+          "rf_samples": 826
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "21e7f6237221e5cc2610706546af2eb3f774973de9d93daaf602334c7579a3b5",
+        "receipt_sha256": "f56137ff53de43ab0ccd3351c320eb1aab6b87721676f5eaa151d33250b23623",
+        "seed": 2002,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "eef4b8dc61ad9a80bffe0b202b2cfad211c84c16a93bdb1102cafb953cbefbfa"
+      },
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 6,
+          "rf_samples": 826
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "f7bb6e8a2e6319252cb0cc9b63c899dd3cfedb9ab0539b19b0252e092b42452c",
+        "receipt_sha256": "491d2a13c824db5d3fc1814d2e7b86f87c3c4d01ba68f9a0ef44fb87479d9bc8",
+        "seed": 2001,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "aec3143bf6f7ec3905700721b0191bfb9e52cb12fac79ae38d908c9162343228"
+      }
+    ],
+    "refinement": [
+      {
+        "actual": {
+          "independent_mna_samples": 84,
+          "rf_forwards": 6,
+          "rf_samples": 29008
+        },
+        "converged": false,
+        "independent_spots": 84,
+        "initial_vector_sha256": "eef4b8dc61ad9a80bffe0b202b2cfad211c84c16a93bdb1102cafb953cbefbfa",
+        "receipt_sha256": "8d5ddb058a1f8e7cbdfb03acd65225733b7e1ce75d75a7de65331c85d6492347",
+        "seed": 2002,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "ef9ca20cd7f3e0e2bfe0d38562fb0ab1d15f145f5e2caf94bbd3d17ac4ace6a7"
+      },
+      {
+        "actual": {
+          "independent_mna_samples": 84,
+          "rf_forwards": 6,
+          "rf_samples": 29008
+        },
+        "converged": false,
+        "independent_spots": 84,
+        "initial_vector_sha256": "aec3143bf6f7ec3905700721b0191bfb9e52cb12fac79ae38d908c9162343228",
+        "receipt_sha256": "3982339ead2eb42567fe8c4d2ffbe72e525e563746830ee6377b7336c5a334fc",
+        "seed": 2001,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "6b4ab3132dbed6c141165d57fd73a5755bb73994acf6b538c6ca1d6d6bbbf05d"
+      }
+    ],
+    "screening": [
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 4,
+          "rf_samples": 686
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "a9daaa5170e944f8c58568b5f50297b30a73329e46911d465d8f8010c26e1f2f",
+        "receipt_sha256": "5831010e3eda2b026dbd6e22dbcf0f7a774e57a79a11df3b93262558ad4876b5",
+        "seed": 2001,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "bd0a8880a633449191c472c0d4e31725a176b6c0e966b0bc52532b11e8e67fdd"
+      },
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 4,
+          "rf_samples": 686
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "66fd1673cd214ef651c74c58c69eb80e6502c298baa3f5bbc814b59a8ca84035",
+        "receipt_sha256": "6157c7222e11c0e32318c35ff4d31014825e33cbf38842403087aade00c74b18",
+        "seed": 2002,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "9bda8c645e72d9995b50bf69d1e31afd87b3ca5791042725560a9c32f9326ecd"
+      },
+      {
+        "actual": {
+          "independent_mna_samples": 2,
+          "rf_forwards": 4,
+          "rf_samples": 686
+        },
+        "converged": false,
+        "independent_spots": 2,
+        "initial_vector_sha256": "382062de779fe5be2aef2166f1870f8bcaa3cfb3be9d8e82d0b0f82f36291d4b",
+        "receipt_sha256": "7a0dc0be43861bf558fc9d05bdec5fc08d4db93397980a6d851ee13ea1e2e8fe",
+        "seed": 2003,
+        "stop_reason": "evaluation_budget_exhausted",
+        "vector_sha256": "8325ced3e0059167d74cbad062cb1be39fb7721c9eee03a2ca56d1095108f092"
+      }
+    ]
+  },
+  "rf_profile": {
+    "bands_sha256": "1b1182e4c947059cb263c1af52ddf64236bd1fd9e83770cc844126576c7865fe",
+    "base_constraint_id": "RF-T008",
+    "base_constraint_sha256": "e682165c72d3a8b9f1384a2529f71bacfebfc9d17164d4af5af879e4a138b532",
+    "constraint_id": "RF-T010",
+    "effective_sha256": "d50e6c9fef3e41b8258c00cbd14436a3bcb1d84444d50cf4a445ccf5d288e417",
+    "external_s2p": {
+      "input": {
+        "path": "rf/parasitics/circuit1_ant_coupler_0_6ghz.s2p",
+        "sha256": "ad266111ba1dc2b92f235d39f4a647ff271050bc11941c217661dd299ee59945"
+      },
+      "output": {
+        "path": "rf/parasitics/circuit2_poc_through_0_6ghz.s2p",
+        "sha256": "b3cfc861bc0c8221f49328598c9d7d0766a6e94e42e990b6a50f6c90bf9a84da"
+      }
+    }
+  },
+  "source_head": "388fc961d67230970abff56b01637257e1f6e0c0",
+  "source_sha256": "36bc2a4f36939a43133d7614ef38b0ad099573650286c2a63d73aa3aad94ea44",
+  "status": "PASS",
+  "totals": {
+    "independent_mna_samples": 182,
+    "rf_forwards": 48,
+    "rf_samples": 63378
+  }
+}
