@@ -13,6 +13,9 @@ from lpf.search.plan import ROOT
 from lpf.search.source import source_identity
 from lpf.search.storage import canonical, sha, vector_sha
 
+sys.path.insert(0, str(ROOT/'scripts'))
+import run_rf_search
+
 FIXTURE = ROOT/'tests/fixtures/issue537-staged-smoke.json'
 
 
@@ -58,7 +61,8 @@ class StagedRunnerTests(unittest.TestCase):
             return rows
         with tempfile.TemporaryDirectory(prefix='issue537-control-') as tmp, \
              patch.object(staged, '_preflight', return_value=(copy.deepcopy(self.manifest), self.profile)), \
-             patch.object(staged, '_run_phase', side_effect=phase), patch.object(staged, '_ledger', return_value={}):
+             patch.object(staged, '_run_phase', side_effect=phase), \
+             patch.object(staged, '_ledger', return_value={'total': {k: {'unknown': 0} for k in staged.COSTS}}):
             output = Path(tmp)/'run'
             if failure:
                 with self.assertRaisesRegex(ValueError, 'synthetic STOP'):
@@ -93,6 +97,25 @@ class StagedRunnerTests(unittest.TestCase):
         self.assertEqual(result['status'], 'STOP')
         self.assertEqual([n for n, _ in calls], ['screening', 'discovery'])
         self.assertEqual(result['phases']['exploitation']['status'], 'not_started')
+
+    def test_unverified_completed_receipt_stops_before_next_phase(self):
+        calls = []
+        def phase(name, inputs, *args):
+            calls.append(name)
+            return [candidate(x['seed'], x['vector'], name) for x in inputs]
+        def ledger(summary, *args, **kwargs):
+            bad = summary['phases']['screening']['status'] == 'completed'
+            return {'total': {k: {'unknown': int(bad)} for k in staged.COSTS}}
+        with tempfile.TemporaryDirectory(prefix='issue537-unverified-') as tmp, \
+             patch.object(staged, '_preflight', return_value=(copy.deepcopy(self.manifest), self.profile)), \
+             patch.object(staged, '_run_phase', side_effect=phase), patch.object(staged, '_ledger', side_effect=ledger):
+            output = Path(tmp)/'run'
+            with self.assertRaisesRegex(ValueError, 'unverified'):
+                staged.run(self.cfg, output, root=ROOT)
+            saved = json.loads((output/'summary.json').read_text())
+        self.assertEqual(calls, ['screening'])
+        self.assertEqual(saved['status'], 'STOP')
+        self.assertEqual(saved['ledger']['total']['rf_forwards']['unknown'], 1)
 
     def test_negative_solver_status_is_stop_not_nonconvergence(self):
         vector = [1.]
@@ -145,6 +168,18 @@ class StagedRunnerTests(unittest.TestCase):
         self.assertEqual(row['min_h3_db'], min(i for i, r in enumerate(records) if r['region'] == 'H3'))
         self.assertEqual(row['provenance']['receipt'], {})
 
+    def test_staged_cli_exit_codes(self):
+        args = ['develop-staged', '--config', str(FIXTURE), '--output', '/tmp/unused-issue537']
+        with patch.object(staged, 'run', return_value=dict(status='completed', reproducible=True)):
+            self.assertEqual(run_rf_search.main(args), 0)
+        with patch.object(staged, 'run', return_value=dict(status='no_promising_candidate', reproducible=False)):
+            self.assertEqual(run_rf_search.main(args), 4)
+        with patch.object(staged, 'run', side_effect=ValueError('bad')):
+            self.assertEqual(run_rf_search.main(args), 2)
+        with self.assertRaises(SystemExit) as error:
+            run_rf_search.main(args + ['--starts', 'not-allowed'])
+        self.assertEqual(error.exception.code, 2)
+
     def test_unknown_not_released(self):
         manifest = copy.deepcopy(self.manifest)
         summary = dict(budget=self.cfg['budget'], phases={n: dict(status='not_started') for n in staged.PHASES})
@@ -156,6 +191,11 @@ class StagedRunnerTests(unittest.TestCase):
             self.assertEqual(ledger[k]['released'], 0)
             self.assertEqual(sum(ledger[k][n] for n in ('completed', 'released', 'unknown', 'not_started')),
                              ledger[k]['maximum'])
+        summary['phases']['screening']['status'] = 'completed'
+        with tempfile.TemporaryDirectory(prefix='issue537-missing-ledger-') as tmp:
+            final = staged._ledger(summary, manifest, Path(tmp), normal_end=True)['total']
+        for k in staged.COSTS:
+            self.assertEqual(final[k]['unknown'], manifest['reservations']['screening']['maximum'][k])
 
 
 if __name__ == '__main__':

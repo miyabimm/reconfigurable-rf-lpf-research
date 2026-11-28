@@ -222,7 +222,7 @@ def _ledger(summary, manifest, output, *, normal_end=False):
             except Exception:
                 rows = None
                 status = 'unknown'
-        elif status == 'running':
+        elif status in ('running', 'completed'):
             status = 'unknown'
         phase_totals = {k: dict(completed=0, released=0, unknown=0, not_started=0) for k in COSTS}
         for k in COSTS:
@@ -294,6 +294,8 @@ def run(config, output, *, root, rf_cache_mode='lk'):
                                                 provenance=r['provenance']) for r in chosen]
             selected = summary['selection'][name]
             summary['ledger'] = _ledger(summary, manifest, output)
+            if any(summary['ledger']['total'][k]['unknown'] for k in COSTS):
+                raise ValueError('STOP: phase ledger or receipt became unverified')
             atomic_verified(output/'summary.json', summary)
             if name == 'discovery' and not selected:
                 summary['status'] = 'no_promising_candidate'
@@ -305,6 +307,8 @@ def run(config, output, *, root, rf_cache_mode='lk'):
             summary['reproducible'] = summary['final']['reproducible']
             summary['status'] = 'completed'
         summary['ledger'] = _ledger(summary, manifest, output, normal_end=True)
+        if any(summary['ledger']['total'][k]['unknown'] for k in COSTS):
+            raise ValueError('STOP: final ledger or receipt became unverified')
         atomic_verified(output/'summary.json', summary)
         return summary
     except (Exception, KeyboardInterrupt) as exc:
