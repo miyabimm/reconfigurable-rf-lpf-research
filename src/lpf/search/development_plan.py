@@ -38,18 +38,8 @@ def solver_options(step):
     return {**defaults[step['solver']], **step['options']}
 
 
-def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_interval):
-    """Return the immutable Plan and its verified physical/profile inputs."""
-    d = json.loads(canonical(config))
-    if (not isinstance(d, dict) or not isinstance(d.get('rf'), dict)
-            or set(d['rf']) != {'constraint_id', 'allow_trial'}
-            or d['rf']['allow_trial'] is not True):
-        raise ValueError('Development requires a profile ID and explicit trial opt-in')
-    fields(d, 'schema_version rf definition seeds arms terminal_points budget')
-    if type(d['schema_version']) is not int or d['schema_version'] != 1:
-        raise ValueError('Expected development schema_version 1')
-    positive(checkpoint_interval)
-    ref = d['definition']
+def resolve_definition(ref, root):
+    """Load the same SHA-verified definition for preflight and actual Plans."""
     if isinstance(ref, dict) and 'inductor_tree' in ref:
         definition = definition_from_data(ref)
     else:
@@ -61,6 +51,21 @@ def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_i
         if hashlib.sha256(blob).hexdigest() != ref['source_sha256'] or sha(json.loads(blob)) != ref['definition_sha256']:
             raise ValueError('Definition source SHA mismatch')
         definition = definition_from_data(json.loads(blob))
+    return definition
+
+
+def freeze_run(config, starts, *, root, spot_checks, search_bounds, checkpoint_interval):
+    """Return the immutable Plan and its verified physical/profile inputs."""
+    d = json.loads(canonical(config))
+    if (not isinstance(d, dict) or not isinstance(d.get('rf'), dict)
+            or set(d['rf']) != {'constraint_id', 'allow_trial'}
+            or d['rf']['allow_trial'] is not True):
+        raise ValueError('Development requires a profile ID and explicit trial opt-in')
+    fields(d, 'schema_version rf definition seeds arms terminal_points budget')
+    if type(d['schema_version']) is not int or d['schema_version'] != 1:
+        raise ValueError('Expected development schema_version 1')
+    positive(checkpoint_interval)
+    definition = resolve_definition(d['definition'], root)
     profile = load_minimax_profile(d['rf']['constraint_id'], root=root, allow_trial=True)
     policy = json.loads(profile.base_json)
     model = profile.build_model(definition)

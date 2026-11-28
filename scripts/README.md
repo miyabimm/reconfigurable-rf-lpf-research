@@ -33,6 +33,22 @@ uv run --frozen python scripts/run_rf_search.py develop \
 
 [develop_solver_settings.yaml](develop_solver_settings.yaml) はPlan作成用の参照設定。一次・二次探索は `exploration`、良好な候補の単発精密化は `refinement` を使用する。選択したmappingの `solver` / `objective` / `aggregation` / `options` を実験configのstepへ明示的に転記し、`options.max_evaluations`、格子、seed、予算を実験ごとに追加する。設定ファイル自体はRunnerへの入力ではなく、現行の `generate_develop_inputs.py` も自動読み込みしない。設定名をRunnerへ渡さず、具体値を含むconfigと凍結Planを保存する。二次以降のstartsは前段階の選抜vectorとSHAから生成し、Sobolの再生成はしない。段階別の目安と適用限界は [profile文書](../project/minimax_profile.md#段階別探索の現行推奨方針2026-11-28-jst) を参照。
 
+### 4段階 develop-staged
+
+```bash
+# 明示設定の構造例。これは機能smoke用の緩い閾値と極小予算であり、研究用の推奨値ではない。
+uv run --frozen python scripts/run_rf_search.py develop-staged \
+  --config tests/fixtures/issue537-staged-smoke.json --output /tmp/new-staged-run
+```
+
+設定は上記JSONを参照。`rf`・`definition`・完全 `search_bounds`・独立Sobolの `seeds`、`checkpoint_interval`、全体 `budget`（3費目）、`selection` の上位件数・Search J目標・Terminal最大signed margin・再現seed数・4絶対許容差、および各 `phases` のforward上限、pass/stop Search格子、Terminal格子、Search/TerminalのMNA spot indexを**すべて明示**する。Search spotを使わない場合も `search: []` を明示。各Terminalは両Search格子より密にする。`--starts`、`--spot-checks`、`--search-bounds`、計時オプションはstagedでは使わない。cacheは従来どおり `--rf-cache-mode`（既定lk）。
+
+screening/discoveryは `ftol=1e-6,x_scale=1.0,restart_sigma=.1,center=last`、discoveryだけ局所run後に累積最良J目標を判定。exploitationは同じ設定でcenter=best、refinementは `ftol=1e-8,x_scale=jac,restart_sigma=null`。全phaseが既存単一Plan Runnerを呼び、前phaseの照合済みvectorと元seedを継承するが、SciPy/RNG状態は継承しない。順位は同一Terminal格子の最大signed margin、正違反二乗和、seed順。discoveryはJとTerminalの両条件に合う候補だけを最大K引継ぎ、0件なら後段なしで正常目標未達。exploitationからrefinementへの順位削減はしない。
+
+出力先は未存在の `/tmp` 配下、Git外。開始前に `config.json`、`manifest.json` にsource・profile・bounds・初期Sobol・全phaseの最大予約を固定し、実phaseは各自の `plan.json`、`run.json`、Job raw/receiptを残す。`summary.json` は選抜、出典、候補、費用のcompleted/released/unknown/not_started、最終評価を記録する。下位のsolver failure・例外はSTOPし、unknownを解放しない。retry/resume、予算再配分、正式EXPへの接続はない。終了コードは0＝設定された数値収束と性能再現のseed数達成、4＝正常未達（有望解なしを含む）、2＝STOP。有限格子RF適合、数値収束、性能再現は別であり0は正式RF適合を意味しない。
+
+#531は良好領域発見**前**のbest基準restartが不利になり得る知見、#533は良好候補の局所精密化、#535は二次探索の設定比較であり、三次best基準の有効性や目標閾値・実用予算・精密格子の妥当性を証明しない。有限格子での結果は連続帯域、SRF、Q(f)、EM、製造ばらつき、測定や大域最適性の保証ではない。既存の参照設定・推奨をこの機能追加で変更しない。
+
 ### Runner直接指定
 
 ```bash
@@ -62,7 +78,7 @@ arms:
 ```
 
 - `source_sha256` はdefinition JSON原byteのSHA、`definition_sha256` はcanonical JSONのSHA。`starts.json` は `{"23":{"demo":{"vector":[…],"vector_sha256":"…"}}}`。全seed×armの完全vectorを明示し、同じseedでも別armへ流用しない。vector SHAは `lpf.search.storage.vector_sha` で計算する。RunはYAML記載のseed順→arm順。
-- TRF の `restart_sigma` は省略時0.1、明示 `null` で単発。前回局所終点から正規化座標を摂動し、`max_evaluations` を全 run 共通の感度 forward 上限とする。`ftol` 省略時1e-6、`x_scale` 省略時1.0。局所成功と全体の予算終了は区別する。
+- TRF の `restart_sigma` は省略時0.1、明示 `null` で単発。`restart_center` は省略時 `last`（前回局所終点）、`best` は当該TRF呼出しの累積最良観測を基準に正規化座標を摂動する。任意の有限非負 `target_objective` は局所run終了時に判定し、達成時は追加restartせず `target_reached` と記録する（数値収束とは別）。`max_evaluations` を全 run 共通の感度 forward 上限とする。`ftol` 省略時1e-6、`x_scale` 省略時1.0。局所成功と全体の予算終了は区別する。
 - L-BFGS-Bの `ftol` は有限正数で任意。指定時はL-BFGS-Bの `ftol` として渡し、省略時はSciPy既定を使う。TRFのftolと収束条件は同等ではない。
 - L-BFGS-Bの `restart_sigma` は有限正数で任意（省略時0.1）。`batch_fd` はSciPy workersによる数値微分バッチ（既定true）。旧逐次評価は `batch_fd: false` を明示する。true時の `max_evaluations` は評価グループ開始の名目上限で、開始済みバッチは完了する。PlanはSearchに最大 `N + max(自由座標数 - 1, 0)` forwardとそのRF/MNA sampleを予約し、Terminalは別途予約する。グループまたは局所run境界でbestをcheckpointし、実施数はraw/receiptに記録する。false時は従来どおり厳密上限。旧schema 2 preflightは自由座標を凍結しないためtrueを拒否する。
 - 開発L-BFGS-Bの `partial_fd` は設定別計算省略（既定は `batch_fd` と同値、通常true）。通常バッチだけを使う場合は `batch_fd: true, partial_fd: false`、逐次の場合は `batch_fd: false` を指定する。`partial_fd: true` は `batch_fd: true` を必要とする。単独RF基準に対し設定別可変Cを1変数だけ変更した摂動は、その設定だけ再計算する。`off`/`lk` cacheのみ部分化し、`response`/`both`は通常batchに委譲する。各候補のforward・全grid要求sample、予約、Terminalは変わらない。性能と適用範囲の診断は [#484](../project/diagnostics/issue484/README.md)。

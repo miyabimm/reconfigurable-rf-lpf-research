@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "rf": {
+    "constraint_id": "RF-T010",
+    "allow_trial": true
+  },
+  "definition": {
+    "path": "project/diagnostics/issue361/definition.json",
+    "source_sha256": "e8ac857c063e0b9d2eb8eaf629c2e4b700a694e9241f3bbc596d99f6374487f6",
+    "definition_sha256": "bc50042a1b0b1ebf19c0272fb2ee944b52cd76e14eb8d44673bfa57f6033c068"
+  },
+  "seeds": [
+    2001,
+    2002,
+    2003
+  ],
+  "search_bounds": [
+    [
+      0.4,
+      27.0
+    ],
+    [
+      0.4,
+      27.0
+    ],
+    [
+      0.4,
+      27.0
+    ],
+    [
+      0.4,
+      27.0
+    ],
+    [
+      0.1,
+      10.0
+    ],
+    [
+      0.1,
+      10.0
+    ],
+    [
+      0.1,
+      10.0
+    ],
+    [
+      0.02,
+      1.0
+    ],
+    [
+      -0.1,
+      0.1
+    ],
+    [
+      -0.1,
+      0.1
+    ],
+    [
+      -0.1,
+      0.1
+    ],
+    [
+      0.2,
+      3.0
+    ],
+    [
+      0.2,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ],
+    [
+      0.0,
+      3.0
+    ]
+  ],
+  "checkpoint_interval": 1000,
+  "budget": {
+    "rf_forwards": 48,
+    "rf_samples": 63378,
+    "independent_mna_samples": 182
+  },
+  "selection": {
+    "screening_count": 2,
+    "discovery_count": 2,
+    "target_objective": 1000000000000.0,
+    "terminal_max_margin": 1000000.0,
+    "required_seeds": 2,
+    "tolerances": {
+      "search_objective": 1000000000000.0,
+      "worst_il_db": 1000000.0,
+      "min_h2_db": 1000000.0,
+      "min_h3_db": 1000000.0
+    }
+  },
+  "phases": {
+    "screening": {
+      "max_evaluations": 3,
+      "points_per_interval": 2,
+      "stop_points_per_interval": 3,
+      "terminal_points": 17,
+      "spot_checks": {
+        "search": [],
+        "terminal": [
+          0,
+          111
+        ]
+      }
+    },
+    "discovery": {
+      "max_evaluations": 5,
+      "points_per_interval": 2,
+      "stop_points_per_interval": 3,
+      "terminal_points": 17,
+      "spot_checks": {
+        "search": [],
+        "terminal": [
+          0,
+          111
+        ]
+      }
+    },
+    "exploitation": {
+      "max_evaluations": 5,
+      "points_per_interval": 2,
+      "stop_points_per_interval": 3,
+      "terminal_points": 17,
+      "spot_checks": {
+        "search": [],
+        "terminal": [
+          0,
+          111
+        ]
+      }
+    },
+    "refinement": {
+      "max_evaluations": 5,
+      "points_per_interval": 5,
+      "stop_points_per_interval": 9,
+      "terminal_points": 1001,
+      "spot_checks": {
+        "search": [],
+        "terminal": [
+          0,
+          500,
+          1000,
+          1001,
+          1501,
+          2001,
+          2002,
+          2502,
+          3002,
+          3003,
+          3503,
+          4003,
+          4004,
+          4504,
+          5004,
+          5005,
+          5505,
+          6005,
+          6006,
+          6506,
+          7006,
+          7007,
+          7507,
+          8007,
+          8008,
+          8508,
+          9008,
+          9009,
+          9509,
+          10009,
+          10010,
+          10510,
+          11010,
+          11011,
+          11511,
+          12011,
+          12012,
+          12512,
+          13012,
+          13013,
+          13513,
+          14013,
+          14014,
+          14514,
+          15014,
+          15015,
+          15515,
+          16015,
+          16016,
+          16516,
+          17016,
+          17017,
+          17517,
+          18017,
+          18018,
+          18518,
+          19018,
+          19019,
+          19519,
+          20019,
+          20020,
+          20520,
+          21020,
+          21021,
+          21521,
+          22021,
+          22022,
+          22522,
+          23022,
+          23023,
+          23523,
+          24023,
+          24024,
+          24524,
+          25024,
+          25025,
+          25525,
+          26025,
+          26026,
+          26526,
+          27026,
+          27027,
+          27527,
+          28027
+        ]
+      }
+    }
+  }
+}
