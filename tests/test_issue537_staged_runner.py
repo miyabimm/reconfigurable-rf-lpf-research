@@ -99,23 +99,28 @@ class StagedRunnerTests(unittest.TestCase):
         self.assertEqual(result['phases']['exploitation']['status'], 'not_started')
 
     def test_unverified_completed_receipt_stops_before_next_phase(self):
-        calls = []
-        def phase(name, inputs, *args):
-            calls.append(name)
-            return [candidate(x['seed'], x['vector'], name) for x in inputs]
-        def ledger(summary, *args, **kwargs):
-            bad = summary['phases']['screening']['status'] == 'completed'
-            return {'total': {k: {'unknown': int(bad)} for k in staged.COSTS}}
-        with tempfile.TemporaryDirectory(prefix='issue537-unverified-') as tmp, \
-             patch.object(staged, '_preflight', return_value=(copy.deepcopy(self.manifest), self.profile)), \
-             patch.object(staged, '_run_phase', side_effect=phase), patch.object(staged, '_ledger', side_effect=ledger):
-            output = Path(tmp)/'run'
-            with self.assertRaisesRegex(ValueError, 'unverified'):
-                staged.run(self.cfg, output, root=ROOT)
-            saved = json.loads((output/'summary.json').read_text())
-        self.assertEqual(calls, ['screening'])
-        self.assertEqual(saved['status'], 'STOP')
-        self.assertEqual(saved['ledger']['total']['rf_forwards']['unknown'], 1)
+        for fail_after in (1, 2):
+            with self.subTest(fail_after=fail_after):
+                calls = []
+                checks = 0
+                def phase(name, inputs, *args):
+                    calls.append(name)
+                    return [candidate(x['seed'], x['vector'], name) for x in inputs]
+                def ledger(summary, *args, **kwargs):
+                    nonlocal checks
+                    if summary['phases']['screening']['status'] == 'completed':
+                        checks += 1
+                    return {'total': {k: {'unknown': int(checks >= fail_after)} for k in staged.COSTS}}
+                with tempfile.TemporaryDirectory(prefix='issue537-unverified-') as tmp, \
+                     patch.object(staged, '_preflight', return_value=(copy.deepcopy(self.manifest), self.profile)), \
+                     patch.object(staged, '_run_phase', side_effect=phase), patch.object(staged, '_ledger', side_effect=ledger):
+                    output = Path(tmp)/'run'
+                    with self.assertRaisesRegex(ValueError, 'unverified'):
+                        staged.run(self.cfg, output, root=ROOT)
+                    saved = json.loads((output/'summary.json').read_text())
+                self.assertEqual(calls, ['screening'])
+                self.assertEqual(saved['status'], 'STOP')
+                self.assertEqual(saved['ledger']['total']['rf_forwards']['unknown'], 1)
 
     def test_negative_solver_status_is_stop_not_nonconvergence(self):
         vector = [1.]
@@ -196,6 +201,38 @@ class StagedRunnerTests(unittest.TestCase):
             final = staged._ledger(summary, manifest, Path(tmp), normal_end=True)['total']
         for k in staged.COSTS:
             self.assertEqual(final[k]['unknown'], manifest['reservations']['screening']['maximum'][k])
+
+    def test_ledger_missing_job_vs_valid_smaller_phase(self):
+        name = 'exploitation'
+        manifest = self.manifest
+        spec = manifest['reservations'][name]
+        reservation = spec['per_job']
+        summary = dict(budget=self.cfg['budget'], phases={n: dict(status='not_started') for n in staged.PHASES})
+        with tempfile.TemporaryDirectory(prefix='issue537-ledger-rows-') as tmp:
+            output = Path(tmp)
+            directory = output/name
+            directory.mkdir()
+            for count, missing in ((1, False), (2, True), (2, False)):
+                with self.subTest(count=count, missing=missing):
+                    jobs = [dict(seed=i, arm='baseline', reservation=reservation) for i in range(count)]
+                    summary['phases'][name] = dict(status='completed', candidates=[dict(seed=i) for i in range(count)])
+                    plan = dict(jobs=jobs)
+                    (directory/'plan.json').write_text(canonical(plan))
+                    rows = [dict(**j, job_id=f'job-{i+1:04d}', raw_path=f'job-{i+1:04d}',
+                                 status='completed', scientific_status='not_converged',
+                                 actual=reservation, released={k: 0 for k in staged.COSTS},
+                                 raw={'receipt.json': {}}) for i, j in enumerate(jobs)]
+                    state = dict(status='completed', source_sha256=manifest['source_sha256'],
+                                 plan_sha256=sha(plan), plan_raw=staged.development._bytes_info((directory/'plan.json').read_bytes()),
+                                 jobs=rows[:-1] if missing else rows)
+                    (directory/'run.json').write_text(canonical(state))
+                    with patch.object(staged.development, '_verify_receipt',
+                                      side_effect=lambda folder, receipt, row, state: row):
+                        ledger = staged._ledger(summary, manifest, output, normal_end=True)['phases'][name]
+                    for k in staged.COSTS:
+                        self.assertEqual(ledger[k]['unknown'], spec['maximum'][k] if missing else 0)
+                        self.assertEqual(ledger[k]['completed'], 0 if missing else count*reservation[k])
+                        self.assertEqual(ledger[k]['released'], 0 if missing else (spec['count']-count)*reservation[k])
 
 
 if __name__ == '__main__':

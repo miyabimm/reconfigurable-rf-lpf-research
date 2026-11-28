@@ -210,11 +210,26 @@ def _ledger(summary, manifest, output, *, normal_end=False):
             try:
                 state = json.loads(path.read_text())
                 rows = state['jobs']
-                if (state['source_sha256'] != manifest['source_sha256'] or len(rows) > spec['count'] or
-                        any(r['reservation'] != spec['per_job'] for r in rows) or
-                        development._bytes_info((output/name/'plan.json').read_bytes()) != state['plan_raw']):
+                plan_blob = (output/name/'plan.json').read_bytes()
+                plan = json.loads(plan_blob)
+                frozen = plan['jobs']
+                phase = summary['phases'][name]
+                expected = phase['candidates'] if status == 'completed' else phase['input']
+                if (state['source_sha256'] != manifest['source_sha256'] or
+                        development._bytes_info(plan_blob) != state['plan_raw'] or
+                        sha(plan) != state['plan_sha256'] or
+                        not 0 < len(rows) == len(frozen) == len(expected) <= spec['count'] or
+                        sorted(j['seed'] for j in frozen) != sorted(j['seed'] for j in expected) or
+                        state['status'] not in ('incomplete', 'completed') or
+                        (status == 'completed' and state['status'] != 'completed') or
+                        (state['status'] == 'completed' and any(r['status'] != 'completed' for r in rows))):
                     raise ValueError('Invalid phase ledger')
-                for row in rows:
+                for i, (row, job) in enumerate(zip(rows, frozen, strict=True), 1):
+                    if (row['job_id'] != f'job-{i:04d}' or
+                            (row['seed'], row['arm']) != (job['seed'], job['arm']) or
+                            row['reservation'] != job['reservation'] or row['reservation'] != spec['per_job'] or
+                            row['status'] not in ('completed', 'unknown', 'not_started')):
+                        raise ValueError('Invalid phase Job ledger')
                     if row['status'] == 'completed':
                         checked = development._verify_receipt(output/name/row['raw_path'], row['raw']['receipt.json'], row, state)
                         if any(checked[k] != row[k] for k in ('scientific_status', 'actual', 'released', 'raw')):
@@ -276,6 +291,10 @@ def run(config, output, *, root, rf_cache_mode='lk'):
         initial = manifest['initial_starts']
         selected = [dict(seed=r['seed'], vector=r['vector'], vector_sha256=r['vector_sha256']) for r in initial]
         for name in PHASES:
+            # Check previous phases before marking the next one as in flight.
+            summary['ledger'] = _ledger(summary, manifest, output)
+            if any(summary['ledger']['total'][k]['unknown'] for k in COSTS):
+                raise ValueError('STOP: phase ledger or receipt became unverified')
             summary['phases'][name] = dict(status='running', input=selected)
             summary['ledger'] = _ledger(summary, manifest, output)
             atomic_verified(output/'summary.json', summary)
@@ -313,6 +332,7 @@ def run(config, output, *, root, rf_cache_mode='lk'):
         return summary
     except (Exception, KeyboardInterrupt) as exc:
         summary['status'] = 'STOP'
+        summary['reproducible'] = False
         summary['reason'] = f'{type(exc).__name__}: {exc}'
         if manifest is not None:
             summary['ledger'] = _ledger(summary, manifest, output)

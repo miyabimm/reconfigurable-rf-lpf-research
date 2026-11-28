@@ -24,3 +24,7 @@ uv run --frozen python project/diagnostics/issue537/audit_smoke.py \
 - 実消費は48 forwards / 63,378 requested RF samples / 182独立MNA、すべてreceipt照合済み。unknown/released/not_startedはいずれも0。追加retry・再探索なし。
 - `audit_smoke.py` はphase Plan/ledgerとJob receipt全raw bytes/checkpoint、sourceとthread、元seedと前段vector/SHAの一致、全6設定と28別区間、物理部品・接続、完全L行列SPD、Terminal受動性・電力保存、独立MNA spotの状態、予約・実費用を照合しPASS。初期・終端SHAと各receipt SHA・実消費は `smoke-audit.json` と元rawを参照。独立MNAは指定spotのみ。
 - Terminal有限格子での全候補のRF適合は未達。格子間・連続帯域、SRF、Q(f)、EM、ばらつき、実測、物理実装可能性、正式RF適合は保証しない。少予算の機能確認を探索手法の性能比較に使用しない。
+
+## 独立レビュー後の修正
+
+PR #538の独立レビュー指摘に対応し、上位ledgerで凍結Planの全Jobと台帳行の件数・識別・予約・完了状態を照合する。欠落行は未使用予算ではなくunknownとし、次phase開始前にも確認する。正常な少数候補の未予約分は解放する。非RF回帰テストを追加。追加RF smokeは実施しない。
